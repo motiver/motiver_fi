@@ -922,13 +922,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
   /**
    * Checks if user has permission to given target
-   * @param target : what item is shared, 0=training, 1=nutrition, 4=nutrition foods, 2=cardio, 3=measurement, 
+   * @param target : what item is shared, 0=training, 1=nutrition, 4=nutrition foods, 2=cardio, 3=measurement
+   *        edit permissions: 10=training, 11=nutrition, 14=nutrition foods, 12=cardio, 13=measurement
    * @param ourUid : our user id
    * @param uid : target's user id (if same that ours -> returns always true)
    * @return has permission
    */
   @SuppressWarnings("unchecked")
-  public static boolean hasPermission(int target, String ourUid, String uid) {
+  private static boolean hasPermission(int target, String ourUid, String uid) {
 
     log.log(Level.FINE, "hasPermission()");
     
@@ -956,6 +957,41 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       if (!pm.isClosed()) {
         pm.close();
       } 
+    }
+    
+    return hasPermission;
+  }
+
+  /**
+   * Checks if user has permission to given target
+   * @param target : what item is shared, 0=training, 1=nutrition, 4=nutrition foods, 2=cardio, 3=measurement
+   *        edit permissions: 10=training, 11=nutrition, 14=nutrition foods, 12=cardio, 13=measurement
+   * @param ourUid : our user id
+   * @param uid : target's user id (if same that ours -> returns always true)
+   * @return has permission
+   */
+  @SuppressWarnings("unchecked")
+  public static boolean hasPermission(PersistenceManager pm, int target, String ourUid, String uid) {
+
+    log.log(Level.FINE, "hasPermission()");
+    
+    if(ourUid.equals(uid)) {
+      return true;
+    }
+    
+    boolean hasPermission = false;
+    try {
+
+      Query q = pm.newQuery(Circle.class);
+      q.setFilter("openId == openIdParam && (friendId == friendIdParam || friendId == '-1') && target == targetParam");
+      q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
+      q.setRange(0,1);
+      List<Circle> list = (List<Circle>)q.execute(uid, ourUid, target);
+      
+      hasPermission = (list.size() > 0);
+      
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "hasPermission", e);
     }
     
     return hasPermission;
@@ -1316,8 +1352,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException {
 
-    log.log(Level.FINE, "addExercisename()");
-
     ExerciseNameModel m = null;
     
     //get uid
@@ -1331,47 +1365,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-  
-      Query q = pm.newQuery(ExerciseName.class);
-      q.setFilter("name == nameParam && target == targetParam");
-      q.declareParameters("java.lang.String nameParam, java.lang.Integer targetParam");
-      List<ExerciseName> arr = (List<ExerciseName>) q.execute(name.getName(), name.getTarget());
-            
-      //if found
-      if(arr.size() > 0) {
-        m = ExerciseName.getClientModel(arr.get(0));
-      }
-      //create new
-      else {
-        ExerciseName mServer = ExerciseName.getServerModel(name);
-        mServer.setLocale(LOCALE);
-        mServer.setUid(UID);
-        pm.makePersistent(mServer);
-        m = ExerciseName.getClientModel(mServer);
-
-        //remove search indexes which has this name as query
-        final String strName = name.getName();
-        Query q1 = pm.newQuery(ExerciseSearchIndex.class);
-        List<ExerciseSearchIndex> arrQuery = (List<ExerciseSearchIndex>) q1.execute();
-        for(ExerciseSearchIndex index : arrQuery) {
-          //check if query words that match added name
-          int count = 0;
-          for(String s : index.getQuery().split(" ")) {
-            //if word long enough and match
-            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD && strName.toLowerCase().contains( s.toLowerCase() )) {
-                count++;
-            }
-          }
-          
-          //if found -> remove index
-          if(count > 0) {
-            pm.deletePersistent(index);
-          }
-        }
-      }
+      m = StoreTraining.addExerciseNameModel(pm, name, UID, LOCALE);
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addExercisename", e);
+      log.log(Level.SEVERE, "Error adding exercise name", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4127,8 +4124,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           final Date d = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays + i)) * 1000);
           final SimpleDateFormat fmt = new SimpleDateFormat("dd-MM-yy");
           final String strD = fmt.format(d);
-
-          System.out.println(" "+d);
           
           //END if start date is before given start date
           if(dateStartParam != null && d.getTime() < dateStartParam.getTime()) {
@@ -4148,8 +4143,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             List<WorkoutModel> arrW = new ArrayList<WorkoutModel>();
             for(Workout w : workouts) {
               if(fmt.format(w.getDate()).equals(strD)) {
-                WorkoutModel m = getSingleWorkout(pm, w, true);
-                arrW.add(m);
+                arrW.add( StoreTraining.getWorkoutModel(pm, w.getId(), UID));
                 
                 found = true;
               }
@@ -4224,7 +4218,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           
           //if after index (has data or showing each day)
           if(found || showEmptyDays) {
-            System.out.println("  "+dataSize+" >= "+index);
             if(dataSize >= index) {
               data.add(bd);
             }
@@ -4735,11 +4728,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return exercises
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<ExerciseModel> getExercises(WorkoutModel workout) throws ConnectionException {
 
-    log.log(Level.FINE, "getExercises()");
+    if(log.isLoggable(Level.FINE)) {
+      log.log(Level.FINE, "Loading exercises from workout: "+workout.getId());
+    }
     
     List<ExerciseModel> list = new ArrayList<ExerciseModel>();
     
@@ -4752,54 +4746,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-      //get workout
-      Workout w = pm.getObjectById(Workout.class, workout.getId());
-      
-      if(w != null) {
-        //check permission
-        boolean hasPermission = true;
-        if(!w.getUid().equals(UID)) {
-          //if in routine -> check routine permissions instead
-          if(w.getRoutineId().longValue() != 0) {
-            Routine r = pm.getObjectById(Routine.class, w.getRoutineId());
-            if(r != null) {
-              hasPermission = hasPermission(0, UID, r.getUid());
-            }
-          }
-          else {
-            hasPermission = hasPermission(0, UID, w.getUid());
-          }
-        }
-        
-        if(hasPermission) {
-          List<Exercise> listE = w.getExercises();
-          if(listE != null) {
-            //go through each exercise
-            for(Exercise e : listE) {
-              ExerciseModel eNew = Exercise.getClientModel(e);
-              //get name
-              if(e.getNameId() != null) {
-                if(e.getNameId() != 0) {
-                  Query query = pm.newQuery(ExerciseName.class);
-                  query.setFilter("id == idParam");
-                  query.declareParameters("java.lang.Long idParam");
-                  List<ExerciseName> results = (List<ExerciseName>) query.execute(e.getNameId());
-                  if(results.size() != 0) {
-                    eNew.setName(ExerciseName.getClientModel(results.get(0)));
-                  }
-                }
-              }
-              //set correct workout id
-              eNew.setWorkoutId(w.getId());
-              eNew.setUid(w.getUid());
-              list.add(eNew);
-            }
-          }
-        }
-      }
+      WorkoutModel w = StoreTraining.getWorkoutModel(pm, workout.getId(), UID);      
+      list = w.getExercises();
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getExercises", e);
+      log.log(Level.SEVERE, "Error loading exercises", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6945,10 +6896,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public boolean removeExercises(List<ExerciseModel> exercises) throws ConnectionException {
 
-    log.log(Level.FINE, "removeExercises()");
-
     if(exercises.size() < 1) {
       return false;
+    }
+
+    if(log.isLoggable(Level.FINE)) {
+      log.log(Level.FINE, "Removing exercises. Count: "+exercises.size());
     }
     
     boolean ok = false;
@@ -6962,31 +6915,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      
-      //assume that all the exercises are from same workout
-      Workout w = pm.getObjectById(Workout.class, exercises.get(0).getWorkoutId());
-      
-      if(w != null) {
-        if(w.getUid().equals(UID)) {
-          
-          //delete exercise
-          for(ExerciseModel m : exercises) {
-  
-            //remove from list
-            for(Exercise mFromList : w.getExercises()) {
-              if(mFromList.getId().longValue() == m.getId()) {
-                pm.deletePersistent(mFromList);
-                break;
-              }
-            }
-          }
-          ok = true;
-        }
+
+      //TODO needs improving
+      for(ExerciseModel e : exercises) {
+        StoreTraining.removeExerciseModel(pm, e, UID);
       }
+      
+      ok = true;
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "removeExercises", e);
+      log.log(Level.SEVERE, "Error removing exercise", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7563,18 +7502,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-      Workout w = pm.getObjectById(Workout.class, model.getId());
-      if(w != null) {
-        //check if correct user
-        if(w.getUid().equals(UID)) {
-          pm.deletePersistent(w);
-          
-          ok = true;
-        }
-      }
+      ok = StoreTraining.removeWorkoutModel(pm, model, UID);
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "removeWorkout", e);
+      log.log(Level.SEVERE, "Error removing workout", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8594,116 +8525,32 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     ExerciseModel m = null;
     
     //get uid
-    final String UID = getUid();
+    final Object[] obj = getUidAndLocale();
+    final String UID = (String)obj[0];
+    final String LOCALE = (String)obj[1];
     if(UID == null) {
       return m;
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
 
-    //try to update X times
-    int retries = Constants.LIMIT_UPDATE_RETRIES;
-    while (true) {
-      
-      Transaction tx = pm.currentTransaction();
-      tx.begin();
-      
-      try {
+      exercise = StoreTraining.updateExerciseModel(pm, exercise, UID, LOCALE);
         
-        //get workout
-        Workout w = pm.getObjectById(Workout.class, exercise.getWorkoutId());
-        if(w != null) {
-          if(w.getUid().equals(UID)) {
-              
-            final List<Exercise> list = w.getExercises();
-            
-            //search exercise
-            int i = 0;
-            for(final Exercise ee : list) {
-              if(ee.getId().longValue() == exercise.getId()) {
-                break;
-              }
-              i++;
-            }
-            final Exercise e = list.get(i);
-                
-            if(e != null) {
-                
-              //update exercise
-              e.setSets(exercise.getSets());
-              e.setReps(exercise.getReps());
-              e.setTempo(exercise.getTempo());
-              e.setRest(exercise.getRest());
-              e.setWeights(exercise.getWeights());
-              e.setInfo(exercise.getInfo());
-
-              //check if name has changed
-              ExerciseNameModel mName = null;
-              if(exercise.getName() != null) {
-                if(exercise.getName().getId() != e.getNameId()) {
-                  //add
-                  mName = this.addExercisename(exercise.getName());
-                  //update name/target
-                  e.setNameId(mName.getId());
-                }
-                else {
-                  mName = exercise.getName();
-                }
-              }
-
-              //save to db
-              pm.makePersistent(e);
-
-              //save to db
-//              pm.makePersistent(w);
-//              pm.flush();
-              
-              tx.commit();
-              
-              //get added exercise
-              m = Exercise.getClientModel(e);
-              m.setUid(UID);
-              m.setName(mName);
-
-              log.log(Level.FINE, "Updated exercise successfully");
-              
-              break;
-            }
-          }
-        }
-
-      }
-      catch (Exception e) {
-        log.log(Level.WARNING, "Error updating exercise", e);
-        
-        //retries used
-        if (retries == 0) {
-          log.log(Level.SEVERE, "updateExercise", e);
-          if (!pm.isClosed()) {
-            pm.close();
-          } 
-          
-          throw new ConnectionException("updateExercise", e.getMessage());
-        }
-        log.log(Level.WARNING, " Retries left: "+retries);
-        
-        --retries;
-
-        
-        //small delay between retries
-        try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
-        }
-        catch(Exception ex) { }
-      }
-      finally {
-        if (tx.isActive()) {
-          tx.rollback();
-        }
-      }
     }
-    if (!pm.isClosed()) {
-      pm.close();
+    catch (Exception e) {
+      log.log(Level.SEVERE, "Error updating exercise", e);
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+      
+      throw new ConnectionException("updateExercise", e.getMessage());
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
     }
     
     return m;
@@ -9521,7 +9368,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      StoreTraining.updateWorkout(pm, model, UID);
+      StoreTraining.updateWorkoutModel(pm, model, UID);
       
     } catch (Exception e) {
       log.log(Level.SEVERE, "updateWorkout", e);
@@ -9583,7 +9430,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      m = StoreTraining.getWorkout(pm, workoutId, UID);
+      m = StoreTraining.getWorkoutModel(pm, workoutId, UID);
     } catch (Exception e) {
       log.log(Level.SEVERE, "getWorkout", e);
       if (!pm.isClosed()) {
@@ -9670,7 +9517,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           break;
         }
 
-        WorkoutModel m = StoreTraining.getWorkout(pm, w.getId(), UID);
+        WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
           
         list.add(m);
         
@@ -9747,7 +9594,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         WorkoutModel[] arr = new WorkoutModel[workouts.size()];
         int c = 0;
         for(Workout w : workouts) {
-          WorkoutModel m = StoreTraining.getWorkout(pm, w.getId(), UID);
+          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
 
           arr[c] = m;
           c++;

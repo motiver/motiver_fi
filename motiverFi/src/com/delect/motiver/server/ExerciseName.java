@@ -6,6 +6,8 @@
  ******************************************************************************/
 package com.delect.motiver.server;
 
+import java.io.Serializable;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -18,9 +20,14 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.ExerciseNameModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class ExerciseName implements Comparable<ExerciseName> {
+public class ExerciseName implements Serializable, Comparable<ExerciseName> {
 	
 	/**
+   * 
+   */
+  private static final long serialVersionUID = 2726251490814363630L;
+
+  /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model

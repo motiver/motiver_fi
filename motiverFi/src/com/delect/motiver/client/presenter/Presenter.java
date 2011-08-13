@@ -40,7 +40,7 @@ public abstract class Presenter {
 	 * @param eventBus SimpleEventBus
 	 */
 	public Presenter(MyServiceAsync rpcService, SimpleEventBus eventBus) {
-		System.out.println("Presenter: " + this.getClass().getName());
+//		System.out.println("Presenter: " + this.getClass().getName());
 		
 		this.rpcService = rpcService;
 		this.eventBus = eventBus;
@@ -79,7 +79,7 @@ public abstract class Presenter {
 		
 		setVisible(false);
 
-		System.out.println("Presenter: " + this.getClass().toString() + " onHide()");
+//		System.out.println("Presenter: " + this.getClass().toString() + " onHide()");
 		onHide();
 	}
 	
@@ -146,7 +146,7 @@ public abstract class Presenter {
 		}
 		setVisible(true);
 
-		System.out.println("Presenter: " + this.getClass().getName() + " onBind() & onRun()");
+//		System.out.println("Presenter: " + this.getClass().getName() + " onBind() & onRun()");
     onRun();
 	}
 	
@@ -202,7 +202,7 @@ public abstract class Presenter {
         getView().setContentEnabled(true);
       }
 
-			System.out.println("Presenter: " + this.getClass().getName() + " onBind() & onRun()");
+//			System.out.println("Presenter: " + this.getClass().getName() + " onBind() & onRun()");
       onRun();
 		    
 		}
@@ -214,7 +214,7 @@ public abstract class Presenter {
         getView().setContentEnabled(true);
       }
 			
-			System.out.println("Presenter: " + this.getClass().getName() + " onBind() & onRefresh()");
+//			System.out.println("Presenter: " + this.getClass().getName() + " onBind() & onRefresh()");
 			onRefresh();
 		}
 	}
@@ -246,7 +246,7 @@ public abstract class Presenter {
 		}
 		listHandlers.clear();
 		
-		System.out.println("Presenter: " + this.getClass().getName() + " onStop()");
+//		System.out.println("Presenter: " + this.getClass().getName() + " onStop()");
 		onStop();
 		
 		if(container != null) {
