@@ -1,0 +1,11 @@
+<html>
+<body>
+
+<script type="text/javascript">
+var token = document.location.href;
+token = token.replace(/.*#access_token/g,"#access_token");
+opener.document.location.hash = token;
+window.close();
+</script>
+</body>
+</html>

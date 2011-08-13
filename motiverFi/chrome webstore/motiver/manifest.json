@@ -1,0 +1,13 @@
+{
+  "name": "Motiver Beta",
+  "version": "1.1",
+  "icons": { "128": "128.png" },
+  "app": {
+    "urls": [
+      "http://www.motiver.fi/"
+    ],
+    "launch": {
+      "web_url": "http://www.motiver.fi"
+    }
+  }
+}

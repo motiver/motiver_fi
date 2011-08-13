@@ -1,0 +1,106 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8">   
+    <meta http-equiv="X-UA-Compatible" content="IE=8" />
+    <meta name='gwt:property' content='print=true'/>
+    
+    <!-- <link rel="stylesheet" type="text/css" href="../resources/css/gxt-all.css" /> -->
+    <link rel="stylesheet" type="text/css" href="http://static.motiver.fi/resources/css/mytheme.css" /> 
+    <link type="text/css" rel="stylesheet" href="style-print.css">  
+    <link type="text/css" rel="stylesheet" href="http://static.motiver.fi/buttons.css">  
+    
+	<script>
+	function getCookie(c_name)
+	{
+		if (document.cookie.length>0)
+		{
+			c_start=document.cookie.indexOf(c_name + "=");
+			if (c_start!=-1)
+			{
+				c_start=c_start + c_name.length+1;
+				c_end=document.cookie.indexOf(";",c_start);
+				if (c_end==-1) c_end=document.cookie.length;
+					return unescape(document.cookie.substring(c_start,c_end));
+			}
+		}
+		return "";
+	}
+
+    //get locale from cookie
+    var locale = getCookie('locale');
+    
+    //if not found -> check browser
+    if(locale == "") {
+    	var lgn = "";
+    	if(navigator.language) {
+    	    lgn=navigator.language;
+    	}  else if(navigator.userLanguage) {
+    	    lgn=navigator.userLanguage;
+    	}
+    	if(lgn != "") {
+    		if(lgn == "fi")
+    			locale = "fi_FI";
+    		else if(lgn == "en")
+    			locale = "en_US";		
+    	}
+    }
+    
+	if(locale == "")
+		locale = "en_US";
+    
+	document.write("<meta name=\"gwt:property\" content=\"locale="+locale+"\">");
+    document.write("<script src=\"http://connect.facebook.net/"+locale+"/all.js\"><\/script>");
+    </script>
+	
+    <meta property="og:title" content="Motiver"/>
+    <meta property="og:type" content="sport"/>
+    <meta property="og:url" content="http://www.motiver.fi/"/>
+    <meta property="og:image" content="http://www.motiver.fi/img/logo.png"/>
+    <meta property="og:site_name" content="Motiver"/>
+    <meta property="fb:app_id" content="198007390233150"/>
+    <meta property="og:description"
+          content="Motiver on tavoitteellisen kuntourheilijan harjoitus- ja ravintopäiväkirja. 
+                   Sovellus on suunniteltu erityisesti aktiivisille kuntosaliharjoittelijoille 
+                   sekä lajiharjoittelun tueksi. Älykäs tulosseuranta muokkaantuu käyttäjän tarpeiden 
+                   mukaisesti sekä auttaa saavuttamaan halutut tavoitteet. "/>
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <title>Motiver</title>
+    
+    <script type="text/javascript" language='javascript' src='http://static.motiver.fi/resources/flash/swfobject.js'></script>
+    <script type="text/javascript" language="javascript" src="../motiver/motiver.nocache.js"></script>
+    
+    
+  	</head>
+  	<body>
+
+    <!-- OPTIONAL: include this if you want history support -->
+    <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+    
+    <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
+    <noscript>
+      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+        Your web browser must have JavaScript enabled
+        in order for this application to display correctly.
+      </div>
+    </noscript>
+    
+   	 <div id="fb-root"></div>
+    
+    <div id="loading" style="padding:20px;"><table width='99%' height='800'><tr><td valign=middle align=center><img src='../img/loading.gif' border=0/></td></tr></table></div>
+    
+	<script>
+  		FB.init({
+    		appId  : 'e532845851b80fd3d2092592f72ce5b2',
+    		status : true, // check login status
+    		cookie : true, // enable cookies to allow the server to access the session
+    		xfbml  : true  // parse XFBML
+  		});
+	</script>
+
+  </body>
+  
+</html>

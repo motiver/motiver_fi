@@ -1,0 +1,9 @@
+<backends>
+ <backend name="indexing">
+  <class>B8</class>
+  <options>
+   <dynamic>true</dynamic>
+   <public>true</public>
+  </options>
+ </backend>
+</backends>

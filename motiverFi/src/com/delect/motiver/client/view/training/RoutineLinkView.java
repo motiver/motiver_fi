@@ -1,0 +1,134 @@
+/*******************************************************************************
+ * Copyright 2011 Delect
+ * 
+ * Project: Motiver.fi
+ * Author: Antti Havanko
+ ******************************************************************************/
+package com.delect.motiver.client.view.training;
+
+import com.google.gwt.user.client.Event;
+import com.google.gwt.user.client.ui.Widget;
+
+import com.delect.motiver.client.AppController;
+import com.delect.motiver.client.Motiver;
+import com.delect.motiver.client.presenter.training.RoutineLinkPresenter;
+import com.delect.motiver.client.presenter.training.RoutineLinkPresenter.RoutineLinkHandler;
+import com.delect.motiver.client.view.CustomListener;
+import com.delect.motiver.shared.RoutineModel;
+
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.Text;
+import com.extjs.gxt.ui.client.widget.form.CheckBox;
+import com.extjs.gxt.ui.client.widget.layout.HBoxLayout;
+import com.extjs.gxt.ui.client.widget.layout.HBoxLayout.HBoxLayoutAlign;
+import com.extjs.gxt.ui.client.widget.layout.HBoxLayoutData;
+
+
+public class RoutineLinkView extends RoutineLinkPresenter.RoutineLinkDisplay {
+
+	private RoutineLinkHandler handler;
+	private boolean quickSelectOn = false;
+
+	private RoutineModel routine;
+	
+	public RoutineLinkView() {
+		this.setStyleName("panel-routinelink");
+    this.setHeight(30);
+		this.addListener(Events.OnMouseOver, CustomListener.panelMouseOver);
+		this.addListener(Events.OnMouseOut, CustomListener.panelMouseOut);
+		this.sinkEvents(Event.MOUSEEVENTS);
+		
+		this.addListener(Events.OnClick, new Listener<BaseEvent>() {
+			@Override
+			public void handleEvent(BaseEvent be) {
+				//if cancel is not on
+				if(getData("cancel") == null) {
+					handler.selected();
+        }
+				else {
+					setData("cancel", null);
+        }
+			}
+		});
+
+		//layout
+		HBoxLayout layout = new HBoxLayout();
+    layout.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);
+    this.setLayout(layout);
+	}
+	
+	@Override
+	public Widget asWidget() {
+		
+		try {
+			
+			//if quick selection
+			if(quickSelectOn) {
+				CheckBox cbSelect = new CheckBox();
+				cbSelect.addListener(Events.Change, new Listener<BaseEvent>() {
+					@Override
+					public void handleEvent(BaseEvent be) {
+						Boolean isSelected = ((CheckBox)be.getSource()).getValue();
+						
+						cancelSelection();
+						
+						handler.quickSelect(isSelected);
+					}
+				});
+				this.add(cbSelect, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+			}
+
+			//name
+			Text name = new Text(routine.getName());
+			name.setStyleName("label-title-medium");
+			this.add(name, new HBoxLayoutData(new Margins(0)));
+			
+			//spacer
+			HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 0, 0, 10));
+      flex.setFlex(1);  
+      this.add(new Text(), flex);  
+	        
+      //username
+      if(!routine.getUid().equals(AppController.User.getUid())) {
+        LayoutContainer panelUsername = new LayoutContainer();
+        panelUsername.setWidth(100);
+        panelUsername.setHeight(15);
+        panelUsername.setStyleName("label-title-username");
+        panelUsername.addText("<fb:name uid=\"" + routine.getUid() + "\" useyou=false linked=false></fb:name>");
+        this.add(panelUsername, new HBoxLayoutData(new Margins(0)));
+      }
+						
+		} catch (Exception e) {
+      Motiver.showException(e);
+		}
+		
+		return this;
+	}
+
+	@Override
+	public void setHandler(RoutineLinkHandler handler) {
+		this.handler = handler;
+	}
+	
+	@Override
+	public void setModel(RoutineModel routine) {
+		this.routine = routine;
+	}
+
+	@Override
+	public void setQuickSelect(boolean quickSelectOn) {
+		this.quickSelectOn = quickSelectOn;
+	}
+
+	/**
+	 * Cancels selection (for example when checkbox is clicked
+	 */
+	protected void cancelSelection() {
+		this.setData("cancel", true);
+	}
+	
+}

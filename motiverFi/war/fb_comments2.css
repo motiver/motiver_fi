@@ -1,0 +1,35 @@
+/* Like button text color */
+/*div.like span.connect_widget_text {color:#eee;}*/
+/*div.like div.connect_widget_confirmation {color:#eee;}*/
+/*div.like span.connect_widget_text a {color:#ffc6ff;}*/
+/**/
+/* Hide the like-button */
+div.like {
+display:none;
+}
+/**/
+/* Comemnts box text color */
+.fbConnectWidgetFooter {
+	background-color: inherit;
+}
+/*div.comment_body { font-family: 'Lucida Grande', Arial, Verdana, sans-serif; }*/
+/*div.comment_body div.composer div.connected {color:#eee;}*/
+/*div.comment_body div.composer div.connected div.UIImageBlock_Content {color:#fff;}*/
+/*div.comment_body div.composer div.connected span.namelink a {color:#ffc6ff;}*/
+/*div.comment_body div.post_area div.connected label {color:#ccc;}*/
+/*div.comment_body div.show_connected a.editsettings {color:#ffc6ff;}*/
+/*div.comment_body div.wallkit_postcontent h4 {color:#eee;}*/
+/*div.comment_body div.wallkit_postcontent h4 a {color:#ffc6ff;}*/
+/*div.comment_body div.wallkit_postcontent h4 span.wall_time {color:#ccc;}*/
+/*div.comment_body div.wallkit_postcontent div {color:#fff;}*/
+/*div.comment_body div.wallkit_postcontent div a {color:#c4ffc4;}*/
+/*div.comment_body div.wallkit_actionset a {color:#ffc6ff !important;}*/
+/*div.comment_body div.wallkit_subtitle div.post_counter {color:#ccc;}*/
+/*div.comment_body div.wallkit_subtitle div.pager a {color:#ffc6ff;}*/
+/*div.comment_body div.wallkit_subtitle div.pager a:hover {color:#fff;}*/
+/*div.comment_body div.connect_area div.or {color:#eee;}*/
+/*div.comment_body div.connect_area div.connect_button_text {color:#eee;}*/
+/*div.comment_body div.wall_captcha {color:#eee;}*/
+/*div.comment_body div.wall_captcha h3 {color:#eee;}*/
+/*div.comment_body div.wall_captcha a {color:#ffc6ff;}*/
+/*div.comment_body div.wall_captcha label {color:#eee;}*/

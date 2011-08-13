@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<cronentries>
+  <cron>
+    <url>/motiver/ct</url>
+    <description>Common clean up tasks in database</description>
+    <schedule>every mon 11:00</schedule>
+  </cron>
+  
+  <cron>
+    <url>/motiver/ecs</url>
+    <target>indexing</target>
+    <description>Calculate exercise count for each user</description>
+    <schedule>every mon 01:00</schedule>
+  </cron>
+  
+</cronentries>
