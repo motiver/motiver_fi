@@ -25,7 +25,7 @@ import com.delect.motiver.server.MonthlySummaryExercise;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
-import com.delect.motiver.server.service.AllServiceImpl;
+import com.delect.motiver.server.service.MyServiceImpl;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
@@ -75,8 +75,8 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
           cal.add(Calendar.MONTH, 1);
           cal.add(Calendar.DATE, -1);
           Date d2 = cal.getTime();
-          final Date dStart = AllServiceImpl.stripTime(d1, true);
-          final Date dEnd = AllServiceImpl.stripTime(d2, false);
+          final Date dStart = MyServiceImpl.stripTime(d1, true);
+          final Date dEnd = MyServiceImpl.stripTime(d2, false);
           
           //remove all this month's data
           Query qD = pm.newQuery(MonthlySummary.class);

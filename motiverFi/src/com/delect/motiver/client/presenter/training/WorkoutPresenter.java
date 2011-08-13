@@ -13,6 +13,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.http.client.Request;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
@@ -227,7 +228,7 @@ public class WorkoutPresenter extends Presenter {
 					display.setContentEnabled(false);
 					
 					//create model
-					rpcService.addWorkout(model, new MyAsyncCallback<WorkoutModel>() {
+					final Request req = rpcService.addWorkout(model, new MyAsyncCallback<WorkoutModel>() {
 						@Override
 						public void onSuccess(WorkoutModel result) {
 							display.setContentEnabled(true);
@@ -240,11 +241,13 @@ public class WorkoutPresenter extends Presenter {
 							eventBus.fireEvent(event);
 						}
 					});
+          addRequest(req);
 				}
 				//edited old value
 				else {
 					workout = model;
-					rpcService.updateWorkout(workout, MyAsyncCallback.EmptyCallback);
+					final Request req = rpcService.updateWorkout(workout, MyAsyncCallback.EmptyCallback);
+					addRequest(req);
 				}
 			}
 			@Override

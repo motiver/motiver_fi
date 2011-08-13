@@ -18,8 +18,8 @@ import net.sf.jsr107cache.Cache;
 import com.delect.motiver.server.Exercise;
 import com.delect.motiver.server.ExerciseName;
 import com.delect.motiver.server.cache.WeekCache;
+import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.server.Workout;
-import com.delect.motiver.server.service.AllServiceImpl;
 import com.delect.motiver.shared.ConnectionException;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
@@ -66,7 +66,7 @@ public class StoreTraining {
       model = (WorkoutModel)obj;
       
       //check permission
-      if(!AllServiceImpl.hasPermission(0, userUid, model.getUid())) {
+      if(!MyServiceImpl.hasPermission(0, userUid, model.getUid())) {
         throw new NoPermissionException(0, userUid, model.getUid());
       }
       
@@ -83,7 +83,7 @@ public class StoreTraining {
       if(w != null) {
         
         //check permission
-        if(!AllServiceImpl.hasPermission(0, userUid, w.getUid())) {
+        if(!MyServiceImpl.hasPermission(0, userUid, w.getUid())) {
           throw new NoPermissionException(0, userUid, w.getUid());
         }
         
@@ -224,16 +224,6 @@ public class StoreTraining {
 
     //get client side model
     model = Workout.getClientModel(w);
-    
-    //save to cache
-    if(logger.isLoggable(Level.FINEST)) {
-      logger.log(Level.FINEST, "Saving workout ("+model.getId()+") to memcache");
-    }
-    Cache cache = WeekCache.get();
-    StringBuilder builder = new StringBuilder();
-    builder.append("w");
-    builder.append(model.getId());
-    cache.put(builder.toString(), model);
     
     return model;
   }
