@@ -8,10 +8,9 @@
 package com.delect.motiver.server;
 
 import com.delect.motiver.client.service.MyService;
-import com.delect.motiver.server.service.TrainingServiceImpl;
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.delect.motiver.server.service.AllServiceImpl;
 
-public class MyServiceImpl extends TrainingServiceImpl implements MyService {
+public class MyServiceImpl extends AllServiceImpl implements MyService {
 
   /**
    * 

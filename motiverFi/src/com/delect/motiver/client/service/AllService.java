@@ -29,13 +29,12 @@ import com.delect.motiver.shared.TicketModel;
 import com.delect.motiver.shared.TimeModel;
 import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
-import com.google.gwt.user.client.rpc.RemoteService;
 
 /**
  * @author Antti
  *
  */
-public interface AllService extends RemoteService {
+public interface AllService extends TrainingService, NutritionService {
   
   public UserModel getUser() throws ConnectionException;
   
@@ -535,17 +534,6 @@ public interface AllService extends RemoteService {
    */
   public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException;
   
-  /**
-   * Return guide values.
-   *
-   * @param uid the uid
-   * @param index the index
-   * @param date : if null -> all values are returned
-   * @return values
-   * @throws ConnectionException the connection exception
-   */
-  public List<GuideValueModel> getGuideValues(String uid, int index, Date date) throws ConnectionException;
-  
   
   /**
    * Returns single meal.
@@ -764,36 +752,6 @@ public interface AllService extends RemoteService {
    */
   public List<UserModel> getTrainees() throws ConnectionException;
   
-  /**
-   * Returns single workout.
-   *
-   * @param workoutId the workout id
-   * @return the workout
-   * @throws ConnectionException the connection exception
-   */
-  public WorkoutModel getWorkout(Long workoutId) throws ConnectionException;
-  
-  /**
-   * Returns all workouts that aren't in calendar.
-   *
-   * @param index the index
-   * @param routine : if set return all workouts from given routine
-   * @return workouts' models
-   * @throws ConnectionException the connection exception
-   */
-  public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException;
-  
-  /**
-   * Get workouts in calendar between dates.
-   *
-   * @param uid : who's workouts
-   * @param dateStart the date start
-   * @param dateEnd the date end
-   * @return workoutmodels in each days ( model[days][day's workouts] )
-   * @throws ConnectionException the connection exception
-   */
-  public List<WorkoutModel[]> getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd) throws ConnectionException;
-
   /**
    * Removes cardio.
    *

@@ -56,6 +56,7 @@ import com.delect.motiver.server.RunValue;
 import com.delect.motiver.server.Time;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
+import com.delect.motiver.server.datastore.StoreTraining;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
@@ -89,13 +90,12 @@ import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
  * @author Antti
  *
  */
-public class AllServiceImpl extends RemoteServiceServlet implements AllService {
+public class AllServiceImpl extends TrainingServiceImpl implements AllService {
 
   private static final class MyListItem implements Comparable<MyListItem> {
     
@@ -804,7 +804,7 @@ public class AllServiceImpl extends RemoteServiceServlet implements AllService {
    * Gets openId string
    * @return null if no user found
    */
-  private static String getUid() {
+  static String getUid() {
 
     log.log(Level.FINE, "getUid()");
 
@@ -926,7 +926,7 @@ public class AllServiceImpl extends RemoteServiceServlet implements AllService {
    * @return has permission
    */
   @SuppressWarnings("unchecked")
-  private static boolean hasPermission(int target, String ourUid, String uid) {
+  public static boolean hasPermission(int target, String ourUid, String uid) {
 
     log.log(Level.FINE, "hasPermission()");
     
@@ -2806,108 +2806,21 @@ public class AllServiceImpl extends RemoteServiceServlet implements AllService {
    * @param workout : model to be added
    * @return added workout (null if add not successful
    */
-  @SuppressWarnings("deprecation")
   @Override
   public WorkoutModel addWorkout(WorkoutModel workout) throws ConnectionException  {
 
-    log.log(Level.FINE, "addWorkout()");
+    List<WorkoutModel> list = new ArrayList<WorkoutModel>();
+    list.add(workout);
+    list = addWorkouts(list);
     
-    WorkoutModel m = null;
+    //get new workout
+    WorkoutModel model = null;
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return m;
+    if(list.size() > 0) {
+      model = list.get(0);
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-      
-    try {
-      Workout modelServer = null;
-      
-      //if ID is null -> create new one
-      if(workout.getId() == 0) {
-        
-        //convert to server side model
-        modelServer = Workout.getServerModel(workout);
-        
-        //create two new exercises
-        List<Exercise> exercises = new ArrayList<Exercise>();
-        exercises.add(new Exercise());
-        exercises.add(new Exercise());
-        exercises.add(new Exercise());
-        modelServer.setExercises(exercises);
-        
-      }
-      else {
-        
-        //get model
-        final Workout w = pm.getObjectById(Workout.class, workout.getId());
-        
-        //create a copy
-        if(hasPermission(0, UID, w.getUid())) {
-          modelServer = duplicateWorkout(w);
-          
-          //increment copy count IF NOT our workout
-          if(!w.getUid().equals(UID)) {
-            w.incrementCopyCount();
-          }
-        }
-          //no permission
-          else {
-            throw new Exception();
-          }
-        
-        //set routine or date if set
-        modelServer.setDate(workout.getDate());
-        modelServer.setRoutineId(workout.getRoutineId());
-        modelServer.setDayInRoutine(workout.getDayInRoutine());
-        
-      }
-
-      //reset time from date
-      Date d = modelServer.getDate();
-      if(d != null) {
-        d.setHours(0);
-        d.setMinutes(0);
-        d.setSeconds(0);
-        modelServer.setDate(d);
-      }
-
-      //save user
-      modelServer.setUid(UID);
-
-      //save workout to db
-      modelServer = pm.makePersistent(modelServer);
-
-      //if workouts set -> add those
-      if(workout.getExercises() != null) {
-        for(ExerciseModel e : workout.getExercises()) {
-          //new workout
-          if(e.getId() == 0) {
-            e.setWorkoutId(modelServer.getId());
-            this.addExercise(e);
-          }
-        }
-      }
-      
-      //convert to client side model (which we return)
-      m = Workout.getClientModel(modelServer);
-    }
-    catch (Exception e) {
-      log.log(Level.SEVERE, "addWorkout", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-      throw new ConnectionException("addWorkout", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    return model;
   }
   
   /**
@@ -5299,105 +5212,6 @@ public class AllServiceImpl extends RemoteServiceServlet implements AllService {
   }
   
   /**
-   * Return guide values
-   * @param date : if null -> all values are returned
-   * @return values
-   * @throws ConnectionException 
-   */
-  @Override @SuppressWarnings("unchecked")
-  public List<GuideValueModel> getGuideValues(String uid, int index, Date date) throws ConnectionException {
-
-    log.log(Level.FINE, "getGuideValues()");
-
-    List<GuideValueModel> list = new ArrayList<GuideValueModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-
-    //check permission
-    if(!hasPermission(1, UID, uid)) {
-      return null;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Query q = pm.newQuery(GuideValue.class);
-
-      List<GuideValue> values = null;
-      
-      if(date != null) {
-        //strip dates
-        final Date d1 = stripTime(date, true);
-        final long d2 = d1.getTime();
-
-        q.setFilter("openId == openIdParam && dateStart <= dateStartParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam");
-        values = (List<GuideValue>) q.execute(uid, d1);
-        
-        //check if this date has training
-        boolean hasTraining = hasTraining(uid, date);
-
-        if(values != null) {
-          for(GuideValue m : values) {
-            
-            //check if date end bigger than given date
-            if(m.getDateEnd().getTime() >= d2) {
-              final GuideValueModel mClient = GuideValue.getClientModel(m);
-              //if date set -> set also hasTraining variable
-              mClient.setHasTraining(hasTraining);
-              list.add( mClient );
-
-              break;
-            }
-          }
-        }
-      }
-      //return all values
-      else {
-        q.setFilter("openId == openIdParam");
-        q.declareParameters("java.lang.String openIdParam");
-        q.setOrdering("dateStart DESC");
-        q.setRange(index, index + Constants.LIMIT_GUIDE_VALUES + 1);
-        values = (List<GuideValue>) q.execute(uid);
-
-        if(values != null) {
-          int i = 0;
-          for(GuideValue m : values) {
-            //if limit reached -> add null value
-            if(i == Constants.LIMIT_GUIDE_VALUES) {
-              list.add(null);
-              break;
-            }
-            
-            final GuideValueModel mClient = GuideValue.getClientModel(m);
-            list.add( mClient );
-            i++;
-          }
-        }
-      }
-
-    } catch (Exception e) {
-      log.log(Level.SEVERE, "getGuideValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-      throw new ConnectionException("getGuideValues", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return list;
-    
-  }
-  
-  /**
    * Returns single meal
    * @param mealId
    * @return
@@ -6956,221 +6770,6 @@ public class AllServiceImpl extends RemoteServiceServlet implements AllService {
 
     return list;
 
-  }
-
-  /**
-   * Returns single workout
-   * @param workoutId
-   * @return
-   * @throws ConnectionException 
-   */
-  @Override public WorkoutModel getWorkout(Long workoutId) throws ConnectionException {
-
-    log.log(Level.FINE, "getWorkout()");
-    
-    WorkoutModel m = null;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      final Workout w = pm.getObjectById(Workout.class, workoutId);
-      if(w != null) {
-        if(hasPermission(0, UID, w.getUid())) {
-          m = Workout.getClientModel(w);
-        }
-      }
-    } catch (Exception e) {
-      log.log(Level.SEVERE, "getWorkout", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-      throw new ConnectionException("getWorkout", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
-  }
-
-  /**
-   * Returns all workouts that aren't in calendar
-   * @param routine : if null returns all workouts
-   * @return workouts' models (if routine set -> also exercises are returned)
-   * @throws ConnectionException 
-   */
-  @SuppressWarnings("unchecked")
-  @Override
-  public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException {
-
-    log.log(Level.FINE, "getWorkouts()");
-
-    List<WorkoutModel> list = new ArrayList<WorkoutModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Workout.class);
-
-      List<Workout> workouts = null;
-      //if from single routine
-      if(routine != null) {
-        
-        //get routine so we know is it shared
-        Routine r = pm.getObjectById(Routine.class, routine.getId());
-        if(r == null) {
-          throw new Exception();
-        }
-        
-        //check permission if not our routine
-        if(!r.getUid().equals(UID)) {
-          boolean hasPermission = hasPermission(0, UID, r.getUid());
-          
-          //if no permission for the routine -> return empty list
-          if(!hasPermission) {
-            throw new Exception();
-          }
-        }
-
-        q.setFilter("date == null && routineId == routineIdParam");
-        q.declareParameters("java.lang.Long routineIdParam");
-        workouts = (List<Workout>) q.execute(r.getId());
-        
-      }
-      //all single workouts
-      else {
-        q.setFilter("date == null && routineId == 0 && openId == openIdParam");
-        q.declareParameters("java.lang.String openIdParam");
-        q.setRange(index, 100);
-        workouts = (List<Workout>) q.execute(UID);
-      }
-
-      Collections.sort(workouts);
-      
-      int i = 0;
-      for(Workout w : workouts) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_WORKOUTS) {
-          list.add(null);
-          break;
-        }
-
-        WorkoutModel m = getSingleWorkout(pm, w, (routine != null));
-          
-        list.add(m);
-        
-        i++;
-      }
-      
-    } catch (Exception e) {
-      log.log(Level.SEVERE, "getWorkouts", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-      throw new ConnectionException("getWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return list;
-  }
-
-  /**
-   * Get workouts in calendar between dates
-   * @param uid : who's workouts
-   * @param dateStart
-   * @param dateEnd
-   * @return workoutmodels in each days ( model[days][day's workouts] )
-   * @throws ConnectionException 
-   */
-  @SuppressWarnings("unchecked")
-  @Override
-  public List<WorkoutModel[]> getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd) throws ConnectionException {
-
-    log.log(Level.FINE, "getWorkoutsInCalendar()");
-
-    List<WorkoutModel[]> list = new ArrayList<WorkoutModel[]>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
-    //check dates
-    if(dateStart.getTime() > dateEnd.getTime()) {
-      return null;
-    }
-
-    //check permission
-    if(!hasPermission(0, UID, uid)) {
-      return null;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //go through days
-      final int days = (int)((dateEnd.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-      
-      for(int i=0; i < days; i++) {
-        
-        final Date d = new Date((dateStart.getTime() / 1000 + 3600 * 24 * i) * 1000);
-        //strip time
-        final Date dStart = stripTime(d, true);
-        final Date dEnd = stripTime(d, false);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-        List<Workout> workouts = (List<Workout>) q.execute(uid, dStart, dEnd);
-
-        //convert to client side models
-        WorkoutModel[] arr = new WorkoutModel[workouts.size()];
-        int c = 0;
-        for(Workout w : workouts) {
-          //fetch exercises if single day
-          WorkoutModel m = getSingleWorkout(pm, w, (days == 1));
-
-          arr[c] = m;
-          c++;
-        }
-        list.add(arr);
-      }
-      
-    } catch (Exception e) {
-      log.log(Level.SEVERE, "getWorkoutsInCalendar", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-      throw new ConnectionException("getWorkoutsInCalendar", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    return list;
   }
 
   /**
@@ -9904,11 +9503,10 @@ public class AllServiceImpl extends RemoteServiceServlet implements AllService {
    * @param model to be updated
    * @return update successfull
    */
-  @SuppressWarnings("deprecation")
   @Override
   public Boolean updateWorkout(WorkoutModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "updateWorkout()");
+    log.log(Level.FINE, "Updating workout");
     
     boolean ok = false;
     
@@ -9919,78 +9517,22 @@ public class AllServiceImpl extends RemoteServiceServlet implements AllService {
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    //try to update X times
-    int retries = Constants.LIMIT_UPDATE_RETRIES;
-    while (true) {
+    
+    try {
+      StoreTraining.updateWorkout(pm, model, UID);
       
-      Transaction tx = pm.currentTransaction();
-      tx.begin();
-      
-      try {
-       
-        Workout w = pm.getObjectById(Workout.class, model.getId());
-        if(w != null) {
-          //check if correct user
-          if(w.getUid().equals(UID)) {
-  
-            //reset time from date
-            Date d = model.getDate();
-            if(d != null) {
-              d.setHours(0);
-              d.setMinutes(0);
-              d.setSeconds(0);
-            }
-            
-            //update workout
-            w.setDate(d);
-            w.setDone(model.getDone());
-            w.setName(model.getName());
-            w.setRating(model.getRating());
-            w.setRoutineId( model.getRoutineId() );
-            w.setTimeEnd((long) model.getTimeEnd());
-            w.setTimeStart((long) model.getTimeStart());
-            
-            pm.makePersistent(w);
-            ok = true;
-          }
-        }
-        
-        pm.flush();
-        tx.commit();
-        
-        break;
-  
-      }
-      catch (Exception e) {
-        log.log(Level.SEVERE, "updateWorkout", e);
-        
-        //retries used
-        if (retries == 0) {
-          if (!pm.isClosed()) {
-            pm.close();
-          } 
-          
-          throw new ConnectionException("updateWorkout", e.getMessage());
-        }
-        
-        --retries;
-        
-        //small delay between retries
-        try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
-        }
-        catch(Exception ex) { }
-      }
-      finally {
-        if (tx.isActive()) {
-          tx.rollback();
-        }
-      }
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "updateWorkout", e);
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+      throw new ConnectionException("updateWorkout", e.getMessage());
     }
-    if (!pm.isClosed()) {
-      pm.close();
-    } 
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
     
     return ok;
   }
@@ -10074,31 +9616,6 @@ public class AllServiceImpl extends RemoteServiceServlet implements AllService {
       } 
     }
     return id;
-  }
-
-  /**
-   * Checks if current date has training (used for determining guide value)
-   * @param date
-   * @return
-   * @throws ConnectionException 
-   */
-  private boolean hasTraining(String uid, Date date) {
-
-    log.log(Level.FINE, "hasTraining()");
-  
-    boolean hasTraining = false;
-    
-    try {
-      //check if this date has workouts
-      hasTraining = this.getWorkoutsInCalendar(uid, date, date).get(0).length > 0;
-      
-      //TODO check also if day contains cardio!
-      
-    } catch (Exception e) {
-      log.log(Level.SEVERE, "hasTraining", e);
-    }
-    
-    return hasTraining;
   }
   
   /**

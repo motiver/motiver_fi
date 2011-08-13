@@ -8,7 +8,6 @@
 package com.delect.motiver.server.service;
 
 import com.delect.motiver.client.service.MyService;
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class MyServiceImpl extends AllServiceImpl implements MyService {
 

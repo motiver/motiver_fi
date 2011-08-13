@@ -98,5 +98,14 @@ public class UserView extends UserPresenter.UserDisplay {
 	public void setSmallPicture(boolean smallPicture) {
 		this.smallPicture = smallPicture;
 	}
+
+  /* (non-Javadoc)
+   * @see com.delect.motiver.client.presenter.UserPresenter.UserDisplay#showDeleteIcon()
+   */
+  @Override
+  public void showDeleteIcon() {
+    // TODO Auto-generated method stub
+    
+  }
 	
 }

@@ -7,7 +7,7 @@
 package com.delect.motiver.client.service;
 
 // TODO: Auto-generated Javadoc
-public interface MyServiceAsync extends AllServiceAsync {
+public interface MyServiceAsync extends AllServiceAsync, TrainingServiceAsync, NutritionServiceAsync {
   
   
 }

@@ -36,7 +36,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * @author Antti
  *
  */
-public interface AllServiceAsync {
+public interface AllServiceAsync extends TrainingServiceAsync, NutritionServiceAsync {
 
   public Request getUser(AsyncCallback<UserModel> callback);
   
@@ -531,18 +531,6 @@ public interface AllServiceAsync {
   public Request removeUserFromCircle(int target, String uid, AsyncCallback<Boolean> callback);
   
   
-  /**
-   * Return guide values.
-   *
-   * @param uid the uid
-   * @param index the index
-   * @param date : if null -> all values are returned
-   * @param callback the callback
-   * @return values
-   */
-  public Request getGuideValues(String uid, int index, Date date, AsyncCallback<List<GuideValueModel>> callback);
-  
-  
   
   /**
    * Returns single meal.
@@ -763,36 +751,6 @@ public interface AllServiceAsync {
    */
   public Request getTrainees(AsyncCallback<List<UserModel>> callback);
   
-  /**
-   * Returns single workout.
-   *
-   * @param workoutId the workout id
-   * @param callback the callback
-   * @return the workout
-   */
-  public Request getWorkout(Long workoutId, AsyncCallback<WorkoutModel> callback);
-  
-  /**
-   * Returns all workouts that aren't in calendar.
-   *
-   * @param index the index
-   * @param routine the routine
-   * @param callback the callback
-   * @return workouts' models
-   */
-  public Request getWorkouts(int index, RoutineModel routine, AsyncCallback<List<WorkoutModel>> callback);
-  
-  /**
-   * Get workouts in calendar between dates.
-   *
-   * @param uid : who's workouts
-   * @param dateStart the date start
-   * @param dateEnd the date end
-   * @param callback the callback
-   * @return workoutmodels in each days ( model[days][day's workouts] )
-   */
-  public Request getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd, AsyncCallback<List<WorkoutModel[]>> callback);
-
   
   /**
    * Removes cardio.
