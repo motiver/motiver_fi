@@ -53,7 +53,6 @@ public class MainPagePresenter extends Presenter {
 
 	private CommentsFeedPresenter commentsFeedPresenter;
 	private MainPageDisplay display;
-	private FriendsListPresenter friendsListPresenter;
 
 	private long timeLastBlogShow;
 
@@ -69,7 +68,6 @@ public class MainPagePresenter extends Presenter {
 
     activityFeedPresenter = new ActivityFeedPresenter(rpcService, eventBus, (ActivityFeedDisplay)GWT.create(ActivityFeedView.class), AppController.User.getUid());
     commentsFeedPresenter = new CommentsFeedPresenter(rpcService, eventBus, (CommentsFeedDisplay)GWT.create(CommentsFeedView.class));
-    friendsListPresenter = new FriendsListPresenter(rpcService, eventBus, (FriendsListDisplay)GWT.create(FriendsListView.class));
 	    
 	}
 
@@ -105,7 +103,6 @@ public class MainPagePresenter extends Presenter {
 
     activityFeedPresenter.run(display.getBodyContainer());
     commentsFeedPresenter.run(display.getCommentsContainer());
-    friendsListPresenter.run(display.getFriendsContainer());
 	    
 	}
 
@@ -117,9 +114,6 @@ public class MainPagePresenter extends Presenter {
     }
 		if(commentsFeedPresenter != null) {
 			commentsFeedPresenter.stop();
-    }
-		if(friendsListPresenter != null) {
-			friendsListPresenter.stop();
     }
 	}
 
