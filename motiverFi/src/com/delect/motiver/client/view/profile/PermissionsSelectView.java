@@ -48,7 +48,7 @@ public class PermissionsSelectView extends PermissionsSelectPresenter.Permission
 	  tfSearch.setAutoValidate(true);
 	  tfSearch.setMinLength(Constants.LIMIT_MIN_QUERY_WORD);
 	  tfSearch.setMessageTarget("none");
-	  tfSearch.setAutoWidth(true);
+	  tfSearch.setWidth("775px");
 	  tfSearch.setEmptyText(AppController.Lang.SearchUsers());
 	  tfSearch.addListener(Events.Valid, new Listener<BaseEvent>() {
       @Override
@@ -58,7 +58,7 @@ public class PermissionsSelectView extends PermissionsSelectPresenter.Permission
         }
       }
 	  });
-	  this.add(tfSearch, new RowData(1, -1, new Margins(10)));
+	  this.add(tfSearch, new RowData(-1, -1, new Margins(10)));
 	  
 	  //search results
 	  panelUsers.setStyleAttribute("min-height", "100px");
