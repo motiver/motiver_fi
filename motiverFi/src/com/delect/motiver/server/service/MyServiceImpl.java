@@ -8472,15 +8472,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   public ExerciseModel updateExercise(ExerciseModel exercise) throws ConnectionException {
 
     log.log(Level.FINE, "Updating exercise");
-
-    ExerciseModel m = null;
     
     //get uid
     final Object[] obj = getUidAndLocale();
     final String UID = (String)obj[0];
     final String LOCALE = (String)obj[1];
     if(UID == null) {
-      return m;
+      return null;
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
@@ -8504,7 +8502,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
     
-    return m;
+    return exercise;
   }
 
   /**

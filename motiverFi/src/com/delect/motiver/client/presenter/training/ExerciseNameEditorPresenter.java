@@ -7,6 +7,7 @@
 package com.delect.motiver.client.presenter.training;
 
 import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.http.client.Request;
 
 import com.delect.motiver.client.MyAsyncCallback;
 import com.delect.motiver.client.presenter.Presenter;
@@ -79,7 +80,7 @@ public class ExerciseNameEditorPresenter extends Presenter {
 			}
 			@Override
 			public void nameSaved(ExerciseNameModel model) {
-				rpcService.addExercisename(model, new MyAsyncCallback<ExerciseNameModel>() {
+				final Request req = rpcService.addExercisename(model, new MyAsyncCallback<ExerciseNameModel>() {
 					@Override
 					public void onSuccess(ExerciseNameModel result) {
 						stop();
@@ -89,6 +90,7 @@ public class ExerciseNameEditorPresenter extends Presenter {
 						}
 					}
 				});
+				addRequest(req);
 			}
 		});
 	}

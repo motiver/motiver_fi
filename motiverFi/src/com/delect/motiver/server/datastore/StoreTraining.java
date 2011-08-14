@@ -52,6 +52,7 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading workout: "+workoutId);
+      System.out.println("Loading workout: "+workoutId);
     }
     
     WorkoutModel model = null;
@@ -124,6 +125,7 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading exercise name: "+nameId);
+      System.out.println("Loading exercise name: "+nameId);
     }
     
     ExerciseNameModel model = null;
@@ -165,6 +167,7 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Updating workout: "+model.getId());
+      System.out.println("Updating workout: "+model.getId());
     }
       
     //try to update X times
@@ -259,6 +262,7 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Removing workout: "+workoutId);
+      System.out.println("Removing workout: "+workoutId);
     }
     
     boolean ok = false;
@@ -337,7 +341,10 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Updating exercise: "+exercise.getId());
+      System.out.println("Updating exercise: "+exercise.getId());
     }
+    
+    System.out.println(exercise.getName().getId());
       
     //try to update X times
     int retries = Constants.LIMIT_UPDATE_RETRIES;
@@ -356,6 +363,16 @@ public class StoreTraining {
             throw new NoPermissionException(Permission.WRITE_TRAINING, userUid, e.getWorkout().getUid());
           }
           
+          //update name if changed
+          if(exercise.getName() != null && exercise.getName().getId() != e.getNameId().longValue()) {
+            ExerciseNameModel n = getExerciseNameModel(pm, exercise.getName().getId());
+            tx.commit();
+            tx.begin();
+            
+            e.setNameId(n.getId());
+            exercise.setName(n);
+          }
+          
           //update exercise
           e.setSets(exercise.getSets());
           e.setReps(exercise.getReps());
@@ -363,12 +380,6 @@ public class StoreTraining {
           e.setRest(exercise.getRest());
           e.setWeights(exercise.getWeights());
           e.setInfo(exercise.getInfo());
-          
-          //update name
-          if(exercise.getName() != null && exercise.getName().getId() != e.getId().longValue()) {
-            ExerciseNameModel n = addExerciseNameModel(pm, exercise.getName(), userUid, locale);
-            e.setNameId(n.getId());
-          }
           
           tx.commit();
           
@@ -407,7 +418,8 @@ public class StoreTraining {
         catch(Exception ignored) { }
       }
     }
-    
+
+    System.out.println(exercise.getName().getId());
     return exercise;
   }
   
@@ -425,6 +437,7 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Adding exercise name: '"+model.getName()+" "+model.getTarget()+"'");
+      System.out.println("Adding exercise name: '"+model.getName()+" "+model.getTarget()+"'");
     }
     
     //check if similar found
@@ -449,6 +462,10 @@ public class StoreTraining {
       mServer.setLocale(locale);
       mServer.setUid(uid);
       pm.makePersistent(mServer);
+
+      //save to memcache
+      WeekCache cache = new WeekCache();
+      cache.addExerciseName(mServer);
       
       nameId = mServer.getId();      
     }
@@ -472,6 +489,7 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Adding exercise: '"+model.getId()+"'");
+      System.out.println("Adding exercise: '"+model.getId()+"'");
     }
 
     Exercise modelServer = Exercise.getServerModel(model);
@@ -496,16 +514,20 @@ public class StoreTraining {
             throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
           }
           
+          //if new name
+          if(model.getName() != null && model.getName().getId() == 0) {
+            name = addExerciseNameModel(pm, model.getName(), uid, locale);
+            tx.commit();
+            tx.begin();
+            
+            modelServer.setNameId(name.getId());            
+          }
+
+          
           //if no exercises
           if(w.getExercises() == null) {
             List<Exercise> list = new ArrayList<Exercise>();
             w.setExercises(list);
-          }
-          
-          //if new name
-          if(model.getName() != null && model.getName().getId() == 0) {
-            name = addExerciseNameModel(pm, model.getName(), uid, locale);
-            modelServer.setNameId(name.getId());
           }
           
           //add exercise
@@ -568,6 +590,7 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Removing exercise: "+exercise.getId());
+      System.out.println("Removing exercise: "+exercise.getId());
     }
     
     boolean ok = false;
