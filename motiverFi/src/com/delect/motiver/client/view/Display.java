@@ -113,11 +113,11 @@ public abstract class Display extends LayoutContainer {
 	      scrollMore = false;
 	    }
 	  }
-	  //scrolling down
+	  //scrolling down (stop if panel's top is on top of the screen)
 	  else {
       current += 15;
-      if(current > target) {
-        current = target;
+      if(current > target || current >= this.getAbsoluteTop()-50) {
+        current = Window.getScrollTop();
         scrollMore = false;
       }
 	  }
