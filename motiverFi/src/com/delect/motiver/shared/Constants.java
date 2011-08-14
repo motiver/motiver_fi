@@ -8,6 +8,7 @@ package com.delect.motiver.shared;
 
 import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
+import com.google.gwt.user.client.Window;
 
 public interface Constants {
 

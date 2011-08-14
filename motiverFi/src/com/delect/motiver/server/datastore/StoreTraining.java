@@ -160,10 +160,11 @@ public class StoreTraining {
    * Updates single workout. If workout is not found, new workout is created
    * @param pm
    * @param workout
+   * @param uid : who is asking
    * @return added / updated workotu
    */
   @SuppressWarnings("deprecation")
-  public static WorkoutModel updateWorkoutModel(PersistenceManager pm, WorkoutModel model, String userUid) throws Exception {
+  public static WorkoutModel updateWorkoutModel(PersistenceManager pm, WorkoutModel model, String uid) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Updating workout: "+model.getId());
@@ -184,8 +185,8 @@ public class StoreTraining {
         if(w != null) {
           
           //check permission
-          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, userUid, w.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_TRAINING, userUid, w.getUid());
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
           }
           
           //reset time from date
@@ -208,8 +209,12 @@ public class StoreTraining {
           pm.makePersistent(w);
           tx.commit();
 
+          //save to cache
+          WeekCache cache = new WeekCache();
+          cache.removeWorkoutModel(w.getId());
+          
           //get client side model
-          model = Workout.getClientModel(w);
+          model = getWorkoutModel(pm, w.getId(), uid);
           
           break;
         }
