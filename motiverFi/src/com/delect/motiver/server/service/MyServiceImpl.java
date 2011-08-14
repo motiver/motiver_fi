@@ -86,6 +86,7 @@ import com.delect.motiver.shared.TicketModel;
 import com.delect.motiver.shared.TimeModel;
 import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.exception.NoPermissionException;
 import com.google.appengine.api.urlfetch.HTTPHeader;
 import com.google.appengine.api.urlfetch.HTTPMethod;
 import com.google.appengine.api.urlfetch.HTTPRequest;
@@ -692,65 +693,65 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param fetchExercises : if exercises are also fetched
    * @return
    */
-  @SuppressWarnings("unchecked")
-  private static WorkoutModel getSingleWorkout(PersistenceManager pm, Workout w, boolean fetchExercises) {
-
-    log.log(Level.FINE, "getSingleWorkout()");
-    
-    WorkoutModel m = Workout.getClientModel(w);
-
-    //fetch exercises
-    if(fetchExercises) {
-
-      try {
-        
-      List<ExerciseModel> listEClient = new ArrayList<ExerciseModel>();
-      List<Exercise> listE = w.getExercises();
-      if(listE != null) {
-        //fetch names first
-        List<Long> arrNameId = new ArrayList<Long>();
-        for(Exercise e : listE) {
-          if(e.getNameId() != 0 && !arrNameId.contains(e.getNameId())) {
-            arrNameId.add(e.getNameId());
-          }
-        }
-        
-        List<ExerciseName> exercises = null;
-          Query query = pm.newQuery(ExerciseName.class);
-          query.setFilter("idParam.contains(id)");
-          query.declareParameters("java.lang.Long idParam");
-          exercises = (List<ExerciseName>) query.execute(arrNameId);
-
-        //go through each exercise
-        for(Exercise exercise : listE) {
-          ExerciseModel eNew = Exercise.getClientModel(exercise);
-          
-          //set correct workout id
-          eNew.setWorkoutId(w.getId());
-          eNew.setUid(w.getUid());
-          
-          //get name from array
-          if(exercise.getNameId() != 0 && exercises != null) {
-            for(ExerciseName en : exercises) {
-              if(en.getId().longValue() == exercise.getNameId().longValue()) {
-                eNew.setName(ExerciseName.getClientModel(en));
-                break;
-              }
-            }
-          }
-          listEClient.add(eNew);
-        }
-        
-      }
-      m.setExercises(listEClient);
-      
-      } catch (Exception e1) {
-        log.log(Level.SEVERE, "getSingleWorkout", e1);
-      }
-    }
-    
-    return m;
-  }
+//  @SuppressWarnings("unchecked")
+//  private static WorkoutModel getSingleWorkout(PersistenceManager pm, Workout w, boolean fetchExercises) {
+//
+//    log.log(Level.FINE, "getSingleWorkout()");
+//    
+//    WorkoutModel m = Workout.getClientModel(w);
+//
+//    //fetch exercises
+//    if(fetchExercises) {
+//
+//      try {
+//        
+//      List<ExerciseModel> listEClient = new ArrayList<ExerciseModel>();
+//      List<Exercise> listE = w.getExercises();
+//      if(listE != null) {
+//        //fetch names first
+//        List<Long> arrNameId = new ArrayList<Long>();
+//        for(Exercise e : listE) {
+//          if(e.getNameId() != 0 && !arrNameId.contains(e.getNameId())) {
+//            arrNameId.add(e.getNameId());
+//          }
+//        }
+//        
+//        List<ExerciseName> exercises = null;
+//          Query query = pm.newQuery(ExerciseName.class);
+//          query.setFilter("idParam.contains(id)");
+//          query.declareParameters("java.lang.Long idParam");
+//          exercises = (List<ExerciseName>) query.execute(arrNameId);
+//
+//        //go through each exercise
+//        for(Exercise exercise : listE) {
+//          ExerciseModel eNew = Exercise.getClientModel(exercise);
+//          
+//          //set correct workout id
+//          eNew.setWorkoutId(w.getId());
+//          eNew.setUid(w.getUid());
+//          
+//          //get name from array
+//          if(exercise.getNameId() != 0 && exercises != null) {
+//            for(ExerciseName en : exercises) {
+//              if(en.getId().longValue() == exercise.getNameId().longValue()) {
+//                eNew.setName(ExerciseName.getClientModel(en));
+//                break;
+//              }
+//            }
+//          }
+//          listEClient.add(eNew);
+//        }
+//        
+//      }
+//      m.setExercises(listEClient);
+//      
+//      } catch (Exception e1) {
+//        log.log(Level.SEVERE, "getSingleWorkout", e1);
+//      }
+//    }
+//    
+//    return m;
+//  }
 
   /**
    * Get trainees token -> can be used in coachmode -> when we want trainee's token and client has given only our own token
@@ -1270,77 +1271,34 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   public ExerciseModel addExercise(ExerciseModel exercise) throws ConnectionException {
 
     log.log(Level.FINE, "addExercise()");
-
-    ExerciseModel m = null;
     
     //get uid
-    final String UID = getUid();
+    final Object[] obj = getUidAndLocale();
+    final String UID = (String)obj[0];
+    final String LOCALE = (String)obj[1];
     if(UID == null) {
-      return m;
+      return null;
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
-    Transaction tx = null;
     
     try {
-      //convert to server side model
-      Exercise modelServer = Exercise.getServerModel(exercise);
-      ExerciseNameModel mName = exercise.getName();
-      
-      //get workout
-      Workout w = pm.getObjectById(Workout.class, exercise.getWorkoutId());
-      if(w != null) {
-        //if no exercises
-        if(w.getExercises() == null) {
-          List<Exercise> list = new ArrayList<Exercise>();
-          w.setExercises(list);
-        }
-        
-        //if no exercise name ID
-        if(modelServer.getNameId() == 0) {
-          mName = this.addExercisename(exercise.getName());
-          //update name/target
-          modelServer.setNameId(mName.getId());
-        }
-        
-        //add exercise
-        w.getExercises().add(modelServer);
-
-        //save to db
-        tx = pm.currentTransaction();
-        tx.begin();
-        Workout wNew = pm.makePersistent(w);
-        tx.commit();
-        
-        //get added exercise
-        Exercise eNew = wNew.getExercises().get(wNew.getExercises().size() - 1);
-        m = Exercise.getClientModel(eNew);
-        m.setName(mName);
-        m.setWorkoutId(exercise.getWorkoutId());
-        m.setUid(UID);
-        
-      }
+      exercise = StoreTraining.addExerciseModel(pm, exercise, UID, LOCALE);
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addExercise", e);
-      if (tx != null && tx.isActive())  {
-              tx.rollback(); 
-      }
+      log.log(Level.SEVERE, "Error adding exercise", e);
       if (!pm.isClosed()) {
         pm.close();
       }
       throw new ConnectionException("addExercise", e.getMessage());
     }
     finally {
-      if (tx != null && tx.isActive())  {
-              tx.rollback(); 
-      }
       if (!pm.isClosed()) {
         pm.close();
       } 
     }
     
-    return m;
+    return exercise;
   }
 
   /**
@@ -4477,168 +4435,156 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         int i=0;
         for(Comment cc : comments) {
           
-          //if limit reached -> add null value
-          if(i == limit) {
-            list.add(null);
-            break;
-          }
-          
-          CommentModel c = Comment.getClientModel(cc);
-          
-          //is unread? (if not our comment and meant for us)
-          if(!UID.equals(c.getUid()) && UID.equals(c.getUidTarget())) {
-            Query qUnread = pm.newQuery(CommentsRead.class); 
-            qUnread.setFilter("comment == commentParam && openId == openIdParam");
-            qUnread.declareParameters("com.google.appengine.api.datastore.Key commentParam, java.lang.String openIdParam");
-            qUnread.setRange(0, 1);
-            List<CommentsRead> unreads = (List<CommentsRead>)qUnread.execute(cc.getKey(), UID);
-            c.setUnread(unreads.size() == 0);
+          try {
+            //if limit reached -> add null value
+            if(i == limit) {
+              list.add(null);
+              break;
+            }
+            
+            CommentModel c = Comment.getClientModel(cc);
+            
+            //is unread? (if not our comment and meant for us)
+            if(!UID.equals(c.getUid()) && UID.equals(c.getUidTarget())) {
+              Query qUnread = pm.newQuery(CommentsRead.class); 
+              qUnread.setFilter("comment == commentParam && openId == openIdParam");
+              qUnread.declareParameters("com.google.appengine.api.datastore.Key commentParam, java.lang.String openIdParam");
+              qUnread.setRange(0, 1);
+              List<CommentsRead> unreads = (List<CommentsRead>)qUnread.execute(cc.getKey(), UID);
+              c.setUnread(unreads.size() == 0);
 
-            //mark this as read
-            if(markAsRead && unreads.size() == 0) {
-              CommentsRead cr = new CommentsRead();
-              cr.setComment(cc.getKey());
-              cr.setUid(UID);
-              pm.makePersistent(cr);
+              //mark this as read
+              if(markAsRead && unreads.size() == 0) {
+                CommentsRead cr = new CommentsRead();
+                cr.setComment(cc.getKey());
+                cr.setUid(UID);
+                pm.makePersistent(cr);
+              }
             }
+                  
+            //if all comments -> don't return user's own comments
+            if(target != null || !UID.equals(c.getUid())) {
+              
+              //if all comments -> cut long texts
+              if(target == null) {
+                String text = c.getText();
+                if(text.length() > Constants.LIMIT_COMMENT_LENGTH) {
+                  text = text.substring(0, Constants.LIMIT_COMMENT_LENGTH - 2) + "...";
+                  c.setText(text);
+                }
+              }
+              
+              String xid = cc.getTarget();
+              if(xid == null) {
+                xid = "";
+              }
+              
+              boolean found = false;
+              
+              //get model//workout
+              if(xid.matches("w[0-9]*")) {
+                final long id = Long.parseLong(xid.replace("w", ""));
+                WorkoutModel w = StoreTraining.getWorkoutModel(pm, id, UID);
+                if(w != null) {
+                  found = true;
+                  c.setWorkout( w );
+                }
+              }
+              //routine
+              else if(xid.matches("r[0-9]*")) {
+                final long id = Long.parseLong(xid.replace("r", ""));
+                Routine r = pm.getObjectById(Routine.class, id);
+                if(r != null) {
+                  //check permission
+                  boolean hasPermission = true;
+                  if(!r.getUid().equals(UID)) {
+                    hasPermission = hasPermission(0, UID, r.getUid());
+                  }
+                  if(hasPermission) {
+                    found = true;
+                    c.setRoutine( Routine.getClientModel(r) );
+                  }
+                }
+              }
+              //meal
+              else if(xid.matches("m[0-9]*")) {
+                final long id = Long.parseLong(xid.replace("m", ""));
+                Meal m = pm.getObjectById(Meal.class, id);
+                if(m != null) {
+                  //check permission
+                  boolean hasPermission = true;
+                  if(!m.getUid().equals(UID)) {
+                    hasPermission = hasPermission(1, UID, m.getUid());
+                  }
+                  if(hasPermission) {
+                    found = true;
+                    c.setMeal( Meal.getClientModel(m) );
+                  }
+                }
+              }
+              //measurement
+              else if(xid.matches("me[0-9]*")) {
+                final long id = Long.parseLong(xid.replace("me", ""));
+                Measurement m = pm.getObjectById(Measurement.class, id);
+                if(m != null) {
+                  //check permission
+                  boolean hasPermission = true;
+                  if(!m.getUid().equals(UID)) {
+                    hasPermission = hasPermission(4, UID, m.getUid());
+                  }
+                  if(hasPermission) {
+                    found = true;
+                    c.setMeasurement( Measurement.getClientModel(m) );
+                  }
+                }
+              }
+              //cardio
+              else if(xid.matches("c[0-9]*")) {
+                final long id = Long.parseLong(xid.replace("c", ""));
+                Cardio m = pm.getObjectById(Cardio.class, id);
+                if(m != null) {
+                  //check permission
+                  boolean hasPermission = true;
+                  if(!m.getUid().equals(UID)) {
+                    hasPermission = hasPermission(3, UID, m.getUid());
+                  }
+                  if(hasPermission) {
+                    found = true;
+                    c.setCardio( Cardio.getClientModel(m) );
+                  }
+                }
+              }
+              //run
+              else if(xid.matches("ru[0-9]*")) {
+                final long id = Long.parseLong(xid.replace("ru", ""));
+                Run m = pm.getObjectById(Run.class, id);
+                if(m != null) {
+                  //check permission
+                  boolean hasPermission = true;
+                  if(!m.getUid().equals(UID)) {
+                    hasPermission = hasPermission(3, UID, m.getUid());
+                  }
+                  if(hasPermission) {
+                    found = true;
+                    c.setRun( Run.getClientModel(m) );
+                  }
+                }
+              }
+              //nutrition
+              else if(xid.matches("n[0-9]*")) {
+                final Date d = new Date(Long.parseLong(xid.replace("n", "")) * 1000);
+                c.setNutritionDate(d);
+                found = true;
+              }
+              
+              if(found) {
+                list.add(c);
+                i++;
+              }
+            }
+          } catch (NoPermissionException e) {
+            //no permission -> skipping this one
           }
-                
-          //if all comments -> don't return user's own comments
-          if(target != null || !UID.equals(c.getUid())) {
-            
-            //if all comments -> cut long texts
-            if(target == null) {
-              String text = c.getText();
-              if(text.length() > Constants.LIMIT_COMMENT_LENGTH) {
-                text = text.substring(0, Constants.LIMIT_COMMENT_LENGTH - 2) + "...";
-                c.setText(text);
-              }
-            }
-            
-            String xid = cc.getTarget();
-            if(xid == null) {
-              xid = "";
-            }
-            
-            boolean found = false;
-            
-            //get model//workout
-            if(xid.matches("w[0-9]*")) {
-              final long id = Long.parseLong(xid.replace("w", ""));
-              Workout w = pm.getObjectById(Workout.class, id);
-              if(w != null) {
-                //check permission
-                boolean hasPermission = true;
-                if(!w.getUid().equals(UID)) {
-                  //if in routine -> check routine permissions instead
-                  if(w.getRoutineId().longValue() != 0) {
-                    Routine r = pm.getObjectById(Routine.class, w.getRoutineId());
-                    if(r != null) {
-                      hasPermission = hasPermission(0, UID, r.getUid());
-                    }
-                  }
-                  else {
-                    hasPermission = hasPermission(0, UID, w.getUid());
-                  }
-                }
-                if(hasPermission) {
-                  found = true;
-                  c.setWorkout( Workout.getClientModel(w) );
-                }
-              }
-            }
-            //routine
-            else if(xid.matches("r[0-9]*")) {
-              final long id = Long.parseLong(xid.replace("r", ""));
-              Routine r = pm.getObjectById(Routine.class, id);
-              if(r != null) {
-                //check permission
-                boolean hasPermission = true;
-                if(!r.getUid().equals(UID)) {
-                  hasPermission = hasPermission(0, UID, r.getUid());
-                }
-                if(hasPermission) {
-                  found = true;
-                  c.setRoutine( Routine.getClientModel(r) );
-                }
-              }
-            }
-            //meal
-            else if(xid.matches("m[0-9]*")) {
-              final long id = Long.parseLong(xid.replace("m", ""));
-              Meal m = pm.getObjectById(Meal.class, id);
-              if(m != null) {
-                //check permission
-                boolean hasPermission = true;
-                if(!m.getUid().equals(UID)) {
-                  hasPermission = hasPermission(1, UID, m.getUid());
-                }
-                if(hasPermission) {
-                  found = true;
-                  c.setMeal( Meal.getClientModel(m) );
-                }
-              }
-            }
-            //measurement
-            else if(xid.matches("me[0-9]*")) {
-              final long id = Long.parseLong(xid.replace("me", ""));
-              Measurement m = pm.getObjectById(Measurement.class, id);
-              if(m != null) {
-                //check permission
-                boolean hasPermission = true;
-                if(!m.getUid().equals(UID)) {
-                  hasPermission = hasPermission(4, UID, m.getUid());
-                }
-                if(hasPermission) {
-                  found = true;
-                  c.setMeasurement( Measurement.getClientModel(m) );
-                }
-              }
-            }
-            //cardio
-            else if(xid.matches("c[0-9]*")) {
-              final long id = Long.parseLong(xid.replace("c", ""));
-              Cardio m = pm.getObjectById(Cardio.class, id);
-              if(m != null) {
-                //check permission
-                boolean hasPermission = true;
-                if(!m.getUid().equals(UID)) {
-                  hasPermission = hasPermission(3, UID, m.getUid());
-                }
-                if(hasPermission) {
-                  found = true;
-                  c.setCardio( Cardio.getClientModel(m) );
-                }
-              }
-            }
-            //run
-            else if(xid.matches("ru[0-9]*")) {
-              final long id = Long.parseLong(xid.replace("ru", ""));
-              Run m = pm.getObjectById(Run.class, id);
-              if(m != null) {
-                //check permission
-                boolean hasPermission = true;
-                if(!m.getUid().equals(UID)) {
-                  hasPermission = hasPermission(3, UID, m.getUid());
-                }
-                if(hasPermission) {
-                  found = true;
-                  c.setRun( Run.getClientModel(m) );
-                }
-              }
-            }
-            //nutrition
-            else if(xid.matches("n[0-9]*")) {
-              final Date d = new Date(Long.parseLong(xid.replace("n", "")) * 1000);
-              c.setNutritionDate(d);
-              found = true;
-            }
-            
-            if(found) {
-              list.add(c);
-              i++;
-            }
-                }
         }
       }
 
@@ -5901,20 +5847,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       int i = 0;
       for(Workout w : workouts) {
         
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_WORKOUTS) {
-          list.add(null);
-          break;
-        }
-        
-        //check permission
-        boolean hasPermission = hasPermission(0, UID, w.getUid());
-        
-        if(hasPermission) {
-          WorkoutModel m = Workout.getClientModel(w);
+        try {
+          //if limit reached -> add null value
+          if(i == Constants.LIMIT_WORKOUTS) {
+            list.add(null);
+            break;
+          }
+          
+          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
           list.add(m);
           
           i++;
+        } catch (NoPermissionException e) {
+          //no permission skipping this one
         }
       }
       
@@ -7298,8 +7243,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           q.setFilter("openId == openIdParam && routineId == routineIdParam");
           q.declareParameters("java.lang.String openIdParam, java.lang.Long routineIdParam");
           List<Workout> workouts = (List<Workout>) q.execute(UID, r.getId());
-          for(Workout mWorkout : workouts)
-            this.removeWorkout(Workout.getClientModel(mWorkout));
+          for(Workout mWorkout : workouts) {
+            StoreTraining.removeWorkoutModel(pm, mWorkout.getId(), UID);
+          }
+            
           
           ok = true;
         }
@@ -7502,7 +7449,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-      ok = StoreTraining.removeWorkoutModel(pm, model, UID);
+      ok = StoreTraining.removeWorkoutModel(pm, model.getId(), UID);
       
     } catch (Exception e) {
       log.log(Level.SEVERE, "Error removing workout", e);
@@ -8289,14 +8236,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         if(ok) {
           System.out.println(w.getName()+": 0, "+UID+", "+w.getUid());
           
-          boolean hasPermission = hasPermission(0, UID, w.getUid());
-          
-          if(hasPermission) {
-              WorkoutModel m = getSingleWorkout(pm, w, false);
-              list.add(m);
-              
+          WorkoutModel m = null;
+          try {
+            m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
+          } catch (NoPermissionException e) {
+            //no permission -> skipping
+          }
+
+          if(m != null) {
+              list.add(m);                
               i++;
-            }
+          }
+          
         }
       }
     } catch (Exception e) {
