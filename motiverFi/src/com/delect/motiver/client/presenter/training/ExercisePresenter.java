@@ -12,6 +12,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.http.client.Request;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -298,7 +299,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 		//save date from exercise
 		final Date date = exercise.getDate();
 
-		rpcService.updateExercise(exercise, new MyAsyncCallback<ExerciseModel>() {
+		final Request req = rpcService.updateExercise(exercise, new MyAsyncCallback<ExerciseModel>() {
 			@Override
 			public void onSuccess(ExerciseModel result) {
 				
@@ -318,6 +319,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 				}
 			}
 		});
+		addRequest(req);
 		
 		eventBus.fireEvent(new ExerciseUpdatedEvent(exercise));
 	}

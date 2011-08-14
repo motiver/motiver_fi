@@ -6,6 +6,7 @@
  ******************************************************************************/
 package com.delect.motiver.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -23,9 +24,14 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.WorkoutModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Workout implements Comparable<Workout> {
+public class Workout implements Serializable, Comparable<Workout> {
 	
 	/**
+   * 
+   */
+  private static final long serialVersionUID = -4265455516532989163L;
+
+  /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model

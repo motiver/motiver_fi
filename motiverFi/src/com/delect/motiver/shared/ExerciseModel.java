@@ -6,13 +6,15 @@
  ******************************************************************************/
 package com.delect.motiver.shared;
 
+import java.io.Serializable;
 import java.util.Date;
+import java.util.Map;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
 import com.extjs.gxt.ui.client.data.BaseModelData;
 
-public class ExerciseModel extends BaseModelData implements IsSerializable, Comparable<ExerciseModel> {
+public class ExerciseModel extends BaseModelData implements Serializable, Comparable<ExerciseModel> {
 	
 	/**
 	 * 
@@ -192,9 +194,6 @@ public class ExerciseModel extends BaseModelData implements IsSerializable, Comp
   public void setPersonalBest(boolean isPersonalBest) {
     set("pb", isPersonalBest);
   }
-
-
-
 	public void setWorkoutId(long id) {
 		set("wid", id);
 	}

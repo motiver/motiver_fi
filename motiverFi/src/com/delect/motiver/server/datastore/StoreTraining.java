@@ -23,6 +23,8 @@ import com.delect.motiver.server.Workout;
 import com.delect.motiver.shared.ConnectionException;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
+import com.delect.motiver.shared.ExerciseNameModel;
+import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.NoPermissionException;
 import com.delect.motiver.shared.WorkoutModel;
 
@@ -46,103 +48,109 @@ public class StoreTraining {
    * @param userUid : user who made request
    * @return
    */
-  @SuppressWarnings("unchecked")
-  public static WorkoutModel getWorkout(PersistenceManager pm, Long workoutId, String userUid) throws Exception {
+  public static WorkoutModel getWorkoutModel(PersistenceManager pm, Long workoutId, String userUid) throws Exception {
 
-    logger.log(Level.FINEST, "Fetching workout "+workoutId);
-    
-    WorkoutModel model = null;
-
-    Cache cache = WeekCache.get();
-    
-    //check if found on memcache
-    StringBuilder builder = new StringBuilder();
-    builder.append("w");
-    builder.append(workoutId);
-    Object obj = cache.get(builder.toString());
-    
-    //found
-    if(obj != null && obj instanceof WorkoutModel) {
-      model = (WorkoutModel)obj;
-      
-      //check permission
-      if(!MyServiceImpl.hasPermission(0, userUid, model.getUid())) {
-        throw new NoPermissionException(0, userUid, model.getUid());
-      }
-      
-      logger.log(Level.FINEST, "Found workout from MemCache. Returning it");      
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Loading workout: "+workoutId);
+      System.out.println("Loading workout: "+workoutId);
     }
     
+    WorkoutModel model = null;
+    
+    //load from cache
+    WeekCache cache = new WeekCache();
+    Workout w = cache.getWorkout(workoutId);
+
     //not found
-    else {
-      logger.log(Level.FINEST, "Fetching workout ("+workoutId+") from datastore");
+    if(w == null) {    
+      if(logger.isLoggable(Level.FINER)) {
+        logger.log(Level.FINER, "Not found from cache");
+      }
       
-      //fetch (+exercises)
-      final Workout w = pm.getObjectById(Workout.class, workoutId);
+      w = pm.getObjectById(Workout.class, workoutId);
+    }
+    
+    if(w != null) {
       
-      if(w != null) {
+      //check permission
+      if(!MyServiceImpl.hasPermission(pm, Permission.READ_TRAINING, userUid, w.getUid())) {
+        throw new NoPermissionException(Permission.READ_TRAINING, userUid, w.getUid());
+      }
+      
+      //get exercises
+      List<ExerciseModel> listEClient = new ArrayList<ExerciseModel>();
+      List<Exercise> listE = w.getExercises();
+      if(listE != null) {
         
-        //check permission
-        if(!MyServiceImpl.hasPermission(0, userUid, w.getUid())) {
-          throw new NoPermissionException(0, userUid, w.getUid());
-        }
-        
-        //convert to client side model
-        model = Workout.getClientModel(w);
-        
-        //get exercises
-        List<ExerciseModel> listEClient = new ArrayList<ExerciseModel>();
-        List<Exercise> listE = w.getExercises();
-        if(listE != null) {
-          //fetch names first
-          List<Long> arrNameId = new ArrayList<Long>();
-          for(Exercise e : listE) {
-            if(e.getNameId() != 0 && !arrNameId.contains(e.getNameId())) {
-              arrNameId.add(e.getNameId());
-            }
-          }
-
-          List<ExerciseName> exercises = null;
-          if(arrNameId.size() > 0) {
-            Query query = pm.newQuery(ExerciseName.class);
-            query.setFilter("idParam.contains(id)");
-            query.declareParameters("java.lang.Long idParam");
-            exercises = (List<ExerciseName>) query.execute(arrNameId);
-          }
-
-          //go through each exercise
-          for(Exercise exercise : listE) {
-            ExerciseModel eNew = Exercise.getClientModel(exercise);
-            
-            //set correct workout id
-            eNew.setWorkoutId(w.getId());
-            eNew.setUid(w.getUid());
-            
-            //get name from array
-            if(exercise.getNameId() != 0 && exercises != null) {
-              for(ExerciseName en : exercises) {
-                if(en.getId().longValue() == exercise.getNameId().longValue()) {
-                  eNew.setName(ExerciseName.getClientModel(en));
-                  break;
-                }
-              }
-            }
-            listEClient.add(eNew);
+        for(Exercise exercise : listE) {
+          ExerciseModel eNew = Exercise.getClientModel(exercise);
+          
+          //get exercisename
+          if(exercise.getNameId() > 0) {
+            eNew.setName(getExerciseNameModel(pm, exercise.getNameId()));
           }
           
+          //set correct workout id
+          eNew.setWorkoutId(w.getId());
+          eNew.setUid(w.getUid());
+          
+          listEClient.add(eNew);
         }
-        model.setExercises(listEClient);
+        
       }
-      else {
-        throw new Exception("Workout not found");
+        
+      //convert to client side model
+      model = Workout.getClientModel(w);
+      model.setUid(userUid);
+      model.setExercises(listEClient);
+      
+      //save to cache
+      cache.addWorkout(w);
+    }
+    else {
+      throw new Exception("Workout not found");
+    }
+    
+    
+    return model;
+  }
+
+  /**
+   * Returns exercise name
+   * @param pm
+   * @param nameId
+   * @throws Exception 
+   */
+  private static ExerciseNameModel getExerciseNameModel(PersistenceManager pm, Long nameId) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Loading exercise name: "+nameId);
+      System.out.println("Loading exercise name: "+nameId);
+    }
+    
+    ExerciseNameModel model = null;
+
+    //load from cache
+    WeekCache cache = new WeekCache();
+    ExerciseName n = cache.getExerciseName(nameId);
+    
+    if(n == null) {
+      if(logger.isLoggable(Level.FINER)) {
+        logger.log(Level.FINER, "Not found from cache");
       }
+      
+      n = pm.getObjectById(ExerciseName.class, nameId);
+    }
+    
+    if(n != null) {
+      //convert to client side model
+      model = ExerciseName.getClientModel(n);
       
       //save to memcache
-      if(logger.isLoggable(Level.FINEST)) {
-        logger.log(Level.FINEST, "Saving workout ("+workoutId+") to memcache");
-      }
-      cache.put(builder.toString(), model);
-      
+      cache.addExerciseName(n);
+    }
+    else {
+      throw new Exception("Exercise name not found");
     }
     
     return model;
@@ -155,16 +163,13 @@ public class StoreTraining {
    * @return added / updated workotu
    */
   @SuppressWarnings("deprecation")
-  public static WorkoutModel updateWorkout(PersistenceManager pm, WorkoutModel model, String uid) throws Exception {
+  public static WorkoutModel updateWorkoutModel(PersistenceManager pm, WorkoutModel model, String userUid) throws Exception {
 
-    if(logger.isLoggable(Level.FINEST)) {
-      logger.log(Level.FINEST, "Updating workout "+model.getName());
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Updating workout: "+model.getId());
+      System.out.println("Updating workout: "+model.getId());
     }
-    
-    Workout w = null;
-
-    w = pm.getObjectById(Workout.class, model.getId());
-
+      
     //try to update X times
     int retries = Constants.LIMIT_UPDATE_RETRIES;
     while (true) {
@@ -174,37 +179,56 @@ public class StoreTraining {
       
       try {
         
-        //reset time from date
-        Date d = model.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
+        Workout w = pm.getObjectById(Workout.class, model.getId());
+
+        if(w != null) {
+          
+          //check permission
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, userUid, w.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, userUid, w.getUid());
+          }
+          
+          //reset time from date
+          Date d = model.getDate();
+          if(d != null) {
+            d.setHours(0);
+            d.setMinutes(0);
+            d.setSeconds(0);
+          }
+          
+          //update workout
+          w.setDate(d);
+          w.setDone(model.getDone());
+          w.setName(model.getName());
+          w.setRating(model.getRating());
+          w.setRoutineId( model.getRoutineId() );
+          w.setTimeEnd((long) model.getTimeEnd());
+          w.setTimeStart((long) model.getTimeStart());
+          
+          pm.makePersistent(w);
+          tx.commit();
+
+          //get client side model
+          model = Workout.getClientModel(w);
+          
+          break;
         }
-        
-        //update workout
-        w.setDate(d);
-        w.setDone(model.getDone());
-        w.setName(model.getName());
-        w.setRating(model.getRating());
-        w.setRoutineId( model.getRoutineId() );
-        w.setTimeEnd((long) model.getTimeEnd());
-        w.setTimeStart((long) model.getTimeStart());
-        
-        pm.makePersistent(w);
-        
-        break;
+        else {
+          throw new Exception("Workout not found");
+        }
       }
       catch (Exception e) {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+        if(e instanceof NoPermissionException) {         
+          throw e;
+        }
         logger.log(Level.SEVERE, "Error updating workout", e);
         
         //retries used
         if (retries == 0) {
-          if (!pm.isClosed()) {
-            pm.close();
-          } 
-          
-          throw new ConnectionException("updateWorkout", e.getMessage());
+          throw e;
         }
         
         --retries;
@@ -221,10 +245,447 @@ public class StoreTraining {
         }
       }
     }
-
-    //get client side model
-    model = Workout.getClientModel(w);
+      
     
     return model;
+  }
+  
+  /**
+   * Removes single workout
+   * @param pm
+   * @param workout
+   * @param uid
+   * @return true if remove was successfully
+   * @throws ConnectionException 
+   */
+  public static Boolean removeWorkoutModel(PersistenceManager pm, Long workoutId, String uid) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Removing workout: "+workoutId);
+      System.out.println("Removing workout: "+workoutId);
+    }
+    
+    boolean ok = false;
+      
+    //try to update X times
+    int retries = Constants.LIMIT_UPDATE_RETRIES;
+    while (true) {
+      
+      Transaction tx = pm.currentTransaction();
+      tx.begin();
+      
+      try {
+
+        Workout w = pm.getObjectById(Workout.class, workoutId);
+        if(w != null) {
+          
+          //check permission
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
+          }
+            
+          //remove exercise
+          pm.deletePersistent(w);
+          tx.commit();
+          
+          ok = true;
+          
+          //clear workout from cache
+          WeekCache cache = new WeekCache();
+          cache.removeWorkoutModel(workoutId);
+      
+          break;
+        }
+        else {
+          logger.log(Level.WARNING, "Could not find workout");
+        }
+      }
+      catch (Exception e) {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+        if(e instanceof NoPermissionException) {         
+          throw e;
+        }
+        logger.log(Level.WARNING, "Error deleting workout", e);
+        
+        //retries used
+        if (retries == 0) {          
+          throw e;
+        }
+        logger.log(Level.WARNING, " Retries left: "+retries);
+        
+        --retries;
+        
+        //small delay between retries
+        try {
+          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+        }
+        catch(Exception ex) { }
+      }
+    }
+    
+    return ok;
+  }
+  
+  /**
+   * Updates single exercise
+   * @param pm
+   * @param exercise
+   * @param userUid
+   * @param locale
+   * @return updated exercise
+   * @throws ConnectionException 
+   */
+  public static ExerciseModel updateExerciseModel(PersistenceManager pm, ExerciseModel exercise, String userUid, String locale) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Updating exercise: "+exercise.getId());
+      System.out.println("Updating exercise: "+exercise.getId());
+    }
+    
+    System.out.println(exercise.getName().getId());
+      
+    //try to update X times
+    int retries = Constants.LIMIT_UPDATE_RETRIES;
+    while (true) {
+      
+      Transaction tx = pm.currentTransaction();
+      tx.begin();
+      
+      try {
+        
+        Exercise e = getExercise(pm, exercise.getWorkoutId(), exercise.getId());
+          
+        if(e != null) {
+          //check permission
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, userUid, e.getWorkout().getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, userUid, e.getWorkout().getUid());
+          }
+          
+          //update name if changed
+          if(exercise.getName() != null && exercise.getName().getId() != e.getNameId().longValue()) {
+            ExerciseNameModel n = getExerciseNameModel(pm, exercise.getName().getId());
+            tx.commit();
+            tx.begin();
+            
+            e.setNameId(n.getId());
+            exercise.setName(n);
+          }
+          
+          //update exercise
+          e.setSets(exercise.getSets());
+          e.setReps(exercise.getReps());
+          e.setTempo(exercise.getTempo());
+          e.setRest(exercise.getRest());
+          e.setWeights(exercise.getWeights());
+          e.setInfo(exercise.getInfo());
+          
+          tx.commit();
+          
+          //clear workout from cache
+          WeekCache cache = new WeekCache();
+          cache.removeWorkoutModel(exercise.getWorkoutId());
+        
+          break;
+        }
+        else {
+          logger.log(Level.WARNING, "Could not find exercise with id "+exercise.getId());
+        }
+      }
+      catch (Exception ex) {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+        if(ex instanceof NoPermissionException) {         
+          throw ex;
+        }
+        logger.log(Level.WARNING, "Error updating exercise", ex);
+        
+        //retries used
+        if (retries == 0) {          
+          throw ex;
+        }
+        
+        logger.log(Level.WARNING, " Retries left: "+retries);
+        
+        --retries;
+        
+        //small delay between retries
+        try {
+          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+        }
+        catch(Exception ignored) { }
+      }
+    }
+
+    System.out.println(exercise.getName().getId());
+    return exercise;
+  }
+  
+  /**
+   * Adds single name
+   * @param pm
+   * @param model
+   * @param uid
+   * @param locale
+   * @return added name
+   * @throws Exception 
+   */
+  @SuppressWarnings("unchecked")
+  public static ExerciseNameModel addExerciseNameModel(PersistenceManager pm, ExerciseNameModel model, String uid, String locale) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Adding exercise name: '"+model.getName()+" "+model.getTarget()+"'");
+      System.out.println("Adding exercise name: '"+model.getName()+" "+model.getTarget()+"'");
+    }
+    
+    //check if similar found
+    Query q = pm.newQuery(ExerciseName.class);
+    q.setFilter("name == nameParam && target == targetParam");
+    q.declareParameters("java.lang.String nameParam, java.lang.Integer targetParam");
+    q.setRange(0, 1);
+    List<ExerciseName> arr = (List<ExerciseName>) q.execute(model.getName(), model.getTarget());
+
+    long nameId = 0;
+    
+    if(arr.size() > 0) {
+      nameId = arr.get(0).getId();
+    }
+    //not found
+    else {
+      if(logger.isLoggable(Level.FINER)) {
+        logger.log(Level.FINER, "Name '"+model.getName()+" "+model.getTarget()+"' not found. Creating a new one");
+      }
+
+      ExerciseName mServer = ExerciseName.getServerModel(model);
+      mServer.setLocale(locale);
+      mServer.setUid(uid);
+      pm.makePersistent(mServer);
+
+      //save to memcache
+      WeekCache cache = new WeekCache();
+      cache.addExerciseName(mServer);
+      
+      nameId = mServer.getId();      
+    }
+    
+    //get added name
+    model = getExerciseNameModel(pm, nameId);
+    
+    return model;    
+  }
+  
+  /**
+   * Adds single exercise
+   * @param pm
+   * @param model
+   * @param uid
+   * @param locale
+   * @return added name
+   * @throws Exception 
+   */
+  public static ExerciseModel addExerciseModel(PersistenceManager pm, ExerciseModel model, String uid, String locale) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Adding exercise: '"+model.getId()+"'");
+      System.out.println("Adding exercise: '"+model.getId()+"'");
+    }
+
+    Exercise modelServer = Exercise.getServerModel(model);
+    ExerciseNameModel name = model.getName();
+    
+    //try to update X times
+    int retries = Constants.LIMIT_UPDATE_RETRIES;
+    while (true) {
+      
+      Transaction tx = pm.currentTransaction();
+      tx.begin();
+      
+      try {
+        
+        //get workout
+        Workout w = pm.getObjectById(Workout.class, model.getWorkoutId());
+        
+        if(w != null) {
+          
+          //check permission
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
+          }
+          
+          //if new name
+          if(model.getName() != null && model.getName().getId() == 0) {
+            name = addExerciseNameModel(pm, model.getName(), uid, locale);
+            tx.commit();
+            tx.begin();
+            
+            modelServer.setNameId(name.getId());            
+          }
+
+          
+          //if no exercises
+          if(w.getExercises() == null) {
+            List<Exercise> list = new ArrayList<Exercise>();
+            w.setExercises(list);
+          }
+          
+          //add exercise
+          w.getExercises().add(modelServer);
+          
+          pm.makePersistent(w);
+          tx.commit();
+          
+          //get client side model
+          //TODO needs improving
+          Exercise eNew = w.getExercises().get(w.getExercises().size() - 1);
+          model = Exercise.getClientModel(eNew);
+          model.setName(name);
+          model.setWorkoutId(w.getId());
+          model.setUid(uid);
+          
+          break;
+          
+        }
+        
+      }
+      catch (Exception ex) {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+        if(ex instanceof NoPermissionException) {         
+          throw ex;
+        }
+        logger.log(Level.WARNING, "Error updating exercise", ex);
+        
+        //retries used
+        if (retries == 0) {          
+          throw ex;
+        }
+        
+        logger.log(Level.WARNING, " Retries left: "+retries);
+        
+        --retries;
+        
+        //small delay between retries
+        try {
+          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+        }
+        catch(Exception ignored) { }
+      }
+    }
+    
+    return model;    
+  }
+  
+  /**
+   * Removes single exercise
+   * @param pm
+   * @param exercise
+   * @param uid
+   * @return true if remove was successfully
+   * @throws ConnectionException 
+   */
+  public static Boolean removeExerciseModel(PersistenceManager pm, ExerciseModel exercise, String uid) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Removing exercise: "+exercise.getId());
+      System.out.println("Removing exercise: "+exercise.getId());
+    }
+    
+    boolean ok = false;
+    
+    //try to update X times
+    int retries = Constants.LIMIT_UPDATE_RETRIES;
+    while (true) {
+      
+      Transaction tx = pm.currentTransaction();
+      tx.begin();
+      
+      try {
+        
+        Exercise e = getExercise(pm, exercise.getWorkoutId(), exercise.getId());
+          
+        if(e != null) {
+          //check permission
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, e.getWorkout().getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, e.getWorkout().getUid());
+          }
+          
+          //remove exercise
+          pm.deletePersistent(e);
+          tx.commit();
+          
+          ok = true;
+          
+          //clear workout from cache
+          WeekCache cache = new WeekCache();
+          cache.removeWorkoutModel(exercise.getWorkoutId());
+        }
+        else {
+          logger.log(Level.WARNING, "Could not find exercise with id "+exercise.getId());
+        }
+        
+        break;
+      }
+      catch (Exception e) {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+        if(e instanceof NoPermissionException) {         
+          throw e;
+        }
+        logger.log(Level.WARNING, "Error deleting exercise", e);
+        
+        //retries used
+        if (retries == 0) {          
+          throw e;
+        }
+        logger.log(Level.WARNING, " Retries left: "+retries);
+        
+        --retries;
+        
+        //small delay between retries
+        try {
+          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+        }
+        catch(Exception ex) { }
+      }
+    }
+    
+    return ok;
+  }
+  
+  
+  // PRIVATE METHODS
+  
+  
+  /**
+   * Returns single exercise from workout
+   */
+  private static Exercise getExercise(PersistenceManager pm, Long workoutId, Long exerciseId) {
+
+    Exercise e = null;
+    
+    //get workout
+    Workout w = pm.getObjectById(Workout.class, workoutId);
+    
+    if(w != null) {
+
+      //update
+      final List<Exercise> list = w.getExercises();
+      
+      //search exercise
+      int i = 0;
+      for(final Exercise ee : list) {
+        if(ee.getId().longValue() == exerciseId) {
+          e = ee;
+          break;
+        }
+        i++;
+      } 
+    }
+    
+    return e;
   }
 }
