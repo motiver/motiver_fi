@@ -13,8 +13,6 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 
-import net.sf.jsr107cache.Cache;
-
 import com.delect.motiver.server.Exercise;
 import com.delect.motiver.server.ExerciseName;
 import com.delect.motiver.server.cache.WeekCache;
@@ -121,7 +119,7 @@ public class StoreTraining {
    * @param nameId
    * @throws Exception 
    */
-  private static ExerciseNameModel getExerciseNameModel(PersistenceManager pm, Long nameId) throws Exception {
+  public static ExerciseNameModel getExerciseNameModel(PersistenceManager pm, Long nameId) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading exercise name: "+nameId);
@@ -154,6 +152,46 @@ public class StoreTraining {
     }
     
     return model;
+  }
+
+  /**
+   * Returns all exercises name
+   * @param pm
+   * @param locale
+   * @throws Exception
+   * @return list 
+   */
+  @SuppressWarnings("unchecked")
+  public static List<ExerciseName> getExerciseNames(PersistenceManager pm, String locale) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Loading all exercise names: "+locale);
+      System.out.println("Loading all exercise names: "+locale);
+    }
+
+    //load from cache
+    WeekCache cache = new WeekCache();
+    List<ExerciseName> n = cache.getExerciseNames(locale);
+    
+    if(n == null) {
+      if(logger.isLoggable(Level.FINER)) {
+        logger.log(Level.FINER, "Not found from cache");
+      }
+
+      Query q = pm.newQuery(ExerciseName.class);
+      q.setFilter("locale == localeParam");
+      q.declareParameters("java.lang.String localeParam");
+      n = (List<ExerciseName>) q.execute(locale);
+      
+      //save to cache
+      cache.addExerciseNames(locale, n);
+    }
+    
+    if(n == null) {
+      throw new Exception("Exercise names not found");
+    }
+    
+    return n;
   }
 
   /**

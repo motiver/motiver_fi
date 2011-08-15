@@ -1306,7 +1306,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param workout : model to be added
    * @return added exercise (null if add not successful)
    */
-  @SuppressWarnings("unchecked")
   @Override
   public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException {
 
@@ -7655,7 +7654,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
 
-    log.log(Level.FINE, "searchExerciseNames()");
+    log.log(Level.FINE, "Searching exercises: "+query);
     
     //convert to client side models
     List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
@@ -7694,21 +7693,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 //        log.log(Level.SEVERE, "searchExerciseNames", e);
       }
       
-      Query q = pm.newQuery(ExerciseName.class);
-      //search from user's locale if NOT admin search
-      List<ExerciseName> names = null;
-      if(equipment != -1) {
-        q.setFilter("target == targetParam && locale == localeParam");
-        q.declareParameters("java.lang.Integer targetParam, java.lang.String localeParam");
-        names = (List<ExerciseName>) q.execute(equipment, LOCALE);
-      }
-      else {
-        if(limit < 100) {
-          q.setFilter("locale == localeParam");
-          q.declareParameters("java.lang.String localeParam");
-        }
-        names = (List<ExerciseName>) q.execute(LOCALE);
-      }
+      //TODO missing equipment search
+      List<ExerciseName> names = StoreTraining.getExerciseNames(pm, LOCALE);
 
       arrNames = new ArrayList<ExerciseName>();
 
