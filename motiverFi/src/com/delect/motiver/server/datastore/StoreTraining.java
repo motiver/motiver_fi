@@ -546,6 +546,14 @@ public class StoreTraining {
       tx.begin();
       
       try {
+        //if new name
+        if(model.getName() != null && model.getName().getId() == 0) {
+          name = addExerciseNameModel(pm, model.getName(), uid, locale);
+          tx.commit();
+          tx.begin();
+          
+          modelServer.setNameId(name.getId());            
+        }
         
         //get workout
         Workout w = pm.getObjectById(Workout.class, model.getWorkoutId());
@@ -556,16 +564,6 @@ public class StoreTraining {
           if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
             throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
           }
-          
-          //if new name
-          if(model.getName() != null && model.getName().getId() == 0) {
-            name = addExerciseNameModel(pm, model.getName(), uid, locale);
-            tx.commit();
-            tx.begin();
-            
-            modelServer.setNameId(name.getId());            
-          }
-
           
           //if no exercises
           if(w.getExercises() == null) {
@@ -586,6 +584,10 @@ public class StoreTraining {
           model.setName(name);
           model.setWorkoutId(w.getId());
           model.setUid(uid);
+
+          //clear workout from cache
+          WeekCache cache = new WeekCache();
+          cache.removeWorkoutModel(w.getId());
           
           break;
           
