@@ -8,10 +8,6 @@ package com.delect.motiver.shared;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.Map;
-
-import com.google.gwt.user.client.rpc.IsSerializable;
-
 import com.extjs.gxt.ui.client.data.BaseModelData;
 
 public class ExerciseModel extends BaseModelData implements Serializable, Comparable<ExerciseModel> {

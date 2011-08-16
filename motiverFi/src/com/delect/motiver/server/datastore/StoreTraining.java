@@ -384,10 +384,8 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Updating exercise: "+exercise.getId());
-      System.out.println("Updating exercise: "+exercise.getId());
     }
     
-    System.out.println(exercise.getName().getId());
       
     //try to update X times
     int retries = Constants.LIMIT_UPDATE_RETRIES;
@@ -427,8 +425,9 @@ public class StoreTraining {
           tx.commit();
           
           //clear workout from cache
+          Workout w = e.getWorkout();
           WeekCache cache = new WeekCache();
-          cache.removeWorkoutModel(exercise.getWorkoutId());
+          cache.addWorkout(w);
         
           break;
         }
@@ -649,26 +648,41 @@ public class StoreTraining {
       
       try {
         
-        Exercise e = getExercise(pm, exercise.getWorkoutId(), exercise.getId());
-          
-        if(e != null) {
+        //get workout
+        Workout w = pm.getObjectById(Workout.class, exercise.getWorkoutId());
+        
+        if(w != null) {
           //check permission
-          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, e.getWorkout().getUid())) {
-            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, e.getWorkout().getUid());
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
           }
+
+          //update
+          final List<Exercise> list = w.getExercises();
           
-          //remove exercise
-          pm.deletePersistent(e);
+          //search exercise
+          int i = 0;
+          for(final Exercise ee : list) {
+            if(ee.getId().longValue() == exercise.getId()) { 
+              list.remove(i);
+              w.setExercises(list);
+              break;
+            }
+            i++;
+          } 
+          
+          //update workout
+          pm.makePersistent(w);
           tx.commit();
           
           ok = true;
-          
-          //clear workout from cache
+
+          //save to cache
           WeekCache cache = new WeekCache();
-          cache.removeWorkoutModel(exercise.getWorkoutId());
+          cache.addWorkout(w);
         }
         else {
-          logger.log(Level.WARNING, "Could not find exercise with id "+exercise.getId());
+          logger.log(Level.WARNING, "Could not find workout with id "+w.getId());
         }
         
         break;
