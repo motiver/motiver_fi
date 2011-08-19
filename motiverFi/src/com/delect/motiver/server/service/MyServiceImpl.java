@@ -6665,6 +6665,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException 
    */
+  @SuppressWarnings("unchecked")
   public List<UserModel> getTrainees() {
 
     log.log(Level.FINE, "getTrainees()");
