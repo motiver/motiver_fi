@@ -79,6 +79,7 @@ import com.delect.motiver.shared.MicroNutrientModel;
 import com.delect.motiver.shared.MonthlySummaryExerciseModel;
 import com.delect.motiver.shared.MonthlySummaryModel;
 import com.delect.motiver.shared.NutritionDayModel;
+import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.RunModel;
 import com.delect.motiver.shared.RunValueModel;
@@ -135,47 +136,47 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return accesstoken for user
    * @throws ConnectionException
    */
-  @SuppressWarnings("unchecked")
-  public static String getCoachAccess(String uid) {
-
-    log.log(Level.FINE, "getCoachAccess()");
-
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-
-    String str = "";
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-          
-        //check if found in our database AND has set as coach
-        Query q = pm.newQuery(UserOpenid.class, "openId == openIdParam && shareCoach == shareCoachParam");
-        q.declareParameters("java.lang.String openIdParam, java.lang.Long shareCoachParam");
-        List<UserOpenid> users = (List<UserOpenid>) q.execute(uid, UID);
-
-        //data found
-        if(users.size() > 0) {
-          //reset token
-          final UserOpenid user = users.get(0);
-          str = user.getFbAuthToken();
-        }
-
-    } catch (Exception e) {
-      log.log(Level.SEVERE, "getCoachAccess", e);
-      
-      return null;
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return str;
-  }
+//  @SuppressWarnings("unchecked")
+//  public static String getCoachAccess(String uid) {
+//
+//    log.log(Level.FINE, "getCoachAccess()");
+//
+//    //get uid
+//    final String UID = getUid();
+//    if(UID == null) {
+//      return null;
+//    }
+//
+//    String str = "";
+//    PersistenceManager pm =  PMF.get().getPersistenceManager();
+//    
+//    try {
+//          
+//        //check if found in our database AND has set as coach
+//        Query q = pm.newQuery(UserOpenid.class, "openId == openIdParam && shareCoach == shareCoachParam");
+//        q.declareParameters("java.lang.String openIdParam, java.lang.Long shareCoachParam");
+//        List<UserOpenid> users = (List<UserOpenid>) q.execute(uid, UID);
+//
+//        //data found
+//        if(users.size() > 0) {
+//          //reset token
+//          final UserOpenid user = users.get(0);
+//          str = user.getFbAuthToken();
+//        }
+//
+//    } catch (Exception e) {
+//      log.log(Level.SEVERE, "getCoachAccess", e);
+//      
+//      return null;
+//    }
+//    finally {
+//      if (!pm.isClosed()) {
+//        pm.close();
+//      } 
+//    }
+//    
+//    return str;
+//  }
   
   /**
    * Checks if current user is friend with given uid
@@ -807,17 +808,61 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Gets openId string
    * @return null if no user found
    */
-  static String getUid() {
+  private String getUid() {
+
+    String coachModeUid = null;
+    
+    try {
+      String s = this.perThreadRequest.get().getHeader("coach_mode_uid");
+      if(s != null && s.length() > 1) {
+        coachModeUid = s;
+      }
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Error checkin coach mode", e);
+      coachModeUid = null;
+    }
+    
+    return _getUid(coachModeUid);
+  }
+  @SuppressWarnings("unchecked")
+  static String _getUid(String coachModeUid) {
 
     log.log(Level.FINE, "getUid()");
 
     String openId = null;
-    
+
     UserService userService = UserServiceFactory.getUserService();
     User userCurrent = userService.getCurrentUser();
     
     if(userCurrent != null) {
       openId = userCurrent.getUserId();
+    }
+  
+    //if coach mode -> return trainee's uid
+    if(coachModeUid != null) {
+      log.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
+
+      PersistenceManager pm =  PMF.get().getPersistenceManager();
+      
+      try {
+        Query q = pm.newQuery(Circle.class);
+        q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
+        q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
+        q.setRange(0,1);
+        List<Circle> list = (List<Circle>)q.execute(coachModeUid, openId, Permission.COACH);
+        
+        if(list.size() > 0) {
+          log.log(Level.FINE, "Is coach!");
+          openId = list.get(0).getUid();
+        }
+      } catch (Exception e) {
+        log.log(Level.SEVERE, "Error checkin coach", e);
+      }
+      finally {
+        if(!pm.isClosed()) {
+          pm.close();
+        }
+      }
     }
     
     return openId;
@@ -870,7 +915,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param object array: uid (long), locale (string)
    */
   @SuppressWarnings("unchecked")
-  private static Object[] getUidAndLocale() {
+  private Object[] getUidAndLocale() {
 
     log.log(Level.FINE, "getUidAndLocale()");
 
@@ -965,8 +1010,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
   /**
    * Checks if user has permission to given target
-   * @param target : what item is shared, 0=training, 1=nutrition, 4=nutrition foods, 2=cardio, 3=measurement
-   *        edit permissions: 10=training, 11=nutrition, 14=nutrition foods, 12=cardio, 13=measurement
+   * @param target : PERMISSION::READ_XXX or PERMISSION::WRITE_XXX
    * @param ourUid : our user id
    * @param uid : target's user id (if same that ours -> returns always true)
    * @return has permission
@@ -982,17 +1026,31 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     
     boolean hasPermission = false;
     try {
-
       Query q = pm.newQuery(Circle.class);
-      q.setFilter("openId == openIdParam && (friendId == friendIdParam || friendId == '-1') && target == targetParam");
-      q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
-      q.setRange(0,1);
-      List<Circle> list = (List<Circle>)q.execute(uid, ourUid, target);
-      
-      hasPermission = (list.size() > 0);
+
+      //if read
+      if(target == Permission.READ_TRAINING
+          || target == Permission.READ_NUTRITION
+          || target == Permission.READ_NUTRITION_FOODS
+          || target == Permission.READ_CARDIO
+          || target == Permission.READ_MEASUREMENTS) {
+        q.setFilter("openId == openIdParam && (friendId == friendIdParam || friendId == '-1') && target == targetParam");
+        q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
+        q.setRange(0,1);
+        List<Circle> list = (List<Circle>)q.execute(uid, ourUid, target);
+        hasPermission = (list.size() > 0);
+      }
+      //write permission -> check if coach
+      else {
+        q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
+        q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
+        q.setRange(0,1);
+        List<Circle> list = (List<Circle>)q.execute(uid, ourUid, Permission.COACH);
+        hasPermission = (list.size() > 0);
+      }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "hasPermission", e);
+      log.log(Level.SEVERE, "Error checking permission", e);
     }
     
     return hasPermission;
@@ -1031,56 +1089,60 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     log.log(Level.FINE, "getUser()");
     
-    
     UserModel user = new UserModel();
     
-    UserService userService = UserServiceFactory.getUserService();
-    User userCurrent = userService.getCurrentUser();
-    
-    //user found
-    if(userCurrent != null) {
-      PersistenceManager pm =  PMF.get().getPersistenceManager();
+    try {
+      UserService userService = UserServiceFactory.getUserService();
+      User userCurrent = userService.getCurrentUser();
       
-      //check if user has data in OUR DATABASE
-      Query q = pm.newQuery(UserOpenid.class, "id == openIdParam");
-      q.declareParameters("java.lang.Long openIdParam");
-      q.setRange(0,1);
-      List<UserOpenid> users = (List<UserOpenid>) q.execute(userCurrent.getUserId());
-      
-      UserOpenid u;
-      
-      //data found
-      if(users.size() > 0) {
-        u = users.get(0);
-      }
-      //no data -> add new data for this user
-      else {
-        u = new UserOpenid();
-        u.setId(userCurrent.getUserId());
-      }
-      
-      //if user added
-      if(u != null) {
+      //user found
+      if(userCurrent != null) {
+        PersistenceManager pm =  PMF.get().getPersistenceManager();
         
-        //save facebook data
-        u.setLocale("fi_FI");
-        u.setBanned(false);
-        u.setNickName(userCurrent.getNickname());
-        u.setEmail(userCurrent.getEmail());
+        //check if user has data in OUR DATABASE
+        Query q = pm.newQuery(UserOpenid.class, "id == openIdParam");
+        q.declareParameters("java.lang.Long openIdParam");
+        q.setRange(0,1);
+        List<UserOpenid> users = (List<UserOpenid>) q.execute(userCurrent.getUserId());
+        
+        UserOpenid u;
+        
+        //data found
+        if(users.size() > 0) {
+          u = users.get(0);
+        }
+        //no data -> add new data for this user
+        else {
+          u = new UserOpenid();
+          u.setId(userCurrent.getUserId());
+        }
+        
+        //if user added
+        if(u != null) {
+          
+          //save facebook data
+          u.setLocale("fi_FI");
+          u.setBanned(false);
+          u.setNickName(userCurrent.getNickname());
+          u.setEmail(userCurrent.getEmail());
 
-        pm.makePersistent(u);
-        pm.flush();
-        user = UserOpenid.getClientModel(u);
-        user.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
-                
-        //check if someone has set user as coach
-        q = pm.newQuery(UserOpenid.class, "shareCoach == shareCoachParam");
-        q.setRange(0, 1);
-        q.declareParameters("java.lang.Long shareCoachParam");
-        users = (List<UserOpenid>) q.execute(user.getUid());
-        user.setCoach(users.size() > 0);
-        
-      } 
+          pm.makePersistent(u);
+          pm.flush();
+          user = UserOpenid.getClientModel(u);
+          user.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
+                  
+          //check if someone has set user as coach
+          q = pm.newQuery(Circle.class);
+          q.setFilter("friendId == friendIdParam && target == targetParam");
+          q.declareParameters("java.lang.String friendIdParam, java.lang.Integer targetParam");
+          q.setRange(0,1);
+          List<Circle> cicles = (List<Circle>) q.execute(user.getUid(), Permission.COACH);
+          user.setCoach(cicles.size() > 0);
+          
+        } 
+      }
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Error loading user", e);
     }
     
     return user;
@@ -6615,55 +6677,27 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return list;
     }
 
-//    PersistenceManager pm =  null;
-//    
-//    try {
-//      //if coach mode -> get token from trainee
-//      if(token.contains("____")) {
-//        token = getTraineesToken(token);
-//      }
-//      
-//      //get friends from facebook
-//      URL url = new URL("https://graph.facebook.com/me/friends?access_token=" + URLEncoder.encode(token.replaceAll("____.*", "")));
-//      BufferedReader reader = null;
-//      try {
-//        reader = new BufferedReader(new InputStreamReader(url.openStream()));
-//      } catch (Exception e1) {
-//        log.log(Level.SEVERE, "", e1);
-//        throw new ConnectionException("getFriends", "Could not connect to Facebook.com");
-//      }
-//      String line = reader.readLine();
-//      reader.close();
-//      if(line != null) {
-//        JSONObject json = new JSONObject(line);
-//        JSONArray groups = json.getJSONArray("data");
-//        
-//        for(int i=0; i < groups.length(); i++) {
-//          JSONObject obj = groups.getJSONObject(i);
-//          final String uid = obj.getLong("id");
-//          
-//          //check if found in our database AND has set as coach
-//          pm =  PMF.get().getPersistenceManager();
-//          Query q = pm.newQuery(UserOpenid.class, "openId == openIdParam && shareCoach == shareCoachParam");
-//          q.declareParameters("java.lang.String openIdParam, java.lang.Long shareCoachParam");
-//          List<UserOpenid> users = (List<UserOpenid>) q.execute(uid, UID);
-//
-//          //data found
-//          if(users.size() > 0) {
-//            //reset token
-//            final UserOpenid u = users.get(0);
-//            list.add( UserOpenid.getClientModel(u) );
-//          }
-//        }
-//      }
-//    } catch (Exception e) {
-//      log.log(Level.SEVERE, "getTrainees", e);
-//    }
-//    finally {
-//      if (!pm.isClosed()) {
-//        pm.close();
-//      } 
-//    }
+    PersistenceManager pm =  null;
+    
+    
+    try {
+      Query q = pm.newQuery(Circle.class);
+      q.setFilter("friendId == friendIdParam && target == targetParam");
+      q.declareParameters("java.lang.String friendIdParam, java.lang.Integer targetParam");
+      q.setRange(0,1);
+      List<Circle> users = (List<Circle>) q.execute(UID, Permission.COACH);
+
+      if(users.size() > 0) {
+      }
+      
+    } catch (Exception e) {
+      log.log(Level.SEVERE, "Error loading trainees", e);
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
 
     return list;
 

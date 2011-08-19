@@ -112,7 +112,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 			}
 		});
 		panelLogo.setStyleAttribute("cursor", "pointer");
-		this.add(panelLogo, new HBoxLayoutData(new Margins(0, 20, 0, 10)));
+		this.add(panelLogo, new HBoxLayoutData(new Margins(0, 17, 0, 10)));
 		
 		//if user view
 		if(target == HeaderTarget.USER) {
@@ -126,7 +126,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 					handler.onTabClick(0);
 				}
 			});
-			this.add(linkM, new HBoxLayoutData(new Margins(5, 10, 0, 0)));
+			this.add(linkM, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//training
       linkT.addStyleName("header-link");
 			linkT.setText(AppController.Lang.Training());
@@ -136,7 +136,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 					handler.onTabClick(1);
 				}
 			});
-			this.add(linkT, new HBoxLayoutData(new Margins(5, 10, 0, 0)));
+			this.add(linkT, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//nutrition
       linkN.addStyleName("header-link");
 			linkN.setText(AppController.Lang.Nutrition());
@@ -146,7 +146,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 					handler.onTabClick(2);
 				}
 			});
-			this.add(linkN, new HBoxLayoutData(new Margins(5, 10, 0, 0)));
+			this.add(linkN, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//cardio
       linkC.addStyleName("header-link");
 			linkC.setText(AppController.Lang.Cardio());
@@ -156,7 +156,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 					handler.onTabClick(3);
 				}
 			});
-			this.add(linkC, new HBoxLayoutData(new Margins(5, 10, 0, 0)));
+			this.add(linkC, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//statistic
       linkS.addStyleName("header-link");
 			linkS.setText(AppController.Lang.Statistics());
@@ -166,7 +166,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 					handler.onTabClick(4);
 				}
 			});
-			this.add(linkS, new HBoxLayoutData(new Margins(5, 10, 0, 0)));
+			this.add(linkS, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//profile
       linkP.addStyleName("header-link");
 			linkP.setText(AppController.Lang.Profile());
@@ -176,7 +176,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 					handler.onTabClick(5);
 				}
 			});
-			this.add(linkP, new HBoxLayoutData(new Margins(5, 10, 0, 0)));
+			this.add(linkP, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 
 			//coach
 			if(AppController.User.isCoach()) {
@@ -188,7 +188,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 						handler.onTabClick(6);
 					}
 				});
-				this.add(linkCo, new HBoxLayoutData(new Margins(5, 10, 0, 0)));			
+				this.add(linkCo, new HBoxLayoutData(new Margins(5, 3, 0, 0)));			
 			}
 
 			//admin
@@ -201,7 +201,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 						handler.onTabClick(7);
 					}
 				});
-				this.add(linkA, new HBoxLayoutData(new Margins(5, 10, 0, 0)));		
+				this.add(linkA, new HBoxLayoutData(new Margins(5, 3, 0, 0)));		
 			}
 			
 		}

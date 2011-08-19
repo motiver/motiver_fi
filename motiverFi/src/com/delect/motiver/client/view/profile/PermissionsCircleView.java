@@ -10,6 +10,7 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.profile.PermissionsCirclePresenter;
 import com.delect.motiver.client.presenter.profile.PermissionsCirclePresenter.PermissionsCircleHandler;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.UserModel;
 import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.dnd.DropTarget;
@@ -109,27 +110,27 @@ public class PermissionsCircleView extends PermissionsCirclePresenter.Permission
 
     //strings
     switch(target) {
-      case Constants.PERMISSION_TARGET_TRAINING:
+      case Permission.READ_TRAINING:
         textTitle.setText(AppController.Lang.Training());
         textDesc.setText(AppController.Lang.PermissionDescTraining());
         break;
-      case Constants.PERMISSION_TARGET_NUTRITION:
+      case Permission.READ_NUTRITION:
         textTitle.setText(AppController.Lang.Nutrition());
         textDesc.setText(AppController.Lang.PermissionDescNutrition());
         break;
-      case Constants.PERMISSION_TARGET_NUTRITION_FOODS:
+      case Permission.READ_NUTRITION_FOODS:
         textTitle.setText(AppController.Lang.NutritionFoods());
         textDesc.setText(AppController.Lang.PermissionDescNutritionFoods());
         break;
-      case Constants.PERMISSION_TARGET_CARDIO:
+      case Permission.READ_CARDIO:
         textTitle.setText(AppController.Lang.Cardio());
         textDesc.setText(AppController.Lang.PermissionDescCardio());
         break;
-      case Constants.PERMISSION_TARGET_MEASUREMENTS:
+      case Permission.READ_MEASUREMENTS:
         textTitle.setText(AppController.Lang.Measurements());
         textDesc.setText(AppController.Lang.PermissionDescMeasurements());
         break;
-      case Constants.PERMISSION_TARGET_COACH:
+      case Permission.COACH:
         textTitle.setText(AppController.Lang.Coach());
         textDesc.setText(AppController.Lang.PermissionDescCoach());
         break;

@@ -123,15 +123,12 @@ public class Motiver implements EntryPoint {
 				isCacheable = false;
 				
 				//if coach mode is on -> add trainee's uid to token
-//				String token = AppController.ACCESSTOKEN;
-//				if(AppController.COACH_MODE_ON) {
-//          token += "____" + AppController.COACH_MODE_UID;
-//        }
-//				
-//				//save token as header
-//				if(token.length() > 0) {
-//				  builder.setHeader("token", token);
-//				}
+				if(AppController.COACH_MODE_ON) {
+				  builder.setHeader("coach_mode_uid", AppController.COACH_MODE_UID);
+				}
+				else {
+          builder.setHeader("coach_mode_uid", "-");
+        }
 
         //fire loading event
         eventBus.fireEvent(new LoadingEvent(AppController.Lang.Loading() + "..."));
