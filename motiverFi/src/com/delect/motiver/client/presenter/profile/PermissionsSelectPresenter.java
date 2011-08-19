@@ -23,7 +23,7 @@ import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
 import com.delect.motiver.client.view.UserView;
 import com.delect.motiver.client.view.profile.PermissionsCircleView;
-import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.UserModel;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.google.gwt.core.client.GWT;
@@ -71,12 +71,12 @@ public class PermissionsSelectPresenter extends Presenter {
 		this.display = display;
 		
 		//permissions circles
-		circleTrainingPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Constants.PERMISSION_TARGET_TRAINING);
-    circleNutritionPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Constants.PERMISSION_TARGET_NUTRITION);
-    circleNutritionFoodsPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Constants.PERMISSION_TARGET_NUTRITION_FOODS);
-    circleCardioPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Constants.PERMISSION_TARGET_CARDIO);
-    circleMeasurementsPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Constants.PERMISSION_TARGET_MEASUREMENTS);
-    circleCoachPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Constants.PERMISSION_TARGET_COACH);
+		circleTrainingPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Permission.READ_TRAINING);
+    circleNutritionPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Permission.READ_NUTRITION);
+    circleNutritionFoodsPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Permission.READ_NUTRITION_FOODS);
+    circleCardioPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Permission.READ_CARDIO);
+    circleMeasurementsPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Permission.READ_MEASUREMENTS);
+    circleCoachPresenter = new PermissionsCirclePresenter(rpcService, eventBus, (PermissionsCircleDisplay)GWT.create(PermissionsCircleView.class), Permission.COACH);
 		
 	}
 	

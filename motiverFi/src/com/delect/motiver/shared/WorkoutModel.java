@@ -7,14 +7,8 @@
 package com.delect.motiver.shared;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import com.google.gwt.user.client.rpc.IsSerializable;
-
 import com.extjs.gxt.ui.client.data.BaseModelData;
 
 public class WorkoutModel extends BaseModelData implements Serializable {

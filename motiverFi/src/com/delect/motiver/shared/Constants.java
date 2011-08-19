@@ -8,6 +8,7 @@ package com.delect.motiver.shared;
 
 import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
+import com.google.gwt.user.client.Window;
 
 public interface Constants {
 
@@ -282,17 +283,6 @@ public interface Constants {
   public static final String TOKEN_STATISTICS = "user/statistics";
   public static final String TOKEN_PROFILE = "user/profile";
   public static final String TOKEN_ADMIN = "user/admin";
-
-
-  /**
-   * Targets for each permission circles
-   */
-  public static final int PERMISSION_TARGET_TRAINING = 0;
-  public static final int PERMISSION_TARGET_NUTRITION = 1;
-  public static final int PERMISSION_TARGET_NUTRITION_FOODS = 2;
-  public static final int PERMISSION_TARGET_CARDIO = 3;
-  public static final int PERMISSION_TARGET_MEASUREMENTS = 4;
-  public static final int PERMISSION_TARGET_COACH = 5;
   
   /**
    * Drag groups

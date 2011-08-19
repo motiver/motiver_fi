@@ -13,8 +13,6 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 
-import net.sf.jsr107cache.Cache;
-
 import com.delect.motiver.server.Exercise;
 import com.delect.motiver.server.ExerciseName;
 import com.delect.motiver.server.cache.WeekCache;
@@ -121,7 +119,7 @@ public class StoreTraining {
    * @param nameId
    * @throws Exception 
    */
-  private static ExerciseNameModel getExerciseNameModel(PersistenceManager pm, Long nameId) throws Exception {
+  public static ExerciseNameModel getExerciseNameModel(PersistenceManager pm, Long nameId) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading exercise name: "+nameId);
@@ -157,13 +155,54 @@ public class StoreTraining {
   }
 
   /**
+   * Returns all exercises name
+   * @param pm
+   * @param locale
+   * @throws Exception
+   * @return list 
+   */
+  @SuppressWarnings("unchecked")
+  public static List<ExerciseName> getExerciseNames(PersistenceManager pm, String locale) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Loading all exercise names: "+locale);
+      System.out.println("Loading all exercise names: "+locale);
+    }
+
+    //load from cache
+    WeekCache cache = new WeekCache();
+    List<ExerciseName> n = cache.getExerciseNames(locale);
+    
+    if(n == null) {
+      if(logger.isLoggable(Level.FINER)) {
+        logger.log(Level.FINER, "Not found from cache");
+      }
+
+      Query q = pm.newQuery(ExerciseName.class);
+      q.setFilter("locale == localeParam");
+      q.declareParameters("java.lang.String localeParam");
+      n = (List<ExerciseName>) q.execute(locale);
+      
+      //save to cache
+      cache.addExerciseNames(locale, n);
+    }
+    
+    if(n == null) {
+      throw new Exception("Exercise names not found");
+    }
+    
+    return n;
+  }
+
+  /**
    * Updates single workout. If workout is not found, new workout is created
    * @param pm
    * @param workout
+   * @param uid : who is asking
    * @return added / updated workotu
    */
   @SuppressWarnings("deprecation")
-  public static WorkoutModel updateWorkoutModel(PersistenceManager pm, WorkoutModel model, String userUid) throws Exception {
+  public static WorkoutModel updateWorkoutModel(PersistenceManager pm, WorkoutModel model, String uid) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Updating workout: "+model.getId());
@@ -184,8 +223,8 @@ public class StoreTraining {
         if(w != null) {
           
           //check permission
-          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, userUid, w.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_TRAINING, userUid, w.getUid());
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
           }
           
           //reset time from date
@@ -208,8 +247,12 @@ public class StoreTraining {
           pm.makePersistent(w);
           tx.commit();
 
+          //save to cache
+          WeekCache cache = new WeekCache();
+          cache.removeWorkoutModel(w.getId());
+          
           //get client side model
-          model = Workout.getClientModel(w);
+          model = getWorkoutModel(pm, w.getId(), uid);
           
           break;
         }
@@ -341,10 +384,8 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Updating exercise: "+exercise.getId());
-      System.out.println("Updating exercise: "+exercise.getId());
     }
     
-    System.out.println(exercise.getName().getId());
       
     //try to update X times
     int retries = Constants.LIMIT_UPDATE_RETRIES;
@@ -384,8 +425,9 @@ public class StoreTraining {
           tx.commit();
           
           //clear workout from cache
+          Workout w = e.getWorkout();
           WeekCache cache = new WeekCache();
-          cache.removeWorkoutModel(exercise.getWorkoutId());
+          cache.addWorkout(w);
         
           break;
         }
@@ -503,6 +545,14 @@ public class StoreTraining {
       tx.begin();
       
       try {
+        //if new name
+        if(model.getName() != null && model.getName().getId() == 0) {
+          name = addExerciseNameModel(pm, model.getName(), uid, locale);
+          tx.commit();
+          tx.begin();
+          
+          modelServer.setNameId(name.getId());            
+        }
         
         //get workout
         Workout w = pm.getObjectById(Workout.class, model.getWorkoutId());
@@ -513,16 +563,6 @@ public class StoreTraining {
           if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
             throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
           }
-          
-          //if new name
-          if(model.getName() != null && model.getName().getId() == 0) {
-            name = addExerciseNameModel(pm, model.getName(), uid, locale);
-            tx.commit();
-            tx.begin();
-            
-            modelServer.setNameId(name.getId());            
-          }
-
           
           //if no exercises
           if(w.getExercises() == null) {
@@ -543,6 +583,10 @@ public class StoreTraining {
           model.setName(name);
           model.setWorkoutId(w.getId());
           model.setUid(uid);
+
+          //clear workout from cache
+          WeekCache cache = new WeekCache();
+          cache.removeWorkoutModel(w.getId());
           
           break;
           
@@ -604,26 +648,41 @@ public class StoreTraining {
       
       try {
         
-        Exercise e = getExercise(pm, exercise.getWorkoutId(), exercise.getId());
-          
-        if(e != null) {
+        //get workout
+        Workout w = pm.getObjectById(Workout.class, exercise.getWorkoutId());
+        
+        if(w != null) {
           //check permission
-          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, e.getWorkout().getUid())) {
-            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, e.getWorkout().getUid());
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
           }
+
+          //update
+          final List<Exercise> list = w.getExercises();
           
-          //remove exercise
-          pm.deletePersistent(e);
+          //search exercise
+          int i = 0;
+          for(final Exercise ee : list) {
+            if(ee.getId().longValue() == exercise.getId()) { 
+              list.remove(i);
+              w.setExercises(list);
+              break;
+            }
+            i++;
+          } 
+          
+          //update workout
+          pm.makePersistent(w);
           tx.commit();
           
           ok = true;
-          
-          //clear workout from cache
+
+          //save to cache
           WeekCache cache = new WeekCache();
-          cache.removeWorkoutModel(exercise.getWorkoutId());
+          cache.addWorkout(w);
         }
         else {
-          logger.log(Level.WARNING, "Could not find exercise with id "+exercise.getId());
+          logger.log(Level.WARNING, "Could not find workout with id "+w.getId());
         }
         
         break;
