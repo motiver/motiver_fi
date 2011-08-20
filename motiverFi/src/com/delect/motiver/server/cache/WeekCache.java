@@ -89,28 +89,14 @@ public class WeekCache {
     cache.remove(builder.toString());
   }
 
-  public ExerciseName getExerciseName(Long nameId) {
+  @SuppressWarnings("unchecked")
+  public List<ExerciseName> getExerciseNames() {
     if(cache == null) {
       return null;
     }
     
     StringBuilder builder = new StringBuilder();
     builder.append("en");
-    builder.append(nameId);
-    Object obj = cache.get(builder.toString());
-    
-    return (obj instanceof ExerciseName)? (ExerciseName)obj : null;
-  }
-
-  @SuppressWarnings("unchecked")
-  public List<ExerciseName> getExerciseNames(String locale) {
-    if(cache == null) {
-      return null;
-    }
-    
-    StringBuilder builder = new StringBuilder();
-    builder.append("en_");
-    builder.append(locale);
     Object obj = cache.get(builder.toString());
 
     List<ExerciseName> names = null;
@@ -129,19 +115,7 @@ public class WeekCache {
     return names;
   }
   
-  public void addExerciseName(ExerciseName name) {
-    if(cache == null) {
-      return;
-    }
-    
-    StringBuilder builder = new StringBuilder();
-    builder.append("en");
-    builder.append(name.getId());
-    
-    cache.put(builder.toString(), name);
-  }
-  
-  public void addExerciseNames(String locale, List<ExerciseName> names) {
+  public void addExerciseNames(List<ExerciseName> names) {
     if(cache == null) {
       return;
     }
@@ -154,28 +128,9 @@ public class WeekCache {
     }
 
     StringBuilder builder = new StringBuilder();
-    builder.append("en_");
-    builder.append(locale);
+    builder.append("en");
     
     cache.put(builder.toString(), map);
-    
-  }
-  
-  public void removeExerciseNameModel(ExerciseNameModel model) {
-    if(cache == null) {
-      return;
-    }
-
-    StringBuilder builder = new StringBuilder();
-    builder.append("en");
-    builder.append(model.getId());
-    cache.remove(builder.toString());
-    
-    //remove also all names
-    builder.setLength(0);
-    builder.append("en_");
-    builder.append(model.getLocale());
-    cache.remove(builder.toString());
     
   }
 
