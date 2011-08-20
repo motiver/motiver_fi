@@ -11,6 +11,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.coach.CoachModeIndicatorPresenter;
 import com.delect.motiver.client.presenter.coach.CoachModeIndicatorPresenter.CoachModeIndicatorHandler;
+import com.delect.motiver.client.view.widget.MyButton;
+import com.delect.motiver.client.view.widget.MyButton.Style;
 import com.delect.motiver.shared.UserModel;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
@@ -49,10 +51,10 @@ public class CoachModeIndicatorView extends CoachModeIndicatorPresenter.CoachMod
     this.add(new Text(), flex);  
 		
     //close button
-    Button btnClose = new Button();
+    MyButton btnClose = new MyButton();
     btnClose.setText(AppController.Lang.EndCoachMode());
     btnClose.setScale(ButtonScale.MEDIUM);
-    btnClose.addStyleName("btn-red");
+    btnClose.setColor(Style.RED);
     btnClose.addListener(Events.OnClick, new Listener<BaseEvent>() {
 			@Override
 			public void handleEvent(BaseEvent be) {
