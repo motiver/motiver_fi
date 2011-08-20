@@ -1,3 +1,17 @@
+/*******************************************************************************
+ * Copyright 2011 Antti Havanko
+ * 
+ * This file is part of Motiver.fi.
+ * Motiver.fi is licensed under one open source license and one commercial license.
+ * 
+ * Commercial license: This is the appropriate option if you want to use Motiver.fi in 
+ * commercial purposes. Contact license@motiver.fi for licensing options.
+ * 
+ * Open source license: This is the appropriate option if you are creating an open source 
+ * application with a license compatible with the GNU GPL license v3. Although the GPLv3 has 
+ * many terms, the most important is that you must provide the source code of your application 
+ * to your users so they can be free to modify your application for their own needs.
+ ******************************************************************************/
 // $codepro.audit.disable codeInComments
 /*******************************************************************************
  * Copyright 2011 Delect
@@ -1737,7 +1751,7 @@ public class RoutineWizardPresenter extends Presenter {
 			//days array
 			switch(howOften) {
 			  
-      //1 treenipäivä, 2 lepopäivää (1on, 2off)
+      //1 treenipï¿½ivï¿½, 2 lepopï¿½ivï¿½ï¿½ (1on, 2off)
 				case 0:
 					
 					//1,-,1,-,-,1,-, 1,-,-,x,x,x,x (4)
@@ -1748,7 +1762,7 @@ public class RoutineWizardPresenter extends Presenter {
           //3-4
 				case 1:
 					
-					//joka toinen päivä
+					//joka toinen pï¿½ivï¿½
 					if(trainingDays == 0) { //1,-,1,-,1,-,1, -,1,-,1,-,1,- (7)
 						days = new int[] {1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1, 1, -1};
 						cycle_length = 2;
@@ -1777,13 +1791,13 @@ public class RoutineWizardPresenter extends Presenter {
 						cycle_length = 7;
 					}
 					
-					//Viisi treenipäivää, 2 lepo (5on, 2off)
+					//Viisi treenipï¿½ivï¿½ï¿½, 2 lepo (5on, 2off)
 					if(trainingDays == 1) { //1,1,1,1,1,-,-, 1,1,1,1,1,-,- (10)
 						days = new int[] {1, 1, 1, 1, 1, -1, -1, 1, 1, 1, 1, 1, -1, -1};
 						cycle_length = 7;
 					}
 					
-					//Kuusi treenipäivää, 1 lepo (6on, 1off)
+					//Kuusi treenipï¿½ivï¿½ï¿½, 1 lepo (6on, 1off)
 					if(trainingDays == 2) { //1,1,1,1,1,1,-, 1,1,1,1,1,1,- (12)
 						days = new int[] {1, 1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, -1};
 						cycle_length = 7;
@@ -1819,7 +1833,7 @@ public class RoutineWizardPresenter extends Presenter {
           d++;
 					//1-SPLIT:
 					if(split == 0) {
-            //jos ei tarpeeksi treenipäiviä
+            //jos ei tarpeeksi treenipï¿½iviï¿½
             //						if(days_traindays<d + 1)
             //						{
             //							days[i]=-2;
