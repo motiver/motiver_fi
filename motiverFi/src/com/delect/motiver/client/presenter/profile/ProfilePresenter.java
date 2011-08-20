@@ -64,8 +64,7 @@ public class ProfilePresenter extends Presenter {
 				rpcService.saveUserData(user, new MyAsyncCallback<UserModel>() {
           @Override
           public void onSuccess(UserModel result) {
-            if(result != null) {
-              System.out.println(alias +" "+result.getAlias() );
+            if(result != null && alias != null) {
               //if alias not changed -> already in use/invalid
               display.showAliasTaken( !alias.equals(result.getAlias()) );
             }

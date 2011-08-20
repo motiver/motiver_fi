@@ -6,6 +6,7 @@
  ******************************************************************************/
 package com.delect.motiver.server;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.IdentityType;
@@ -16,8 +17,13 @@ import javax.jdo.annotations.PrimaryKey;
 import com.delect.motiver.shared.UserModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class UserOpenid {
+public class UserOpenid implements Serializable {
 	
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 8039587661556604141L;
+
   /**
 	 * Converts server object to client side object
 	 * @param model : server side model
@@ -64,49 +70,48 @@ public class UserOpenid {
 		return modelClient;
 	}
 	
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Boolean admin;
-  @Persistent(defaultFetchGroup="false")
+  @Persistent
   private String alias;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Boolean banned;
 	@SuppressWarnings("unused")
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Date createDate;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Integer dateFormat;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String fbAuthToken;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String firstName;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String gender;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String lastName;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String locale;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Integer measurementSystem;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String shareCardio;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String shareCoach;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String shareMeasurement;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String shareNutrition;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String shareNutritionFoods;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String shareTraining;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Long timeComments;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Integer timeFormat;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Integer timezone;
-  @Persistent(defaultFetchGroup="false")
-
+  @Persistent
 	@PrimaryKey
   private String id; //open id
 	

@@ -61,6 +61,7 @@ import com.delect.motiver.server.Time;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
 import com.delect.motiver.server.datastore.StoreTraining;
+import com.delect.motiver.server.datastore.StoreUser;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
@@ -914,7 +915,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Gets user's facebook id (uid) based on auth token
    * @param object array: uid (long), locale (string)
    */
-  @SuppressWarnings("unchecked")
   private Object[] getUidAndLocale() {
 
     log.log(Level.FINE, "getUidAndLocale()");
@@ -925,37 +925,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-//      String tokenOur = token.replaceAll("____.*", "");
       
       //get our uid
-      Query q = pm.newQuery(UserOpenid.class, "id == idParam");
-      q.declareParameters("java.lang.String idParam");
-      List<UserOpenid> users = (List<UserOpenid>) q.execute(uid);
-      if(users.size() > 0) {
-        final UserOpenid u = users.get(0);
+      UserModel u = StoreUser.getUserModel(pm, uid);
+      if(u != null) {
         locale = u.getLocale();
       }
       
-//      //if coach mode -> token is format: mytoken____traineeUID
-//      if(token.contains("____")) {
-//        //check that coach has right to
-//        long traineeUID = Long.parseLong(token.replaceAll(".*____", ""));
-//        
-//        //check if found in our database AND has set as coach
-//        q = pm.newQuery(UserOpenid.class, "openId == openIdParam && shareCoach == shareCoachParam");
-//        q.declareParameters("java.lang.String openIdParam, java.lang.Long shareCoachParam");
-//        users = (List<UserOpenid>) q.execute(traineeUID, uid);
-//
-//        //data found
-//        if(users.size() > 0) {
-//          final UserOpenid u = users.get(0);
-//          uid = u.getUid();
-//          locale = u.getLocale();
-//        }
-//      }
-      
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getUidAndLocale", e);
+      log.log(Level.SEVERE, "Error fetching locale", e);
     }
     finally {
       if (!pm.isClosed()) {
@@ -1090,6 +1068,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     log.log(Level.FINE, "getUser()");
     
     UserModel user = new UserModel();
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
       UserService userService = UserServiceFactory.getUserService();
@@ -1097,52 +1077,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
       //user found
       if(userCurrent != null) {
-        PersistenceManager pm =  PMF.get().getPersistenceManager();
         
-        //check if user has data in OUR DATABASE
-        Query q = pm.newQuery(UserOpenid.class, "id == openIdParam");
-        q.declareParameters("java.lang.Long openIdParam");
-        q.setRange(0,1);
-        List<UserOpenid> users = (List<UserOpenid>) q.execute(userCurrent.getUserId());
+        user = StoreUser.addUser(pm, userCurrent);
+        user.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
         
-        UserOpenid u;
-        
-        //data found
-        if(users.size() > 0) {
-          u = users.get(0);
-        }
-        //no data -> add new data for this user
-        else {
-          u = new UserOpenid();
-          u.setId(userCurrent.getUserId());
-        }
-        
-        //if user added
-        if(u != null) {
-          
-          //save facebook data
-          u.setLocale("fi_FI");
-          u.setBanned(false);
-          u.setNickName(userCurrent.getNickname());
-          u.setEmail(userCurrent.getEmail());
-
-          pm.makePersistent(u);
-          pm.flush();
-          user = UserOpenid.getClientModel(u);
-          user.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
-                  
-          //check if someone has set user as coach
-          q = pm.newQuery(Circle.class);
-          q.setFilter("friendId == friendIdParam && target == targetParam");
-          q.declareParameters("java.lang.String friendIdParam, java.lang.Integer targetParam");
-          q.setRange(0,1);
-          List<Circle> cicles = (List<Circle>) q.execute(user.getUid(), Permission.COACH);
-          user.setCoach(cicles.size() > 0);
-          
-        } 
       }
     } catch (Exception e) {
       log.log(Level.SEVERE, "Error loading user", e);
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
     }
     
     return user;
@@ -4015,27 +3961,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       boolean permissionMeasurement = true;
             
       //get user
-      UserModel user = null;
-      Query q = pm.newQuery(UserOpenid.class);
-      List<UserOpenid> users = null;
+      UserModel user = StoreUser.getUserModel(pm, uidObj);
       
-      q.setFilter("id == idParam");
-      q.declareParameters("java.lang.String idParam");
-      q.setRange(0, 1);
-      users = (List<UserOpenid>) q.execute(uidObj);
-
-      
-      //if not found -> find by custom alias
-      if(users.size() == 0) {
-        q.setFilter("alias == aliasParam");
-        q.declareParameters("java.lang.String aliasParam");
-        q.setRange(0, 1);
-        users = (List<UserOpenid>) q.execute(uidObj);
-      }
-      
-      if(users.size() > 0) {
+      if(user != null) {
         
-        String uid = users.get(0).getUid();
+        String uid = user.getUid();
         if(!uid.equals(UID)) {
           permissionTraining = hasPermission(0, UID, uid);
           permissionNutrition = hasPermission(1, UID, uid);
@@ -4047,10 +3977,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         if(!permissionTraining && !permissionNutrition && !permissionCardio && !permissionMeasurement) {
           return null;
         }
-        
-        //return dummy user model (only uid)
-        user = new UserModel();
-        user.setUid(uid);
       }
       //if no user found -> return null
       if(user == null) {
@@ -4085,6 +4011,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         List<RunValue> rValues = null;
         List<MeasurementValue> mValues = null;
 
+        Query q;
+        
         //TRAINING
         if(permissionTraining && (target == 0 || target == 1 || target == 5)) {
           q = pm.newQuery(Workout.class);
@@ -6678,17 +6606,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return list;
     }
 
-    PersistenceManager pm =  null;
-    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();    
     
     try {
       Query q = pm.newQuery(Circle.class);
       q.setFilter("friendId == friendIdParam && target == targetParam");
       q.declareParameters("java.lang.String friendIdParam, java.lang.Integer targetParam");
-      q.setRange(0,1);
       List<Circle> users = (List<Circle>) q.execute(UID, Permission.COACH);
 
       if(users.size() > 0) {
+        UserModel u = StoreUser.getUserModel(pm, users.get(0).getUid());
+        if(u != null) {
+          list.add(u);
+        }
       }
       
     } catch (Exception e) {
@@ -7601,7 +7531,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return save successfull
    * @throws ConnectionException 
    */
-  @Override @SuppressWarnings("unchecked")
   public UserModel saveUserData(UserModel u) throws ConnectionException {
 
     log.log(Level.FINE, "saveUserData()");
@@ -7615,61 +7544,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-      Query q = pm.newQuery(UserOpenid.class, "openId == openIdParam");
-      q.declareParameters("java.lang.String openIdParam");
-      List<UserOpenid> users = (List<UserOpenid>) q.execute(UID);
-      
-      //data found
-      if(users.size() > 0) {
-        UserOpenid userOpenid = users.get(0);
-        userOpenid.setLocale(u.getLocale());
-        userOpenid.setDateFormat(u.getDateFormat());
-        userOpenid.setMeasurementSystem(u.getMeasurementSystem());
-        userOpenid.setTimeFormat(u.getTimeFormat());
-        userOpenid.setShareTraining(u.getShareTraining());
-        userOpenid.setShareNutrition(u.getShareNutrition());
-        userOpenid.setShareNutritionFoods(u.getShareNutritionFoods());
-        userOpenid.setShareCardio(u.getShareCardio());
-        userOpenid.setShareMeasurement(u.getShareMeasurement());
-        userOpenid.setShareCoach(u.getShareCoach());
-        
-        //if alias changed -> check that alias not already taken
-        String alias = u.getAlias().toLowerCase();
-        //check if restricted value
-        boolean restricted = false;
-        for(String s : Constants.VALUES_RESTRICTED_ALIASES) {
-          if(s.equals(alias)) {
-            restricted = true;
-            break;
-          }
-        }
-        if( !restricted ) {
-          //if changed
-          if((userOpenid.getAlias() == null && userOpenid.getAlias() != null)
-              || (userOpenid.getAlias() != null && !userOpenid.getAlias().equals(alias))) {
-            Query qAlias = pm.newQuery(UserOpenid.class, "alias == aliasParam && openId != openIdParam");
-            qAlias.declareParameters("java.lang.String aliasParam, java.lang.String openIdParam");
-            qAlias.setRange(0, 1);
-            List<UserOpenid> aliases = (List<UserOpenid>) qAlias.execute(u.getAlias(), UID);
-            //not found
-            if(aliases.size() > 0) {
-              //restore original value
-              alias = userOpenid.getAlias();
-            }
-            
-          }
-          userOpenid.setAlias(alias);
-        }
-
-        pm.makePersistent(userOpenid);
-        
-        u = UserOpenid.getClientModel(userOpenid);
-      }
+      u = StoreUser.saveUserModel(pm, u);
     } catch (Exception e) {
-      log.log(Level.SEVERE, "saveUserData", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      log.log(Level.SEVERE, "Error saving user", e);
       throw new ConnectionException("saveUserData", e.getMessage());
     }
     finally {

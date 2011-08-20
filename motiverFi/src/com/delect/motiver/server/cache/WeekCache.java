@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.delect.motiver.server.ExerciseName;
+import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
@@ -176,5 +177,61 @@ public class WeekCache {
     builder.append(model.getLocale());
     cache.remove(builder.toString());
     
+  }
+
+  /**
+   * @return
+   */
+  @SuppressWarnings("unchecked")
+  public List<UserOpenid> getUsers() {
+    if(cache == null) {
+      return null;
+    }
+
+    List<UserOpenid> names = null;
+
+    Object obj = cache.get("users");
+    if(obj instanceof Map) {
+      names = new ArrayList<UserOpenid>();
+      Map<String, UserOpenid> map = (Map<String, UserOpenid>)obj;
+      
+      Collection<UserOpenid> c = map.values();
+      Iterator<UserOpenid> itr = c.iterator();
+      while(itr.hasNext()) {
+        names.add(itr.next());
+      }
+    }
+    
+    return names;
+  
+  }
+
+  /**
+   * @param users
+   */
+  public void setUsers(List<UserOpenid> users) {
+    if(cache == null) {
+      return;
+    }
+
+    Map<String, UserOpenid> map = new HashMap<String, UserOpenid>();
+    
+    //add each name
+    for(UserOpenid u : users) {
+      map.put(u.getId(), u);
+    }
+    
+    cache.put("users", map);
+  }
+
+  /**
+   * 
+   */
+  public void removeUsers() {
+    if(cache == null) {
+      return;
+    }
+    
+    cache.remove("users");
   }
 }
