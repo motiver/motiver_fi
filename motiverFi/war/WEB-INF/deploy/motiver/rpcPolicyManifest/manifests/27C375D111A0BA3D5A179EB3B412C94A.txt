@@ -1,2 +1,0 @@
-serviceClass: com.delect.motiver.client.service.MyService
-path: 38AE6DC0FAC5CC3E80F3BACB833E69A5.gwt.rpc
