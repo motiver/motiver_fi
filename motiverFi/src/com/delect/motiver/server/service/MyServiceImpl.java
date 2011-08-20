@@ -7590,23 +7590,23 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       List<ExerciseName> arrNames = null;
       
       //if some equipment
-      int equipment = -1;
-      try {
-        String s3 = query.replaceAll(".*--([0-9])--.*", "$1");
-        equipment = Integer.parseInt(s3);
-        
-        //remove index from query
-        query = query.replaceAll("\\(--[0-9]--\\)", "");
-        query = query.replaceAll("--[0-9]--\\)", "");
-        query = query.replaceAll("\\(--[0-9]--", "");
-        query = query.replaceAll("--[0-9]--", "");
-        query = query.trim();
-      } catch (Exception e) {
+//      int equipment = -1;
+//      try {
+//        String s3 = query.replaceAll(".*--([0-9])--.*", "$1");
+//        equipment = Integer.parseInt(s3);
+//        
+//        //remove index from query
+//        query = query.replaceAll("\\(--[0-9]--\\)", "");
+//        query = query.replaceAll("--[0-9]--\\)", "");
+//        query = query.replaceAll("\\(--[0-9]--", "");
+//        query = query.replaceAll("--[0-9]--", "");
+//        query = query.trim();
+//      } catch (Exception e) {
 //        log.log(Level.SEVERE, "searchExerciseNames", e);
-      }
+//      }
       
-      //TODO missing equipment search
-      List<ExerciseName> names = StoreTraining.getExerciseNames(pm, LOCALE);
+      //TODO missing equipment search and locale
+      List<ExerciseName> names = StoreTraining.getExerciseNames(pm);
 
       arrNames = new ArrayList<ExerciseName>();
 

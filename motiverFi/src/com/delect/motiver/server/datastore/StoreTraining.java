@@ -119,7 +119,8 @@ public class StoreTraining {
    * @param nameId
    * @throws Exception 
    */
-  public static ExerciseNameModel getExerciseNameModel(PersistenceManager pm, Long nameId) throws Exception {
+  @SuppressWarnings("unchecked")
+  public static ExerciseNameModel getExerciseNameModel(PersistenceManager pm, long nameId) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading exercise name: "+nameId);
@@ -130,25 +131,31 @@ public class StoreTraining {
 
     //load from cache
     WeekCache cache = new WeekCache();
-    ExerciseName n = cache.getExerciseName(nameId);
-    
-    if(n == null) {
+    List<ExerciseName> names = cache.getExerciseNames();
+
+    if(names == null) {
       if(logger.isLoggable(Level.FINER)) {
         logger.log(Level.FINER, "Not found from cache");
       }
       
-      n = pm.getObjectById(ExerciseName.class, nameId);
-    }
-    
-    if(n != null) {
-      //convert to client side model
-      model = ExerciseName.getClientModel(n);
+      Query q = pm.newQuery(ExerciseName.class);
+      names = (List<ExerciseName>) q.execute();
       
       //save to memcache
-      cache.addExerciseName(n);
+      cache.addExerciseNames(names);
+    }
+    
+    if(names != null) {
+      for(ExerciseName name : names) {
+        if(name.getId() != null && name.getId().longValue() == nameId) {
+          //convert to client side model
+          model = ExerciseName.getClientModel(name);
+          break;
+        }
+      }
     }
     else {
-      throw new Exception("Exercise name not found");
+      throw new Exception("Exercise names not found");
     }
     
     return model;
@@ -162,16 +169,16 @@ public class StoreTraining {
    * @return list 
    */
   @SuppressWarnings("unchecked")
-  public static List<ExerciseName> getExerciseNames(PersistenceManager pm, String locale) throws Exception {
+  public static List<ExerciseName> getExerciseNames(PersistenceManager pm) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
-      logger.log(Level.FINER, "Loading all exercise names: "+locale);
-      System.out.println("Loading all exercise names: "+locale);
+      logger.log(Level.FINER, "Loading all exercise names: ");
+      System.out.println("Loading all exercise names: ");
     }
 
     //load from cache
     WeekCache cache = new WeekCache();
-    List<ExerciseName> n = cache.getExerciseNames(locale);
+    List<ExerciseName> n = cache.getExerciseNames();
     
     if(n == null) {
       if(logger.isLoggable(Level.FINER)) {
@@ -179,12 +186,10 @@ public class StoreTraining {
       }
 
       Query q = pm.newQuery(ExerciseName.class);
-      q.setFilter("locale == localeParam");
-      q.declareParameters("java.lang.String localeParam");
-      n = (List<ExerciseName>) q.execute(locale);
+      n = (List<ExerciseName>) q.execute();
       
       //save to cache
-      cache.addExerciseNames(locale, n);
+      cache.addExerciseNames(n);
     }
     
     if(n == null) {
@@ -505,9 +510,13 @@ public class StoreTraining {
       mServer.setUid(uid);
       pm.makePersistent(mServer);
 
-      //save to memcache
+      //add to cache
       WeekCache cache = new WeekCache();
-      cache.addExerciseName(mServer);
+      List<ExerciseName> names = cache.getExerciseNames();
+      if(names != null) {
+        names.add(mServer);
+        cache.addExerciseNames(names);
+      }
       
       nameId = mServer.getId();      
     }
