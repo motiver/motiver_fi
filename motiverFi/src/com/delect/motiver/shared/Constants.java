@@ -16,14 +16,15 @@ package com.delect.motiver.shared;
 
 import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
+import com.google.gwt.user.client.Window;
 
 public interface Constants {
 
   
   //FOR LOCAL TESTING (change also API_KEY in index.html & blog.html!!!)
-    public static final String URL_APP = "http://localhost:8888/?gwt.codesvr=127.0.0.1:9997";
-    public static final String URL_APP_STATIC = "http://localhost:8888/";
-    public static final String URL_APP_CURR = "www.motiver.fi";
+//    public static final String URL_APP = "http://localhost:8888/?gwt.codesvr=127.0.0.1:9997";
+//    public static final String URL_APP_STATIC = "http://localhost:8888/";
+//    public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR ONLINE TESTING (change also API_KEY in index.html & blog.html!!!)
 //  public static final String URL_APP = "http://dev.motiver-app.appspot.com/";
@@ -31,9 +32,9 @@ public interface Constants {
 //  public static final String URL_APP_CURR = "dev.motiver-app.appspot.com";
 
   //FOR RELEASE (change also API_KEY in index.html & blog.html!!!)
-//    public static final String URL_APP = "http://www.motiver.fi/";
-//    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
-//    public static final String URL_APP_CURR = Window.Location.getHostName();
+    public static final String URL_APP = "http://www.motiver.fi/";
+    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
+    public static final String URL_APP_CURR = Window.Location.getHostName();
   
 	/**
 	 * Default value for how many days after today are shown
@@ -275,12 +276,6 @@ public interface Constants {
    * Default values for rest day times
    */
   public static final int[] VALUE_DEFAULT_TIMES_REST = new int[] { 25200, 41400, 57600, 64800, 79200 };
-  /**
-   * Restricted string for aliases
-   */
-  public static final String[] VALUES_RESTRICTED_ALIASES = new String[] {
-    "http","blogs","blogit","admin","motiver","static"
-  };
   
 
   public static final String TOKEN_MAIN = "user";

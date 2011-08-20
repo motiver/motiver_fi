@@ -38,7 +38,13 @@ import com.google.appengine.api.users.User;
  */
 public class StoreUser {
 
-
+  /**
+   * Restricted string for aliases
+   */
+  public static final String[] VALUES_RESTRICTED_ALIASES = new String[] {
+    "http","blogs","blogit","admin","motiver","static"
+  };
+  
   /**
    * Logger for this class
    */
@@ -130,7 +136,7 @@ public class StoreUser {
         
         //check if restricted value
         boolean restricted = false;
-        for(String s : Constants.VALUES_RESTRICTED_ALIASES) {
+        for(String s : VALUES_RESTRICTED_ALIASES) {
           if(s.equals(alias)) {
             restricted = true;
             break;
