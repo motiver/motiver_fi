@@ -244,5 +244,9 @@
         <property name="idTarget" direction="asc"/>
         <property name="date" direction="desc"/>
     </datastore-index>
+    <datastore-index kind="GuideValue" ancestor="false" source="manual">
+        <property name="openId" direction="asc"/>
+        <property name="dateStart" direction="asc"/>
+    </datastore-index>
     
 </datastore-indexes>

@@ -14,6 +14,8 @@
  ******************************************************************************/
 package com.delect.motiver.server;
 
+import java.io.Serializable;
+
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -26,8 +28,13 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.FoodModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class FoodInTime {
+public class FoodInTime implements Serializable {
 	
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -1531049017464384688L;
+
   /**
 	 * Converts server object to client side object
 	 * @param model : server side model
@@ -77,8 +84,7 @@ public class FoodInTime {
 	@Persistent
 	private Long name = 0L;
 
-	@SuppressWarnings("unused")
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Time parent;
 
 	public FoodInTime() {

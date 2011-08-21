@@ -14,6 +14,7 @@
  ******************************************************************************/
 package com.delect.motiver.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.MealModel;
 
 @PersistenceCapable(identityType = IdentityType.DATASTORE)
-public class MealInTime implements Comparable<MealInTime> {
+public class MealInTime implements Serializable, Comparable<MealInTime> {
 		
 	/**
 	 * Converts server object to client side object
@@ -79,8 +80,7 @@ public class MealInTime implements Comparable<MealInTime> {
 	@Persistent
 	private String name = "";
 
-	@SuppressWarnings("unused")
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Time parentTime;
 
 	public MealInTime() {

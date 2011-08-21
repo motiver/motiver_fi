@@ -27,6 +27,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import com.delect.motiver.server.ExerciseName;
+import com.delect.motiver.server.FoodName;
+import com.delect.motiver.server.Meal;
+import com.delect.motiver.server.Time;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
@@ -47,6 +50,14 @@ public class WeekCache {
 	 */
 	private static final Logger logger = Logger.getLogger(WeekCache.class.getName()); 
 	
+	//prefixes
+	private final static String PREFIX_WORKOUT = "w";
+  private final static String PREFIX_EXERCISENAMES = "en";
+  private final static String PREFIX_FOOD_NAMES = "fn";
+  private final static String PREFIX_TIME = "t";
+  private final static String PREFIX_MEAL = "m";
+  private final static String PREFIX_USERS = "users";
+  
 	private final static int CACHE_EXPIRE_SECONDS = 604800;
 	
 	private static Cache cache;
@@ -71,7 +82,7 @@ public class WeekCache {
     }
     
     StringBuilder builder = new StringBuilder();
-    builder.append("w");
+    builder.append(PREFIX_WORKOUT);
     builder.append(workoutId);
     Object obj = cache.get(builder.toString());
     
@@ -84,19 +95,19 @@ public class WeekCache {
     }
     
     StringBuilder builder = new StringBuilder();
-    builder.append("w");
+    builder.append(PREFIX_WORKOUT);
     builder.append(workout.getId());
     
     cache.put(builder.toString(), workout);
   }
   
-  public void removeWorkoutModel(Long workoutId) {
+  public void removeWorkout(Long workoutId) {
     if(cache == null) {
       return;
     }
 
     StringBuilder builder = new StringBuilder();
-    builder.append("w");
+    builder.append(PREFIX_WORKOUT);
     builder.append(workoutId);
 
     cache.remove(builder.toString());
@@ -109,7 +120,7 @@ public class WeekCache {
     }
     
     StringBuilder builder = new StringBuilder();
-    builder.append("en");
+    builder.append(PREFIX_EXERCISENAMES);
     Object obj = cache.get(builder.toString());
 
     List<ExerciseName> names = null;
@@ -141,7 +152,7 @@ public class WeekCache {
     }
 
     StringBuilder builder = new StringBuilder();
-    builder.append("en");
+    builder.append(PREFIX_EXERCISENAMES);
     
     cache.put(builder.toString(), map);
     
@@ -158,7 +169,7 @@ public class WeekCache {
 
     List<UserOpenid> names = null;
 
-    Object obj = cache.get("users");
+    Object obj = cache.get(PREFIX_USERS);
     if(obj instanceof Map) {
       names = new ArrayList<UserOpenid>();
       Map<String, UserOpenid> map = (Map<String, UserOpenid>)obj;
@@ -189,7 +200,7 @@ public class WeekCache {
       map.put(u.getId(), u);
     }
     
-    cache.put("users", map);
+    cache.put(PREFIX_USERS, map);
   }
 
   /**
@@ -200,6 +211,141 @@ public class WeekCache {
       return;
     }
     
-    cache.remove("users");
+    cache.remove(PREFIX_USERS);
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<FoodName> getFoodNames() {
+    if(cache == null) {
+      return null;
+    }
+    
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_FOOD_NAMES);
+    Object obj = cache.get(builder.toString());
+
+    List<FoodName> names = null;
+    
+    if(obj instanceof Map) {
+      names = new ArrayList<FoodName>();
+      Map<Long, FoodName> map = (Map<Long, FoodName>)obj;
+      
+      Collection<FoodName> c = map.values();
+      Iterator<FoodName> itr = c.iterator();
+      while(itr.hasNext()) {
+        names.add(itr.next());
+      }
+    }
+    
+    return names;
+  }
+  
+  public void addFoodNames(List<FoodName> names) {
+    if(cache == null) {
+      return;
+    }
+    
+    Map<Long, FoodName> map = new HashMap<Long, FoodName>();
+    
+    //add each name
+    for(FoodName name : names) {
+      map.put(name.getId(), name);
+    }
+
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_FOOD_NAMES);
+    
+    cache.put(builder.toString(), map);
+    
+  }
+
+  @SuppressWarnings("unchecked")
+  public Time getTime(Long timeId) {
+    if(cache == null) {
+      return null;
+    }
+    
+    //time
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_TIME);
+    builder.append(timeId);
+    Object obj = cache.get(builder.toString());
+    
+    Time t = null;
+    if(obj != null && obj instanceof Time) {
+      t = (Time)obj;
+    }
+    
+    return t;
+  }
+  
+  public void addTime(Time time) {
+    if(cache == null) {
+      return;
+    }
+    
+    //time
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_TIME);
+    builder.append(time.getId());
+    cache.put(builder.toString(), time);
+    
+  }
+  
+  public void removeTime(Long timeId) {
+    if(cache == null) {
+      return;
+    }
+
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_TIME);
+    builder.append(timeId);
+
+    cache.remove(builder.toString());
+  }
+
+  @SuppressWarnings("unchecked")
+  public Meal getMeal(Long mealId) {
+    if(cache == null) {
+      return null;
+    }
+    
+    //meal
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_MEAL);
+    builder.append(mealId);
+    Object obj = cache.get(builder.toString());
+    
+    Meal t = null;
+    if(obj != null && obj instanceof Meal) {
+      t = (Meal)obj;
+    }
+    
+    return t;
+  }
+  
+  public void addMeal(Meal meal) {
+    if(cache == null) {
+      return;
+    }
+    
+    //meal
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_MEAL);
+    builder.append(meal.getId());
+    cache.put(builder.toString(), meal);
+    
+  }
+  
+  public void removeMeal(Long mealId) {
+    if(cache == null) {
+      return;
+    }
+
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_MEAL);
+    builder.append(mealId);
+
+    cache.remove(builder.toString());
   }
 }

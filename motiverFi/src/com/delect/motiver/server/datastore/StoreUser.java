@@ -27,7 +27,6 @@ import javax.jdo.Query;
 import com.delect.motiver.server.Circle;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.cache.WeekCache;
-import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.UserModel;
 import com.google.appengine.api.users.User;

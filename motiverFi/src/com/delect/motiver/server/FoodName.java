@@ -14,6 +14,7 @@
  ******************************************************************************/
 package com.delect.motiver.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,7 +27,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.delect.motiver.shared.FoodNameModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class FoodName implements Comparable<FoodName> {
+public class FoodName implements Serializable, Comparable<FoodName> {
 	
 	/**
 	 * Converts server object to client side object
