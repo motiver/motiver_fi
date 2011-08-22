@@ -4937,14 +4937,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
-
-<<<<<<< HEAD
-    if(log.isLoggable(Level.FINE)) {
-      log.log(Level.FINE, "Adding user from circle: friendid="+uid+", target="+target);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding user from circle: friendid="+uid+", target="+target);
     }
-=======
-    logger.log(Level.FINE, "addUserToCircle()");
->>>>>>> refs/heads/store_nutrition
     
     boolean ok = false;
 
@@ -4982,14 +4977,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
   public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException {
-
-<<<<<<< HEAD
-    if(log.isLoggable(Level.FINE)) {
-      log.log(Level.FINE, "Removing user from circle: friendid="+uid+", target="+target);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing user from circle: friendid="+uid+", target="+target);
     }
-=======
-    logger.log(Level.FINE, "removeUserFromCircle()");
->>>>>>> refs/heads/store_nutrition
     
     boolean ok = false;
 
