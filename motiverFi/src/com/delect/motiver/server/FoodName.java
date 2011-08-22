@@ -30,6 +30,11 @@ import com.delect.motiver.shared.FoodNameModel;
 public class FoodName implements Serializable, Comparable<FoodName> {
 	
 	/**
+   * 
+   */
+  private static final long serialVersionUID = 5611583796576301215L;
+
+  /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model

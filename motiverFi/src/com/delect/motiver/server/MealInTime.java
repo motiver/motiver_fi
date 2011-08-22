@@ -32,7 +32,12 @@ import com.delect.motiver.shared.MealModel;
 @PersistenceCapable(identityType = IdentityType.DATASTORE)
 public class MealInTime implements Serializable, Comparable<MealInTime> {
 		
-	/**
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 6226963324096990747L;
+
+  /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model

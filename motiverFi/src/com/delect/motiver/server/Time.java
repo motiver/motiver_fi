@@ -34,6 +34,11 @@ import com.delect.motiver.shared.TimeModel;
 public class Time implements Serializable, Comparable<Time> {
 	
 	/**
+   * 
+   */
+  private static final long serialVersionUID = 938076651175865622L;
+
+  /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model

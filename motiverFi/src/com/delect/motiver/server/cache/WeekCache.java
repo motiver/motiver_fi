@@ -259,7 +259,6 @@ public class WeekCache {
     
   }
 
-  @SuppressWarnings("unchecked")
   public Time getTime(Long timeId) {
     if(cache == null) {
       return null;
@@ -304,7 +303,6 @@ public class WeekCache {
     cache.remove(builder.toString());
   }
 
-  @SuppressWarnings("unchecked")
   public Meal getMeal(Long mealId) {
     if(cache == null) {
       return null;

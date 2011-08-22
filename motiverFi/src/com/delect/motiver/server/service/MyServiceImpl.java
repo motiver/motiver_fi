@@ -1084,7 +1084,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         return output.getTime(); 
   }
   
-  @SuppressWarnings("unchecked")
   @Override
   public UserModel getUser() throws ConnectionException {
 
@@ -6807,65 +6806,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      //delete exercise
-      for(FoodModel m : foods) {
 
-        //if food is in meal (which is in time)
-        if(m.getTimeId() != 0 && m.getMealId() != 0) {
-          //get time
-          Time time = pm.getObjectById(Time.class, m.getTimeId());
-          if(time != null && hasPermission(1, UID, time.getUid())) {
-            //get meal
-            for(MealInTime meal : time.getMeals()) {
-              if(meal.getId() == m.getMealId()) {
-                for(FoodInMealTime f : meal.getFoods()) {
-                  if(m.getId() == f.getId()) {
-                    pm.deletePersistent(f);
-                    ok = true;
-                    break;
-                  }
-                }
-                break;
-              }
-            }
-          }
-        }
-        //if food is in time
-        else if(m.getTimeId() != 0) {
-          Time time = pm.getObjectById(Time.class, m.getTimeId());
-          //meal found and we have permission
-          if(time != null && hasPermission(1, UID, time.getUid())) {
-            for(FoodInTime f : time.getFoods()) {
-              if(f.getId() == m.getId()) {
-                pm.deletePersistent(f);
-                ok = true;
-                break;
-              }
-            }
-          }
-        }
-        //if food is in meal
-        else if(m.getMealId() != 0) {
-          Meal time = pm.getObjectById(Meal.class, m.getMealId());
-          //meal found and we have permission
-          if(time != null && hasPermission(1, UID, time.getUid())) {
-            for(FoodInMeal f : time.getFoods()) {
-              if(f.getId() == m.getId()) {
-                pm.deletePersistent(f);
-                ok = true;
-                break;
-              }
-            }
-          }
-        }
+      //TODO needs improving
+      for(FoodModel m : foods) {
+        StoreNutrition.removeFoodModel(pm, m, UID);
       }
+      
+      ok = true;
       
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "removeFoods", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error removing foods", e);
       throw new ConnectionException("removeFoods", e.getMessage());
     }
     finally { 
@@ -7599,7 +7550,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Search food names
    * @return names' models
    */
-  @SuppressWarnings({ "unchecked", "deprecation" })
+  @SuppressWarnings({ })
   @Override
   public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
 
