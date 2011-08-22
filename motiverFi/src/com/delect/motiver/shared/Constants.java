@@ -16,15 +16,14 @@ package com.delect.motiver.shared;
 
 import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
-import com.google.gwt.user.client.Window;
 
 public interface Constants {
 
   
   //FOR LOCAL TESTING (change also API_KEY in index.html & blog.html!!!)
-//    public static final String URL_APP = "http://localhost:8888/?gwt.codesvr=127.0.0.1:9997";
-//    public static final String URL_APP_STATIC = "http://localhost:8888/";
-//    public static final String URL_APP_CURR = "www.motiver.fi";
+    public static final String URL_APP = "http://localhost:8888/?gwt.codesvr=127.0.0.1:9997";
+    public static final String URL_APP_STATIC = "http://localhost:8888/";
+    public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR ONLINE TESTING (change also API_KEY in index.html & blog.html!!!)
 //  public static final String URL_APP = "http://dev.motiver-app.appspot.com/";
@@ -32,9 +31,9 @@ public interface Constants {
 //  public static final String URL_APP_CURR = "dev.motiver-app.appspot.com";
 
   //FOR RELEASE (change also API_KEY in index.html & blog.html!!!)
-    public static final String URL_APP = "http://www.motiver.fi/";
-    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
-    public static final String URL_APP_CURR = Window.Location.getHostName();
+//    public static final String URL_APP = "http://www.motiver.fi/";
+//    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
+//    public static final String URL_APP_CURR = Window.Location.getHostName();
   
 	/**
 	 * Default value for how many days after today are shown
@@ -262,11 +261,6 @@ public interface Constants {
 	 * How many times we try to update entity if there is some problems
 	 */
   public static final int LIMIT_UPDATE_RETRIES = 3;
-  
-  /**
-   * How long we wait between retries (milliseconds)
-   */
-  public static final int DELAY_BETWEEN_RETRIES = 75;
   
   /**
    * Default values for training day times

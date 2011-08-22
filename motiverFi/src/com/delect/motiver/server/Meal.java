@@ -14,6 +14,7 @@
  ******************************************************************************/
 package com.delect.motiver.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,9 +30,14 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.MealModel;
 
 @PersistenceCapable(identityType = IdentityType.DATASTORE)
-public class Meal implements Comparable<Meal> {
+public class Meal implements Serializable, Comparable<Meal> {
 		
-	/**
+  /**
+   * 
+   */
+  private static final long serialVersionUID = -1889245717390374201L;
+
+  /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model

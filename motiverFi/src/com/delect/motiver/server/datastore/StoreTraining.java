@@ -268,7 +268,7 @@ public class StoreTraining {
 
           //save to cache
           WeekCache cache = new WeekCache();
-          cache.removeWorkoutModel(w.getId());
+          cache.removeWorkout(w.getId());
           
           //get client side model
           model = getWorkoutModel(pm, w.getId(), uid);
@@ -297,7 +297,7 @@ public class StoreTraining {
         
         //small delay between retries
         try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+          Thread.sleep(MyServiceImpl.DELAY_BETWEEN_RETRIES);
         }
         catch(Exception ex) { }
       }
@@ -354,7 +354,7 @@ public class StoreTraining {
           
           //clear workout from cache
           WeekCache cache = new WeekCache();
-          cache.removeWorkoutModel(workoutId);
+          cache.removeWorkout(workoutId);
       
           break;
         }
@@ -381,7 +381,7 @@ public class StoreTraining {
         
         //small delay between retries
         try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+          Thread.sleep(MyServiceImpl.DELAY_BETWEEN_RETRIES);
         }
         catch(Exception ex) { }
       }
@@ -474,7 +474,7 @@ public class StoreTraining {
         
         //small delay between retries
         try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+          Thread.sleep(MyServiceImpl.DELAY_BETWEEN_RETRIES);
         }
         catch(Exception ignored) { }
       }
@@ -609,7 +609,7 @@ public class StoreTraining {
 
           //clear workout from cache
           WeekCache cache = new WeekCache();
-          cache.removeWorkoutModel(w.getId());
+          cache.removeWorkout(w.getId());
           
           break;
           
@@ -636,7 +636,7 @@ public class StoreTraining {
         
         //small delay between retries
         try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+          Thread.sleep(MyServiceImpl.DELAY_BETWEEN_RETRIES);
         }
         catch(Exception ignored) { }
       }
@@ -729,7 +729,7 @@ public class StoreTraining {
         
         //small delay between retries
         try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+          Thread.sleep(MyServiceImpl.DELAY_BETWEEN_RETRIES);
         }
         catch(Exception ex) { }
       }

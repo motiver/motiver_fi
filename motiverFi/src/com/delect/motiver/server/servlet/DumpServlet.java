@@ -28,6 +28,11 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
  */
 public class DumpServlet extends RemoteServiceServlet {
 
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 5644519226573469303L;
+
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
     response.setStatus(404);

@@ -14,6 +14,7 @@
  ******************************************************************************/
 package com.delect.motiver.server;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,9 +31,14 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.TimeModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Time implements Comparable<Time> {
+public class Time implements Serializable, Comparable<Time> {
 	
 	/**
+   * 
+   */
+  private static final long serialVersionUID = 938076651175865622L;
+
+  /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model
@@ -123,12 +129,7 @@ public class Time implements Comparable<Time> {
 	}
 
 	public List<MealInTime> getMeals() {
-		if(meals != null) {
-			return meals;
-    }
-		else {
-			return new ArrayList<MealInTime>();
-    }
+	  return meals;
 	}
 
 	public long getTime() {

@@ -74,6 +74,7 @@ import com.delect.motiver.server.RunValue;
 import com.delect.motiver.server.Time;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
+import com.delect.motiver.server.datastore.StoreNutrition;
 import com.delect.motiver.server.datastore.StoreTraining;
 import com.delect.motiver.server.datastore.StoreUser;
 import com.delect.motiver.shared.BlogData;
@@ -120,6 +121,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private static final long serialVersionUID = -7106279162988246661L;
 
+  /**
+   * How long we wait between retries (milliseconds)
+   */
+  public static final int DELAY_BETWEEN_RETRIES = 75;
+  
 
   private static final class MyListItem implements Comparable<MyListItem> {
     
@@ -136,12 +142,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     @Override
     public int compareTo(MyListItem item) {
 
-    log.log(Level.FINE, "compareTo()");
+    logger.log(Level.FINE, "compareTo()");
       return item.count - count;
     }
   }
   
-  private static final Logger log = Logger.getLogger(MyServiceImpl.class.getName()); 
+  private static final Logger logger = Logger.getLogger(MyServiceImpl.class.getName()); 
   
   static final int MAX_COUNT = 4000;
     
@@ -201,7 +207,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private static boolean areFriends(String uid) {
 
-    log.log(Level.FINE, "areFriends()");
+    logger.log(Level.FINE, "areFriends()");
 
     boolean areFriends = false;
     
@@ -253,16 +259,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param times
    * @return
    */
-  private static NutritionDayModel calculateEnergyFromTimes(PersistenceManager pm, List<Time> times) {
+  private static NutritionDayModel calculateEnergyFromTimes(PersistenceManager pm, List<Time> times, String UID) {
 
-    log.log(Level.FINE, "calculateEnergyFromTimes()");
+    logger.log(Level.FINE, "calculateEnergyFromTimes()");
     double energy = 0;
     double protein = 0; 
     double carbs = 0;
     double fet = 0;
 
     try {
-      List<TimeModel> list = getSingleTimes(pm, times);
+      List<TimeModel> list = new ArrayList<TimeModel>();
+      for(Time time : times) {
+        list.add(StoreNutrition.getTimeModel(pm, time.getId(), UID));
+      }
       
       //each time
       for(TimeModel tClient : list) {
@@ -302,7 +311,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e1) {
-      log.log(Level.SEVERE, "calculateEnergyFromTimes", e1);
+      logger.log(Level.SEVERE, "calculateEnergyFromTimes", e1);
     }
 
     return new NutritionDayModel(energy, protein, carbs, fet);
@@ -315,7 +324,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public static Exercise duplicateExercise(Exercise e) {
 
-    log.log(Level.FINE, "duplicateExercise()");
+    logger.log(Level.FINE, "duplicateExercise()");
 
     Exercise eNew = new Exercise();
     
@@ -329,7 +338,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       eNew.setWeights(e.getWeights());
       
     } catch (Exception e1) {
-      log.log(Level.SEVERE, "duplicateExercise", e1);
+      logger.log(Level.SEVERE, "duplicateExercise", e1);
     }
     
     return eNew;
@@ -342,7 +351,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private static FoodInMeal duplicateFood(FoodInMeal f) throws ConnectionException {
 
-    log.log(Level.FINE, "duplicateFood()");
+    logger.log(Level.FINE, "duplicateFood()");
 
     try {
       FoodInMeal fNew = new FoodInMeal();
@@ -352,7 +361,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return fNew;
       
     } catch (Exception e1) {
-      log.log(Level.SEVERE, "duplicateFood", e1);
+      logger.log(Level.SEVERE, "duplicateFood", e1);
       throw new ConnectionException("duplicateFood", e1.getMessage());
     }
   }
@@ -364,13 +373,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private static Meal duplicateMeal(Meal m) throws ConnectionException {
 
-    log.log(Level.FINE, "duplicateMeal()");
+    logger.log(Level.FINE, "duplicateMeal()");
 
     try {
       Meal mNew = new Meal(m.getName());
       return mNew;
     } catch (Exception e) {
-      log.log(Level.SEVERE, "duplicateMeal", e);
+      logger.log(Level.SEVERE, "duplicateMeal", e);
       throw new ConnectionException("duplicateMeal", e.getMessage());
     }
   }
@@ -382,13 +391,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private static MealInTime duplicateMeal(MealInTime m) throws ConnectionException {
 
-    log.log(Level.FINE, "duplicateMeal()");
+    logger.log(Level.FINE, "duplicateMeal()");
 
     try {
       MealInTime mNew = new MealInTime(m.getName());
       return mNew;
     } catch (Exception e) {
-      log.log(Level.SEVERE, "duplicateMeal", e);
+      logger.log(Level.SEVERE, "duplicateMeal", e);
       throw new ConnectionException("duplicateMeal", e.getMessage());
     }
   }
@@ -400,13 +409,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private static Time duplicateTime(Time t) throws ConnectionException {
 
-    log.log(Level.FINE, "duplicateTime()");
+    logger.log(Level.FINE, "duplicateTime()");
     
     try {
       Time tNew = new Time(t.getDate(), t.getTime());
       return tNew;
     } catch (Exception e) {
-      log.log(Level.SEVERE, "duplicateTime", e);
+      logger.log(Level.SEVERE, "duplicateTime", e);
       throw new ConnectionException("duplicateTime", e.getMessage());
     }
   }
@@ -419,7 +428,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private static Workout duplicateWorkout(Workout w) throws ConnectionException {
 
-    log.log(Level.FINE, "duplicateWorkout()");
+    logger.log(Level.FINE, "duplicateWorkout()");
 
     try {
       Workout wNew = new Workout(w.getName());
@@ -434,7 +443,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
       return wNew;
     } catch (Exception e) {
-      log.log(Level.SEVERE, "duplicateWorkout", e);
+      logger.log(Level.SEVERE, "duplicateWorkout", e);
       throw new ConnectionException("duplicateWorkout", e.getMessage());
     }
   }
@@ -447,7 +456,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private static FoodNameModel getFoodName(PersistenceManager pm, Long nameId) throws ConnectionException {
 
-    log.log(Level.FINE, "getFoodName()");
+    logger.log(Level.FINE, "getFoodName()");
     
     try {
       FoodName name = pm.getObjectById(FoodName.class, nameId);
@@ -456,73 +465,73 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getFoodName", e);
+      logger.log(Level.SEVERE, "getFoodName", e);
       throw new ConnectionException("getFoodName", e.getMessage());
     }
     
     return null;
   }
 
-  /**
-   * Gets client side model of single meals (with foods)
-   * @param pm
-   * @param t
-   * @return
-   */
-  @SuppressWarnings("unchecked")
-  private static MealModel getSingleMeal(PersistenceManager pm, Meal meal, boolean fetchFoods) {
-
-    log.log(Level.FINE, "getSingleMeal()");
-
-    log.log(Level.FINE, "getSingleMeal()");
-    MealModel m = Meal.getClientModel(meal);
-
-    if(fetchFoods) {
-      //fetch names first
-      List<Long> arrNameId = new ArrayList<Long>();
-      for(FoodInMeal f : meal.getFoods()) {
-        if(f.getNameId() != 0 && !arrNameId.contains(f.getNameId())) {
-            arrNameId.add(f.getNameId());
-        }
-      }
-
-      List<FoodName> foodNames = null;
-      try {
-        Query query = pm.newQuery(FoodName.class);
-        query.setFilter("idParam.contains(id)");
-        query.declareParameters("java.lang.Long idParam");
-        foodNames = (List<FoodName>) query.execute(arrNameId);
-      } catch (Exception e1) {
-        log.log(Level.SEVERE, "getSingleMeal", e1);
-      }
-          
-      //get foods
-      final List<FoodModel> listFoods = new ArrayList<FoodModel>();
-      for(FoodInMeal f : meal.getFoods()) {
-        try {
-          FoodModel fClient = FoodInMeal.getClientModel(f);
-
-          //get name from array
-          if(f.getNameId() != 0 && foodNames != null) {
-            for(FoodName fn : foodNames) {
-              if(fn.getId().longValue() == f.getNameId().longValue()) {
-                fClient.setName(FoodName.getClientModel(fn));
-                break;
-              }
-            }
-          }
-          
-          listFoods.add(fClient);
-          
-        } catch (Exception e) {
-          log.log(Level.SEVERE, "getSingleMeal", e);
-        }
-      }
-      m.setFoods(listFoods);
-    }
-    
-    return m;
-  }
+//  /**
+//   * Gets client side model of single meals (with foods)
+//   * @param pm
+//   * @param t
+//   * @return
+//   */
+//  @SuppressWarnings("unchecked")
+//  private static MealModel getSingleMeal(PersistenceManager pm, Meal meal, boolean fetchFoods) {
+//
+//    logger.log(Level.FINE, "getSingleMeal()");
+//
+//    logger.log(Level.FINE, "getSingleMeal()");
+//    MealModel m = Meal.getClientModel(meal);
+//
+//    if(fetchFoods) {
+//      //fetch names first
+//      List<Long> arrNameId = new ArrayList<Long>();
+//      for(FoodInMeal f : meal.getFoods()) {
+//        if(f.getNameId() != 0 && !arrNameId.contains(f.getNameId())) {
+//            arrNameId.add(f.getNameId());
+//        }
+//      }
+//
+//      List<FoodName> foodNames = null;
+//      try {
+//        Query query = pm.newQuery(FoodName.class);
+//        query.setFilter("idParam.contains(id)");
+//        query.declareParameters("java.lang.Long idParam");
+//        foodNames = (List<FoodName>) query.execute(arrNameId);
+//      } catch (Exception e1) {
+//        logger.log(Level.SEVERE, "getSingleMeal", e1);
+//      }
+//          
+//      //get foods
+//      final List<FoodModel> listFoods = new ArrayList<FoodModel>();
+//      for(FoodInMeal f : meal.getFoods()) {
+//        try {
+//          FoodModel fClient = FoodInMeal.getClientModel(f);
+//
+//          //get name from array
+//          if(f.getNameId() != 0 && foodNames != null) {
+//            for(FoodName fn : foodNames) {
+//              if(fn.getId().longValue() == f.getNameId().longValue()) {
+//                fClient.setName(FoodName.getClientModel(fn));
+//                break;
+//              }
+//            }
+//          }
+//          
+//          listFoods.add(fClient);
+//          
+//        } catch (Exception e) {
+//          logger.log(Level.SEVERE, "getSingleMeal", e);
+//        }
+//      }
+//      m.setFoods(listFoods);
+//    }
+//    
+//    return m;
+//  }
 
   /**
    * Gets client side model of single meal (int time) (with foods)
@@ -533,9 +542,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   private static MealModel getSingleMeal(PersistenceManager pm, MealInTime meal, boolean fetchFoods) {
 
-    log.log(Level.FINE, "getSingleMeal()");
+    logger.log(Level.FINE, "getSingleMeal()");
 
-    log.log(Level.FINE, "getSingleMeal()");
+    logger.log(Level.FINE, "getSingleMeal()");
     MealModel m = MealInTime.getClientModel(meal);
 
     if(fetchFoods) {
@@ -554,7 +563,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         query.declareParameters("java.lang.Long idParam");
         foodNames = (List<FoodName>) query.execute(arrNameId);
       } catch (Exception e1) {
-        log.log(Level.SEVERE, "getSingleMeal", e1);
+        logger.log(Level.SEVERE, "getSingleMeal", e1);
       }
           
       //get foods
@@ -576,7 +585,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           listFoods.add(fClient);
           
         } catch (Exception e) {
-          log.log(Level.SEVERE, "getSingleMeal", e);
+          logger.log(Level.SEVERE, "getSingleMeal", e);
         }
       }
       m.setFoods(listFoods);
@@ -591,117 +600,117 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param t
    * @return
    */
-  @SuppressWarnings("unchecked")
-  private static List<TimeModel> getSingleTimes(PersistenceManager pm, List<Time> times) {
-
-    log.log(Level.FINE, "getSingleTimes()");
-
-    log.log(Level.FINE, "getSingleTimes()");
-
-    List<TimeModel> timesClient = new ArrayList<TimeModel>();
-    
-    if(times == null || times.size() == 0) {
-      return timesClient;
-    }
-    
-    //fetch names first
-    List<Long> arrNameId = new ArrayList<Long>();
-    for(Time t : times) {
-      final List<MealInTime> listM = t.getMeals();
-      for(MealInTime w : listM) {
-        final List<FoodInMealTime> listF = w.getFoods();
-        for(FoodInMealTime f : listF) {
-          if(f.getNameId() != 0 && !arrNameId.contains(f.getNameId())) {
-              arrNameId.add(f.getNameId());
-          }
-        }
-      }
-      for(FoodInTime f : t.getFoods()) {
-        if(f.getNameId() != 0 && !arrNameId.contains(f.getNameId())) {
-            arrNameId.add(f.getNameId());
-        }
-      }
-    }
-    
-    List<FoodName> foodNames = null;
-    try {
-      Query query = pm.newQuery(FoodName.class);
-      query.setFilter("idParam.contains(id)");
-      query.declareParameters("java.lang.Long idParam");
-      foodNames = (List<FoodName>) query.execute(arrNameId);
-    } catch (Exception e1) {
-    }
-
-    for(Time t : times) {
-      TimeModel m = Time.getClientModel(t);
-      
-      //get meals
-      List<MealInTime> meals = t.getMeals();
-      List<MealModel> listMeals = new ArrayList<MealModel>();
-      if(meals != null) {
-        
-        for(MealInTime w : t.getMeals()) {
-          MealModel meal = MealInTime.getClientModel(w);
-          
-          //get foods
-          List<FoodModel> listFoods = new ArrayList<FoodModel>();
-          for(FoodInMealTime f : w.getFoods()) {
-            FoodModel fClient = FoodInMealTime.getClientModel(f);
-            fClient.setMealId(meal.getId());
-            fClient.setTimeId(meal.getTimeId());
-            fClient.setUid(meal.getUid());
-
-            //get name from array
-            if(f.getNameId() != 0 && foodNames != null) {
-              for(FoodName fn : foodNames) {
-                if(fn.getId().longValue() == f.getNameId().longValue()) {
-                  fClient.setName(FoodName.getClientModel(fn));
-                  break;
-                }
-              }
-            }
-            
-            listFoods.add(fClient);
-          }
-          meal.setFoods(listFoods);
-          
-          //set time
-          meal.setTimeId(t.getId());
-                  
-          listMeals.add(meal);
-        }
-      }
-      m.setMeals(listMeals);
-      
-      //get foods
-      final List<FoodModel> listFoods = new ArrayList<FoodModel>();
-      for(FoodInTime f : t.getFoods()) {
-        try {
-          FoodModel fClient = FoodInTime.getClientModel(f);
-
-          //get name from array
-          if(f.getNameId() != 0 && foodNames != null) {
-            for(FoodName fn : foodNames) {
-              if(fn.getId().longValue() == f.getNameId().longValue()) {
-                fClient.setName(FoodName.getClientModel(fn));
-                break;
-              }
-            }
-          }
-          
-          listFoods.add(fClient);
-          
-        } catch (Exception e) {
-          log.log(Level.SEVERE, "getSingleTimes", e);
-        }
-      }
-      m.setFoods(listFoods);
-      
-      timesClient.add(m);
-    }
-    
-    return timesClient;
-  }
+//  @SuppressWarnings("unchecked")
+//  private static List<TimeModel> getSingleTimes(PersistenceManager pm, List<Time> times) {
+//
+//    log.log(Level.FINE, "getSingleTimes()");
+//
+//    log.log(Level.FINE, "getSingleTimes()");
+//
+//    List<TimeModel> timesClient = new ArrayList<TimeModel>();
+//    
+//    if(times == null || times.size() == 0) {
+//      return timesClient;
+//    }
+//    
+//    //fetch names first
+//    List<Long> arrNameId = new ArrayList<Long>();
+//    for(Time t : times) {
+//      final List<MealInTime> listM = t.getMeals();
+//      for(MealInTime w : listM) {
+//        final List<FoodInMealTime> listF = w.getFoods();
+//        for(FoodInMealTime f : listF) {
+//          if(f.getNameId() != 0 && !arrNameId.contains(f.getNameId())) {
+//              arrNameId.add(f.getNameId());
+//          }
+//        }
+//      }
+//      for(FoodInTime f : t.getFoods()) {
+//        if(f.getNameId() != 0 && !arrNameId.contains(f.getNameId())) {
+//            arrNameId.add(f.getNameId());
+//        }
+//      }
+//    }
+//    
+//    List<FoodName> foodNames = null;
+//    try {
+//      Query query = pm.newQuery(FoodName.class);
+//      query.setFilter("idParam.contains(id)");
+//      query.declareParameters("java.lang.Long idParam");
+//      foodNames = (List<FoodName>) query.execute(arrNameId);
+//    } catch (Exception e1) {
+//    }
+//
+//    for(Time t : times) {
+//      TimeModel m = Time.getClientModel(t);
+//      
+//      //get meals
+//      List<MealInTime> meals = t.getMeals();
+//      List<MealModel> listMeals = new ArrayList<MealModel>();
+//      if(meals != null) {
+//        
+//        for(MealInTime w : t.getMeals()) {
+//          MealModel meal = MealInTime.getClientModel(w);
+//          
+//          //get foods
+//          List<FoodModel> listFoods = new ArrayList<FoodModel>();
+//          for(FoodInMealTime f : w.getFoods()) {
+//            FoodModel fClient = FoodInMealTime.getClientModel(f);
+//            fClient.setMealId(meal.getId());
+//            fClient.setTimeId(meal.getTimeId());
+//            fClient.setUid(meal.getUid());
+//
+//            //get name from array
+//            if(f.getNameId() != 0 && foodNames != null) {
+//              for(FoodName fn : foodNames) {
+//                if(fn.getId().longValue() == f.getNameId().longValue()) {
+//                  fClient.setName(FoodName.getClientModel(fn));
+//                  break;
+//                }
+//              }
+//            }
+//            
+//            listFoods.add(fClient);
+//          }
+//          meal.setFoods(listFoods);
+//          
+//          //set time
+//          meal.setTimeId(t.getId());
+//                  
+//          listMeals.add(meal);
+//        }
+//      }
+//      m.setMeals(listMeals);
+//      
+//      //get foods
+//      final List<FoodModel> listFoods = new ArrayList<FoodModel>();
+//      for(FoodInTime f : t.getFoods()) {
+//        try {
+//          FoodModel fClient = FoodInTime.getClientModel(f);
+//
+//          //get name from array
+//          if(f.getNameId() != 0 && foodNames != null) {
+//            for(FoodName fn : foodNames) {
+//              if(fn.getId().longValue() == f.getNameId().longValue()) {
+//                fClient.setName(FoodName.getClientModel(fn));
+//                break;
+//              }
+//            }
+//          }
+//          
+//          listFoods.add(fClient);
+//          
+//        } catch (Exception e) {
+//          log.log(Level.SEVERE, "getSingleTimes", e);
+//        }
+//      }
+//      m.setFoods(listFoods);
+//      
+//      timesClient.add(m);
+//    }
+//    
+//    return timesClient;
+//  }
 
   /**
    * Gets client side model of single workout
@@ -776,7 +785,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   private static String getTraineesToken(String token) {
 
-    log.log(Level.FINE, "getTraineesToken()");
+    logger.log(Level.FINE, "getTraineesToken()");
 
     String ret = token;
 
@@ -807,7 +816,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getTraineesToken", e);
+      logger.log(Level.SEVERE, "getTraineesToken", e);
     }
     finally {
       if (!pm.isClosed()) {
@@ -833,7 +842,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         coachModeUid = s;
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error checkin coach mode", e);
+      logger.log(Level.SEVERE, "Error checkin coach mode", e);
       coachModeUid = null;
     }
     
@@ -842,7 +851,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   static String _getUid(String coachModeUid) {
 
-    log.log(Level.FINE, "getUid()");
+    logger.log(Level.FINE, "getUid()");
 
     String openId = null;
 
@@ -855,7 +864,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   
     //if coach mode -> return trainee's uid
     if(coachModeUid != null) {
-      log.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
+      logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
 
       PersistenceManager pm =  PMF.get().getPersistenceManager();
       
@@ -867,11 +876,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         List<Circle> list = (List<Circle>)q.execute(coachModeUid, openId, Permission.COACH);
         
         if(list.size() > 0) {
-          log.log(Level.FINE, "Is coach!");
+          logger.log(Level.FINE, "Is coach!");
           openId = list.get(0).getUid();
         }
       } catch (Exception e) {
-        log.log(Level.SEVERE, "Error checkin coach", e);
+        logger.log(Level.SEVERE, "Error checkin coach", e);
       }
       finally {
         if(!pm.isClosed()) {
@@ -931,7 +940,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private Object[] getUidAndLocale() {
 
-    log.log(Level.FINE, "getUidAndLocale()");
+    logger.log(Level.FINE, "getUidAndLocale()");
 
     String uid = getUid();
     String locale = "";
@@ -947,7 +956,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error fetching locale", e);
+      logger.log(Level.SEVERE, "Error fetching locale", e);
     }
     finally {
       if (!pm.isClosed()) {
@@ -969,7 +978,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   private static boolean hasPermission(int target, String ourUid, String uid) {
 
-    log.log(Level.FINE, "hasPermission()");
+    logger.log(Level.FINE, "hasPermission()");
     
     if(ourUid.equals(uid)) {
       return true;
@@ -989,7 +998,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       hasPermission = (list.size() > 0);
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "hasPermission", e);
+      logger.log(Level.SEVERE, "hasPermission", e);
     }
     finally {
       if (!pm.isClosed()) {
@@ -1010,7 +1019,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   public static boolean hasPermission(PersistenceManager pm, int target, String ourUid, String uid) {
 
-    log.log(Level.FINE, "hasPermission()");
+    logger.log(Level.FINE, "hasPermission()");
     
     if(ourUid.equals(uid)) {
       return true;
@@ -1042,7 +1051,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error checking permission", e);
+      logger.log(Level.SEVERE, "Error checking permission", e);
     }
     
     return hasPermission;
@@ -1056,7 +1065,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public static Date stripTime(Date date, boolean isStart) {
 
-    log.log(Level.FINE, "stripTime()");
+    logger.log(Level.FINE, "stripTime()");
 
         GregorianCalendar gc = new GregorianCalendar(); 
         gc.setTime(date); 
@@ -1075,11 +1084,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         return output.getTime(); 
   }
   
-  @SuppressWarnings("unchecked")
   @Override
   public UserModel getUser() throws ConnectionException {
 
-    log.log(Level.FINE, "getUser()");
+    logger.log(Level.FINE, "getUser()");
     
     UserModel user = new UserModel();
 
@@ -1097,7 +1105,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error loading user", e);
+      logger.log(Level.SEVERE, "Error loading user", e);
     }
     finally {
       if (!pm.isClosed()) {
@@ -1117,7 +1125,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public CardioModel addCardio(CardioModel cardio) throws ConnectionException {
 
-    log.log(Level.FINE, "addCardio()");
+    logger.log(Level.FINE, "addCardio()");
     
     CardioModel m = null;
     
@@ -1146,7 +1154,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addCardio", e);
+      logger.log(Level.SEVERE, "addCardio", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -1170,7 +1178,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public CardioValueModel addCardioValue(CardioModel cardio, CardioValueModel value) throws ConnectionException {
 
-    log.log(Level.FINE, "addCardioValue()");
+    logger.log(Level.FINE, "addCardioValue()");
     
     CardioValueModel m = null;
     
@@ -1218,7 +1226,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addCardioValue", e);
+      logger.log(Level.SEVERE, "addCardioValue", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -1241,7 +1249,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public CommentModel addComment(CommentModel comment) throws ConnectionException  {
 
-    log.log(Level.FINE, "addComment()");
+    logger.log(Level.FINE, "addComment()");
     
     CommentModel m = null;
     
@@ -1269,7 +1277,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       m = Comment.getClientModel(modelServer);
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addComment", e);
+      logger.log(Level.SEVERE, "addComment", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -1292,7 +1300,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public ExerciseModel addExercise(ExerciseModel exercise) throws ConnectionException {
 
-    log.log(Level.FINE, "addExercise()");
+    logger.log(Level.FINE, "addExercise()");
     
     //get uid
     final Object[] obj = getUidAndLocale();
@@ -1308,7 +1316,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       exercise = StoreTraining.addExerciseModel(pm, exercise, UID, LOCALE);
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "Error adding exercise", e);
+      logger.log(Level.SEVERE, "Error adding exercise", e);
       if (!pm.isClosed()) {
         pm.close();
       }
@@ -1347,7 +1355,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       m = StoreTraining.addExerciseNameModel(pm, name, UID, LOCALE);
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "Error adding exercise name", e);
+      logger.log(Level.SEVERE, "Error adding exercise name", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -1371,12 +1379,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public FoodModel addFood(FoodModel food) throws ConnectionException {
 
-    log.log(Level.FINE, "addFood()");
+    logger.log(Level.FINE, "addFood()");
 
     FoodModel m = null;
     
     //get uid
-    final String UID = getUid();
+    final Object[] obj = getUidAndLocale();
+    final String UID = (String)obj[0];
+    final String LOCALE = (String)obj[1];
     if(UID == null) {
       return m;
     }
@@ -1385,6 +1395,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     try {
 
+      m = StoreNutrition.addFoodModel(pm, food, UID, LOCALE);
+      
       long nameId = 0;
       FoodNameModel name = food.getName();
       
@@ -1418,7 +1430,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             name = FoodName.getClientModel(added);
           }
         } catch (Exception e) {
-          log.log(Level.SEVERE, "addFood", e);
+          logger.log(Level.SEVERE, "addFood", e);
         }
       }
       
@@ -1508,7 +1520,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addFood", e);
+      logger.log(Level.SEVERE, "addFood", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -1528,11 +1540,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param name : model to be added
    * @return added name (null if add not successful)
    */
-  @SuppressWarnings("unchecked")
   @Override
   public FoodNameModel addFoodname(FoodNameModel name) throws ConnectionException {
 
-    log.log(Level.FINE, "addFoodname()");
+    logger.log(Level.FINE, "addFoodname()");
     
     FoodNameModel m = null;
     
@@ -1547,90 +1558,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      
-      Query q = pm.newQuery(FoodName.class);
-      q.setFilter("energy == energyParam && locale == localeParam");
-      q.declareParameters("java.lang.Double energyParam, java.lang.String localeParam");
-      List<FoodName> arr = (List<FoodName>) q.execute(name.getEnergy(), name.getLocale());
-      
-      //check if found
-      FoodName modelFound = null;
-      
-      for(FoodName fn : arr) {
-        //if same name
-        if(fn.getName().toLowerCase().equals(name.getName().toLowerCase())) {
-          modelFound = fn;
-          break;
-        }
-      }
-      
-      //if found
-      if(modelFound != null) {
-        m = FoodName.getClientModel(arr.get(0));
-        
-        try {
-          //update micronutrients
-          if(name.getMicroNutrients().size() > 0) {
-            List<MicroNutrient> list = arr.get(0).getMicroNutrients();
-            for(MicroNutrientModel mn : name.getMicroNutrients()) {
-              //check if already found
-              boolean found = false;
-              for(MicroNutrient n : list) {
-                if(mn.getNameId() == n.getNameId()) {
-                  found = true;
-                }
-              }
-              if(!found) {
-                list.add(MicroNutrient.getServerModel(mn));
-              }
-            }
-            arr.get(0).setMicronutrients(list);
-          }
-        } catch (Exception e) {
-          log.log(Level.SEVERE, "addFoodname", e);
-        }
-      }
-      //create new
-      else {
-        FoodName mServer = FoodName.getServerModel(name);
-        mServer.setLocale(LOCALE);
-        mServer.setUid(UID);
-        //set micronutrients
-        List<MicroNutrient> arrMN = new ArrayList<MicroNutrient>();
-        for(MicroNutrientModel mn : name.getMicroNutrients()) {
-          arrMN.add(MicroNutrient.getServerModel(mn));
-        }
-        mServer.setMicronutrients(arrMN);
-        
-        FoodName added = pm.makePersistent(mServer);
-        m = FoodName.getClientModel(added);
-
-        //remove search indexes which has this name as query
-        final String strName = name.getName();
-        Query q1 = pm.newQuery(FoodSearchIndex.class);
-        List<FoodSearchIndex> arrQuery = (List<FoodSearchIndex>) q1.execute();
-        for(FoodSearchIndex index : arrQuery) {
-          //check if query words that match added name
-          int count = 0;
-          for(String s : index.getQuery().split(" ")) {
-            //if word long enough and match
-            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD && strName.toLowerCase().contains( s.toLowerCase() )) {
-                count++;
-            }
-          }
-          
-          //if found -> remove index
-          if(count > 0) {
-            pm.deletePersistent(index);
-          }
-        }
-      }
+      m = StoreNutrition.addFoodNameModel(pm, name, UID, LOCALE);
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addFoodname", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error adding food name", e);
       throw new ConnectionException("addFoodname", e.getMessage());
     }
     finally {
@@ -1650,7 +1581,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException {
 
-    log.log(Level.FINE, "addFoodnames()");
+    logger.log(Level.FINE, "addFoodnames()");
     
     List<FoodNameModel> list = new ArrayList<FoodNameModel>();
     for(FoodNameModel name : names)
@@ -1666,7 +1597,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public GuideValueModel addGuideValue(GuideValueModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "addGuideValue()");
+    logger.log(Level.FINE, "addGuideValue()");
     
     GuideValueModel m = null;
     
@@ -1694,7 +1625,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addGuideValue", e);
+      logger.log(Level.SEVERE, "addGuideValue", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -1718,7 +1649,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public MealModel addMeal(MealModel meal) throws ConnectionException {
 
-    log.log(Level.FINE, "addMeal()");
+    logger.log(Level.FINE, "addMeal()");
 
     List<MealModel> list = new ArrayList<MealModel>();
     list.add(meal);
@@ -1741,7 +1672,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public MealModel addMeal(MealModel meal, Long timeId) throws ConnectionException {
 
-    log.log(Level.FINE, "addMeal()");
+    logger.log(Level.FINE, "addMeal()");
 
     MealModel m = null;
     
@@ -1824,7 +1755,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addMeal", e);
+      logger.log(Level.SEVERE, "addMeal", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -1848,7 +1779,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MealModel> addMeals(List<MealModel> meals) throws ConnectionException {
 
-    log.log(Level.FINE, "addMeals()");
+    logger.log(Level.FINE, "addMeals()");
     
     List<MealModel> list = new ArrayList<MealModel>();
     
@@ -1984,7 +1915,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addMeals", e);
+      logger.log(Level.SEVERE, "addMeals", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2007,7 +1938,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public MeasurementModel addMeasurement(MeasurementModel meal) throws ConnectionException {
 
-    log.log(Level.FINE, "addMeasurement()");
+    logger.log(Level.FINE, "addMeasurement()");
     
     MeasurementModel m = null;
     
@@ -2036,7 +1967,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addMeasurement", e);
+      logger.log(Level.SEVERE, "addMeasurement", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2060,7 +1991,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public MeasurementValueModel addMeasurementValue(MeasurementModel measurement, MeasurementValueModel value) throws ConnectionException {
 
-    log.log(Level.FINE, "addMeasurementValue()");
+    logger.log(Level.FINE, "addMeasurementValue()");
     
     MeasurementValueModel m = null;
     
@@ -2099,7 +2030,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addMeasurementValue", e);
+      logger.log(Level.SEVERE, "addMeasurementValue", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2118,7 +2049,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public RoutineModel addRoutine(RoutineModel routine) throws ConnectionException  {
 
-    log.log(Level.FINE, "addRoutine()");
+    logger.log(Level.FINE, "addRoutine()");
 
     RoutineModel m = null;
     
@@ -2233,7 +2164,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addRoutine", e);
+      logger.log(Level.SEVERE, "addRoutine", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2252,7 +2183,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<RoutineModel> addRoutines(List<RoutineModel> routines) throws ConnectionException  {
 
-    log.log(Level.FINE, "addRoutines()");
+    logger.log(Level.FINE, "addRoutines()");
 
     List<RoutineModel> list = new ArrayList<RoutineModel>();
     
@@ -2372,7 +2303,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addRoutines", e);
+      logger.log(Level.SEVERE, "addRoutines", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2396,7 +2327,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public RunModel addRun(RunModel meal) throws ConnectionException {
 
-    log.log(Level.FINE, "addRun()");
+    logger.log(Level.FINE, "addRun()");
     
     RunModel m = null;
     
@@ -2425,7 +2356,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addRun", e);
+      logger.log(Level.SEVERE, "addRun", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2449,7 +2380,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public RunValueModel addRunValue(RunModel run, RunValueModel value) throws ConnectionException {
 
-    log.log(Level.FINE, "addRunValue()");
+    logger.log(Level.FINE, "addRunValue()");
     
     RunValueModel m = null;
     
@@ -2497,7 +2428,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addRunValue", e);
+      logger.log(Level.SEVERE, "addRunValue", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2520,7 +2451,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public TicketModel addTicket(TicketModel ticket) throws ConnectionException  {
 
-    log.log(Level.FINE, "addTicket()");
+    logger.log(Level.FINE, "addTicket()");
         
     //get uid
     final String UID = getUid();
@@ -2540,7 +2471,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //TODO we don't check the response!
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addTicket", e);
+      logger.log(Level.SEVERE, "addTicket", e);
       throw new ConnectionException("addTicket", e.getMessage());
     }
     
@@ -2557,7 +2488,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public TimeModel addTime(TimeModel time) throws ConnectionException {
 
-    log.log(Level.FINE, "addTime()");
+    logger.log(Level.FINE, "addTime()");
 
     TimeModel m = null;
     
@@ -2642,7 +2573,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       m = Time.getClientModel(modelServer);
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addTime", e);
+      logger.log(Level.SEVERE, "addTime", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2668,7 +2599,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public TimeModel[] addTimes(TimeModel[] timesParam) throws ConnectionException {
 
-    log.log(Level.FINE, "addTimes()");
+    logger.log(Level.FINE, "addTimes()");
 
     TimeModel[] list = new TimeModel[timesParam.length];
     
@@ -2685,6 +2616,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       int i = 0;
       for(TimeModel time : timesParam) {
     
+        
         Time modelServer = null;
         
         //check if same time already exists -> return that instead
@@ -2763,7 +2695,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addTimes", e);
+      logger.log(Level.SEVERE, "addTimes", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2810,7 +2742,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<WorkoutModel> addWorkouts(List<WorkoutModel> workouts) throws ConnectionException  {
 
-    log.log(Level.FINE, "addWorkouts()");
+    logger.log(Level.FINE, "addWorkouts()");
     
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     
@@ -2892,7 +2824,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "addWorkouts", e);
+      logger.log(Level.SEVERE, "addWorkouts", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -2916,7 +2848,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public Boolean combineExerciseNames(Long firstId, Long[] ids) throws ConnectionException {
 
-    log.log(Level.FINE, "combineExerciseNames()");
+    logger.log(Level.FINE, "combineExerciseNames()");
 
     boolean ok = true;
     
@@ -2979,7 +2911,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     } catch (Exception e) {
       ok = false;
-      log.log(Level.SEVERE, "combineExerciseNames", e);
+      logger.log(Level.SEVERE, "combineExerciseNames", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -3003,7 +2935,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public Boolean combineFoodNames(Long firstId, Long[] ids) {
 
-    log.log(Level.FINE, "combineFoodNames()");
+    logger.log(Level.FINE, "combineFoodNames()");
 
     boolean ok = true;
     
@@ -3065,7 +2997,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
 
     } catch (Exception e) {
-      log.log(Level.SEVERE, "combineFoodNames", e);
+      logger.log(Level.SEVERE, "combineFoodNames", e);
       ok = false;
     }
     finally {
@@ -3079,7 +3011,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
   public String convertStreamToString(InputStream is) {
 
-    log.log(Level.FINE, "convertStreamToString()");
+    logger.log(Level.FINE, "convertStreamToString()");
   /*
    * To convert the InputStream to String we use the
    * Reader.read(char[] buffer) method. We iterate until the
@@ -3101,24 +3033,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           response = writer.toString();
       }
       catch(Exception ex) {
-        log.log(Level.SEVERE, "convertStreamToString", ex);
+        logger.log(Level.SEVERE, "convertStreamToString", ex);
       }
       
       //close everything
       try {
         is.close();
       } catch (Exception e) {
-        log.log(Level.SEVERE, "convertStreamToString", e);
+        logger.log(Level.SEVERE, "convertStreamToString", e);
       }
       try {
         reader.close();
       } catch (Exception e) {
-        log.log(Level.SEVERE, "convertStreamToString", e);
+        logger.log(Level.SEVERE, "convertStreamToString", e);
       }
       try {
         reader.close();
       } catch (Exception e) {
-        log.log(Level.SEVERE, "convertStreamToString", e);
+        logger.log(Level.SEVERE, "convertStreamToString", e);
       }
       
       return response;
@@ -3129,13 +3061,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
   @Override public Boolean dummy(MicroNutrientModel model) {
 
-    log.log(Level.FINE, "dummy()");
+    logger.log(Level.FINE, "dummy()");
     return false;
   }
 
   @Override public MonthlySummaryExerciseModel dummy2(MonthlySummaryExerciseModel model) {
 
-    log.log(Level.FINE, "dummy2()");
+    logger.log(Level.FINE, "dummy2()");
     return new MonthlySummaryExerciseModel();
   }
 
@@ -3148,7 +3080,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean fetchRemoveAll(Boolean removeTraining, Boolean removeCardio, Boolean removeNutrition, Boolean removeMeasurement) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchRemoveAll()");
+    logger.log(Level.FINE, "fetchRemoveAll()");
     
     //get uid
     final String UID = getUid();
@@ -3352,7 +3284,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
 
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchRemoveAll", e);
+      logger.log(Level.SEVERE, "fetchRemoveAll", e);
       if (!pm.isClosed()) {
         pm.close();
       }
@@ -3376,7 +3308,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean fetchSaveCardios(List<CardioModel> cardios, List<List<CardioValueModel>> values) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveCardios()");
+    logger.log(Level.FINE, "fetchSaveCardios()");
     
     boolean ok = false;
     
@@ -3399,7 +3331,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           try {
             addCardioValue(mCardioAdded, m);
           } catch (Exception e) {
-            log.log(Level.SEVERE, "", e);
+            logger.log(Level.SEVERE, "", e);
           }
         }
         
@@ -3409,7 +3341,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchSaveCardios", e);
+      logger.log(Level.SEVERE, "fetchSaveCardios", e);
       throw new ConnectionException("fetchSaveCardios", e.getMessage());
     }
     
@@ -3423,7 +3355,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean fetchSaveFoodNames(List<FoodNameModel> names) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveFoodNames()");
+    logger.log(Level.FINE, "fetchSaveFoodNames()");
     
     boolean ok = false;
     
@@ -3442,7 +3374,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchSaveFoodNames", e);
+      logger.log(Level.SEVERE, "fetchSaveFoodNames", e);
       throw new ConnectionException("fetchSaveFoodNames", e.getMessage());
     }
     
@@ -3456,7 +3388,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean fetchSaveGuideValues(List<GuideValueModel> values) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveGuideValues()");
+    logger.log(Level.FINE, "fetchSaveGuideValues()");
     
     boolean ok = false;
     
@@ -3484,7 +3416,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchSaveGuideValues", e);
+      logger.log(Level.SEVERE, "fetchSaveGuideValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -3506,7 +3438,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean fetchSaveMeals(List<MealModel> meals) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveMeals()");
+    logger.log(Level.FINE, "fetchSaveMeals()");
     
     boolean ok = false;
     
@@ -3547,7 +3479,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchSaveMeals", e);
+      logger.log(Level.SEVERE, "fetchSaveMeals", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -3571,7 +3503,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public Boolean fetchSaveMeasurements(MeasurementModel measurement, List<MeasurementValueModel> values) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveMeasurements()");
+    logger.log(Level.FINE, "fetchSaveMeasurements()");
 
     boolean ok = false;
     
@@ -3619,14 +3551,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         try {
           addMeasurementValue(mMeasurementAdded, m);
         } catch (Exception e) {
-          log.log(Level.SEVERE, "fetchSaveMeasurements", e);
+          logger.log(Level.SEVERE, "fetchSaveMeasurements", e);
         }
       }
       
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchSaveMeasurements", e);
+      logger.log(Level.SEVERE, "fetchSaveMeasurements", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -3649,7 +3581,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean fetchSaveRoutines(List<RoutineModel> routines, List<List<WorkoutModel>> workouts) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveRoutines()");
+    logger.log(Level.FINE, "fetchSaveRoutines()");
 
     boolean ok = false;
     
@@ -3703,7 +3635,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               list.add(wModelServer);
             }
           } catch (Exception e) {
-            log.log(Level.SEVERE, "fetchSaveRoutines", e);
+            logger.log(Level.SEVERE, "fetchSaveRoutines", e);
           }
         }
 
@@ -3716,7 +3648,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchSaveRoutines", e);
+      logger.log(Level.SEVERE, "fetchSaveRoutines", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -3739,7 +3671,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean fetchSaveRuns(List<RunModel> runs, List<List<RunValueModel>> values) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveRuns()");
+    logger.log(Level.FINE, "fetchSaveRuns()");
     
     boolean ok = false;
     
@@ -3762,7 +3694,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           try {
             addRunValue(mRunAdded, m);
           } catch (Exception e) {
-            log.log(Level.SEVERE, "fetchSaveRuns", e);
+            logger.log(Level.SEVERE, "fetchSaveRuns", e);
           }
         }
         
@@ -3772,7 +3704,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "", e);
+      logger.log(Level.SEVERE, "", e);
       throw new ConnectionException("fetchSaveRuns", e.getMessage());
     }
     
@@ -3786,7 +3718,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean fetchSaveTimes(List<TimeModel> times) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveTimes()");
+    logger.log(Level.FINE, "fetchSaveTimes()");
     
     boolean ok = false;
     
@@ -3852,7 +3784,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchSaveTimes", e);
+      logger.log(Level.SEVERE, "fetchSaveTimes", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -3870,7 +3802,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean fetchSaveWorkouts(List<WorkoutModel> workouts) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchSaveWorkouts()");
+    logger.log(Level.FINE, "fetchSaveWorkouts()");
 
     boolean ok = false;
     
@@ -3911,7 +3843,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           list.add(wModelServer);
           
         } catch (Exception e) {
-          log.log(Level.SEVERE, "fetchSaveWorkouts", e);
+          logger.log(Level.SEVERE, "fetchSaveWorkouts", e);
         }
       }
 
@@ -3921,7 +3853,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = true;
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchSaveWorkouts", e);
+      logger.log(Level.SEVERE, "fetchSaveWorkouts", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -3949,7 +3881,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public List<BlogData> getBlogData(int index, int limit, int target, Date dateStartParam, Date dateEndParam, String uidObj, Boolean showEmptyDays) throws ConnectionException {
 
-    log.log(Level.FINE, "getBlogData()");
+    logger.log(Level.FINE, "getBlogData()");
 
     //get uid
     final String UID = getUid();
@@ -4122,7 +4054,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             }
             //if times found
             if(arrT.size() > 0) {
-              NutritionDayModel ndm = calculateEnergyFromTimes(pm, arrT);
+              NutritionDayModel ndm = calculateEnergyFromTimes(pm, arrT, UID);
               if(ndm.getEnergy() > 0) {
                 ndm.setFoodsPermission(permissionNutritionFoods);
                 bd.setNutrition(ndm);
@@ -4190,7 +4122,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getBlogData", e);
+      logger.log(Level.SEVERE, "getBlogData", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4213,7 +4145,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<CardioModel> getCardios(int index) throws ConnectionException {
 
-    log.log(Level.FINE, "getCardios()");
+    logger.log(Level.FINE, "getCardios()");
 
     List<CardioModel> list = new ArrayList<CardioModel>();
     
@@ -4255,7 +4187,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getCardios", e);
+      logger.log(Level.SEVERE, "getCardios", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4279,7 +4211,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public CardioValueModel getCardioValue(Long cardioId) throws ConnectionException {
 
-    log.log(Level.FINE, "getCardioValue()");
+    logger.log(Level.FINE, "getCardioValue()");
     
     CardioValueModel m = null;
     
@@ -4309,7 +4241,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getCardioValue", e);
+      logger.log(Level.SEVERE, "getCardioValue", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4333,7 +4265,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<CardioValueModel> getCardioValues(CardioModel cardio, Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getCardioValues()");
+    logger.log(Level.FINE, "getCardioValues()");
     
     List<CardioValueModel> list = new ArrayList<CardioValueModel>();
     
@@ -4377,7 +4309,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getCardioValues", e);
+      logger.log(Level.SEVERE, "getCardioValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4402,7 +4334,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public List<CommentModel> getComments(int index, int limit, String target, String uid, boolean markAsRead) throws ConnectionException {
 
-    log.log(Level.FINE, "getComments()");
+    logger.log(Level.FINE, "getComments()");
 
     List<CommentModel> list = new ArrayList<CommentModel>();
     
@@ -4592,7 +4524,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
 
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getComments", e);
+      logger.log(Level.SEVERE, "getComments", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4616,7 +4548,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public List<Double> getEnergyInCalendar(Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getEnergyInCalendar()");
+    logger.log(Level.FINE, "getEnergyInCalendar()");
 
     if(dateStart.getTime() > dateEnd.getTime()) {
       return null;
@@ -4649,14 +4581,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
         List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
 
-        NutritionDayModel m = calculateEnergyFromTimes(pm, times);
+        NutritionDayModel m = calculateEnergyFromTimes(pm, times, UID);
 
         //round
         list.add(m.getEnergy());
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getEnergyInCalendar", e);
+      logger.log(Level.SEVERE, "getEnergyInCalendar", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4680,8 +4612,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<ExerciseModel> getExercises(WorkoutModel workout) throws ConnectionException {
 
-    if(log.isLoggable(Level.FINE)) {
-      log.log(Level.FINE, "Loading exercises from workout: "+workout.getId());
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading exercises from workout: "+workout.getId());
     }
     
     List<ExerciseModel> list = new ArrayList<ExerciseModel>();
@@ -4699,7 +4631,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       list = w.getExercises();
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error loading exercises", e);
+      logger.log(Level.SEVERE, "Error loading exercises", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4726,7 +4658,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<ExerciseModel> getExercisesFromName(Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
 
-    log.log(Level.FINE, "getExercisesFromName()");
+    logger.log(Level.FINE, "getExercisesFromName()");
         
     List<ExerciseModel> list = new ArrayList<ExerciseModel>();
     
@@ -4798,7 +4730,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getExercisesFromName", e);
+      logger.log(Level.SEVERE, "getExercisesFromName", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4821,7 +4753,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public FoodNameModel getFoodname(Long id) throws ConnectionException {
 
-    log.log(Level.FINE, "getFoodname()");
+    logger.log(Level.FINE, "getFoodname()");
     
     FoodNameModel m = null;
     
@@ -4849,7 +4781,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "getFoodname", e);
+      logger.log(Level.SEVERE, "getFoodname", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -4873,7 +4805,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<FoodModel> getFoods(MealModel meal) throws ConnectionException {
 
-    log.log(Level.FINE, "getFoods()");
+    logger.log(Level.FINE, "getFoods()");
 
     if(meal == null) {
       return null;
@@ -4889,35 +4821,27 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
-    try {
-      Meal mealServer = null;
-      
+    try {      
       //if in time
       if(meal.getTimeId() != 0) {
-        //get time
-        Time time = pm.getObjectById(Time.class, meal.getTimeId());
+        TimeModel time = StoreNutrition.getTimeModel(pm, meal.getTimeId(), UID);
         if(time != null) {
-          //get meal
-          for(MealInTime m : time.getMeals()) {
+          for(MealModel m : time.getMeals()) {
             if(m.getId() == meal.getId()) {
-              MealModel mClient = getSingleMeal(pm, m, true);
-              list = mClient.getFoods();
+              list = m.getFoods();
+              break;
             }
           }
         }
       }
       //not in time
       else {
-        mealServer = pm.getObjectById(Meal.class, meal.getId());
-        MealModel mClient = getSingleMeal(pm, mealServer, true);
-        list = mClient.getFoods();
+        MealModel m = StoreNutrition.getMealModel(pm, meal.getId(), UID);
+        list = m.getFoods();
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getFoods", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error loading foods", e);
       throw new ConnectionException("getFoods", e.getMessage());
     }
     finally {
@@ -4937,7 +4861,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public List<UserModel> getFriends() {
 
-    log.log(Level.FINE, "getFriends()");
+    logger.log(Level.FINE, "getFriends()");
     
     List<UserModel> list = new ArrayList<UserModel>();
     
@@ -5014,9 +4938,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
 
+<<<<<<< HEAD
     if(log.isLoggable(Level.FINE)) {
       log.log(Level.FINE, "Adding user from circle: friendid="+uid+", target="+target);
     }
+=======
+    logger.log(Level.FINE, "addUserToCircle()");
+>>>>>>> refs/heads/store_nutrition
     
     boolean ok = false;
 
@@ -5033,7 +4961,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = StoreUser.addUserToCircle(pm, UID, uid, target);
 
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error adding user to circle", e);
+      logger.log(Level.SEVERE, "Error adding user to circle", e);
       throw new ConnectionException("addUserToCircle", e.getMessage());
     }
     finally {
@@ -5055,9 +4983,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException {
 
+<<<<<<< HEAD
     if(log.isLoggable(Level.FINE)) {
       log.log(Level.FINE, "Removing user from circle: friendid="+uid+", target="+target);
     }
+=======
+    logger.log(Level.FINE, "removeUserFromCircle()");
+>>>>>>> refs/heads/store_nutrition
     
     boolean ok = false;
 
@@ -5074,7 +5006,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = StoreUser.removeUserToCircle(pm, UID, uid, target);
 
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error removing user from circle", e);
+      logger.log(Level.SEVERE, "Error removing user from circle", e);
       throw new ConnectionException("removeUserFromCircle", e.getMessage());
     }
     finally {
@@ -5094,7 +5026,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public MealModel getMeal(Long mealId) throws ConnectionException {
 
-    log.log(Level.FINE, "getMeal()");
+    logger.log(Level.FINE, "getMeal()");
     
     MealModel m = null;
     
@@ -5122,7 +5054,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMeal", e);
+      logger.log(Level.SEVERE, "getMeal", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5147,7 +5079,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MealModel> getMeals(int index) throws ConnectionException {
 
-    log.log(Level.FINE, "getMeals()");
+    logger.log(Level.FINE, "getMeals()");
 
     List<MealModel> list = new ArrayList<MealModel>();
     
@@ -5180,8 +5112,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             break;
           }
           
-          MealModel m = getSingleMeal(pm, w, false);
-                  
+          MealModel m = StoreNutrition.getMealModel(pm, w.getId(), UID);                  
           list.add(m);
           
           i++;
@@ -5189,7 +5120,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMeals", e);
+      logger.log(Level.SEVERE, "getMeals", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5212,7 +5143,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MeasurementModel> getMeasurements(int index) throws ConnectionException {
 
-    log.log(Level.FINE, "getMeasurements()");
+    logger.log(Level.FINE, "getMeasurements()");
 
     List<MeasurementModel> list = new ArrayList<MeasurementModel>();
     
@@ -5253,7 +5184,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMeasurements", e);
+      logger.log(Level.SEVERE, "getMeasurements", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5277,7 +5208,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public MeasurementValueModel getMeasurementValue(Long measurementId) throws ConnectionException {
 
-    log.log(Level.FINE, "getMeasurementValue()");
+    logger.log(Level.FINE, "getMeasurementValue()");
     
     MeasurementValueModel m = null;
     
@@ -5307,7 +5238,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMeasurementValue", e);
+      logger.log(Level.SEVERE, "getMeasurementValue", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5331,7 +5262,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MeasurementValueModel> getMeasurementValues(MeasurementModel measurement, Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getMeasurementValues()");
+    logger.log(Level.FINE, "getMeasurementValues()");
 
     List<MeasurementValueModel> list = new ArrayList<MeasurementValueModel>();
     
@@ -5369,7 +5300,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMeasurementValues", e);
+      logger.log(Level.SEVERE, "getMeasurementValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5395,7 +5326,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MicroNutrientModel> getMicroNutrientsInCalendar(String uid, Date date) throws ConnectionException {
 
-    log.log(Level.FINE, "getMicroNutrientsInCalendar()");
+    logger.log(Level.FINE, "getMicroNutrientsInCalendar()");
     
     List<MicroNutrientModel> list = new ArrayList<MicroNutrientModel>();
     
@@ -5465,12 +5396,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                       }
                     }
                   } catch (Exception e1) {
-                    log.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
+                    logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
                   }
                 }
               }
             } catch (Exception e1) {
-              log.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
+              logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
             }
             
           }
@@ -5509,7 +5440,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 }
               }
             } catch (Exception e1) {
-              log.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
+              logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
               //TODO antaa v�lill� virheilmoitusta???
             }
           }
@@ -5517,7 +5448,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMicroNutrientsInCalendar", e);
+      logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5539,7 +5470,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public MonthlySummaryModel getMonthlySummary(Long id) throws ConnectionException {
 
-    log.log(Level.FINE, "getMonthlySummary()");
+    logger.log(Level.FINE, "getMonthlySummary()");
     
     MonthlySummaryModel model = null;
     
@@ -5576,7 +5507,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMonthlySummary", e);
+      logger.log(Level.SEVERE, "getMonthlySummary", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5600,7 +5531,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   public List<MonthlySummaryModel> getMonthlySummaries() throws ConnectionException {
 
-    log.log(Level.FINE, "getMonthlySummaries()");
+    logger.log(Level.FINE, "getMonthlySummaries()");
     
     List<MonthlySummaryModel> list = new ArrayList<MonthlySummaryModel>();
     
@@ -5640,7 +5571,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         list.add(modelClient);
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMonthlySummaries", e);
+      logger.log(Level.SEVERE, "getMonthlySummaries", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5665,7 +5596,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MealModel> getMostPopularMeals(int index) throws ConnectionException {
 
-    log.log(Level.FINE, "getMostPopularMeals()");
+    logger.log(Level.FINE, "getMostPopularMeals()");
 
     List<MealModel> list = new ArrayList<MealModel>();
     
@@ -5710,7 +5641,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMostPopularMeals", e);
+      logger.log(Level.SEVERE, "getMostPopularMeals", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5733,7 +5664,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<RoutineModel> getMostPopularRoutines(int index) throws ConnectionException {
 
-    log.log(Level.FINE, "getMostPopularRoutines()");
+    logger.log(Level.FINE, "getMostPopularRoutines()");
 
     //convert to client side models
     List<RoutineModel> list = new ArrayList<RoutineModel>();
@@ -5774,7 +5705,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMostPopularRoutines", e);
+      logger.log(Level.SEVERE, "getMostPopularRoutines", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5797,7 +5728,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<WorkoutModel> getMostPopularWorkouts(int index) throws ConnectionException {
 
-    log.log(Level.FINE, "getMostPopularWorkouts()");
+    logger.log(Level.FINE, "getMostPopularWorkouts()");
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     
@@ -5840,7 +5771,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getMostPopularWorkouts", e);
+      logger.log(Level.SEVERE, "getMostPopularWorkouts", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5863,7 +5794,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public RoutineModel getRoutine(Long routineId) throws ConnectionException {
 
-    log.log(Level.FINE, "getRoutine()");
+    logger.log(Level.FINE, "getRoutine()");
     
     RoutineModel m = null;
     
@@ -5883,7 +5814,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getRoutine", e);
+      logger.log(Level.SEVERE, "getRoutine", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5906,7 +5837,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<RoutineModel> getRoutines(int index) throws ConnectionException {
 
-    log.log(Level.FINE, "getRoutines()");
+    logger.log(Level.FINE, "getRoutines()");
 
     //convert to client side models
     List<RoutineModel> list = new ArrayList<RoutineModel>();
@@ -5944,7 +5875,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getRoutines", e);
+      logger.log(Level.SEVERE, "getRoutines", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -5967,7 +5898,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<RunModel> getRuns(int index) throws ConnectionException {
 
-    log.log(Level.FINE, "getRuns()");
+    logger.log(Level.FINE, "getRuns()");
 
     List<RunModel> list = new ArrayList<RunModel>();
     
@@ -6009,7 +5940,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getRuns", e);
+      logger.log(Level.SEVERE, "getRuns", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6033,7 +5964,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public RunValueModel getRunValue(Long runId) throws ConnectionException {
 
-    log.log(Level.FINE, "getRunValue()");
+    logger.log(Level.FINE, "getRunValue()");
     
     RunValueModel m = null;
     
@@ -6063,7 +5994,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getRunValue", e);
+      logger.log(Level.SEVERE, "getRunValue", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6087,7 +6018,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<RunValueModel> getRunValues(RunModel run, Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getRunValues()");
+    logger.log(Level.FINE, "getRunValues()");
     
     List<RunValueModel> list = new ArrayList<RunValueModel>();
     
@@ -6130,7 +6061,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getRunValues", e);
+      logger.log(Level.SEVERE, "getRunValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6155,7 +6086,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<ExerciseNameModel> getStatisticsTopExercises(Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getStatisticsTopExercises()");
+    logger.log(Level.FINE, "getStatisticsTopExercises()");
 
     List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
     
@@ -6213,11 +6144,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 }
               }
             } catch (Exception e1) {
-              log.log(Level.SEVERE, "getStatisticsTopExercises", e1);
+              logger.log(Level.SEVERE, "getStatisticsTopExercises", e1);
             }
           }
         } catch (Exception e) {
-          log.log(Level.SEVERE, "getStatisticsTopExercises", e);
+          logger.log(Level.SEVERE, "getStatisticsTopExercises", e);
         }
 
       }
@@ -6234,7 +6165,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         list.add(m);
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getStatisticsTopExercises", e);
+      logger.log(Level.SEVERE, "getStatisticsTopExercises", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6259,7 +6190,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MealModel> getStatisticsTopMeals(Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getStatisticsTopMeals()");
+    logger.log(Level.FINE, "getStatisticsTopMeals()");
 
     List<MealModel> list = new ArrayList<MealModel>();
     
@@ -6316,11 +6247,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 listIds.add(item);
               }
             } catch (Exception e1) {
-              log.log(Level.SEVERE, "getStatisticsTopMeals", e1);
+              logger.log(Level.SEVERE, "getStatisticsTopMeals", e1);
             }
           }
         } catch (Exception e) {
-          log.log(Level.SEVERE, "getStatisticsTopMeals", e);
+          logger.log(Level.SEVERE, "getStatisticsTopMeals", e);
         }
       }
       
@@ -6336,7 +6267,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         list.add(m);
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getStatisticsTopMeals", e);
+      logger.log(Level.SEVERE, "getStatisticsTopMeals", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6359,7 +6290,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public int[] getStatisticsTrainingDays(Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getStatisticsTrainingDays()");
+    logger.log(Level.FINE, "getStatisticsTrainingDays()");
     
     int[] count = new int[] {0, 0, 0, 0, 0, 0, 0};
     
@@ -6402,12 +6333,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             count[dayOfWeek - 1]++;
           }
         } catch (Exception e) {
-          log.log(Level.SEVERE, "getStatisticsTrainingDays", e);
+          logger.log(Level.SEVERE, "getStatisticsTrainingDays", e);
         }
 
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getStatisticsTrainingDays", e);
+      logger.log(Level.SEVERE, "getStatisticsTrainingDays", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6431,7 +6362,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public int[] getStatisticsTrainingTimes(Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getStatisticsTrainingTimes()");
+    logger.log(Level.FINE, "getStatisticsTrainingTimes()");
     
     int[] count = new int[] {0, 0, 0, 0, 0, 0, 0, 0};
     
@@ -6494,14 +6425,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             }
           }
         } catch (Exception e) {
-          log.log(Level.SEVERE, "getStatisticsTrainingTimes", e);
+          logger.log(Level.SEVERE, "getStatisticsTrainingTimes", e);
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getStatisticsTrainingTimes", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "getStatisticsTrainingTimes", e);
       throw new ConnectionException("getStatisticsTrainingTimes", e.getMessage());
     }
     finally {
@@ -6525,7 +6453,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<TimeModel> getTimesInCalendar(String uid, Date date) throws ConnectionException {
 
-    log.log(Level.FINE, "getTimesInCalendar()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading times for "+date);
+    }
 
     List<TimeModel> list = new ArrayList<TimeModel>();
 
@@ -6536,11 +6466,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     //get uid
     final String UID = getUid();
     if(UID == null) {
-      return null;
-    }
-
-    //check permission
-    if(!hasPermission(2, UID, uid)) {
       return null;
     }
 
@@ -6557,13 +6482,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
       
       //convert to client side models
-      list = getSingleTimes(pm, times);
+      for(Time time : times) {
+        TimeModel model = StoreNutrition.getTimeModel(pm, time.getId(), UID);
+        if(model != null) {
+          list.add(model);
+        }
+      }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getTimesInCalendar", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error loading time for date: "+date, e);
       throw new ConnectionException("getTimesInCalendar", e.getMessage());
     }
     finally {
@@ -6583,7 +6510,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   public List<UserModel> getTrainees() {
 
-    log.log(Level.FINE, "getTrainees()");
+    logger.log(Level.FINE, "getTrainees()");
 
     List<UserModel> list = new ArrayList<UserModel>();
     
@@ -6609,7 +6536,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error loading trainees", e);
+      logger.log(Level.SEVERE, "Error loading trainees", e);
     }
     finally {
       if (!pm.isClosed()) {
@@ -6629,7 +6556,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean removeCardio(CardioModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "removeCardio()");
+    logger.log(Level.FINE, "removeCardio()");
     
     boolean ok = false;
     
@@ -6653,7 +6580,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "removeCardio", e);
+      logger.log(Level.SEVERE, "removeCardio", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6675,7 +6602,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean removeCardioValues(CardioModel model, List<CardioValueModel> values) throws ConnectionException {
 
-    log.log(Level.FINE, "removeCardioValues()");
+    logger.log(Level.FINE, "removeCardioValues()");
 
     if(values.size() < 1) {
       return false;
@@ -6715,7 +6642,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "removeCardioValues", e);
+      logger.log(Level.SEVERE, "removeCardioValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6737,7 +6664,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public boolean removeComments(List<CommentModel> comments) throws ConnectionException {
 
-    log.log(Level.FINE, "removeComments()");
+    logger.log(Level.FINE, "removeComments()");
 
     if(comments.size() < 1) {
       return false;
@@ -6770,7 +6697,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "removeComments", e);
+      logger.log(Level.SEVERE, "removeComments", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6796,8 +6723,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return false;
     }
 
-    if(log.isLoggable(Level.FINE)) {
-      log.log(Level.FINE, "Removing exercises. Count: "+exercises.size());
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing exercises. Count: "+exercises.size());
     }
     
     boolean ok = false;
@@ -6821,7 +6748,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "Error removing exercise", e);
+      logger.log(Level.SEVERE, "Error removing exercise", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6843,7 +6770,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public boolean removeFoods(List<FoodModel> foods) throws ConnectionException {
 
-    log.log(Level.FINE, "removeFoods()");
+    logger.log(Level.FINE, "removeFoods()");
 
     if(foods.size() < 1) {
       return false;
@@ -6860,65 +6787,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      //delete exercise
-      for(FoodModel m : foods) {
 
-        //if food is in meal (which is in time)
-        if(m.getTimeId() != 0 && m.getMealId() != 0) {
-          //get time
-          Time time = pm.getObjectById(Time.class, m.getTimeId());
-          if(time != null && hasPermission(1, UID, time.getUid())) {
-            //get meal
-            for(MealInTime meal : time.getMeals()) {
-              if(meal.getId() == m.getMealId()) {
-                for(FoodInMealTime f : meal.getFoods()) {
-                  if(m.getId() == f.getId()) {
-                    pm.deletePersistent(f);
-                    ok = true;
-                    break;
-                  }
-                }
-                break;
-              }
-            }
-          }
-        }
-        //if food is in time
-        else if(m.getTimeId() != 0) {
-          Time time = pm.getObjectById(Time.class, m.getTimeId());
-          //meal found and we have permission
-          if(time != null && hasPermission(1, UID, time.getUid())) {
-            for(FoodInTime f : time.getFoods()) {
-              if(f.getId() == m.getId()) {
-                pm.deletePersistent(f);
-                ok = true;
-                break;
-              }
-            }
-          }
-        }
-        //if food is in meal
-        else if(m.getMealId() != 0) {
-          Meal time = pm.getObjectById(Meal.class, m.getMealId());
-          //meal found and we have permission
-          if(time != null && hasPermission(1, UID, time.getUid())) {
-            for(FoodInMeal f : time.getFoods()) {
-              if(f.getId() == m.getId()) {
-                pm.deletePersistent(f);
-                ok = true;
-                break;
-              }
-            }
-          }
-        }
+      //TODO needs improving
+      for(FoodModel m : foods) {
+        StoreNutrition.removeFoodModel(pm, m, UID);
       }
+      
+      ok = true;
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "removeFoods", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error removing foods", e);
       throw new ConnectionException("removeFoods", e.getMessage());
     }
     finally { 
@@ -6937,7 +6816,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean removeGuideValues(List<GuideValueModel> list) throws ConnectionException {
 
-    log.log(Level.FINE, "removeGuideValues()");
+    logger.log(Level.FINE, "removeGuideValues()");
 
     if(list.size() < 1) {
       return false;
@@ -6964,7 +6843,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           }
           
         } catch (Exception e) {
-          log.log(Level.SEVERE, "removeGuideValues", e);
+          logger.log(Level.SEVERE, "removeGuideValues", e);
         }
       }
       
@@ -6974,7 +6853,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "removeGuideValues", e);
+      logger.log(Level.SEVERE, "removeGuideValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -6997,50 +6876,25 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean removeMeal(MealModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "removeMeal()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing meal "+model.getId());
+    }
     
     boolean ok = false;
     
     //get uid
     final String UID = getUid();
     if(UID == null) {
-      return ok;
+      return false;
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-      //if meal is in time
-      if(model.getTimeId() != 0) {
-        Time time = pm.getObjectById(Time.class, model.getTimeId());
-        //meal found and we have permission
-        if(time != null && hasPermission(1, UID, time.getUid())) {
-          for(MealInTime f : time.getMeals()) {
-            if(f.getId() == model.getId()) {
-              pm.deletePersistent(f);
-              ok = true;
-              break;
-            }
-          }
-        }
-      }
-      //not in time
-      else {
-        Meal m = pm.getObjectById(Meal.class, model.getId());
-        if(m != null) {
-          //check if correct user
-          if(hasPermission(1, UID, m.getUid())) {
-            pm.deletePersistent(m);
-            ok = true;
-          }
-        }
-      }
+      ok = StoreNutrition.removeMealModel(pm, model, UID);
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "removeMeal", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error removing meal", e);
       throw new ConnectionException("removeMeal", e.getMessage());
     }
     finally {
@@ -7060,7 +6914,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean removeMeasurement(MeasurementModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "removeMeasurement()");
+    logger.log(Level.FINE, "removeMeasurement()");
     
     boolean ok = false;
     
@@ -7084,7 +6938,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "removeMeasurement", e);
+      logger.log(Level.SEVERE, "removeMeasurement", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7106,7 +6960,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean removeMeasurementValues(MeasurementModel model, List<MeasurementValueModel> values) throws ConnectionException {
 
-    log.log(Level.FINE, "removeMeasurementValues()");
+    logger.log(Level.FINE, "removeMeasurementValues()");
 
     if(values.size() < 1) {
       return false;
@@ -7146,7 +7000,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "removeMeasurementValues", e);
+      logger.log(Level.SEVERE, "removeMeasurementValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7170,7 +7024,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean removeRoutine(RoutineModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "removeRoutine()");
+    logger.log(Level.FINE, "removeRoutine()");
     
     boolean ok = false;
     
@@ -7204,7 +7058,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "removeRoutine", e);
+      logger.log(Level.SEVERE, "removeRoutine", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7227,7 +7081,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean removeRun(RunModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "removeRun()");
+    logger.log(Level.FINE, "removeRun()");
     
     boolean ok = false;
     
@@ -7251,7 +7105,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "removeRun", e);
+      logger.log(Level.SEVERE, "removeRun", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7273,7 +7127,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean removeRunValues(RunModel model, List<RunValueModel> values) throws ConnectionException {
 
-    log.log(Level.FINE, "removeRunValues()");
+    logger.log(Level.FINE, "removeRunValues()");
 
     if(values.size() < 1) {
       return false;
@@ -7313,7 +7167,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "removeRunValues", e);
+      logger.log(Level.SEVERE, "removeRunValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7336,14 +7190,16 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public Boolean removeTimes(TimeModel[] models) throws ConnectionException {
 
-    log.log(Level.FINE, "removeTimes()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing times. Count: "+models.length);
+    }
     
-    boolean ok = false;
+    boolean ok = true;
     
     //get uid
     final String UID = getUid();
     if(UID == null) {
-      return ok;
+      return false;
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
@@ -7352,22 +7208,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //each time
       for(TimeModel model : models) {
         
-        final Time t = pm.getObjectById(Time.class, model.getId());
-        if(t != null) {
-          //check if correct user
-          if(t.getUid().equals(UID)) {
-            pm.deletePersistent(t);
-            
-            ok = true;
-          }
+        boolean removeOk = StoreNutrition.removeTimeModel(pm, model.getId(), UID);
+        
+        if(!removeOk) {
+          ok = false;
         }
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "removeTimes", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error removing times", e);
       throw new ConnectionException("removeTime", e.getMessage());
     }
     finally {
@@ -7387,7 +7236,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean removeWorkout(WorkoutModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "removeWorkout()");
+    logger.log(Level.FINE, "removeWorkout()");
     
     boolean ok = false;
     
@@ -7403,7 +7252,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       ok = StoreTraining.removeWorkoutModel(pm, model.getId(), UID);
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error removing workout", e);
+      logger.log(Level.SEVERE, "Error removing workout", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7426,7 +7275,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public UserModel saveToken() throws ConnectionException {
 
-    log.log(Level.FINE, "saveToken()");
+    logger.log(Level.FINE, "saveToken()");
     
       UserModel userdata = null;
 
@@ -7520,7 +7369,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public UserModel saveUserData(UserModel u) throws ConnectionException {
 
-    log.log(Level.FINE, "saveUserData()");
+    logger.log(Level.FINE, "saveUserData()");
     
     //get uid
     final String UID = getUid();
@@ -7533,7 +7382,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       u = StoreUser.saveUserModel(pm, u);
     } catch (Exception e) {
-      log.log(Level.SEVERE, "Error saving user", e);
+      logger.log(Level.SEVERE, "Error saving user", e);
       throw new ConnectionException("saveUserData", e.getMessage());
     }
     finally {
@@ -7553,7 +7402,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
 
-    log.log(Level.FINE, "Searching exercises: "+query);
+    logger.log(Level.FINE, "Searching exercises: "+query);
     
     //convert to client side models
     List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
@@ -7573,8 +7422,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //split query string
       query = query.toLowerCase();
       String[] arr = query.split(" ");
-
-      List<ExerciseName> arrNames = null;
       
       //if some equipment
 //      int equipment = -1;
@@ -7595,7 +7442,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //TODO missing equipment search and locale
       List<ExerciseName> names = StoreTraining.getExerciseNames(pm);
 
-      arrNames = new ArrayList<ExerciseName>();
+      List<ExerciseName> arrNames = new ArrayList<ExerciseName>();
 
       arr = query.split(" ");
       
@@ -7636,7 +7483,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             }
           } catch (Exception e) {
             e.printStackTrace();
-            log.log(Level.SEVERE, "searchExerciseNames", e);
+            logger.log(Level.SEVERE, "searchExerciseNames", e);
           }
           
           n.setCount(count, countUse);
@@ -7663,7 +7510,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "searchExerciseNames", e);
+      logger.log(Level.SEVERE, "searchExerciseNames", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7675,7 +7522,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    log.log(Level.FINE, " query: "+query+", results: "+list.size());
+    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
     
     return list;
   }
@@ -7684,11 +7531,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Search food names
    * @return names' models
    */
-  @SuppressWarnings({ "unchecked", "deprecation" })
+  @SuppressWarnings({ })
   @Override
   public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
 
-    log.log(Level.FINE, "searchFoodNames()");
+    logger.log(Level.FINE, "searchFoodNames()");
     
     //convert to client side models
     List<FoodNameModel> list = new ArrayList<FoodNameModel>();
@@ -7711,138 +7558,56 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       query = query.replace(",", "");
       query = query.toLowerCase();
       String[] arr = query.split(" ");
+      
+      //TODO missing equipment search and locale
+      List<FoodName> names = StoreNutrition.getFoodNames(pm);
 
-      List<FoodName> arrNames = null;
-      
-      //search if similar query saved
-      Date date = new Date();
-      date.setDate(date.getDate() - Constants.DAYS_SEARCH_INDEXES_EXPIRE);
-      Query q1 = pm.newQuery(FoodSearchIndex.class);
-      q1.setFilter("query == queryParam && locale == localeParam && date > dateParam");
-      q1.declareParameters("java.lang.String queryParam, java.lang.String localeParam, java.util.Date dateParam");
-      q1.setRange(0, 1);
-      List<FoodSearchIndex> arrQuery = (List<FoodSearchIndex>) q1.execute(query, LOCALE, date);
-      
-      //similar query found
-      if(arrQuery.size() > 0 && arrQuery.get(0).getIds().size() > 0 && limit < 100) {
+      List<FoodName> arrNames = new ArrayList<FoodName>();
         
-        Query q = pm.newQuery(FoodName.class);
-        q.setFilter("id == :idList"); 
-        arrNames = (List<FoodName>) q.execute(arrQuery.get(0).getIds());
+      for(int i=0; i < names.size(); i++) {
+        FoodName n = names.get(i);
 
-        //calculate count for each food
-        for(FoodName n : arrNames) {
-
-          String name = n.getName();
-          //strip special characters
-          name = name.replace("(", "");
-          name = name.replace(")", "");
-          name = name.replace(",", "");
-          
-          int count = 0;
-          for(String s : arr) {
-            //if word long enough
-            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-              //exact match
-              if(name.toLowerCase().equals( s )) {
-                count += 3;
-              }
-              //partial match
-              else if(name.toLowerCase().contains( s )) {
-                count++;
-              }
+        String name = n.getName();
+        //strip special characters
+        name = name.replace("(", "");
+        name = name.replace(")", "");
+        name = name.replace(",", "");
+        
+        //filter by query (add count variable)
+        int count = 0;
+        for(String s : arr) {
+          //if word long enough
+          if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
+            //exact match
+            if(name.toLowerCase().equals( s )) {
+              count += 3;
             }
-          }
-          
-          if(count > 0) {
-            //if motiver's food -> add count
-            if(n.getTrusted() == 100) {
-              count += 2;
-            }
-            //if verified
-            else if(n.getTrusted() == 1) {
+            //partial match
+            else if(name.toLowerCase().contains( s )) {
               count++;
             }
           }
-          
-          //if found
-          if(count > 0) {
-            n.setCount(count);
-          }
-          
         }
-
-        //sort array based on count
-        Collections.sort(arrNames);
-      }
-      //no similar query -> search and save query
-      else {
-        
-        Query q = pm.newQuery(FoodName.class);
-        //search from user's locale if NOT admin search
-        if(limit < 100) {
-          q.setFilter("locale == localeParam");
-          q.declareParameters("java.lang.String localeParam");
-        }
-        List<FoodName> names = (List<FoodName>) q.execute(LOCALE);
-
-        arrNames = new ArrayList<FoodName>();
-        
-        for(int i=0; i < names.size(); i++) {
-          FoodName n = names.get(i);
-
-          String name = n.getName();
-          //strip special characters
-          name = name.replace("(", "");
-          name = name.replace(")", "");
-          name = name.replace(",", "");
-          
-          //filter by query (add count variable)
-          int count = 0;
-          for(String s : arr) {
-            //if word long enough
-            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-              //exact match
-              if(name.toLowerCase().equals( s )) {
-                count += 3;
-              }
-              //partial match
-              else if(name.toLowerCase().contains( s )) {
-                count++;
-              }
-            }
+        //if motiver's food -> add count
+        if(count > 0) {
+          if(n.getTrusted() == 100) {
+            count += 2;
           }
-          //if motiver's food -> add count
-          if(count > 0) {
-            if(n.getTrusted() == 100) {
-              count += 2;
-            }
-            //if verified
-            else if(n.getTrusted() == 1) {
-              count++;
-            }
-          }
-          
-          //if found
-          if(count > 0) {
-            n.setCount(count);
-            arrNames.add(n);
+          //if verified
+          else if(n.getTrusted() == 1) {
+            count++;
           }
         }
         
-        //sort array based on count
-        Collections.sort(arrNames);
-        
-        //save this query (if something found)
-        if(arrNames.size() > 0 && limit < 100) {
-          List<Long> keys = new ArrayList<Long>();
-          for(int i=0; i < arrNames.size() && i < limit; i++) {
-            keys.add(arrNames.get(i).getId());
-          }
-          FoodSearchIndex index = new FoodSearchIndex(query, LOCALE, keys);
-          pm.makePersistent(index);
+        //if found
+        if(count > 0) {
+          n.setCount(count);
+          arrNames.add(n);
         }
       }
+      
+      //sort array based on count
+      Collections.sort(arrNames);
       
       //convert to client model
       for(int i=0; i < arrNames.size() && i < limit; i++) {
@@ -7870,7 +7635,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "searchFoodNames", e);
+      logger.log(Level.SEVERE, "searchFoodNames", e);
       //TODO virhe jos ei ruokia??
       if (!pm.isClosed()) {
         pm.close();
@@ -7883,9 +7648,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    log.log(Level.FINE, " query: "+query+", results: "+list.size());
+    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
 
-    log.log(Level.FINE, " query: "+query+", results: "+list.size());
+    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
     
     return list;
     
@@ -7900,7 +7665,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MealModel> searchMeals(int index, String query) throws ConnectionException {
 
-    log.log(Level.FINE, "searchMeals()");
+    logger.log(Level.FINE, "searchMeals()");
     
     List<MealModel> list = new ArrayList<MealModel>();
     
@@ -7960,7 +7725,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "searchMeals", e);
+      logger.log(Level.SEVERE, "searchMeals", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -7972,7 +7737,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    log.log(Level.FINE, " query: "+query+", results: "+list.size());
+    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
     
     return list;
   }
@@ -7986,7 +7751,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<RoutineModel> searchRoutines(int index, String query) throws ConnectionException {
 
-    log.log(Level.FINE, "searchRoutines()");
+    logger.log(Level.FINE, "searchRoutines()");
     
     List<RoutineModel> list = new ArrayList<RoutineModel>();
     
@@ -8044,7 +7809,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "searchRoutines", e);
+      logger.log(Level.SEVERE, "searchRoutines", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8056,7 +7821,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    log.log(Level.FINE, " query: "+query+", results: "+list.size());
+    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
     
     return list;
   }
@@ -8070,7 +7835,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<WorkoutModel> searchWorkouts(int index, String query) throws ConnectionException {
 
-    log.log(Level.FINE, "searchWorkouts()");
+    logger.log(Level.FINE, "searchWorkouts()");
     
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     
@@ -8136,7 +7901,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "searchWorkouts", e);
+      logger.log(Level.SEVERE, "searchWorkouts", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8148,7 +7913,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    log.log(Level.FINE, " query: "+query+", results: "+list.size());
+    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
     
     return list;
   }
@@ -8164,7 +7929,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   public List<UserModel> searchUsers(int index, String query) throws ConnectionException {
 
-    log.log(Level.FINE, "searchUsers()");
+    logger.log(Level.FINE, "searchUsers()");
     
     List<UserModel> list = new ArrayList<UserModel>();
     
@@ -8219,7 +7984,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
       }
     } catch (Exception e) {
-      log.log(Level.SEVERE, "searchUsers", e);
+      logger.log(Level.SEVERE, "searchUsers", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8231,7 +7996,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    log.log(Level.FINE, " query: "+query+", results: "+list.size());
+    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
     
     return list;
   }
@@ -8246,7 +8011,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   public List<UserModel> getUsersFromCircle(int target) throws ConnectionException {
 
-    log.log(Level.FINE, "getUsersFromCircle()");
+    logger.log(Level.FINE, "getUsersFromCircle()");
     
     List<UserModel> list = new ArrayList<UserModel>();
         
@@ -8282,7 +8047,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getUsersFromCircle", e);
+      logger.log(Level.SEVERE, "getUsersFromCircle", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8306,7 +8071,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateCardio(CardioModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "updateCardio()");
+    logger.log(Level.FINE, "updateCardio()");
 
     boolean ok = false;
     
@@ -8333,7 +8098,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "updateCardio", e);
+      logger.log(Level.SEVERE, "updateCardio", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8356,7 +8121,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public ExerciseModel updateExercise(ExerciseModel exercise) throws ConnectionException {
 
-    log.log(Level.FINE, "Updating exercise");
+    logger.log(Level.FINE, "Updating exercise");
     
     //get uid
     final Object[] obj = getUidAndLocale();
@@ -8374,7 +8139,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "Error updating exercise", e);
+      logger.log(Level.SEVERE, "Error updating exercise", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8399,7 +8164,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateExerciseName(ExerciseNameModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "updateExerciseName()");
+    logger.log(Level.FINE, "updateExerciseName()");
     
     boolean ok = false;
     
@@ -8454,7 +8219,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "updateExerciseName", e);
+      logger.log(Level.SEVERE, "updateExerciseName", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8478,7 +8243,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateExerciseOrder(WorkoutModel workout, Long[] ids) throws ConnectionException {
 
-    log.log(Level.FINE, "updateExerciseOrder()");
+    logger.log(Level.FINE, "updateExerciseOrder()");
     
     boolean ok = true;
     
@@ -8517,7 +8282,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       ok = false;
-      log.log(Level.SEVERE, "updateExerciseOrder", e);
+      logger.log(Level.SEVERE, "updateExerciseOrder", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8540,7 +8305,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public FoodModel updateFood(FoodModel food) throws ConnectionException {
 
-    log.log(Level.FINE, "updateFood()");
+    logger.log(Level.FINE, "updateFood()");
 
     //get uid
     final String UID = getUid();
@@ -8694,7 +8459,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   
       }
       catch (Exception e) {
-        log.log(Level.SEVERE, "updateFood", e);
+        logger.log(Level.SEVERE, "updateFood", e);
         
         //retries used
         if (retries == 0) {
@@ -8709,7 +8474,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         //small delay between retries
         try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+          Thread.sleep(DELAY_BETWEEN_RETRIES);
         }
         catch(Exception ex) { }        
       }
@@ -8735,7 +8500,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateFoodName(FoodNameModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "updateFoodName()");
+    logger.log(Level.FINE, "updateFoodName()");
     
     boolean ok = false;
     
@@ -8799,7 +8564,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "updateFoodName", e);
+      logger.log(Level.SEVERE, "updateFoodName", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8822,7 +8587,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateMeal(MealModel meal) throws ConnectionException {
 
-    log.log(Level.FINE, "updateMeal()");
+    logger.log(Level.FINE, "updateMeal()");
     
     boolean ok = false;
     
@@ -8867,7 +8632,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "updateMeal", e);
+      logger.log(Level.SEVERE, "updateMeal", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8890,7 +8655,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateMeasurement(MeasurementModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "updateMeasurement()");
+    logger.log(Level.FINE, "updateMeasurement()");
 
     boolean ok = false;
     
@@ -8920,7 +8685,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "updateMeasurement", e);
+      logger.log(Level.SEVERE, "updateMeasurement", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -8944,7 +8709,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateRoutine(RoutineModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "updateRoutine()");
+    logger.log(Level.FINE, "updateRoutine()");
     
     boolean ok = false;
     
@@ -8995,7 +8760,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "updateRoutine", e);
+      logger.log(Level.SEVERE, "updateRoutine", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -9018,7 +8783,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateRun(RunModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "updateRun()");
+    logger.log(Level.FINE, "updateRun()");
 
     boolean ok = false;
     
@@ -9046,7 +8811,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     }
     catch (Exception e) {
-      log.log(Level.SEVERE, "updateRun", e);
+      logger.log(Level.SEVERE, "updateRun", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -9071,7 +8836,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateTime(TimeModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "updateTime()");
+    logger.log(Level.FINE, "updateTime()");
 
     boolean ok = false;
     
@@ -9149,7 +8914,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   
       }
       catch (Exception e) {
-        log.log(Level.SEVERE, "updateTime", e);
+        logger.log(Level.SEVERE, "updateTime", e);
         
         //retries used
         if (retries == 0) {
@@ -9164,7 +8929,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         //small delay between retries
         try {
-          Thread.sleep(Constants.DELAY_BETWEEN_RETRIES);
+          Thread.sleep(DELAY_BETWEEN_RETRIES);
         }
         catch(Exception ex) { }
       }
@@ -9189,7 +8954,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateWorkout(WorkoutModel model) throws ConnectionException {
 
-    log.log(Level.FINE, "Updating workout");
+    logger.log(Level.FINE, "Updating workout");
     
     boolean ok = false;
     
@@ -9205,7 +8970,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       StoreTraining.updateWorkoutModel(pm, model, UID);
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "updateWorkout", e);
+      logger.log(Level.SEVERE, "updateWorkout", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -9227,7 +8992,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   private Routine duplicateRoutine(Routine r) throws ConnectionException {
 
-    log.log(Level.FINE, "duplicateRoutine()");
+    logger.log(Level.FINE, "duplicateRoutine()");
 
     try {
       Routine rNew = new Routine(r.getName());
@@ -9235,7 +9000,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
       return rNew;
     } catch (Exception e) {
-      log.log(Level.SEVERE, "duplicateRoutine", e);
+      logger.log(Level.SEVERE, "duplicateRoutine", e);
       throw new ConnectionException("duplicateRoutine", e.getMessage());
     }
   }
@@ -9251,7 +9016,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public WorkoutModel getWorkout(Long workoutId) throws ConnectionException {
 
-    log.log(Level.FINE, "Loading single workout ("+workoutId+")");
+    logger.log(Level.FINE, "Loading single workout ("+workoutId+")");
     
     WorkoutModel m = null;
     
@@ -9266,7 +9031,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       m = StoreTraining.getWorkoutModel(pm, workoutId, UID);
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getWorkout", e);
+      logger.log(Level.SEVERE, "getWorkout", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -9291,7 +9056,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException {
 
-    log.log(Level.FINE, "Loading workouts. Index="+index);
+    logger.log(Level.FINE, "Loading workouts. Index="+index);
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     
@@ -9359,7 +9124,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getWorkouts", e);
+      logger.log(Level.SEVERE, "getWorkouts", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -9386,7 +9151,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<WorkoutModel[]> getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd) throws ConnectionException {
 
-    log.log(Level.FINE, "getWorkoutsInCalendar()");
+    logger.log(Level.FINE, "getWorkoutsInCalendar()");
 
     List<WorkoutModel[]> list = new ArrayList<WorkoutModel[]>();
     
@@ -9437,7 +9202,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getWorkoutsInCalendar", e);
+      logger.log(Level.SEVERE, "getWorkoutsInCalendar", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -9462,7 +9227,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public List<GuideValueModel> getGuideValues(String uid, int index, Date date) throws ConnectionException {
 
-    log.log(Level.FINE, "Loading guide values: "+date);
+    logger.log(Level.FINE, "Loading guide values: "+date);
 
     List<GuideValueModel> list = new ArrayList<GuideValueModel>();
     
@@ -9536,7 +9301,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
 
     } catch (Exception e) {
-      log.log(Level.SEVERE, "getGuideValues", e);
+      logger.log(Level.SEVERE, "getGuideValues", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -9561,7 +9326,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public boolean hasTraining(String uid, Date date) throws ConnectionException {
 
-    log.log(Level.FINE, "Checking if date '"+date+"' has training");
+    logger.log(Level.FINE, "Checking if date '"+date+"' has training");
   
     boolean hasTraining = getWorkoutsInCalendar(uid, date, date).get(0).length > 0;
       
@@ -9579,7 +9344,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   private Long fetchAddFoodName(FoodModel food) throws ConnectionException {
 
-    log.log(Level.FINE, "fetchAddFoodName()");
+    logger.log(Level.FINE, "fetchAddFoodName()");
     
     long id = 0;
     
@@ -9618,7 +9383,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "fetchAddFoodName", e);
+      logger.log(Level.SEVERE, "fetchAddFoodName", e);
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -9640,7 +9405,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   private boolean isAdmin(String uid) {
 
-    log.log(Level.FINE, "isAdmin()");
+    logger.log(Level.FINE, "isAdmin()");
 
     boolean isAdmin = false;
     
@@ -9657,7 +9422,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      log.log(Level.SEVERE, "isAdmin", e);
+      logger.log(Level.SEVERE, "isAdmin", e);
     }
     finally {
       if (!pm.isClosed()) {
