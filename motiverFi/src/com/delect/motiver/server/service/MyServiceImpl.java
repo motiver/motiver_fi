@@ -5014,7 +5014,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
 
-    log.log(Level.FINE, "addUserToCircle()");
+    if(log.isLoggable(Level.FINE)) {
+      log.log(Level.FINE, "Adding user from circle: friendid="+uid+", target="+target);
+    }
     
     boolean ok = false;
 
@@ -5028,26 +5030,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     
     try {
       
-      //check if permission already found
-      Query q = pm.newQuery(Circle.class);
-      q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
-      q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
-      q.setRange(0,1);
-      System.out.println(UID+", "+uid+", "+target);
-      List<Circle> list = (List<Circle>)q.execute(UID, uid, target);
-      
-      //if no previous permissions found
-      if(list.size() == 0) {
-        Circle permissionNew = new Circle(target, UID, uid);
-        pm.makePersistent(permissionNew);
-        ok = true;
-      }
+      ok = StoreUser.addUserToCircle(pm, UID, uid, target);
 
     } catch (Exception e) {
-      log.log(Level.SEVERE, "addUserToCircle", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      log.log(Level.SEVERE, "Error adding user to circle", e);
       throw new ConnectionException("addUserToCircle", e.getMessage());
     }
     finally {
@@ -5067,10 +5053,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return 
    * @throws ConnectionException
    */
-  @SuppressWarnings("unchecked")
   public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException {
 
-    log.log(Level.FINE, "removeUserFromCircle()");
+    if(log.isLoggable(Level.FINE)) {
+      log.log(Level.FINE, "Removing user from circle: friendid="+uid+", target="+target);
+    }
     
     boolean ok = false;
 
@@ -5084,24 +5071,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     
     try {
       
-      //check if permission already found
-      Query q = pm.newQuery(Circle.class);
-      q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
-      q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
-      q.setRange(0,1);
-      List<Circle> list = (List<Circle>)q.execute(UID, uid, target);
-      
-      //if no previous permissions found
-      if(list.size() != 0) {
-        pm.deletePersistent(list.get(0));
-        ok = true;
-      }
+      ok = StoreUser.removeUserToCircle(pm, UID, uid, target);
 
     } catch (Exception e) {
-      log.log(Level.SEVERE, "removeUserFromCircle", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      log.log(Level.SEVERE, "Error removing user from circle", e);
       throw new ConnectionException("removeUserFromCircle", e.getMessage());
     }
     finally {

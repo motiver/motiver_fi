@@ -238,5 +238,82 @@ public class StoreUser {
     return user;
     
   }
+
+  /**
+   * Gives friend (friendid) permission to given target to user's (uid) data
+   * @param pm
+   * @param uid
+   * @param friendid
+   * @param target
+   * @return
+   */
+  @SuppressWarnings("unchecked")
+  public static boolean addUserToCircle(PersistenceManager pm, String uid, String friendid, int target) {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Adding user to circle: uid="+uid+", friendid="+friendid+", target="+target);
+    }
+    
+    boolean ok = true;
+    
+    //check if permission already found
+    Query q = pm.newQuery(Circle.class);
+    q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
+    q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
+    q.setRange(0,1);
+    List<Circle> list = (List<Circle>)q.execute(uid, friendid, target);
+    
+    //if no previous permissions found
+    if(list.size() != 0) {
+      pm.deletePersistent(list.get(0));
+      ok = true;
+    }
+    
+    //remove users from cache
+    //TODO needs improving
+    WeekCache cache = new WeekCache();
+    cache.removeUsers();
+    
+    return ok;
+  }
+
+  /**
+   * Removes friend's (friendid) permission to given target to user's (uid) data
+   * @param pm
+   * @param uid
+   * @param friendid
+   * @param target
+   * @return
+   */
+  @SuppressWarnings("unchecked")
+  public static boolean removeUserToCircle(PersistenceManager pm, String uid, String friendid, int target) {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Removing user from circle: uid="+uid+", friendid="+friendid+", target="+target);
+    }
+    
+    boolean ok = true;
+    
+    //check if permission already found
+    Query q = pm.newQuery(Circle.class);
+    q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
+    q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
+    q.setRange(0,1);
+    List<Circle> list = (List<Circle>)q.execute(uid, friendid, target);
+    
+    //if no previous permissions found
+    if(list.size() == 0) {
+      Circle permissionNew = new Circle(target, uid, friendid);
+      pm.makePersistent(permissionNew);
+      ok = true;
+    }
+    
+    //remove users from cache
+    //TODO needs improving
+    WeekCache cache = new WeekCache();
+    cache.removeUsers();
+    
+    return ok;
+  }
   
 }
