@@ -38,6 +38,7 @@ import com.delect.motiver.server.cache.WeekCache;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.shared.ConnectionException;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.FoodNameModel;
 import com.delect.motiver.shared.MealModel;
@@ -402,7 +403,6 @@ public class StoreNutrition {
                 //TODO doesn't add name
                 f.setNameId(0L);
                 meal.getFoods().add(f);
-                pm.makePersistent(meal);
                 tx.commit();
                 
                 m = FoodInMealTime.getClientModel(f);
@@ -441,7 +441,6 @@ public class StoreNutrition {
             //TODO doesn't add name
             f.setNameId(0L);
             time.getFoods().add(f);
-            pm.makePersistent(time);
             tx.commit();
             
             m = FoodInTime.getClientModel(f);
@@ -479,7 +478,6 @@ public class StoreNutrition {
             //TODO doesn't add name
             f.setNameId(0L);
             meal.getFoods().add(f);
-            pm.makePersistent(meal);
             tx.commit();
             
             //return client side model
@@ -529,7 +527,7 @@ public class StoreNutrition {
   }
 
   /**
-   * Adds single food
+   * Removes single food
    * @param pm
    * @param food
    * @param uID
@@ -691,6 +689,200 @@ public class StoreNutrition {
     }
     
     return ok;    
+  }
+
+  /**
+   * Removes single food
+   * @param pm
+   * @param food
+   * @param uID
+   * @return
+   */
+  public static FoodModel updateFoodModel(PersistenceManager pm, FoodModel model, String uid) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Updating food: '"+model.getId()+"'");
+    }
+
+    WeekCache cache = new WeekCache();
+    
+    //try to update X times
+    int retries = Constants.LIMIT_UPDATE_RETRIES;
+    while (true) {
+      
+      Transaction tx = pm.currentTransaction();
+      tx.begin();
+      
+      try {
+        
+        //if food is in meal (which is in time)
+        if(model.getTimeId() != 0 && model.getMealId() != 0) {
+          //get 
+          Time time = pm.getObjectById(Time.class, model.getTimeId());
+          if(time != null) {
+            //check permission
+            if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, time.getUid())) {
+              throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
+            }
+
+            //get meal
+            for(MealInTime meal : time.getMeals()) {
+              if(meal.getId() == model.getMealId()) {
+                
+                //get food
+                List<FoodInMealTime> listFoods = meal.getFoods();
+                if(listFoods != null) {
+                  for(FoodInMealTime f : listFoods) {
+                    if(f.getId() == model.getId()) {
+
+                      //update name if changed
+                      long fnid = (f.getNameId() != null)? f.getNameId().longValue() : 0L;
+                      if(model.getName() != null && model.getName().getId() != fnid) {
+                        FoodNameModel n = getFoodNameModel(pm, model.getName().getId());
+                        tx.commit();
+                        tx.begin();
+                        
+                        f.setNameId(n.getId());
+                        model.setName(n);
+                      }
+                      
+                      f.setAmount(model.getAmount());
+                      tx.commit();
+                      
+                      //update cache
+                      cache.addTime(time);
+                      
+                      break;
+                    }
+                  }
+                }
+                break;
+              }
+            }
+          }
+          else {
+            throw new Exception("Time not found");
+          }
+        }
+        //if added to some time -> save key
+        else if(model.getTimeId() != 0) {
+          
+          //get time
+          Time time = pm.getObjectById(Time.class, model.getTimeId());
+          if(time != null) {
+            //check permission
+            if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, time.getUid())) {
+              throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
+            }
+            
+            //get food
+            List<FoodInTime> listFoods = time.getFoods();
+            if(listFoods != null) {
+              for(FoodInTime f : listFoods) {
+                if(f.getId() == model.getId()) {
+
+                  //update name if changed
+                  long fnid = (f.getNameId() != null)? f.getNameId().longValue() : 0L;
+                  if(model.getName() != null && model.getName().getId() != fnid) {
+                    FoodNameModel n = getFoodNameModel(pm, model.getName().getId());
+                    tx.commit();
+                    tx.begin();
+                    
+                    f.setNameId(n.getId());
+                    model.setName(n);
+                  }
+                  
+                  f.setAmount(model.getAmount());
+                  tx.commit();
+                  
+                  //update cache
+                  cache.addTime(time);
+                  
+                  break;
+                }
+              }
+            }          
+          }
+          else {
+            throw new Exception("Time not found");
+          }
+          
+        }
+        //if added to some meal -> save key
+        else if(model.getMealId() != 0) {
+          
+          //get meal
+          Meal meal = pm.getObjectById(Meal.class, model.getMealId());
+          if(meal != null) {
+            //check permission
+            if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, meal.getUid())) {
+              throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, meal.getUid());
+            }
+            
+            //get food
+            List<FoodInMeal> listFoods = meal.getFoods();
+            if(listFoods != null) {
+              for(FoodInMeal f : listFoods) {
+                if(f.getId() == model.getId()) {
+
+                  //update name if changed
+                  long fnid = (f.getNameId() != null)? f.getNameId().longValue() : 0L;
+                  if(model.getName() != null && model.getName().getId() != fnid) {
+                    FoodNameModel n = getFoodNameModel(pm, model.getName().getId());
+                    tx.commit();
+                    tx.begin();
+                    
+                    f.setNameId(n.getId());
+                    model.setName(n);
+                  }
+                  
+                  f.setAmount(model.getAmount());
+                  tx.commit();
+                  
+                  //update cache
+                  cache.addMeal(meal);
+                  
+                  break;
+                }
+              }
+            }         
+          }
+          else {
+            throw new Exception("Meal not found");
+          }
+          
+        }
+        
+        break;
+        
+      }
+      catch (Exception ex) {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+        if(ex instanceof NoPermissionException) {         
+          throw ex;
+        }
+        logger.log(Level.WARNING, "Error updating food", ex);
+        
+        //retries used
+        if (retries == 0) {          
+          throw ex;
+        }
+        
+        logger.log(Level.WARNING, " Retries left: "+retries);
+        
+        --retries;
+        
+        //small delay between retries
+        try {
+          Thread.sleep(MyServiceImpl.DELAY_BETWEEN_RETRIES);
+        }
+        catch(Exception ignored) { }
+      }
+    }
+    
+    return model;    
   }
   
   /**
@@ -870,6 +1062,166 @@ public class StoreNutrition {
     }
     
     return ok;
+  }
+  
+  /**
+   * Removes single meal
+   * @param pm
+   * @param meal
+   * @param uid
+   * @return true if remove was successfully
+   * @throws ConnectionException 
+   */
+  public static MealModel addMealModel(PersistenceManager pm, MealModel model, String uid) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Adding meal: "+model.getId());
+    }
+    
+    MealModel mReturn = null;
+    
+    WeekCache cache = new WeekCache();
+      
+    //try to update X meals
+    int retries = Constants.LIMIT_UPDATE_RETRIES;
+    while (true) {
+      
+      Transaction tx = pm.currentTransaction();
+      tx.begin();
+      
+      try {
+        
+        List<FoodModel> listFoods = new ArrayList<FoodModel>();
+        
+        //if old -> get foods
+        if(model.getId() > 0) {
+          
+          MealModel m = StoreNutrition.getMealModel(pm, model.getId(), uid);
+          
+          //check permission
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, m.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, m.getUid());
+          }
+          
+          //if not our add count
+          //TODO
+          
+          if(m != null && m.getFoods() != null) {
+            listFoods = m.getFoods();
+          }
+        }
+        //new -> add 2 empty foods
+        else {
+          listFoods.add(new FoodModel());
+          listFoods.add(new FoodModel());
+        }
+
+        long tid = 0;
+        long mid = 0;
+        
+        //if saved to time
+        if(model.getTimeId() != 0) {
+          Time t = pm.getObjectById(Time.class, model.getTimeId());
+          if(t != null) {
+            //create new meal
+            MealInTime mealNew = MealInTime.getServerModel(model);
+            mealNew.setId(null);
+            List<FoodInMealTime> foods = new ArrayList<FoodInMealTime>();
+            for(FoodModel f : listFoods) {
+              FoodInMealTime f2 = FoodInMealTime.getServerModel(f);
+              f2.setId(null);
+              if(f.getName() != null) {
+                f2.setNameId(f.getName().getId());
+              }
+              foods.add(f2);
+            }
+            mealNew.setFoods(foods);
+            t.getMeals().add(mealNew);
+            
+            tx.commit();
+            
+            //update cache
+            cache.addTime(t);
+
+            tid = t.getId();
+            mid = mealNew.getId();
+          }
+        }
+        //not in time -> just save new meal
+        else {
+          //create new meal
+          Meal mealNew = Meal.getServerModel(model);
+          mealNew.setId(null);
+          mealNew.setUid(uid);
+          
+          List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
+          for(FoodModel f : listFoods) {
+            FoodInMeal f2 = FoodInMeal.getServerModel(f);
+            f2.setId(null);
+            if(f.getName() != null) {
+              f2.setNameId(f.getName().getId());
+            }
+            foods.add(f2);
+          }
+          mealNew.setFoods(foods);
+          
+          pm.makePersistent(mealNew);
+          tx.commit();
+          
+          //update cache
+          cache.addMeal(mealNew);
+
+          tid = 0;
+          mid = mealNew.getId();
+        }
+        
+        //get client model
+        //if in time
+        if(tid != 0) {
+          TimeModel time = getTimeModel(pm, tid, uid);
+          if(time != null) {
+            for(MealModel m : time.getMeals()) {
+              if(m.getId() == mid) {
+                mReturn = m;
+                break;
+              }
+            }
+          }
+        }
+        //not in time
+        else {
+          mReturn = StoreNutrition.getMealModel(pm, mid, uid);
+        }
+        mReturn.setTimeId(tid);
+        
+        break;
+      }
+      catch (Exception e) {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+        if(e instanceof NoPermissionException) {         
+          throw e;
+        }
+        logger.log(Level.WARNING, "Error adding meal", e);
+        
+        //retries used
+        if (retries == 0) {          
+          throw e;
+        }
+        logger.log(Level.WARNING, " Retries left: "+retries);
+        
+        --retries;
+        
+        //small delay between retries
+        try {
+          Thread.sleep(MyServiceImpl.DELAY_BETWEEN_RETRIES);
+        }
+        catch(Exception ex) { }
+      }
+    }
+    
+    return mReturn;
   }
   
 }

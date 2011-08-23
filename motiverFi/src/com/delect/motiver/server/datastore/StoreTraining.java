@@ -424,7 +424,8 @@ public class StoreTraining {
           }
           
           //update name if changed
-          if(exercise.getName() != null && exercise.getName().getId() != e.getNameId().longValue()) {
+          long enid = (e.getNameId() != null)? e.getNameId().longValue() : 0L;
+          if(exercise.getName() != null && exercise.getName().getId() != enid) {
             ExerciseNameModel n = getExerciseNameModel(pm, exercise.getName().getId());
             tx.commit();
             tx.begin();

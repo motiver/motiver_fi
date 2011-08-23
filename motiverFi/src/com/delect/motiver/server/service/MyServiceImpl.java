@@ -1396,134 +1396,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
 
       m = StoreNutrition.addFoodModel(pm, food, UID, LOCALE);
-      
-      long nameId = 0;
-      FoodNameModel name = food.getName();
-      
-      //if no food name -> search for it
-      if(food.getName() != null) {
-        nameId = food.getName().getId();
-      }
-
-      if(nameId == 0) {
-        try {
-          Query q = pm.newQuery(FoodName.class);
-          q.setFilter("name == nameParam && energy == energyParam");
-          q.declareParameters("java.lang.String nameParam, java.lang.Double energyParam");
-          List<FoodName> arr = (List<FoodName>) q.execute(food.getName().getName(), food.getName().getEnergy());
-                
-          //if found
-          boolean found = false;
-          if(arr != null && arr.size() > 0) {
-              found = true;
-          }
-          
-          if(found) {
-            nameId = arr.get(0).getId();
-          }
-          //create new
-          else {
-            FoodName mServer = FoodName.getServerModel(food.getName());
-            mServer.setUid(UID);
-            FoodName added = pm.makePersistent(mServer);
-            nameId = added.getId();
-            name = FoodName.getClientModel(added);
-          }
-        } catch (Exception e) {
-          logger.log(Level.SEVERE, "addFood", e);
-        }
-      }
-      
-      //if food is in meal (which is in time)
-      if(food.getTimeId() != 0 && food.getMealId() != 0) {
-        //get time
-        Time time = pm.getObjectById(Time.class, food.getTimeId());
-        if(time != null && hasPermission(1, UID, time.getUid())) {
-          //get meal
-          for(MealInTime meal : time.getMeals()) {
-            if(meal.getId() == food.getMealId()) {
-              //if no foods
-              if(meal.getFoods() == null) {
-                List<FoodInMealTime> list = new ArrayList<FoodInMealTime>();
-                meal.setFoods(list);
-              }
-              
-              FoodInMealTime f = FoodInMealTime.getServerModel(food);
-              f.setNameId(nameId);
-              meal.getFoods().add(f);
-              pm.makePersistent(meal);
-              
-              m = FoodInMealTime.getClientModel(f);
-              m.setMealId(food.getMealId());
-              m.setTimeId(food.getTimeId());
-              
-              break;
-            }
-          }
-        }
-      }
-      //if added to some time -> save key
-      else if(food.getTimeId() != 0) {
-        
-        //get time
-        Time timeServer = pm.getObjectById(Time.class, food.getTimeId());
-        if(timeServer != null) {
-          //if no foods
-          if(timeServer.getFoods() == null) {
-            List<FoodInTime> list = new ArrayList<FoodInTime>();
-            timeServer.setFoods(list);
-          }
-          
-          FoodInTime f = FoodInTime.getServerModel(food);
-          f.setNameId(nameId);
-          timeServer.getFoods().add(f);
-          pm.makePersistent(timeServer);
-          
-          m = FoodInTime.getClientModel(f);
-          m.setTimeId(food.getTimeId());
-          
-        }
-        else {
-          throw new Exception();
-        }
-        
-      }
-      //if added to some meal -> save key
-      else if(food.getMealId() != 0) {
-        
-        //get meal
-        Meal mealServer = pm.getObjectById(Meal.class, food.getMealId());
-        if(mealServer != null) {
-          //if no foods
-          if(mealServer.getFoods() == null) {
-            List<FoodInMeal> list = new ArrayList<FoodInMeal>();
-            mealServer.setFoods(list);
-          }
-          
-          FoodInMeal f = FoodInMeal.getServerModel(food);
-          f.setNameId(nameId);
-          mealServer.getFoods().add(f);
-          pm.makePersistent(mealServer);
-          
-          //return client side model
-          m = FoodInMeal.getClientModel(f);
-          m.setMealId(food.getMealId());
-          m.setTimeId(food.getTimeId());
-          
-        }
-        else {
-          throw new Exception();
-        }
-        
-      }
-      m.setName(name);
 
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "addFood", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error adding food", e);
       throw new ConnectionException("addFood", e.getMessage());
     }
     finally {
@@ -1649,7 +1525,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public MealModel addMeal(MealModel meal) throws ConnectionException {
 
-    logger.log(Level.FINE, "addMeal()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding meal: "+meal.getName());
+    }
 
     List<MealModel> list = new ArrayList<MealModel>();
     list.add(meal);
@@ -1672,7 +1550,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public MealModel addMeal(MealModel meal, Long timeId) throws ConnectionException {
 
-    logger.log(Level.FINE, "addMeal()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding meal: "+meal.getName());
+    }
 
     MealModel m = null;
     
@@ -1779,7 +1659,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<MealModel> addMeals(List<MealModel> meals) throws ConnectionException {
 
-    logger.log(Level.FINE, "addMeals()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding meals. Count: "+meals.size());
+    }
     
     List<MealModel> list = new ArrayList<MealModel>();
     
@@ -1791,134 +1673,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
-    Meal modelServer = null;
-    Meal mealServerOrig = null;
     try {
       //each meal
       for(MealModel meal : meals) {
-
-        MealModel m = null;
-        
-        //if ID is null -> create new one (no foods)
-        if(meal.getId() == 0) {
-          
-          //convert to server side model
-          modelServer = Meal.getServerModel(meal);
-
-          //add few empty foods
-          List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
-          foods.add(new FoodInMeal());
-          foods.add(new FoodInMeal());
-          modelServer.setFoods(foods);
-
-          modelServer.setUid(UID);
-
-          //save to db
-          pm.makePersistent(modelServer);
-
-          //convert to client side model (which we return)
-          m = Meal.getClientModel(modelServer);
-        }
-        //copied old meal
-        else {
-            
-          //get old meal
-          mealServerOrig = pm.getObjectById(Meal.class, meal.getId());
-
-          //create a copy
-          if(hasPermission(1, UID, mealServerOrig.getUid())) {
-
-            //add one to copy count IF NOT our meal
-            if(!mealServerOrig.getUid().equals(UID)) {
-              mealServerOrig.incrementCopyCount();
-            }
-            
-            modelServer = duplicateMeal(mealServerOrig);
-            modelServer.setId(null);
-            modelServer.setUid(UID);
-
-            //if added to time
-            if(meal.getTimeId() != 0) {
-
-              Time timeServer = pm.getObjectById(Time.class, meal.getTimeId());
-              List<MealInTime> listMeals = timeServer.getMeals();
-              //create new meal-in-time model
-              MealInTime mealInTime = new MealInTime();
-              mealInTime.setName(modelServer.getName());
-
-              //copy foods from old meal
-              List<FoodInMealTime> listFoodsServer = new ArrayList<FoodInMealTime>();
-              for(FoodInMeal food : mealServerOrig.getFoods()) {
-                //add food
-                FoodInMealTime foodServer = new FoodInMealTime();
-                foodServer.setNameId(food.getNameId());
-                foodServer.setAmount(food.getAmount());
-                listFoodsServer.add(foodServer);
-              }
-              mealInTime.setFoods(listFoodsServer);
-              
-              listMeals.add(mealInTime);
-              timeServer.setMeals(listMeals);
-
-              //save to db
-              pm.makePersistent(timeServer);
-              pm.flush();
-
-              //convert to client side model (which we return)
-              m = MealInTime.getClientModel(mealInTime);
-              
-              //return also foods
-              List<FoodModel> listFoods = new ArrayList<FoodModel>();
-              for(FoodInMealTime f : listFoodsServer) {
-                FoodModel fClient = FoodInMealTime.getClientModel(f);
-                //get name
-                if(f.getNameId() != null) {
-                  if(f.getNameId() != 0) {
-                    fClient.setName( getFoodName(pm, f.getNameId()) );
-                  }
-                }
-                //set time
-                fClient.setMealId(meal.getId());
-                fClient.setTimeId(meal.getTimeId());
-                fClient.setUid(meal.getUid());
-                listFoods.add(fClient);
-              }
-              m.setFoods(listFoods);
-              
-            }
-            //not added to time
-            else {
-              
-              //copy foods from old meal
-              List<FoodInMeal> listFoodsServer = new ArrayList<FoodInMeal>();
-              for(FoodInMeal food : mealServerOrig.getFoods()) {
-                //add food
-                FoodInMeal foodServer = duplicateFood(food);
-                listFoodsServer.add(foodServer);
-              }
-              modelServer.setFoods(listFoodsServer);
-
-              //save to db
-              pm.makePersistent(modelServer);
-
-              //convert to client side model (which we return)
-              m = Meal.getClientModel(modelServer);
-            }
-          }
-        }
-        
-        //add to array
+        MealModel m = StoreNutrition.addMealModel(pm, meal, UID);
         if(m != null) {
           list.add(m);
         }
-        
       }
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "addMeals", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error adding meals", e);
       throw new ConnectionException("addMeals", e.getMessage());
     }
     finally {
@@ -8130,9 +7895,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating exercise", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       
       throw new ConnectionException("updateExercise", e.getMessage());
     }
@@ -8295,7 +8057,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public FoodModel updateFood(FoodModel food) throws ConnectionException {
 
-    logger.log(Level.FINE, "updateFood()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating food: "+food.getId());
+    }
 
     //get uid
     final String UID = getUid();
@@ -8304,178 +8068,21 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    //try to update X times
-    int retries = Constants.LIMIT_UPDATE_RETRIES;
-    while (true) {
       
-      Transaction tx = pm.currentTransaction();
+    try {
       
-      try {
-      
-        //if existing food
-        if(food.getId() != 0) {
-          FoodNameModel nameModel = food.getName();
-          
-          //if food is in meal (which is in time)
-          if(food.getTimeId() != 0 && food.getMealId() != 0) {
-            //get time
-            Time time = pm.getObjectById(Time.class, food.getTimeId());
-            
-            if(time != null && hasPermission(1, UID, time.getUid())) {
-              //get meal
-              for(MealInTime meal : time.getMeals()) {
-                if(meal.getId() == food.getMealId()) {
-                  for(FoodInMealTime f : meal.getFoods()) {
-                    if(food.getId() == f.getId()) {
-                      
-                      //set nameId IF name changed
-                      long nameId = -1;
-                      if(food.getName() == null || f.getNameId() != food.getName().getId()) {
-                        //name
-                        if(food.getName() != null && food.getName().getId() > 0) {
-                          final FoodName n = pm.getObjectById(FoodName.class, food.getName().getId());
-                          if(n != null) {
-                            //get client side model
-                            nameModel = FoodName.getClientModel(n);
-                            //save new id
-                            nameId = n.getId();
-                          }
-                          
-                        }
-                      }
-                      
-                      //save
-                      tx.begin();
-                      f.setAmount(food.getAmount());
-                      if(nameId != -1) {
-                        f.setNameId(nameId);
-                      }
-                      pm.flush();
-                      tx.commit();
-                      
-                      break;
-                    }
-                  }
-                  break;
-                }
-              }
-            }
-          }
-          //if food is in time
-          else if(food.getTimeId() != 0) {
-            Time time = pm.getObjectById(Time.class, food.getTimeId());
-            
-            //meal found and we have permission
-            if(time != null && hasPermission(1, UID, time.getUid())) {
-              for(FoodInTime f : time.getFoods()) {
-                if(food.getId() == f.getId()) {
-                  
-                  //set nameId IF name changed
-                  long nameId = -1;
-                  if(food.getName() == null || f.getNameId() != food.getName().getId()) {
-                    //name
-                    if(food.getName() != null && food.getName().getId() > 0) {
-                      final FoodName n = pm.getObjectById(FoodName.class, food.getName().getId());
-                      if(n != null) {
-                        //get client side model
-                        nameModel = FoodName.getClientModel(n);
-                        //save new id
-                        nameId = n.getId();
-                      }
-                      
-                    }
-                  }
-                  
-                  //save
-                  tx.begin();
-                  f.setAmount(food.getAmount());
-                  if(nameId != -1) {
-                    f.setNameId(nameId);
-                  }
-                  pm.flush();
-                  tx.commit();
-                  
-                  break;
-                }
-              }
-            }
-          }
-          //if food is in meal
-          else if(food.getMealId() != 0) {
-            Meal time = pm.getObjectById(Meal.class, food.getMealId());
-
-            //meal found and we have permission
-            if(time != null && hasPermission(1, UID, time.getUid())) {
-              for(FoodInMeal f : time.getFoods()) {
-                if(food.getId() == f.getId()) {
-                  
-                  //set nameId IF name changed
-                  long nameId = -1;
-                  if(food.getName() == null || f.getNameId() != food.getName().getId()) {
-                    //name
-                    if(food.getName() != null && food.getName().getId() > 0) {
-                      final FoodName n = pm.getObjectById(FoodName.class, food.getName().getId());
-                      if(n != null) {
-                        //get client side model
-                        nameModel = FoodName.getClientModel(n);
-                        //save new id
-                        nameId = n.getId();
-                      }
-                      
-                    }
-                  }
-                  
-                  //save
-                  tx.begin();
-                  f.setAmount(food.getAmount());
-                  if(nameId != -1) {
-                    f.setNameId(nameId);
-                  }
-                  pm.flush();
-                  tx.commit();
-                  
-                  break;
-                }
-              }
-            }
-          }
-          
-          //update model (which we return)
-          food.setName(nameModel);
-        }
-        
-        break;
+      food = StoreNutrition.updateFoodModel(pm, food, UID);
   
-      }
-      catch (Exception e) {
-        logger.log(Level.SEVERE, "updateFood", e);
-        
-        //retries used
-        if (retries == 0) {
-          if (!pm.isClosed()) {
-            pm.close();
-          } 
-          
-          throw new ConnectionException("updateFood", e.getMessage());
-        }
-        
-        --retries;
-        
-        //small delay between retries
-        try {
-          Thread.sleep(DELAY_BETWEEN_RETRIES);
-        }
-        catch(Exception ex) { }        
-      }
-      finally {
-        if (tx.isActive()) {
-          tx.rollback();
-        }
-      }
     }
-    if (!pm.isClosed()) {
-      pm.close();
+    catch (Exception e) {
+      logger.log(Level.SEVERE, "Error updating food", e);
+      
+      throw new ConnectionException("updateFood", e.getMessage());
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
     }
     
     return food;
