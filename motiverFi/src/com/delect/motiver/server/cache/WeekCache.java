@@ -53,6 +53,7 @@ public class WeekCache {
 	//prefixes
 	private final static String PREFIX_WORKOUT = "w";
   private final static String PREFIX_EXERCISENAMES = "en";
+  private final static String PREFIX_FOOD_NAMES = "fnames";
   private final static String PREFIX_FOOD_NAME = "fn";
   private final static String PREFIX_TIME = "t";
   private final static String PREFIX_MEAL = "m";
@@ -324,6 +325,61 @@ public class WeekCache {
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_MEAL);
     builder.append(mealId);
+
+    cache.remove(builder.toString());
+  }
+  @SuppressWarnings("unchecked")
+  public List<FoodName> getFoodNames() {
+    if(cache == null) {
+      return null;
+    }
+    
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_FOOD_NAMES);
+    Object obj = cache.get(builder.toString());
+
+    List<FoodName> names = null;
+    
+    if(obj instanceof Map) {
+      names = new ArrayList<FoodName>();
+      Map<Long, FoodName> map = (Map<Long, FoodName>)obj;
+      
+      Collection<FoodName> c = map.values();
+      Iterator<FoodName> itr = c.iterator();
+      while(itr.hasNext()) {
+        names.add(itr.next());
+      }
+    }
+    
+    return names;
+  }
+  
+  public void addFoodNames(List<FoodName> names) {
+    if(cache == null) {
+      return;
+    }
+    
+    Map<Long, FoodName> map = new HashMap<Long, FoodName>();
+    
+    //add each name
+    for(FoodName name : names) {
+      map.put(name.getId(), name);
+    }
+
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_FOOD_NAMES);
+    
+    cache.put(builder.toString(), map);
+    
+  }
+  
+  public void removeFoodNames() {
+    if(cache == null) {
+      return;
+    }
+
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_FOOD_NAMES);
 
     cache.remove(builder.toString());
   }

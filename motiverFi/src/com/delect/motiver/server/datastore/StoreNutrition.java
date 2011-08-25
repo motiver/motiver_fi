@@ -109,6 +109,7 @@ public class StoreNutrition {
       //add to cache
       WeekCache cache = new WeekCache();
       cache.addFoodName(mServer);
+      cache.removeFoodNames();  //TODO needs improvement
       
       nameId = mServer.getId();      
     }
@@ -176,8 +177,21 @@ public class StoreNutrition {
       logger.log(Level.FINER, "Loading all food names: ");
     }
 
-    Query q = pm.newQuery(FoodName.class);
-    List<FoodName> n = (List<FoodName>) q.execute();
+    //load from cache    
+    WeekCache cache = new WeekCache();
+    List<FoodName> n = cache.getFoodNames();
+     
+    if(n == null) {
+      if(logger.isLoggable(Level.FINER)) {
+        logger.log(Level.FINER, "Not found from cache");
+      }
+    
+      Query q = pm.newQuery(FoodName.class);
+      n = (List<FoodName>) q.execute();
+      
+      //save to cache
+      cache.addFoodNames(n);
+    }
     
     if(n == null) {
       throw new Exception("Food names not found");

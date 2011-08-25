@@ -7389,7 +7389,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchFoodNames", e);
+      logger.log(Level.SEVERE, "Error searching food names", e);
       //TODO virhe jos ei ruokia??
       throw new ConnectionException("searchFoodNames", e.getMessage());
     }
