@@ -108,11 +108,7 @@ public class StoreNutrition {
 
       //add to cache
       WeekCache cache = new WeekCache();
-      List<FoodName> names = cache.getFoodNames();
-      if(names != null) {
-        names.add(mServer);
-        cache.addFoodNames(names);
-      }
+      cache.addFoodName(mServer);
       
       nameId = mServer.getId();      
     }
@@ -129,42 +125,38 @@ public class StoreNutrition {
    * @param nameId
    * @throws Exception 
    */
-  @SuppressWarnings("unchecked")
   public static FoodNameModel getFoodNameModel(PersistenceManager pm, long nameId) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading food name: "+nameId);
     }
     
+    if(nameId <= 0) {
+      return null;
+    }
+    
     FoodNameModel model = null;
 
     //load from cache
     WeekCache cache = new WeekCache();
-    List<FoodName> names = cache.getFoodNames();
+    FoodName name = cache.getFoodName(nameId);
 
-    if(names == null) {
+    if(name == null) {
       if(logger.isLoggable(Level.FINER)) {
         logger.log(Level.FINER, "Not found from cache");
       }
       
-      Query q = pm.newQuery(FoodName.class);
-      names = (List<FoodName>) q.execute();
+      name = pm.getObjectById(FoodName.class, nameId);
       
-      //save to memcache
-      cache.addFoodNames(names);
+      //add to cache
+      cache.addFoodName(name);
     }
     
-    if(names != null) {
-      for(FoodName name : names) {
-        if(name.getId() != null && name.getId().longValue() == nameId) {
-          //convert to client side model
-          model = FoodName.getClientModel(name);
-          break;
-        }
-      }
+    if(name != null) {
+      model = FoodName.getClientModel(name);
     }
     else {
-      throw new Exception("Food names not found");
+      throw new Exception("Food name not found");
     }
     
     return model;
@@ -184,21 +176,8 @@ public class StoreNutrition {
       logger.log(Level.FINER, "Loading all food names: ");
     }
 
-    //load from cache
-    WeekCache cache = new WeekCache();
-    List<FoodName> n = cache.getFoodNames();
-    
-    if(n == null) {
-      if(logger.isLoggable(Level.FINER)) {
-        logger.log(Level.FINER, "Not found from cache");
-      }
-
-      Query q = pm.newQuery(FoodName.class);
-      n = (List<FoodName>) q.execute();
-      
-      //save to cache
-      cache.addFoodNames(n);
-    }
+    Query q = pm.newQuery(FoodName.class);
+    List<FoodName> n = (List<FoodName>) q.execute();
     
     if(n == null) {
       throw new Exception("Food names not found");
@@ -443,7 +422,9 @@ public class StoreNutrition {
             time.getFoods().add(f);
             tx.commit();
             
+            long id = f.getId();
             m = FoodInTime.getClientModel(f);
+            long id2 = m.getId();
             m.setTimeId(model.getTimeId());
             m.setMealId(model.getMealId());
             
@@ -523,7 +504,7 @@ public class StoreNutrition {
       }
     }
     
-    return model;    
+    return m;    
   }
 
   /**

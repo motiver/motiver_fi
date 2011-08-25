@@ -53,7 +53,7 @@ public class WeekCache {
 	//prefixes
 	private final static String PREFIX_WORKOUT = "w";
   private final static String PREFIX_EXERCISENAMES = "en";
-  private final static String PREFIX_FOOD_NAMES = "fn";
+  private final static String PREFIX_FOOD_NAME = "fn";
   private final static String PREFIX_TIME = "t";
   private final static String PREFIX_MEAL = "m";
   private final static String PREFIX_USERS = "users";
@@ -215,48 +215,29 @@ public class WeekCache {
   }
 
   @SuppressWarnings("unchecked")
-  public List<FoodName> getFoodNames() {
+  public FoodName getFoodName(Long nameId) {
     if(cache == null) {
       return null;
     }
     
     StringBuilder builder = new StringBuilder();
-    builder.append(PREFIX_FOOD_NAMES);
+    builder.append(PREFIX_FOOD_NAME);
+    builder.append(nameId);
     Object obj = cache.get(builder.toString());
-
-    List<FoodName> names = null;
     
-    if(obj instanceof Map) {
-      names = new ArrayList<FoodName>();
-      Map<Long, FoodName> map = (Map<Long, FoodName>)obj;
-      
-      Collection<FoodName> c = map.values();
-      Iterator<FoodName> itr = c.iterator();
-      while(itr.hasNext()) {
-        names.add(itr.next());
-      }
-    }
-    
-    return names;
+    return (obj instanceof FoodName)? (FoodName)obj : null;
   }
   
-  public void addFoodNames(List<FoodName> names) {
+  public void addFoodName(FoodName name) {
     if(cache == null) {
       return;
     }
     
-    Map<Long, FoodName> map = new HashMap<Long, FoodName>();
-    
-    //add each name
-    for(FoodName name : names) {
-      map.put(name.getId(), name);
-    }
-
     StringBuilder builder = new StringBuilder();
-    builder.append(PREFIX_FOOD_NAMES);
+    builder.append(PREFIX_FOOD_NAME);
+    builder.append(name.getId());
     
-    cache.put(builder.toString(), map);
-    
+    cache.put(builder.toString(), name);
   }
 
   public Time getTime(Long timeId) {

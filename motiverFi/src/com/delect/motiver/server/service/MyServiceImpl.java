@@ -1376,7 +1376,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param meal : meal where food is added (null if not added in any meal)
    * @return added food (null if add not successful)
    */
-  @Override @SuppressWarnings("unchecked")
   public FoodModel addFood(FoodModel food) throws ConnectionException {
 
     logger.log(Level.FINE, "addFood()");
@@ -7392,9 +7391,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     } catch (Exception e) {
       logger.log(Level.SEVERE, "searchFoodNames", e);
       //TODO virhe jos ei ruokia??
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("searchFoodNames", e.getMessage());
     }
     finally {
@@ -7402,10 +7398,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         pm.close();
       } 
     }
-
-    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
-
-    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
     
     return list;
     
