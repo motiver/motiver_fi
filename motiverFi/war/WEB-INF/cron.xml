@@ -14,4 +14,11 @@
     <schedule>every mon 01:00</schedule>
   </cron>
   
+  <cron>
+    <url>/motiver/fncs</url>
+    <target>indexing</target>
+    <description>Calculate food name count for each user</description>
+    <schedule>every mon 01:00</schedule>
+  </cron>
+  
 </cronentries>

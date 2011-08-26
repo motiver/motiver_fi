@@ -58,6 +58,7 @@ import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.FoodInTime;
 import com.delect.motiver.server.FoodName;
+import com.delect.motiver.server.FoodNameCount;
 import com.delect.motiver.server.FoodSearchIndex;
 import com.delect.motiver.server.GuideValue;
 import com.delect.motiver.server.Meal;
@@ -7285,7 +7286,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Search food names
    * @return names' models
    */
-  @SuppressWarnings({ })
+  @SuppressWarnings({"unchecked" })
   @Override
   public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
 
@@ -7355,7 +7356,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         //if found
         if(count > 0) {
-          n.setCount(count);
+          
+          //get count from use table
+          int countUse = 0;
+          try {
+            Query qUse = pm.newQuery(FoodNameCount.class);
+            qUse.setFilter("nameId == nameIdParam && openId == openIdParam");
+            qUse.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
+            qUse.setRange(0, 1);
+            List<FoodNameCount> valueCount = (List<FoodNameCount>) qUse.execute(n.getId(), UID);
+            if(valueCount.size() > 0) {
+              countUse = valueCount.get(0).getCount();
+            }
+          } catch (Exception e) {
+            e.printStackTrace();
+            logger.log(Level.SEVERE, "searchExerciseNames", e);
+          }
+          
+          n.setCount(count, countUse);
           arrNames.add(n);
         }
       }
@@ -7366,8 +7384,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //convert to client model
       for(int i=0; i < arrNames.size() && i < limit; i++) {
         FoodName n = arrNames.get(i);
-        
-        if(n.getCount() > 0) {
+        if(n.getCountQuery() > 0) {
           FoodNameModel nameClient = FoodName.getClientModel(n);
           //if admin -> return also micronutrients
           if(limit > 100) {
@@ -7376,13 +7393,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               listMN.add(MicroNutrient.getClientModel(mn));
             nameClient.setMicronutrients(listMN);
           }
-          //add to list
           list.add(nameClient);
         }
         else {
           break;
         }
-        //limit query
+        //limit query (only if not "admin search" (==no query word)
         if(list.size() >= limit) {
           break;
         }
@@ -7390,7 +7406,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error searching food names", e);
-      //TODO virhe jos ei ruokia??
+
       throw new ConnectionException("searchFoodNames", e.getMessage());
     }
     finally {

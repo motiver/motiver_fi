@@ -102,7 +102,7 @@ public class SearchServlet extends RemoteServiceServlet {
         
         //if found
         if(count > 0) {
-          n.setCount(count);
+          n.setCount(0, count);
           arrNames.add(n);
         }
       }
@@ -120,7 +120,7 @@ public class SearchServlet extends RemoteServiceServlet {
       for(int i=0; i < arrNames.size(); i++) {
         FoodName n = arrNames.get(i);
         
-        if(n.getCount() > 0) {
+        if(n.getCountUse() > 0) {
           
           writer.object();
           

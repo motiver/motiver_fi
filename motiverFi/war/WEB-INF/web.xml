@@ -23,6 +23,10 @@
     <servlet-class>com.delect.motiver.server.servlet.ExerciseCountServlet</servlet-class>
   </servlet>
   <servlet>
+    <servlet-name>foodNameCountServlet</servlet-name>
+    <servlet-class>com.delect.motiver.server.servlet.FoodNameCountServlet</servlet-class>
+  </servlet>
+  <servlet>
     <servlet-name>monthlySummaryServlet</servlet-name>
     <servlet-class>com.delect.motiver.server.servlet.MonthlyReportServlet</servlet-class>
   </servlet>
@@ -60,6 +64,10 @@
   <servlet-mapping>
     <servlet-name>exerciseCountServlet</servlet-name>
     <url-pattern>/motiver/ecs</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>foodNameCountServlet</servlet-name>
+    <url-pattern>/motiver/fncs</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>monthlySummaryServlet</servlet-name>

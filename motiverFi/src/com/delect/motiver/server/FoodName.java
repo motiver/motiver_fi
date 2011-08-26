@@ -79,8 +79,9 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 		
 		return modelServer;
 	}
-	
-	public Integer count;
+  
+  public Integer countQuery;
+  public Integer countUse;
 	
 	/**
 	 * If food name is trusted
@@ -135,13 +136,46 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 	public FoodName(String name) {
 		this.name = name;
 	}
+  
+  @Override
+  public int compareTo(FoodName compare) {
+    int count = getCountQuery();
+    int count2 = compare.getCountQuery();
+    
+    //if equal count -> compare also use count
+    if(count == count2) {
+      return compare.getCountUse() - getCountUse();
+    }
+    else {
+      return count2 - count;
+    }
+  }
 
-	@Override
-	public int compareTo(FoodName compare) {
-		int count = getCount();
-		int count2 = compare.getCount();
-		return count2 - count;
-	}
+  /**
+   * Count value based on how much exercise name have been used by user
+   * @return
+   */
+  public int getCountUse() {
+    if(countUse != null) {
+      return countUse;
+    }
+    else {
+      return 0;
+    }
+  }
+
+  /**
+   * Count value based on how name matches query word
+   * @return
+   */
+  public int getCountQuery() {
+    if(countQuery != null) {
+      return countQuery;
+    }
+    else {
+      return 0;
+    }
+  }
 
 	public String getBarcode() {
 		if(barcode != null) {
@@ -164,15 +198,6 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 			return 0;
     }
   }
-
-	public int getCount() {
-		if(count != null) {
-			return count;
-    }
-		else {
-			return 0;
-    }
-	}
 
 	public Double getEnergy() {
     return energy;
@@ -259,6 +284,11 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 			return "";
     }
   }
+	
+  public void setCount(int countQuery, int countUse) {
+    this.countUse = countUse;
+    this.countQuery = countQuery;
+  }
 
 	public void setBarcode(String barcode) {
 		this.barcode = barcode;
@@ -270,10 +300,6 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 
 	public void setCategory(Integer category) {
 		this.category = category;
-  }
-
-	public void setCount(int count) {
-    this.count = count;
   }
 
 	public void setEnergy(Double energy) {
