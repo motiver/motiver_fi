@@ -30,6 +30,7 @@ import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.FoodInTime;
 import com.delect.motiver.server.FoodName;
+import com.delect.motiver.server.FoodNameCount;
 import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.MicroNutrient;
@@ -219,7 +220,7 @@ public class StoreNutrition {
     Time t = cache.getTime(timeId);
 
     //not found
-    if(t == null) {    
+    if(t == null) {
       if(logger.isLoggable(Level.FINER)) {
         logger.log(Level.FINER, "Not found from cache");
       }
@@ -1217,6 +1218,47 @@ public class StoreNutrition {
     }
     
     return mReturn;
+  }
+
+  /**
+   * Returns how often user have use single food name
+   * @param uid
+   * @param id
+   * @return
+   */
+  @SuppressWarnings("unchecked")
+  public static int getFoodNameCount(PersistenceManager pm, String uid, Long id) {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Fetching count for food name: "+id);
+    }
+    
+    int count = -1;
+    WeekCache cache = new WeekCache();
+    count = cache.getFoodNameCount(uid, id);
+    
+    if(count < 0) {
+      if(logger.isLoggable(Level.FINER)) {
+        logger.log(Level.FINER, "Not found from cache");
+      }
+      
+      Query qUse = pm.newQuery(FoodNameCount.class);
+      qUse.setFilter("nameId == nameIdParam && openId == openIdParam");
+      qUse.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
+      qUse.setRange(0, 1);
+      List<FoodNameCount> valueCount = (List<FoodNameCount>) qUse.execute(id, uid);
+      if(valueCount.size() > 0) {
+        count = valueCount.get(0).getCount();
+        
+      }
+      
+      if(count < 0) {
+        count = 0;
+      }
+      cache.addFoodNameCount(uid, id, count);
+    }
+    
+    return count;
   }
   
 }

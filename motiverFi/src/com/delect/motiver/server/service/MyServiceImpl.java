@@ -7356,21 +7356,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         //if found
         if(count > 0) {
-          
-          //get count from use table
+
           int countUse = 0;
           try {
-            Query qUse = pm.newQuery(FoodNameCount.class);
-            qUse.setFilter("nameId == nameIdParam && openId == openIdParam");
-            qUse.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
-            qUse.setRange(0, 1);
-            List<FoodNameCount> valueCount = (List<FoodNameCount>) qUse.execute(n.getId(), UID);
-            if(valueCount.size() > 0) {
-              countUse = valueCount.get(0).getCount();
-            }
+            countUse = StoreNutrition.getFoodNameCount(pm, UID, n.getId());
           } catch (Exception e) {
-            e.printStackTrace();
-            logger.log(Level.SEVERE, "searchExerciseNames", e);
+            logger.log(Level.SEVERE, "Error fetching food name count", e);
           }
           
           n.setCount(count, countUse);

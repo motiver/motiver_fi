@@ -55,6 +55,7 @@ public class WeekCache {
   private final static String PREFIX_EXERCISENAMES = "en";
   private final static String PREFIX_FOOD_NAMES = "fnames";
   private final static String PREFIX_FOOD_NAME = "fn";
+  private final static String PREFIX_FOOD_NAME_COUNT = "fn_c";
   private final static String PREFIX_TIME = "t";
   private final static String PREFIX_MEAL = "m";
   private final static String PREFIX_USERS = "users";
@@ -382,5 +383,36 @@ public class WeekCache {
     builder.append(PREFIX_FOOD_NAMES);
 
     cache.remove(builder.toString());
+  }
+
+  public int getFoodNameCount(String uid, Long id) {
+    if(cache == null) {
+      return -1;
+    }
+    
+    //count
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_FOOD_NAME_COUNT);
+    builder.append(id);
+    builder.append("_");
+    builder.append(uid);
+    Object obj = cache.get(builder.toString());
+        
+    return  (obj != null)? (Integer)obj : -1;
+  }
+  
+  public void addFoodNameCount(String uid, Long id, int count) {
+    if(cache == null) {
+      return;
+    }
+    
+    //meal
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_FOOD_NAME_COUNT);
+    builder.append(id);
+    builder.append("_");
+    builder.append(uid);
+    cache.put(builder.toString(), count);
+    
   }
 }
