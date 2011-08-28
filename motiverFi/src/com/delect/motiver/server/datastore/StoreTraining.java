@@ -444,7 +444,7 @@ public class StoreTraining {
           
           tx.commit();
           
-          //clear workout from cache
+          //update workout to cache
           Workout w = e.getWorkout();
           WeekCache cache = new WeekCache();
           cache.addWorkout(w);
@@ -481,8 +481,97 @@ public class StoreTraining {
       }
     }
 
-    System.out.println(exercise.getName().getId());
     return exercise;
+  }
+  
+  /**
+   * Updates single exercise
+   * @param pm
+   * @param exercise
+   * @param userUid
+   * @param locale
+   * @return updated exercise
+   * @throws ConnectionException 
+   */
+  public static Boolean updateExerciseOrder(PersistenceManager pm, Long workoutId, Long[] ids, String uid) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Updating exercise order:");
+    }
+    
+    boolean ok = false;
+      
+    //try to update X times
+    int retries = Constants.LIMIT_UPDATE_RETRIES;
+    while (true) {
+      
+      Transaction tx = pm.currentTransaction();
+      tx.begin();
+      
+      try {
+        Workout w = pm.getObjectById(Workout.class, workoutId);
+        if(w != null) {
+          //check permission
+          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_TRAINING, uid, w.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, uid, w.getUid());
+          }
+                      
+          //get exercises
+          for(int i=0; i < ids.length; i++) {
+            Exercise e = null;
+            for(Exercise ex : w.getExercises()) {
+              if(ex.getId().longValue() == ids[i].longValue()) {
+                e = ex;
+                break;
+              }
+            }
+            if(e != null) {
+              e.setOrder(i);
+            }
+            else {
+              ok = false;
+            }
+          }
+          
+          tx.commit();
+          
+          //update workout to cache
+          WeekCache cache = new WeekCache();
+          cache.addWorkout(w);
+          
+          break;
+        }
+        else {
+          logger.log(Level.WARNING, "Could not find workout with id "+workoutId);
+        }
+      }
+      catch (Exception ex) {
+        if (tx.isActive()) {
+          tx.rollback();
+        }
+        if(ex instanceof NoPermissionException) {         
+          throw ex;
+        }
+        logger.log(Level.WARNING, "Error updating exercise order", ex);
+        
+        //retries used
+        if (retries == 0) {          
+          throw ex;
+        }
+        
+        logger.log(Level.WARNING, " Retries left: "+retries);
+        
+        --retries;
+        
+        //small delay between retries
+        try {
+          Thread.sleep(MyServiceImpl.DELAY_BETWEEN_RETRIES);
+        }
+        catch(Exception ignored) { }
+      }
+    }
+
+    return ok;
   }
   
   /**
@@ -575,7 +664,9 @@ public class StoreTraining {
           tx.commit();
           tx.begin();
           
-          modelServer.setNameId(name.getId());            
+          if(name != null) {
+            modelServer.setNameId(name.getId());
+          }
         }
         
         //get workout

@@ -58,7 +58,6 @@ import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.FoodInTime;
 import com.delect.motiver.server.FoodName;
-import com.delect.motiver.server.FoodNameCount;
 import com.delect.motiver.server.FoodSearchIndex;
 import com.delect.motiver.server.GuideValue;
 import com.delect.motiver.server.Meal;
@@ -7994,7 +7993,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateExerciseOrder(WorkoutModel workout, Long[] ids) throws ConnectionException {
 
-    logger.log(Level.FINE, "updateExerciseOrder()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating exercise order for workout: "+workout.getName());
+    }
     
     boolean ok = true;
     
@@ -8007,36 +8008,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      Workout w = pm.getObjectById(Workout.class, workout.getId());
-      if(w != null) {
-        //check if correct user
-        if(w.getUid().equals(UID)) {
-                    
-          //get exercises
-          for(int i=0; i < ids.length; i++) {
-            Exercise e = null;
-            for(Exercise ex : w.getExercises()) {
-              if(ex.getId().longValue() == ids[i].longValue()) {
-                e = ex;
-                break;
-              }
-            }
-            if(e != null) {
-              e.setOrder(i);
-            }
-            else {
-              ok = false;
-            }
-          }
-        }
-        
-      }
+      ok = StoreTraining.updateExerciseOrder(pm, workout.getId(), ids, UID);
+      
     } catch (Exception e) {
-      ok = false;
-      logger.log(Level.SEVERE, "updateExerciseOrder", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error updating exercise order", e);
       throw new ConnectionException("updateExerciseOrder", e.getMessage());
     }
     finally {
