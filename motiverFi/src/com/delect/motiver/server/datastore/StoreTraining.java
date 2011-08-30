@@ -113,7 +113,6 @@ public class StoreTraining {
         
       //convert to client side model
       model = Workout.getClientModel(w);
-      model.setUid(userUid);
       model.setExercises(listEClient);
       
       //save to cache
