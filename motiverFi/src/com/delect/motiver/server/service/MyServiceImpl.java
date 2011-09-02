@@ -975,39 +975,39 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param uid : target's user id (if same that ours -> returns always true)
    * @return has permission
    */
-  @SuppressWarnings("unchecked")
-  private static boolean hasPermission(int target, String ourUid, String uid) {
-
-    logger.log(Level.FINE, "hasPermission()");
-    
-    if(ourUid.equals(uid)) {
-      return true;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    boolean hasPermission = false;
-    try {
-
-      Query q = pm.newQuery(Circle.class);
-      q.setFilter("openId == openIdParam && (friendId == friendIdParam || friendId == '-1') && target == targetParam");
-      q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
-      q.setRange(0,1);
-      List<Circle> list = (List<Circle>)q.execute(uid, ourUid, target);
-      
-      hasPermission = (list.size() > 0);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "hasPermission", e);
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return hasPermission;
-  }
+//  @SuppressWarnings("unchecked")
+//  private static boolean hasPermission(int target, String ourUid, String uid) {
+//
+//    logger.log(Level.FINE, "hasPermission()");
+//    
+//    if(ourUid.equals(uid)) {
+//      return true;
+//    }
+//    
+//    PersistenceManager pm =  PMF.get().getPersistenceManager();
+//    
+//    boolean hasPermission = false;
+//    try {
+//
+//      Query q = pm.newQuery(Circle.class);
+//      q.setFilter("openId == openIdParam && (friendId == friendIdParam || friendId == '-1') && target == targetParam");
+//      q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
+//      q.setRange(0,1);
+//      List<Circle> list = (List<Circle>)q.execute(uid, ourUid, target);
+//      
+//      hasPermission = (list.size() > 0);
+//      
+//    } catch (Exception e) {
+//      logger.log(Level.SEVERE, "hasPermission", e);
+//    }
+//    finally {
+//      if (!pm.isClosed()) {
+//        pm.close();
+//      } 
+//    }
+//    
+//    return hasPermission;
+//  }
 
   /**
    * Checks if user has permission to given target
@@ -1019,8 +1019,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @SuppressWarnings("unchecked")
   public static boolean hasPermission(PersistenceManager pm, int target, String ourUid, String uid) {
 
-    logger.log(Level.FINE, "hasPermission()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Checking permission "+target+" for "+ourUid+", "+uid);
+    }
     
+    //if own data -> return always true
     if(ourUid.equals(uid)) {
       return true;
     }
@@ -1578,7 +1581,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
             
       //create a copy
-      if(hasPermission(1, UID, t.getUid())) {
+      if(hasPermission(pm, Permission.WRITE_NUTRITION, UID, t.getUid())) {
         
         modelServer = duplicateMeal(mealServerOrig);
         modelServer.setId(null);
@@ -1843,7 +1846,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         //if not ours -> check if we have permission to copy it
         if(!r.getUid().equals(UID)) {
-          hasPermission = hasPermission(0, UID, r.getUid());
+          hasPermission = hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid());
         }
         
         //create a copy
@@ -1974,12 +1977,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           //get model
           final Routine r = pm.getObjectById(Routine.class, routine.getId());
           
-          boolean hasPermission = true;
-          
-          //if not ours -> check if we have permission to copy it
-          if(!r.getUid().equals(UID)) {
-            hasPermission = hasPermission(0, UID, r.getUid());
-          }
+          boolean hasPermission = hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid());
           
           //create a copy
           if(hasPermission) {
@@ -2296,12 +2294,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           //get model
           final Time t = pm.getObjectById(Time.class, time.getId());
           
-          boolean hasPermission = true;
-          
-          //if not ours -> check if we have permission to copy it
-          if(!t.getUid().equals(UID)) {
-            hasPermission = hasPermission(1, UID, t.getUid());
-          }
+          boolean hasPermission = hasPermission(pm, Permission.WRITE_NUTRITION, UID, t.getUid());
           
           //create a copy
           if(hasPermission) {
@@ -2412,12 +2405,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             //get model
             final Time t = pm.getObjectById(Time.class, time.getId());
             
-            boolean hasPermission = true;
-            
-            //if not ours -> check if we have permission to copy it
-            if(!t.getUid().equals(UID)) {
-              hasPermission = hasPermission(1, UID, t.getUid());
-            }
+            boolean hasPermission = hasPermission(pm, Permission.WRITE_NUTRITION, UID, t.getUid());
             
             //create a copy
             if(hasPermission) {
@@ -2534,7 +2522,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           final Workout w = pm.getObjectById(Workout.class, workout.getId());
                     
           //create a copy
-          if(hasPermission(0, UID, w.getUid())) {
+          if(hasPermission(pm, Permission.WRITE_TRAINING, UID, w.getUid())) {
             modelServer = duplicateWorkout(w);
             
             //increment copy count IF NOT our workout
@@ -3677,11 +3665,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         String uid = user.getUid();
         if(!uid.equals(UID)) {
-          permissionTraining = hasPermission(0, UID, uid);
-          permissionNutrition = hasPermission(1, UID, uid);
-          permissionNutritionFoods = hasPermission(2, UID, uid);
-          permissionCardio = hasPermission(3, UID, uid);
-          permissionMeasurement = hasPermission(4, UID, uid);
+          permissionTraining = hasPermission(pm, Permission.READ_TRAINING, UID, uid);
+          permissionNutrition = hasPermission(pm, Permission.READ_NUTRITION, UID, uid);
+          permissionNutritionFoods = hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid);
+          permissionCardio = hasPermission(pm, Permission.READ_CARDIO, UID, uid);
+          permissionMeasurement = hasPermission(pm, Permission.READ_MEASUREMENTS, UID, uid);
         }
         //if no permission at all -> return null
         if(!permissionTraining && !permissionNutrition && !permissionCardio && !permissionMeasurement) {
@@ -3990,7 +3978,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Cardio w = pm.getObjectById(Cardio.class, cardioId);
       if(w != null) {
-        if(hasPermission(3, UID, w.getUid())) {
+        if(hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
 
           //get last value
           Query q = pm.newQuery(CardioValue.class);
@@ -4053,7 +4041,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         //if our cardio OR shared
         boolean hasPermission = true;
         if(!w.getUid().equals(UID)) {
-          hasPermission = hasPermission(3, UID, w.getUid());
+          hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid());
         }
         
         if(hasPermission) {
@@ -4195,10 +4183,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 Routine r = pm.getObjectById(Routine.class, id);
                 if(r != null) {
                   //check permission
-                  boolean hasPermission = true;
-                  if(!r.getUid().equals(UID)) {
-                    hasPermission = hasPermission(0, UID, r.getUid());
-                  }
+                  boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setRoutine( Routine.getClientModel(r) );
@@ -4211,10 +4196,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 Meal m = pm.getObjectById(Meal.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = true;
-                  if(!m.getUid().equals(UID)) {
-                    hasPermission = hasPermission(1, UID, m.getUid());
-                  }
+                  boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, UID, m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setMeal( Meal.getClientModel(m) );
@@ -4227,10 +4209,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 Measurement m = pm.getObjectById(Measurement.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = true;
-                  if(!m.getUid().equals(UID)) {
-                    hasPermission = hasPermission(4, UID, m.getUid());
-                  }
+                  boolean hasPermission = hasPermission(pm, Permission.READ_MEASUREMENTS, UID, m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setMeasurement( Measurement.getClientModel(m) );
@@ -4243,10 +4222,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 Cardio m = pm.getObjectById(Cardio.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = true;
-                  if(!m.getUid().equals(UID)) {
-                    hasPermission = hasPermission(3, UID, m.getUid());
-                  }
+                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setCardio( Cardio.getClientModel(m) );
@@ -4259,10 +4235,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 Run m = pm.getObjectById(Run.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = true;
-                  if(!m.getUid().equals(UID)) {
-                    hasPermission = hasPermission(3, UID, m.getUid());
-                  }
+                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setRun( Run.getClientModel(m) );
@@ -4699,7 +4672,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return 
    * @throws ConnectionException
    */
-  @SuppressWarnings("unchecked")
   public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Adding user from circle: friendid="+uid+", target="+target);
@@ -4795,7 +4767,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Meal w = pm.getObjectById(Meal.class, mealId);
       if(w != null) {
-        if(hasPermission(1, UID, w.getUid())) {
+        if(hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid())) {
           m = Meal.getClientModel(w);
           
           //get date from time
@@ -4977,7 +4949,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Measurement w = pm.getObjectById(Measurement.class, measurementId);
       if(w != null) {
-        if(hasPermission(4, UID, w.getUid())) {
+        if(hasPermission(pm, Permission.READ_MEASUREMENTS, UID, w.getUid())) {
 
           //get last value
           Query q = pm.newQuery(MeasurementValue.class);
@@ -5038,7 +5010,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
       if(w != null) {
         //if we have permission
-        if(hasPermission(4, UID, w.getUid())) {
+        if(hasPermission(pm, Permission.READ_MEASUREMENTS, UID, w.getUid())) {
           List<MeasurementValue> listE = w.getValues();
           if(listE != null) {
             //go through each value
@@ -5093,7 +5065,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     //check permission
-    if(!hasPermission(1, UID, uid)) {
+    if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid)) {
       return null;
     }
     
@@ -5384,7 +5356,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
         
         //check permission
-        boolean hasPermission = hasPermission(1, UID, w.getUid());
+        boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid());
         
         if(hasPermission) {
           MealModel m = Meal.getClientModel(w);
@@ -5448,7 +5420,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
         
         //check permission
-        boolean hasPermission = hasPermission(0, UID, r.getUid());
+        boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
         
         if(hasPermission) {
           RoutineModel m = Routine.getClientModel(r);
@@ -5563,7 +5535,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Routine w = pm.getObjectById(Routine.class, routineId);
       if(w != null) {
-        if(hasPermission(0, UID, w.getUid())) {
+        if(hasPermission(pm, Permission.READ_TRAINING, UID, w.getUid())) {
           m = Routine.getClientModel(w);
         }
       }
@@ -5733,7 +5705,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Run w = pm.getObjectById(Run.class, runId);
       if(w != null) {
-        if(hasPermission(3, UID, w.getUid())) {
+        if(hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
 
           //get last value
           Query q = pm.newQuery(RunValue.class);
@@ -5796,7 +5768,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         //if our run OR shared
         boolean hasPermission = true;
         if(!w.getUid().equals(UID)) {
-          hasPermission = hasPermission(3, UID, w.getUid());
+          hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid());
         }
         
         if(hasPermission) {
@@ -7285,7 +7257,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Search food names
    * @return names' models
    */
-  @SuppressWarnings({"unchecked" })
   @Override
   public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
 
@@ -7467,7 +7438,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         //if name matched -> check permission
         if(ok) {
           
-          boolean hasPermission = hasPermission(1, UID, w.getUid());
+          boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid());
           
           if(hasPermission) {
             MealModel m = Meal.getClientModel(w);
@@ -7550,7 +7521,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         //if name matched -> check permission
         if(ok) {
           
-          boolean hasPermission = hasPermission(0, UID, r.getUid());
+          boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
           
           if(hasPermission) {
             RoutineModel m = Routine.getClientModel(r);
@@ -8525,7 +8496,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean updateWorkout(WorkoutModel model) throws ConnectionException {
 
-    logger.log(Level.FINE, "Updating workout");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating workout");
+    }
     
     boolean ok = false;
     
@@ -8541,10 +8514,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       StoreTraining.updateWorkoutModel(pm, model, UID);
       
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "updateWorkout", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error updating workout", e);
       throw new ConnectionException("updateWorkout", e.getMessage());
     }
     finally {
@@ -8655,7 +8625,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         //check permission if not our routine
         if(!r.getUid().equals(UID)) {
-          boolean hasPermission = hasPermission(0, UID, r.getUid());
+          boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
           
           //if no permission for the routine -> return empty list
           if(!hasPermission) {
@@ -8737,14 +8707,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return null;
     }
 
-    //check permission
-    if(!hasPermission(0, UID, uid)) {
-      return null;
-    }
-    
     PersistenceManager pm =  PMF.get().getPersistenceManager();
-
+    
     try {
+      
+      //check permission
+      if(!hasPermission(pm, Permission.READ_TRAINING, UID, uid)) {
+        throw new NoPermissionException(Permission.READ_TRAINING, UID, uid);
+      }
+
       //go through days
       final int days = (int)((dateEnd.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
       
@@ -8774,9 +8745,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getWorkoutsInCalendar", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getWorkoutsInCalendar", e.getMessage());
     }
     finally {
@@ -8798,7 +8766,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override @SuppressWarnings("unchecked")
   public List<GuideValueModel> getGuideValues(String uid, int index, Date date) throws ConnectionException {
 
-    logger.log(Level.FINE, "Loading guide values: "+date);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading guide values: "+date);
+    }
 
     List<GuideValueModel> list = new ArrayList<GuideValueModel>();
     
@@ -8808,14 +8778,16 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return null;
     }
 
-    //check permission
-    if(!hasPermission(1, UID, uid)) {
-      return null;
-    }
-    
     PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
+
     try {
+      
+      //check permission
+      if(!hasPermission(pm, Permission.READ_NUTRITION, UID, uid)) {
+        throw new NoPermissionException(Permission.READ_TRAINING, UID, uid);
+      }
+    
+    
       Query q = pm.newQuery(GuideValue.class);
 
       List<GuideValue> values = null;
@@ -8872,10 +8844,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
 
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "getGuideValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      logger.log(Level.SEVERE, "Error loading guide values", e);
       throw new ConnectionException("getGuideValues", e.getMessage());
     }
     finally {
