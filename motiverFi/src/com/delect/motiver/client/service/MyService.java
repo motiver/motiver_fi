@@ -141,16 +141,6 @@ public interface MyService extends RemoteService {
   public MealModel addMeal(MealModel meal) throws ConnectionException;
   
   /**
-   * Adds meal from time to db.
-   *
-   * @param meal : model to be added
-   * @param timeId the time id
-   * @return added meal (null if add not successful)
-   * @throws ConnectionException the connection exception
-   */
-  public MealModel addMeal(MealModel meal, Long timeId) throws ConnectionException;
-  
-  /**
    * Adds meals to db.
    *
    * @param meals : models to be added (including timeId if set)

@@ -140,16 +140,6 @@ public interface MyServiceAsync {
   public Request addMeal(MealModel meal, AsyncCallback<MealModel> callback);
   
   /**
-   * Adds meal from time to db.
-   *
-   * @param meal : model to be added
-   * @param timeId the time id
-   * @param callback the callback
-   * @return added meal (null if add not successful)
-   */
-  public Request addMeal(MealModel meal, Long timeId, AsyncCallback<MealModel> callback);
-  
-  /**
    * Adds meals to db.
    *
    * @param meals : models to be added

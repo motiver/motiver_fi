@@ -224,7 +224,6 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Updating workout: "+model.getId());
-      System.out.println("Updating workout: "+model.getId());
     }
       
     //try to update X times
