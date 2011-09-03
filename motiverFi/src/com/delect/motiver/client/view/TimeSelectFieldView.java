@@ -73,7 +73,6 @@ public class TimeSelectFieldView extends TextField<String> {
 		this.handler = h;
 
 		this.setWidth(65);
-//		this.setReadOnly(true);
 		this.setRegex("(0?[0-9]|1[0-9]|2[0-3]):([0-5][0-9])");
 		this.addListener(Events.OnKeyUp, new Listener<BaseEvent>() {
       @Override
