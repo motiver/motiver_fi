@@ -482,7 +482,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   
     //if coach mode -> return trainee's uid
     if(coachModeUid != null) {
-      logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
+      if(logger.isLoggable(Level.FINE)) {
+        logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
+      }
 
       PersistenceManager pm =  PMF.get().getPersistenceManager();
       
@@ -6637,7 +6639,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
 
-    logger.log(Level.FINE, "Searching exercises: "+query);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Searching exercises: "+query);
+    }
     
     //convert to client side models
     List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
@@ -6757,7 +6761,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    }
     
     return list;
   }
@@ -6970,7 +6976,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    }
     
     return list;
   }
@@ -7054,7 +7062,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    }
     
     return list;
   }
@@ -7146,7 +7156,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    }
     
     return list;
   }
@@ -7229,7 +7241,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       } 
     }
 
-    logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    }
     
     return list;
   }
@@ -8066,7 +8080,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public WorkoutModel getWorkout(Long workoutId) throws ConnectionException {
 
-    logger.log(Level.FINE, "Loading single workout ("+workoutId+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading single workout ("+workoutId+")");
+    }
     
     WorkoutModel m = null;
     
@@ -8106,7 +8122,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException {
 
-    logger.log(Level.FINE, "Loading workouts. Index="+index);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts. Index="+index);
+    }
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     
@@ -8375,7 +8393,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public boolean hasTraining(String uid, Date date) throws ConnectionException {
 
-    logger.log(Level.FINE, "Checking if date '"+date+"' has training");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Checking if date '"+date+"' has training");
+    }
   
     boolean hasTraining = getWorkoutsInCalendar(uid, date, date).get(0).length > 0;
       
