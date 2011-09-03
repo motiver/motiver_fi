@@ -24,6 +24,7 @@ import com.google.gwt.user.client.Event;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.shared.Functions;
 
+import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -67,12 +68,35 @@ public class TimeSelectFieldView extends TextField<String> {
 	
 	//Parameters: textfield containing time
 	@SuppressWarnings("deprecation")
-	public TimeSelectFieldView(int time, TimeSelectFieldHandler handler) {
+	public TimeSelectFieldView(int time, TimeSelectFieldHandler h) {
 
-		this.handler = handler;
-		
+		this.handler = h;
+
 		this.setWidth(65);
-		this.setReadOnly(true);
+//		this.setReadOnly(true);
+		this.setRegex("(0?[0-9]|1[0-9]|2[0-3]):([0-5][0-9])");
+		this.addListener(Events.OnKeyUp, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent event) {
+        try {
+          
+          if(isValid()) {
+            int seconds = Functions.getTimeToSeconds(getValue());
+            origValue = seconds;
+            Hours = origValue / 3600;
+            Minutes = (origValue - (Hours * 3600))/60;
+
+            //fire time selected event
+            if(handler != null) {
+              handler.timeChanged( seconds );
+            }
+            
+            popup.hide();
+            popup = null;
+          }
+          } catch (Exception ignored) { }
+      }
+		});
 		this.setValue(Functions.getTimeToString(time));
 		this.setMessageTarget("none");
 		
