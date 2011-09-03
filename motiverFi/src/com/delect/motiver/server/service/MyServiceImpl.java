@@ -508,48 +508,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     
     return openId;
-    
-//    String uid = 0L;
-//    PersistenceManager pm =  PMF.get().getPersistenceManager();
-//    
-//    try {
-//      String tokenOur = token.replaceAll("____.*", "");
-//      
-//      //get our uid
-//      Query q = pm.newQuery(UserOpenid.class, "fbAuthToken == fbAuthTokenParam");
-//      q.declareParameters("java.lang.String fbAuthTokenParam");
-//      q.setRange(0, 1);
-//      List<UserOpenid> users = (List<UserOpenid>) q.execute(tokenOur);
-//      if(users.size() > 0) {
-//        uid = users.get(0).getUid();
-//      }
-//      
-//      //if coach mode -> token is format: mytoken____traineeUID
-//      if(token.contains("____")) {
-//        //check that coach has right to
-//        long traineeUID = Long.parseLong(token.replaceAll(".*____", ""));
-//        
-//        //check if found in our database AND has set as coach
-//        q = pm.newQuery(UserOpenid.class, "openId == openIdParam && shareCoach == shareCoachParam");
-//        q.declareParameters("java.lang.String openIdParam, java.lang.Long shareCoachParam");
-//        users = (List<UserOpenid>) q.execute(traineeUID, uid);
-//
-//        //data found
-//        if(users.size() > 0) {
-//          uid = traineeUID;
-//        }
-//      }
-//      
-//    } catch (Exception e) {
-//      log.log(Level.SEVERE, "", e);
-//    }
-//    finally {
-//      if (!pm.isClosed()) {
-//        pm.close();
-//      }
-//    }
-//    
-//    return uid;
   }
 
   /**
@@ -688,21 +646,21 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     logger.log(Level.FINE, "stripTime()");
 
-        GregorianCalendar gc = new GregorianCalendar(); 
-        gc.setTime(date); 
-        int year = gc.get(Calendar.YEAR); 
-        int month = gc.get(Calendar.MONTH); 
-        int day = gc.get(Calendar.DATE); 
-        int h = 0;
-        int m = 0;
-        int s = 0;
-        if(!isStart) {
-          h = 23;
-          m = 59;
-          s = 59;
-        }
-        GregorianCalendar output = new GregorianCalendar(year, month, day, h, m, s); 
-        return output.getTime(); 
+    GregorianCalendar gc = new GregorianCalendar(); 
+    gc.setTime(date); 
+    int year = gc.get(Calendar.YEAR); 
+    int month = gc.get(Calendar.MONTH); 
+    int day = gc.get(Calendar.DATE); 
+    int h = 0;
+    int m = 0;
+    int s = 0;
+    if(!isStart) {
+      h = 23;
+      m = 59;
+      s = 59;
+    }
+    GregorianCalendar output = new GregorianCalendar(year, month, day, h, m, s); 
+    return output.getTime(); 
   }
   
   @Override
@@ -776,9 +734,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addCardio", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addCardio", e.getMessage());
     }
     finally {
@@ -848,9 +803,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addCardioValue", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addCardioValue", e.getMessage());
     }
     finally {
@@ -899,9 +851,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addComment", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addComment", e.getMessage());
     }
     finally {
@@ -938,9 +887,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      }
       throw new ConnectionException("addExercise", e.getMessage());
     }
     finally {
@@ -977,9 +923,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise name", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addExercisename", e.getMessage());
     }
     finally {
@@ -1122,9 +1065,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addGuideValue", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addGuideValue", e.getMessage());
     }
     finally {
@@ -1244,9 +1184,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addMeasurement", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addMeasurement", e.getMessage());
     }
     finally {
@@ -1307,9 +1244,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addMeasurementValue", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addMeasurementValue", e.getMessage());
     }
     finally {
@@ -1441,9 +1375,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addRoutine", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addRoutine", e.getMessage());
     }
     finally {
@@ -1575,9 +1506,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addRoutines", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addRoutine", e.getMessage());
     }
     finally {
@@ -1628,9 +1556,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addRun", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addRun", e.getMessage());
     }
     finally {
@@ -1700,9 +1625,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addRunValue", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addRunValue", e.getMessage());
     }
     finally {
@@ -1840,9 +1762,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addTime", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addTime", e.getMessage());
     }
     finally {
@@ -1957,9 +1876,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addTimes", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addTimes", e.getMessage());
     }
     finally {
@@ -2086,9 +2002,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "addWorkouts", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("addWorkouts", e.getMessage());
     }
     finally {
@@ -2118,13 +2031,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     if(UID == null) {
       return ok;
     }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     //if not admin
     if( !isAdmin(UID) ) {
       return false;
     }
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
 
@@ -2173,9 +2086,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     } catch (Exception e) {
       ok = false;
       logger.log(Level.SEVERE, "combineExerciseNames", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("combineExerciseNames", e.getMessage());
     }
     finally {
@@ -2205,13 +2115,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     if(UID == null) {
       return ok;
     }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     //if not admin
     if( !isAdmin(UID) ) {
       return false;
     }
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
 
@@ -2546,9 +2456,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "fetchRemoveAll", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      }
       throw new ConnectionException("fetchRemoveAll", e.getMessage());
     }
     finally {
@@ -2678,9 +2585,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "fetchSaveGuideValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("fetchSaveGuideValues", e.getMessage());
     }
     finally {
@@ -2741,9 +2645,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "fetchSaveMeals", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("fetchSaveMeals", e.getMessage());
     }
     finally {
@@ -2820,9 +2721,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "fetchSaveMeasurements", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("fetchSaveMeasurements", e.getMessage());
     }
     finally {
@@ -2910,9 +2808,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "fetchSaveRoutines", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("fetchSaveRoutines", e.getMessage());
     }
     finally {
@@ -3046,9 +2941,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "fetchSaveTimes", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("fetchSaveTimes", e.getMessage());
     }
     finally {
@@ -3115,9 +3007,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "fetchSaveWorkouts", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("fetchSaveWorkouts", e.getMessage());
     }
     finally {
@@ -3173,220 +3062,217 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       if(user != null) {
         
         String uid = user.getUid();
-        if(!uid.equals(UID)) {
-          permissionTraining = hasPermission(pm, Permission.READ_TRAINING, UID, uid);
-          permissionNutrition = hasPermission(pm, Permission.READ_NUTRITION, UID, uid);
-          permissionNutritionFoods = hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid);
-          permissionCardio = hasPermission(pm, Permission.READ_CARDIO, UID, uid);
-          permissionMeasurement = hasPermission(pm, Permission.READ_MEASUREMENTS, UID, uid);
+        if(!hasPermission(pm, Permission.READ_TRAINING, UID, uid)) {
+          throw new NoPermissionException(Permission.READ_TRAINING, UID, uid);
         }
-        //if no permission at all -> return null
-        if(!permissionTraining && !permissionNutrition && !permissionCardio && !permissionMeasurement) {
-          return null;
+        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, uid)) {
+          throw new NoPermissionException(Permission.READ_NUTRITION, UID, uid);
         }
-      }
-      //if no user found -> return null
-      if(user == null) {
-        return null;
-      }
+        if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid)) {
+          throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, UID, uid);
+        }
+        if(!hasPermission(pm, Permission.READ_CARDIO, UID, uid)) {
+          throw new NoPermissionException(Permission.READ_CARDIO, UID, uid);
+        }
+        if(!hasPermission(pm, Permission.READ_MEASUREMENTS, UID, uid)) {
+          throw new NoPermissionException(Permission.READ_MEASUREMENTS, UID, uid);
+        }
       
-      //reset start date
-      if(dateStartParam != null) {
-        dateStartParam = stripTime(dateStartParam, true);
-      }
+        //reset start date
+        if(dateStartParam != null) {
+          dateStartParam = stripTime(dateStartParam, true);
+        }
+              
+        final int fetchDaysBack = 11; //how many days we search at once
+        int fetchDays = 0;  //day counter
+        boolean stopSearch = false;
+    
+        int dataSize = 0;
+        //search one week at time -> until we stop (or hit limit)
+        while(!stopSearch && fetchDays < Constants.LIMIT_BLOG_DAY_BACK) {
+    
+          //strip time
+          Date dStart = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays + fetchDaysBack - 1)) * 1000);
+          dStart = stripTime(dStart, true);
+          Date dEnd = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays)) * 1000);
+          dEnd = stripTime(dEnd, false);
+          
+          final Object[] arrParams = new Object[] {user.getUid(), dStart, dEnd};
+          
+          //variables
+          List<Workout> workouts = null;
+          List<Time> times = null;
+          List<CardioValue> cValues = null;
+          List<RunValue> rValues = null;
+          List<MeasurementValue> mValues = null;
+    
+          Query q;
+          
+          //TRAINING
+          if(permissionTraining && (target == 0 || target == 1 || target == 5)) {
+            q = pm.newQuery(Workout.class);
+            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
+            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
+            q.setOrdering("date DESC");
+            workouts = (List<Workout>) q.executeWithArray(arrParams);
+          }
+          
+          //NUTRITION
+          if(permissionNutrition && (target == 0 || target == 2)) {
+            q = pm.newQuery(Time.class);
+            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
+            q.setOrdering("date DESC");
+            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
+            times = (List<Time>) q.executeWithArray(arrParams);
+          }
+          
+          //CARDIO
+          if(permissionCardio && (target == 0 || target == 3 || target == 5)) {
+            q = pm.newQuery(CardioValue.class);
+            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
+            q.setOrdering("date DESC");
+            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
+            cValues = (List<CardioValue>) q.executeWithArray(arrParams);
+          
+            //RUN
+            q = pm.newQuery(RunValue.class);
+            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
+            q.setOrdering("date DESC");
+            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
+            rValues = (List<RunValue>) q.executeWithArray(arrParams);
+    
+          }
+          
+          //MEASUREMENTS
+          if(permissionMeasurement && (target == 0 || target == 4)) {
             
-      final int fetchDaysBack = 11; //how many days we search at once
-      int fetchDays = 0;  //day counter
-      boolean stopSearch = false;
-
-      int dataSize = 0;
-      //search one week at time -> until we stop (or hit limit)
-      while(!stopSearch && fetchDays < Constants.LIMIT_BLOG_DAY_BACK) {
-
-        //strip time
-        Date dStart = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays + fetchDaysBack - 1)) * 1000);
-        dStart = stripTime(dStart, true);
-        Date dEnd = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays)) * 1000);
-        dEnd = stripTime(dEnd, false);
-        
-        final Object[] arrParams = new Object[] {user.getUid(), dStart, dEnd};
-        
-        //variables
-        List<Workout> workouts = null;
-        List<Time> times = null;
-        List<CardioValue> cValues = null;
-        List<RunValue> rValues = null;
-        List<MeasurementValue> mValues = null;
-
-        Query q;
-        
-        //TRAINING
-        if(permissionTraining && (target == 0 || target == 1 || target == 5)) {
-          q = pm.newQuery(Workout.class);
-          q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-          q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-          q.setOrdering("date DESC");
-          workouts = (List<Workout>) q.executeWithArray(arrParams);
+            q = pm.newQuery(MeasurementValue.class);
+            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
+            q.setOrdering("date DESC");
+            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
+            mValues = (List<MeasurementValue>) q.executeWithArray(arrParams);
+          }
+    
+          //go through each day and search fetched arrays
+          for(int i=0; i < fetchDaysBack; i++) {
+    
+            //if limit reached -> add null value
+            if(data.size() == limit) {
+              data.add(null);
+              stopSearch = true;
+              break;
+            }
+            
+            final Date d = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays + i)) * 1000);
+            final SimpleDateFormat fmt = new SimpleDateFormat("dd-MM-yy");
+            final String strD = fmt.format(d);
+            
+            //END if start date is before given start date
+            if(dateStartParam != null && d.getTime() < dateStartParam.getTime()) {
+              stopSearch = true;
+              break;
+            }
+            
+            //blog data
+            BlogData bd = new BlogData();
+            bd.setUser(user);
+            bd.setDate(d);
+    
+            boolean found = false;
+            
+            //go through WORKOUTS
+            if(workouts != null) {
+              List<WorkoutModel> arrW = new ArrayList<WorkoutModel>();
+              for(Workout w : workouts) {
+                if(fmt.format(w.getDate()).equals(strD)) {
+                  arrW.add( StoreTraining.getWorkoutModel(pm, w.getId(), UID));
+                  
+                  found = true;
+                }
+              }
+              bd.setWorkouts(arrW);
+            }
+            
+            //go through TIMES
+            if(times != null) {
+              List<Time> arrT = new ArrayList<Time>();
+              for(Time t : times) {
+                if(fmt.format(t.getDate()).equals(strD)) {
+                  arrT.add(t);
+                }
+              }
+              //if times found
+              if(arrT.size() > 0) {
+                NutritionDayModel ndm = calculateEnergyFromTimes(pm, arrT, UID);
+                if(ndm.getEnergy() > 0) {
+                  ndm.setFoodsPermission(permissionNutritionFoods);
+                  bd.setNutrition(ndm);
+                  
+                  found = true;
+                }
+              }
+            }
+            
+            //go through CARDIOS
+            if(cValues != null) {
+              List<CardioValueModel> arrC = new ArrayList<CardioValueModel>();
+              for(CardioValue c : cValues) {
+                if(fmt.format(c.getDate()).equals(strD)) {
+                  CardioValueModel m = CardioValue.getClientModel(c);
+                  m.setName( Cardio.getClientModel(c.getCardio()) );
+                  arrC.add(m);
+                  
+                  found = true;
+                }
+              }
+              bd.setCardios(arrC);
+            }
+            
+            //go through RUNS
+            if(rValues != null) {
+              List<RunValueModel> arrC = new ArrayList<RunValueModel>();
+              for(RunValue c : rValues) {
+                if(fmt.format(c.getDate()).equals(strD)) {
+                  RunValueModel m = RunValue.getClientModel(c);
+                  m.setName( Run.getClientModel(c.getRun()) );
+                  arrC.add(m);
+    
+                  found = true;
+                }
+              }
+              bd.setRuns(arrC);
+            }
+            
+            //go through MEASUREMENTS
+            if(mValues != null) {
+              List<MeasurementValueModel> arrC = new ArrayList<MeasurementValueModel>();
+              for(MeasurementValue c : mValues) {
+                if(fmt.format(c.getDate()).equals(strD)) {
+                  MeasurementValueModel m = MeasurementValue.getClientModel(c);
+                  m.setName( Measurement.getClientModel(c.getMeasurement()) );
+                  arrC.add(m);
+                  
+                  found = true;
+                }
+              }
+              bd.setMeasurements(arrC);
+            }
+            
+            //if after index (has data or showing each day)
+            if(found || showEmptyDays) {
+              if(dataSize >= index) {
+                data.add(bd);
+              }
+              dataSize++;
+            }
+          }
+          
+          fetchDays += fetchDaysBack;
         }
-        
-        //NUTRITION
-        if(permissionNutrition && (target == 0 || target == 2)) {
-          q = pm.newQuery(Time.class);
-          q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-          q.setOrdering("date DESC");
-          q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-          times = (List<Time>) q.executeWithArray(arrParams);
-        }
-        
-        //CARDIO
-        if(permissionCardio && (target == 0 || target == 3 || target == 5)) {
-          q = pm.newQuery(CardioValue.class);
-          q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-          q.setOrdering("date DESC");
-          q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-          cValues = (List<CardioValue>) q.executeWithArray(arrParams);
-        
-          //RUN
-          q = pm.newQuery(RunValue.class);
-          q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-          q.setOrdering("date DESC");
-          q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-          rValues = (List<RunValue>) q.executeWithArray(arrParams);
-
-        }
-        
-        //MEASUREMENTS
-        if(permissionMeasurement && (target == 0 || target == 4)) {
-          
-          q = pm.newQuery(MeasurementValue.class);
-          q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-          q.setOrdering("date DESC");
-          q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-          mValues = (List<MeasurementValue>) q.executeWithArray(arrParams);
-        }
-
-        //go through each day and search fetched arrays
-        for(int i=0; i < fetchDaysBack; i++) {
-
-          //if limit reached -> add null value
-          if(data.size() == limit) {
-            data.add(null);
-            stopSearch = true;
-            break;
-          }
-          
-          final Date d = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays + i)) * 1000);
-          final SimpleDateFormat fmt = new SimpleDateFormat("dd-MM-yy");
-          final String strD = fmt.format(d);
-          
-          //END if start date is before given start date
-          if(dateStartParam != null && d.getTime() < dateStartParam.getTime()) {
-            stopSearch = true;
-            break;
-          }
-          
-          //blog data
-          BlogData bd = new BlogData();
-          bd.setUser(user);
-          bd.setDate(d);
-
-          boolean found = false;
-          
-          //go through WORKOUTS
-          if(workouts != null) {
-            List<WorkoutModel> arrW = new ArrayList<WorkoutModel>();
-            for(Workout w : workouts) {
-              if(fmt.format(w.getDate()).equals(strD)) {
-                arrW.add( StoreTraining.getWorkoutModel(pm, w.getId(), UID));
-                
-                found = true;
-              }
-            }
-            bd.setWorkouts(arrW);
-          }
-          
-          //go through TIMES
-          if(times != null) {
-            List<Time> arrT = new ArrayList<Time>();
-            for(Time t : times) {
-              if(fmt.format(t.getDate()).equals(strD)) {
-                arrT.add(t);
-              }
-            }
-            //if times found
-            if(arrT.size() > 0) {
-              NutritionDayModel ndm = calculateEnergyFromTimes(pm, arrT, UID);
-              if(ndm.getEnergy() > 0) {
-                ndm.setFoodsPermission(permissionNutritionFoods);
-                bd.setNutrition(ndm);
-                
-                found = true;
-              }
-            }
-          }
-          
-          //go through CARDIOS
-          if(cValues != null) {
-            List<CardioValueModel> arrC = new ArrayList<CardioValueModel>();
-            for(CardioValue c : cValues) {
-              if(fmt.format(c.getDate()).equals(strD)) {
-                CardioValueModel m = CardioValue.getClientModel(c);
-                m.setName( Cardio.getClientModel(c.getCardio()) );
-                arrC.add(m);
-                
-                found = true;
-              }
-            }
-            bd.setCardios(arrC);
-          }
-          
-          //go through RUNS
-          if(rValues != null) {
-            List<RunValueModel> arrC = new ArrayList<RunValueModel>();
-            for(RunValue c : rValues) {
-              if(fmt.format(c.getDate()).equals(strD)) {
-                RunValueModel m = RunValue.getClientModel(c);
-                m.setName( Run.getClientModel(c.getRun()) );
-                arrC.add(m);
-
-                found = true;
-              }
-            }
-            bd.setRuns(arrC);
-          }
-          
-          //go through MEASUREMENTS
-          if(mValues != null) {
-            List<MeasurementValueModel> arrC = new ArrayList<MeasurementValueModel>();
-            for(MeasurementValue c : mValues) {
-              if(fmt.format(c.getDate()).equals(strD)) {
-                MeasurementValueModel m = MeasurementValue.getClientModel(c);
-                m.setName( Measurement.getClientModel(c.getMeasurement()) );
-                arrC.add(m);
-                
-                found = true;
-              }
-            }
-            bd.setMeasurements(arrC);
-          }
-          
-          //if after index (has data or showing each day)
-          if(found || showEmptyDays) {
-            if(dataSize >= index) {
-              data.add(bd);
-            }
-            dataSize++;
-          }
-        }
-        
-        fetchDays += fetchDaysBack;
       }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getBlogData", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getBlogData", e.getMessage());
     }
     finally {
@@ -3449,9 +3335,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getCardios", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getCardios", e.getMessage());
     }
     finally {
@@ -3487,25 +3370,23 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Cardio w = pm.getObjectById(Cardio.class, cardioId);
       if(w != null) {
-        if(hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
+        if(!hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_CARDIO, UID, w.getUid());
+        }
 
-          //get last value
-          Query q = pm.newQuery(CardioValue.class);
-          q.setFilter("cardio == cardioParam");
-          q.setOrdering("date DESC");
-          q.declareParameters("com.delect.motiver.server.Cardio cardioParam");
-          List<CardioValue> values = (List<CardioValue>) q.execute(w);
-          if(values.size() > 0) {
-            m = CardioValue.getClientModel(values.get(0));
-            m.setName( Cardio.getClientModel(values.get(0).getCardio()) );
-          }
+        //get last value
+        Query q = pm.newQuery(CardioValue.class);
+        q.setFilter("cardio == cardioParam");
+        q.setOrdering("date DESC");
+        q.declareParameters("com.delect.motiver.server.Cardio cardioParam");
+        List<CardioValue> values = (List<CardioValue>) q.execute(w);
+        if(values.size() > 0) {
+          m = CardioValue.getClientModel(values.get(0));
+          m.setName( Cardio.getClientModel(values.get(0).getCardio()) );
         }
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getCardioValue", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getCardioValue", e.getMessage());
     }
     finally {
@@ -3547,23 +3428,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       Cardio w = pm.getObjectById(Cardio.class, cardio.getId());
       
       if(w != null) {
-        //if our cardio OR shared
-        boolean hasPermission = true;
-        if(!w.getUid().equals(UID)) {
-          hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid());
+        if(!hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_CARDIO, UID, w.getUid());
         }
         
-        if(hasPermission) {
-          List<CardioValue> listE = w.getValues();
-          if(listE != null) {
-            //go through each value
-            for(CardioValue e : w.getValues()) {
-              //check dates
-              if(e.getDate().getTime() >= dStart.getTime() && e.getDate().getTime() <= dEnd.getTime()) {
-                CardioValueModel eNew = CardioValue.getClientModel(e);
+        List<CardioValue> listE = w.getValues();
+        if(listE != null) {
+          //go through each value
+          for(CardioValue e : w.getValues()) {
+            //check dates
+            if(e.getDate().getTime() >= dStart.getTime() && e.getDate().getTime() <= dEnd.getTime()) {
+              CardioValueModel eNew = CardioValue.getClientModel(e);
 
-                list.add(eNew);
-              }
+              list.add(eNew);
             }
           }
         }
@@ -3571,9 +3448,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getCardioValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getCardioValues", e.getMessage());
     }
     finally {
@@ -3608,8 +3482,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-            
-            //get comments
+       
+      //get comments
       List<Comment> comments = null;
       Query q = pm.newQuery(Comment.class);
       q.setOrdering("date DESC");
@@ -3771,9 +3645,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getComments", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getComments", e.getMessage());
     }
     finally {
@@ -3835,9 +3706,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getEnergyInCalendar", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getEnergyInCalendar", e.getMessage());
     }
     finally {
@@ -3878,9 +3746,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading exercises", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getExercises", e.getMessage());
     }
     finally {
@@ -3977,9 +3842,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getExercisesFromName", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getExercises", e.getMessage());
     }
     finally {
@@ -4028,9 +3890,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "getFoodname", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getFoodname", e.getMessage());
     }
     finally {
@@ -4276,23 +4135,22 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Meal w = pm.getObjectById(Meal.class, mealId);
       if(w != null) {
-        if(hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid())) {
-          m = Meal.getClientModel(w);
-          
-          //get date from time
-          if(m.getTimeId() != 0) {
-            Time t = pm.getObjectById(Time.class, m.getTimeId());
-            if(t != null) {
-              m.setDate(t.getDate());
-            }
+        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_NUTRITION, UID, w.getUid());
+        }
+        
+        m = Meal.getClientModel(w);
+        
+        //get date from time
+        if(m.getTimeId() != 0) {
+          Time t = pm.getObjectById(Time.class, m.getTimeId());
+          if(t != null) {
+            m.setDate(t.getDate());
           }
         }
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMeal", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMeal", e.getMessage());
     }
     finally {
@@ -4356,9 +4214,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMeals", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMeals", e.getMessage());
     }
     finally {
@@ -4420,9 +4275,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMeasurements", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMeasurements", e.getMessage());
     }
     finally {
@@ -4458,25 +4310,23 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Measurement w = pm.getObjectById(Measurement.class, measurementId);
       if(w != null) {
-        if(hasPermission(pm, Permission.READ_MEASUREMENTS, UID, w.getUid())) {
+        if(!hasPermission(pm, Permission.READ_MEASUREMENTS, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_MEASUREMENTS, UID, w.getUid());
+        }
 
-          //get last value
-          Query q = pm.newQuery(MeasurementValue.class);
-          q.setFilter("measurement == measurementParam");
-          q.setOrdering("date DESC");
-          q.declareParameters("com.delect.motiver.server.Measurement measurementParam");
-          List<MeasurementValue> values = (List<MeasurementValue>) q.execute(w);
-          if(values.size() > 0) {
-            m = MeasurementValue.getClientModel(values.get(0));
-            m.setName( Measurement.getClientModel(values.get(0).getMeasurement()) );
-          }
+        //get last value
+        Query q = pm.newQuery(MeasurementValue.class);
+        q.setFilter("measurement == measurementParam");
+        q.setOrdering("date DESC");
+        q.declareParameters("com.delect.motiver.server.Measurement measurementParam");
+        List<MeasurementValue> values = (List<MeasurementValue>) q.execute(w);
+        if(values.size() > 0) {
+          m = MeasurementValue.getClientModel(values.get(0));
+          m.setName( Measurement.getClientModel(values.get(0).getMeasurement()) );
         }
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMeasurementValue", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMeasurementValue", e.getMessage());
     }
     finally {
@@ -4519,16 +4369,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
       if(w != null) {
         //if we have permission
-        if(hasPermission(pm, Permission.READ_MEASUREMENTS, UID, w.getUid())) {
-          List<MeasurementValue> listE = w.getValues();
-          if(listE != null) {
-            //go through each value
-            for(MeasurementValue e : w.getValues()) {
-              //check dates
-              if(e.getDate().getTime() >= dStart.getTime() && e.getDate().getTime() <= dEnd.getTime()) {
-                MeasurementValueModel eNew = MeasurementValue.getClientModel(e);
-                list.add(eNew);
-              }
+        if(!hasPermission(pm, Permission.READ_MEASUREMENTS, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_MEASUREMENTS, UID, w.getUid());
+        }
+        
+        List<MeasurementValue> listE = w.getValues();
+        if(listE != null) {
+          //go through each value
+          for(MeasurementValue e : w.getValues()) {
+            //check dates
+            if(e.getDate().getTime() >= dStart.getTime() && e.getDate().getTime() <= dEnd.getTime()) {
+              MeasurementValueModel eNew = MeasurementValue.getClientModel(e);
+              list.add(eNew);
             }
           }
         }
@@ -4536,9 +4388,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMeasurementValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMeasurementValues", e.getMessage());
     }
     finally {
@@ -4573,12 +4422,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
-    //check permission
-    if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid)) {
-      return null;
-    }
-    
     try {
+      
+      //check permission
+      if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid)) {
+        throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, UID, uid);
+      }
+    
       //strip time
       final Date dStart = stripTime(date, true);
       final Date dEnd = stripTime(date, false);
@@ -4684,9 +4534,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMicroNutrientsInCalendar", e.getMessage());
     }
     finally {
@@ -4743,9 +4590,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMonthlySummary", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMonthlySummary", e.getMessage());
     }
     finally {
@@ -4807,9 +4651,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMonthlySummaries", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMonthlySummaries", e.getMessage());
     }
     finally {
@@ -4865,21 +4706,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
         
         //check permission
-        boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid());
-        
-        if(hasPermission) {
-          MealModel m = Meal.getClientModel(w);
-          list.add(m);
-          
-          i++;
+        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_NUTRITION, UID, w.getUid());
         }
+        
+        MealModel m = Meal.getClientModel(w);
+        list.add(m);
+        
+        i++;
       }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMostPopularMeals", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMostPopularMeals", e.getMessage());
     }
     finally {
@@ -4927,23 +4765,20 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           list.add(null);
           break;
         }
-        
+
         //check permission
-        boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
-        
-        if(hasPermission) {
-          RoutineModel m = Routine.getClientModel(r);
-          list.add(m);
-          
-          i++;
+        if(!hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid())) {
+          throw new NoPermissionException(Permission.READ_TRAINING, UID, r.getUid());
         }
+        
+        RoutineModel m = Routine.getClientModel(r);
+        list.add(m);
+        
+        i++;
       }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMostPopularRoutines", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMostPopularRoutines", e.getMessage());
     }
     finally {
@@ -5007,9 +4842,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getMostPopularWorkouts", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getMostPopularWorkouts", e.getMessage());
     }
     finally {
@@ -5044,15 +4876,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Routine w = pm.getObjectById(Routine.class, routineId);
       if(w != null) {
-        if(hasPermission(pm, Permission.READ_TRAINING, UID, w.getUid())) {
-          m = Routine.getClientModel(w);
+        if(!hasPermission(pm, Permission.READ_TRAINING, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_TRAINING, UID, w.getUid());
         }
+        
+        m = Routine.getClientModel(w);
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getRoutine", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getRoutine", e.getMessage());
     }
     finally {
@@ -5111,9 +4942,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getRoutines", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getRoutines", e.getMessage());
     }
     finally {
@@ -5176,9 +5004,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getRuns", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getRuns", e.getMessage());
     }
     finally {
@@ -5214,25 +5039,23 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       final Run w = pm.getObjectById(Run.class, runId);
       if(w != null) {
-        if(hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
+        if(!hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_CARDIO, UID, w.getUid());
+        }
 
-          //get last value
-          Query q = pm.newQuery(RunValue.class);
-          q.setFilter("run == runParam");
-          q.setOrdering("date DESC");
-          q.declareParameters("com.delect.motiver.server.Run runParam");
-          List<RunValue> values = (List<RunValue>) q.execute(w);
-          if(values.size() > 0) {
-            m = RunValue.getClientModel(values.get(0));
-            m.setName( Run.getClientModel(values.get(0).getRun()) );
-          }
+        //get last value
+        Query q = pm.newQuery(RunValue.class);
+        q.setFilter("run == runParam");
+        q.setOrdering("date DESC");
+        q.declareParameters("com.delect.motiver.server.Run runParam");
+        List<RunValue> values = (List<RunValue>) q.execute(w);
+        if(values.size() > 0) {
+          m = RunValue.getClientModel(values.get(0));
+          m.setName( Run.getClientModel(values.get(0).getRun()) );
         }
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getRunValue", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getRunValue", e.getMessage());
     }
     finally {
@@ -5274,22 +5097,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       Run w = pm.getObjectById(Run.class, run.getId());
       
       if(w != null) {
-        //if our run OR shared
-        boolean hasPermission = true;
-        if(!w.getUid().equals(UID)) {
-          hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid());
+        //check permission
+        if(!hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_CARDIO, UID, w.getUid());
         }
         
-        if(hasPermission) {
-          List<RunValue> listE = w.getValues();
-          if(listE != null) {
-            //go through each value
-            for(RunValue e : w.getValues()) {
-              //check dates
-              if(e.getDate().getTime() >= dStart.getTime() && e.getDate().getTime() <= dEnd.getTime()) {
-                RunValueModel eNew = RunValue.getClientModel(e);
-                list.add(eNew);
-              }
+        List<RunValue> listE = w.getValues();
+        if(listE != null) {
+          //go through each value
+          for(RunValue e : w.getValues()) {
+            //check dates
+            if(e.getDate().getTime() >= dStart.getTime() && e.getDate().getTime() <= dEnd.getTime()) {
+              RunValueModel eNew = RunValue.getClientModel(e);
+              list.add(eNew);
             }
           }
         }
@@ -5297,9 +5117,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getRunValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getRunValues", e.getMessage());
     }
     finally {
@@ -5401,9 +5218,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getStatisticsTopExercises", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getStatisticsTopExercises", e.getMessage());
     }
     finally {
@@ -5503,9 +5317,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getStatisticsTopMeals", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getStatisticsTopMeals", e.getMessage());
     }
     finally {
@@ -5574,9 +5385,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getStatisticsTrainingDays", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getStatisticsTrainingDays", e.getMessage());
     }
     finally {
@@ -5816,9 +5624,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "removeCardio", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeCardio", e.getMessage());
     }
     finally {
@@ -5858,29 +5663,27 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       Cardio w = pm.getObjectById(Cardio.class, model.getId());
       
       if(w != null) {
-        if(w.getUid().equals(UID)) {
+        if(!hasPermission(pm, Permission.READ_CARDIO, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.READ_CARDIO, UID, w.getUid());
+        }
           
-          //delete exercise
-          for(CardioValueModel m : values) {
-  
-            //remove from list
-            for(CardioValue mFromList : w.getValues()) {
-              if(mFromList.getId().longValue() == m.getId().longValue()) {
-                w.getValues().remove(mFromList);
-                break;
-              }
+        //delete exercise
+        for(CardioValueModel m : values) {
+
+          //remove from list
+          for(CardioValue mFromList : w.getValues()) {
+            if(mFromList.getId().longValue() == m.getId().longValue()) {
+              w.getValues().remove(mFromList);
+              break;
             }
           }
-          ok = true;
         }
+        ok = true;
       }
       
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "removeCardioValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeCardioValues", e.getMessage());
     }
     finally { 
@@ -5933,9 +5736,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "removeComments", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeComments", e.getMessage());
     }
     finally { 
@@ -5984,9 +5784,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing exercise", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeExercises", e.getMessage());
     }
     finally { 
@@ -6073,6 +5870,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       for(GuideValueModel m : list) {
         try {
           GuideValue mServer = pm.getObjectById(GuideValue.class, m.getId());
+          if(!hasPermission(pm, Permission.WRITE_NUTRITION, UID, mServer.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_NUTRITION, UID, mServer.getUid());
+          }
+          
           if(mServer != null) {
             listServer.add( mServer );
           }
@@ -6089,9 +5890,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "removeGuideValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeGuideValues", e.getMessage());
     }
     finally { 
@@ -6164,19 +5962,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       Measurement m = pm.getObjectById(Measurement.class, model.getId());
       if(m != null) {
-        //check if correct user
-        if(m.getUid().equals(UID)) {
-          pm.deletePersistent(m);
-          
-          ok = true;
+        if(!hasPermission(pm, Permission.WRITE_MEASUREMENTS, UID, m.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_MEASUREMENTS, UID, m.getUid());
         }
+        
+        pm.deletePersistent(m);
+        
+        ok = true;
       }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "removeMeasurement", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeMeasurement", e.getMessage());
     }
     finally {
@@ -6216,29 +6012,27 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       Measurement w = pm.getObjectById(Measurement.class, model.getId());
       
       if(w != null) {
-        if(w.getUid().equals(UID)) {
+        if(!hasPermission(pm, Permission.WRITE_MEASUREMENTS, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_MEASUREMENTS, UID, w.getUid());
+        }
           
-          //delete exercise
-          for(MeasurementValueModel m : values) {
-  
-            //remove from list
-            for(MeasurementValue mFromList : w.getValues()) {
-              if(mFromList.getId().longValue() == m.getId().longValue()) {
-                w.getValues().remove(mFromList);
-                break;
-              }
+        //delete exercise
+        for(MeasurementValueModel m : values) {
+
+          //remove from list
+          for(MeasurementValue mFromList : w.getValues()) {
+            if(mFromList.getId().longValue() == m.getId().longValue()) {
+              w.getValues().remove(mFromList);
+              break;
             }
           }
-          ok = true;
         }
+        ok = true;
       }
       
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "removeMeasurementValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeMeasurementValues", e.getMessage());
     }
     finally { 
@@ -6274,29 +6068,27 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       Routine r = pm.getObjectById(Routine.class, model.getId());
       if(r != null) {
-        //check if correct user
-        if(r.getUid().equals(UID)) {
-          pm.deletePersistent(r);
-          
-          //remove also workouts which belongs to this routine
-          Query q = pm.newQuery(Workout.class);
-          q.setFilter("openId == openIdParam && routineId == routineIdParam");
-          q.declareParameters("java.lang.String openIdParam, java.lang.Long routineIdParam");
-          List<Workout> workouts = (List<Workout>) q.execute(UID, r.getId());
-          for(Workout mWorkout : workouts) {
-            StoreTraining.removeWorkoutModel(pm, mWorkout.getId(), UID);
-          }
-            
-          
-          ok = true;
+        if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
         }
+        
+        pm.deletePersistent(r);
+        
+        //remove also workouts which belongs to this routine
+        Query q = pm.newQuery(Workout.class);
+        q.setFilter("openId == openIdParam && routineId == routineIdParam");
+        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineIdParam");
+        List<Workout> workouts = (List<Workout>) q.execute(UID, r.getId());
+        for(Workout mWorkout : workouts) {
+          StoreTraining.removeWorkoutModel(pm, mWorkout.getId(), UID);
+        }
+          
+        
+        ok = true;
       }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "removeRoutine", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeRoutine", e.getMessage());
     }
     finally {
@@ -6331,19 +6123,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       Run m = pm.getObjectById(Run.class, model.getId());
       if(m != null) {
-        //check if correct user
-        if(m.getUid().equals(UID)) {
-          pm.deletePersistent(m);
-          
-          ok = true;
+        if(!hasPermission(pm, Permission.WRITE_CARDIO, UID, m.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_CARDIO, UID, m.getUid());
         }
+        
+        pm.deletePersistent(m);
+        
+        ok = true;
       }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "removeRun", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeRun", e.getMessage());
     }
     finally {
@@ -6383,29 +6173,27 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       Run w = pm.getObjectById(Run.class, model.getId());
       
       if(w != null) {
-        if(w.getUid().equals(UID)) {
+        if(!hasPermission(pm, Permission.WRITE_CARDIO, UID, w.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_CARDIO, UID, w.getUid());
+        }
           
-          //delete exercise
-          for(RunValueModel m : values) {
-  
-            //remove from list
-            for(RunValue mFromList : w.getValues()) {
-              if(mFromList.getId().longValue() == m.getId().longValue()) {
-                w.getValues().remove(mFromList);
-                break;
-              }
+        //delete exercise
+        for(RunValueModel m : values) {
+
+          //remove from list
+          for(RunValue mFromList : w.getValues()) {
+            if(mFromList.getId().longValue() == m.getId().longValue()) {
+              w.getValues().remove(mFromList);
+              break;
             }
           }
-          ok = true;
         }
+        ok = true;
       }
       
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "removeRunValues", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeRunValues", e.getMessage());
     }
     finally { 
@@ -6488,9 +6276,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing workout", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("removeWorkout", e.getMessage());
     }
     finally {
@@ -6746,9 +6531,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "searchExerciseNames", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("searchExerciseNames", e.getMessage());
     }
     finally {
@@ -6959,9 +6741,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "searchMeals", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("searchMeals", e.getMessage());
     }
     finally {
@@ -7043,9 +6822,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "searchRoutines", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("searchRoutines", e.getMessage());
     }
     finally {
@@ -7116,9 +6892,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
 
         //if name matched -> check permission
-        if(ok) {
-          System.out.println(w.getName()+": 0, "+UID+", "+w.getUid());
-          
+        if(ok) {          
           WorkoutModel m = null;
           try {
             m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
@@ -7135,9 +6909,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "searchWorkouts", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("searchWorkouts", e.getMessage());
     }
     finally {
@@ -7218,9 +6989,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "searchUsers", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("searchUsers", e.getMessage());
     }
     finally {
@@ -7281,9 +7049,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getUsersFromCircle", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getUsersFromCircle", e.getMessage());
     }
     finally {
@@ -7319,22 +7084,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       Cardio m = pm.getObjectById(Cardio.class, model.getId());
       if(m != null) {
-        //check if correct user
-        if(m.getUid().equals(UID)) {
-          
-          //update
-          m.setName(model.getNameServer());
-          
-          ok = true;
+        if(!hasPermission(pm, Permission.WRITE_CARDIO, UID, m.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_CARDIO, UID, m.getUid());
         }
+          
+        //update
+        m.setName(model.getNameServer());
+        
+        ok = true;
       }
 
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "updateCardio", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("updateCardio", e.getMessage());
     }
     finally {
@@ -7367,13 +7129,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-
       exercise = StoreTraining.updateExerciseModel(pm, exercise, UID, LOCALE);
         
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating exercise", e);
-      
       throw new ConnectionException("updateExercise", e.getMessage());
     }
     finally {
@@ -7403,13 +7163,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     if(UID == null) {
       return ok;
     }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     //if not admin
     if( !isAdmin(UID) ) {
       return false;
     }
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
       ExerciseName m = pm.getObjectById(ExerciseName.class, model.getId());
@@ -7450,9 +7210,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "updateExerciseName", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("updateExerciseName", e.getMessage());
     }
     finally {
@@ -7524,13 +7281,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
       
     try {
-      
       food = StoreNutrition.updateFoodModel(pm, food, UID);
   
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating food", e);
-      
       throw new ConnectionException("updateFood", e.getMessage());
     }
     finally {
@@ -7616,9 +7371,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "updateFoodName", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("updateFoodName", e.getMessage());
     }
     finally {
@@ -7656,7 +7408,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       if(meal.getTimeId() != 0) {
         //get time
         Time time = pm.getObjectById(Time.class, meal.getTimeId());
-        if(time != null && time.getUid().equals(UID)) {
+        if(time != null) {
+          if(!hasPermission(pm, Permission.WRITE_NUTRITION, UID, time.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_NUTRITION, UID, time.getUid());
+          }
+          
           //get meal
           for(MealInTime m : time.getMeals()) {
             if(m.getId() == meal.getId()) {
@@ -7674,7 +7430,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       else {
         mealServer = pm.getObjectById(Meal.class, meal.getId());
         //check if correct user
-        if(mealServer != null && mealServer.getUid().equals(UID)) {
+        if(mealServer != null) {
+          if(!hasPermission(pm, Permission.WRITE_NUTRITION, UID, mealServer.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_NUTRITION, UID, mealServer.getUid());
+          }
+          
           mealServer.setName(meal.getName());
           
           ok = true;
@@ -7684,9 +7444,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "updateMeal", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("updateMeal", e.getMessage());
     }
     finally {
@@ -7721,25 +7478,21 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       Measurement m = pm.getObjectById(Measurement.class, model.getId());
       if(m != null) {
-        //check if correct user
-        if(m.getUid().equals(UID)) {
+        if(!hasPermission(pm, Permission.WRITE_MEASUREMENTS, UID, m.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_MEASUREMENTS, UID, m.getUid());
+        }
           
           //update
-          m.setName(model.getNameServer());
-          m.setUnit(model.getUnit());
-          m.setDate(model.getDate());
-          m.setTarget(model.getTarget());
-          
-          ok = true;
-        }
+        m.setName(model.getNameServer());
+        m.setUnit(model.getUnit());
+        m.setDate(model.getDate());
+        m.setTarget(model.getTarget());
+        
+        ok = true;
       }
-
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "updateMeasurement", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("updateMeasurement", e.getMessage());
     }
     finally {
@@ -7775,46 +7528,43 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       Routine r = pm.getObjectById(Routine.class, model.getId());
       if(r != null) {
-        //check if correct user
-        if(r.getUid().equals(UID)) {
-          
-          boolean daysRemoved = r.getDays() > model.getDays(); 
-
-          //reset time from date
-          Date d = model.getDate();
-          if(d != null) {
-            d.setHours(0);
-            d.setMinutes(0);
-            d.setSeconds(0);
-          }
-          
-          //update workout
-          r.setDate(d);
-          r.setDays(model.getDays());
-          r.setName(model.getName());
-          
-          //if days removed -> remove workouts
-          if(daysRemoved) {
-            Query q = pm.newQuery(Workout.class);
-            q.setFilter("date == null && routineId == routineIdParam && dayInRoutine > daysParam");
-            q.declareParameters("java.lang.Long routineIdParam, java.lang.Integer daysParam");
-            List<Workout> workouts = (List<Workout>) q.execute(r.getId(), r.getDays());
-            if(workouts != null) {
-              pm.deletePersistentAll(workouts);
-            }
-            
-          }
-          
-          ok = true;
+        if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
         }
+          
+        boolean daysRemoved = r.getDays() > model.getDays(); 
+
+        //reset time from date
+        Date d = model.getDate();
+        if(d != null) {
+          d.setHours(0);
+          d.setMinutes(0);
+          d.setSeconds(0);
+        }
+        
+        //update workout
+        r.setDate(d);
+        r.setDays(model.getDays());
+        r.setName(model.getName());
+        
+        //if days removed -> remove workouts
+        if(daysRemoved) {
+          Query q = pm.newQuery(Workout.class);
+          q.setFilter("date == null && routineId == routineIdParam && dayInRoutine > daysParam");
+          q.declareParameters("java.lang.Long routineIdParam, java.lang.Integer daysParam");
+          List<Workout> workouts = (List<Workout>) q.execute(r.getId(), r.getDays());
+          if(workouts != null) {
+            pm.deletePersistentAll(workouts);
+          }
+          
+        }
+        
+        ok = true;
       }
 
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "updateRoutine", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("updateRoutine", e.getMessage());
     }
     finally {
@@ -7849,23 +7599,20 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       Run m = pm.getObjectById(Run.class, model.getId());
       if(m != null) {
-        //check if correct user
-        if(m.getUid().equals(UID)) {
-          
-          //update
-          m.setName(model.getNameServer());
-          m.setDistance(model.getDistance());
-          
-          ok = true;
+        if(!hasPermission(pm, Permission.WRITE_CARDIO, UID, m.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_CARDIO, UID, m.getUid());
         }
+        
+        //update
+        m.setName(model.getNameServer());
+        m.setDistance(model.getDistance());
+        
+        ok = true;
       }
 
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "updateRun", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("updateRun", e.getMessage());
     }
     finally {
@@ -7971,8 +7718,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         if (retries == 0) {
           if (!pm.isClosed()) {
             pm.close();
-          } 
-          
+          }
           throw new ConnectionException("updateTime", e.getMessage());
         }
         
@@ -8082,9 +7828,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       m = StoreTraining.getWorkoutModel(pm, workoutId, UID);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getWorkout", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getWorkout", e.getMessage());
     }
     finally {
@@ -8129,23 +7872,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         //get routine so we know is it shared
         Routine r = pm.getObjectById(Routine.class, routine.getId());
         if(r == null) {
-          throw new Exception();
-        }
-        
-        //check permission if not our routine
-        if(!r.getUid().equals(UID)) {
-          boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
-          
-          //if no permission for the routine -> return empty list
-          if(!hasPermission) {
-            throw new Exception();
+          if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
+            throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
           }
-        }
-
-        q.setFilter("date == null && routineId == routineIdParam");
-        q.declareParameters("java.lang.Long routineIdParam");
-        workouts = (List<Workout>) q.execute(r.getId());
-        
+          
+          q.setFilter("date == null && routineId == routineIdParam");
+          q.declareParameters("java.lang.Long routineIdParam");
+          workouts = (List<Workout>) q.execute(r.getId());
+        }        
       }
       //all single workouts
       else {
@@ -8167,7 +7901,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
 
         WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
-          
         list.add(m);
         
         i++;
@@ -8175,9 +7908,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getWorkouts", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("getWorkouts", e.getMessage());
     }
     finally {
@@ -8294,11 +8024,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //check permission
       if(!hasPermission(pm, Permission.READ_NUTRITION, UID, uid)) {
         throw new NoPermissionException(Permission.READ_TRAINING, UID, uid);
-      }
-    
+      }    
     
       Query q = pm.newQuery(GuideValue.class);
-
       List<GuideValue> values = null;
       
       if(date != null) {
@@ -8433,9 +8161,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "fetchAddFoodName", e);
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
       throw new ConnectionException("fetchAddFoodName", e.getMessage());
     }
     finally {
