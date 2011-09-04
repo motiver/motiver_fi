@@ -203,7 +203,6 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 				spinAmount.setMinValue(0);
 				spinAmount.setMaxValue(5000D);
 				spinAmount.setEditable(true);
-				spinAmount.setMessageTarget("none");
 				spinAmount.setPropertyEditorType(Double.class);
 				spinAmount.setFormat(NumberFormat.getFormat(NumberFormat.getDecimalFormat().getPattern() + " g")); 
         spinAmount.setValue(food.getAmount());

@@ -449,6 +449,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 		tfUnit.setStyleAttribute("margin-left", "10px");
 		tfUnit.setMaxLength(5);
 		tfUnit.setAutoValidate(true);
+    Functions.setWarningMessages(tfUnit);
 		tfUnit.addListener(Events.Valid, new Listener<BaseEvent>() {
 			@Override
 			public void handleEvent(BaseEvent be) {

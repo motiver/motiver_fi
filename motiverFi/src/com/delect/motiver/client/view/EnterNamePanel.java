@@ -17,6 +17,7 @@ package com.delect.motiver.client.view;
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.Functions;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -56,9 +57,10 @@ public class EnterNamePanel extends LayoutContainer {
 		final TextField<String> textName = new TextField<String>();
 		textName.setMinLength(Constants.LIMIT_NAME_MIN);
 		textName.setMaxLength(Constants.LIMIT_NAME_MAX);
+		textName.setAllowBlank(false);
 		textName.setAutoValidate(true);
 		textName.setValidateOnBlur(false);
-		textName.setMessageTarget("none");
+    Functions.setWarningMessages(textName);
 		textName.addListener(Events.Valid, new Listener<BaseEvent>() {
 			@Override
 			public void handleEvent(BaseEvent be) {

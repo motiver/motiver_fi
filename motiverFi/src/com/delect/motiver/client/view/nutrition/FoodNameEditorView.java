@@ -27,6 +27,7 @@ import com.delect.motiver.client.presenter.nutrition.FoodNameEditorPresenter;
 import com.delect.motiver.client.presenter.nutrition.FoodNameEditorPresenter.FoodNameEditorHandler;
 import com.delect.motiver.client.view.MySpinnerField;
 import com.delect.motiver.shared.FoodNameModel;
+import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MicroNutrientModel;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
@@ -66,7 +67,6 @@ public class FoodNameEditorView extends FoodNameEditorPresenter.FoodNameEditorDi
     spin.setMinValue(0);  
     spin.setMaxValue(1000d);
     spin.setAllowBlank(false);
-    spin.setMessageTarget("none");
     spin.setValue(value); 
     return spin;
 	}
@@ -108,7 +108,7 @@ public class FoodNameEditorView extends FoodNameEditorPresenter.FoodNameEditorDi
 			tfName.setValue(model.getName());
 			tfName.setMaxLength(50); 
 			tfName.setAllowBlank(false);
-			tfName.setMessageTarget("none");
+	    Functions.setWarningMessages(tfName);
 			form.add(tfName, formData); 
 			//energy
 			final MySpinnerField tfEnergy = getSpinnerMacronutrients(AppController.Lang.Energy(), model.getEnergy());

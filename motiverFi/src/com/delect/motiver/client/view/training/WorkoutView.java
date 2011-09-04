@@ -488,6 +488,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 								handler.saveData(workout);
 							}
 						});
+						tfStart.setAllowBlank(true);
             panelWorkoutInfo.add(tfStart, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
             panelWorkoutInfo.add(new Text("-"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 						TimeSelectFieldView tfEnd = new TimeSelectFieldView((int) workout.getTimeEnd(), new TimeSelectFieldHandler() {
@@ -500,6 +501,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 								handler.saveData(workout);
 							}
 						});
+						tfEnd.setAllowBlank(true);
             panelWorkoutInfo.add(tfEnd, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 					}
 					//show just text

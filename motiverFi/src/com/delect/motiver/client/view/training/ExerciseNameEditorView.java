@@ -21,6 +21,7 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.training.ExerciseNameEditorPresenter;
 import com.delect.motiver.client.presenter.training.ExerciseNameEditorPresenter.ExerciseNameEditorHandler;
 import com.delect.motiver.shared.ExerciseNameModel;
+import com.delect.motiver.shared.Functions;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -75,8 +76,8 @@ public class ExerciseNameEditorView extends ExerciseNameEditorPresenter.Exercise
 			tfName.setMinLength(3);
 			tfName.setMaxLength(40); 
 			tfName.setAllowBlank(false);
-			tfName.setMessageTarget("none");
 			tfName.setAutoValidate(true);
+	    Functions.setWarningMessages(tfName);
 			form.add(tfName, formData); 
 			
 			//target
@@ -97,9 +98,10 @@ public class ExerciseNameEditorView extends ExerciseNameEditorPresenter.Exercise
 			tfVideo.setMinLength(5);
 			tfVideo.setMaxLength(100); 
 			tfVideo.setAllowBlank(true);
-			tfVideo.setMessageTarget("none");
 			tfVideo.setAutoValidate(true);
 			tfVideo.setRegex("^((https?|ftp)://|(www|ftp).)[a-z0-9-]+(.[a-z0-9-]+)+([/?].*)?$");
+      Functions.setWarningMessages(tfVideo);
+      tfVideo.getMessages().setRegexText(AppController.Lang.FieldUrlFormat());
 			form.add(tfVideo, formData); 
 			
 			//save button

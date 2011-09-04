@@ -29,6 +29,7 @@ import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.nutrition.AddNewGuidePresenter;
 import com.delect.motiver.client.presenter.nutrition.AddNewGuidePresenter.AddNewGuideHandler;
 import com.delect.motiver.client.view.MySpinnerField;
+import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.GuideValueModel;
 
@@ -69,7 +70,6 @@ public class AddNewGuideView extends AddNewGuidePresenter.AddNewGuideDisplay {
     spin.setMinValue(0);  
     spin.setMaxValue(100d); 
     spin.setAllowBlank(false);
-    spin.setMessageTarget("none");
     spin.setValue(0D); 
     return spin;
 	}
@@ -112,10 +112,10 @@ public class AddNewGuideView extends AddNewGuidePresenter.AddNewGuideDisplay {
 		//name
 		final TextField<String> tfName = new TextField<String>();
 		tfName.setFieldLabel(AppController.Lang.Name());
-		tfName.setMinLength(3);
-		tfName.setMaxLength(40);
+		tfName.setMinLength(Constants.LIMIT_NAME_MIN);
+		tfName.setMaxLength(Constants.LIMIT_NAME_MAX);
 		tfName.setAllowBlank(false);
-		tfName.setMessageTarget("none");
+    Functions.setWarningMessages(tfName);
 		simple.add(tfName, formData);
 	    
     //start date
@@ -400,7 +400,4 @@ public class AddNewGuideView extends AddNewGuidePresenter.AddNewGuideDisplay {
 	public void setHandler(AddNewGuideHandler handler) {
 		this.handler = handler;
 	}
-	
-	
-	
 }

@@ -191,8 +191,8 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         spinSets.setIncrement(1);
         spinSets.setMinValue(0);
         spinSets.setMaxValue(30);
+        Functions.setWarningMessages(spinSets);
         spinSets.setEditable(true);
-        spinSets.setMessageTarget("none");
         spinSets.setPropertyEditorType(Integer.class);
         spinSets.setFormat(NumberFormat.getFormat("0"));
         if(AppController.IsSupportedBrowser) {

@@ -43,6 +43,7 @@ import com.extjs.gxt.ui.client.widget.form.DateField;
 import com.extjs.gxt.ui.client.widget.form.DateTimePropertyEditor;
 import com.extjs.gxt.ui.client.widget.form.PropertyEditor;
 import com.extjs.gxt.ui.client.widget.form.SpinnerField;
+import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayout.HBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayoutData;
@@ -742,7 +743,7 @@ public abstract class Functions {
 
 				box.getTextBox().setMinLength(3);
 				box.getTextBox().setAllowBlank(false);
-				box.getTextBox().setMessageTarget("none");
+	      setWarningMessages(box.getTextBox());
 				box.getTextBox().setAutoValidate(true);
 				box.getTextBox().setFireChangeEventOnSetValue(true);
 				box.getTextBox().setValue(value);
@@ -1277,8 +1278,7 @@ public abstract class Functions {
     tfDuration.setFieldLabel(AppController.Lang.Duration());   
     tfDuration.setAllowBlank(false);   
     tfDuration.setEditable(true);
-    tfDuration.setMinValue(0);  
-    tfDuration.setMessageTarget("none");
+    tfDuration.setMinValue(0);
     tfDuration.setMaxValue(86400);
     tfDuration.setValue(3000);
     tfDuration.setAutoValidate(false);
@@ -1403,6 +1403,7 @@ public abstract class Functions {
     tfPulse.setIncrement(10);
     tfPulse.setPropertyEditorType(Double.class);
     tfPulse.setFormat(NumberFormat.getFormat("0"));
+    setWarningMessages(tfPulse);
     
     return tfPulse;
   }
@@ -1422,8 +1423,35 @@ public abstract class Functions {
     tfCalories.setIncrement(10);
     tfCalories.setPropertyEditorType(Double.class);
     tfCalories.setFormat(NumberFormat.getFormat("0 kcal"));
+    setWarningMessages(tfCalories);
     
     return tfCalories;
+  }
+  
+  /**
+   * Sets warning messages to given textfield
+   * @param field
+   */
+  public static void setWarningMessages(TextField<?> field) {
+    field.setMessageTarget("side");
+    field.getMessages().setBlankText(AppController.Lang.FieldBlankText());
+    field.getMessages().setInvalidText(AppController.Lang.FieldInvalidText());
+    field.getMessages().setMaxLengthText(AppController.Lang.FieldMaxLengthText(field.getMaxLength()));
+    field.getMessages().setMinLengthText(AppController.Lang.FieldMinLengthText(field.getMinLength()));
+  }
+  
+  /**
+   * Sets warning messages to given spinnerfield
+   * @param field
+   */
+  public static void setWarningMessages(SpinnerField field) {
+    field.setMessageTarget("side");
+    field.getMessages().setBlankText(AppController.Lang.FieldBlankText());
+    field.getMessages().setInvalidText(AppController.Lang.FieldInvalidText());
+    field.getMessages().setMaxText(AppController.Lang.FieldMaxText(field.getMaxValue().intValue()));
+    field.getMessages().setMinText(AppController.Lang.FieldMinText(field.getMinValue().intValue()));
+    field.getMessages().setNanText(AppController.Lang.FieldNanText());
+    field.getMessages().setNegativeText(AppController.Lang.FieldNegativeText());
   }
 	
 }

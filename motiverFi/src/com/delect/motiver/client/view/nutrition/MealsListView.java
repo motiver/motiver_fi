@@ -75,8 +75,8 @@ public class MealsListView extends MealsListPresenter.MealsListDisplay {
     panelSearchSub.setLayout(layout);
     panelSearchSub.setHeight(28);
 		tfSearch.setEmptyText(AppController.Lang.EnterKeywordToSearchForMeals());
-		tfSearch.setMinLength(3);
-		tfSearch.setMessageTarget("none");
+		tfSearch.setMinLength(Constants.LIMIT_MIN_QUERY_WORD);
+    Functions.setWarningMessages(tfSearch);
 		tfSearch.setAutoValidate(true);
 		tfSearch.setValidationDelay(Constants.DELAY_SEARCH);
 		tfSearch.addListener(Events.Valid, new Listener<BaseEvent>() {
