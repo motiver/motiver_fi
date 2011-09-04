@@ -403,6 +403,11 @@ public class StoreTraining {
       logger.log(Level.FINER, "Updating exercise: "+exercise.getId());
     }
     
+    //get name
+    ExerciseNameModel n = null;
+    if(exercise.getName() != null) {
+      n = getExerciseNameModel(pm, exercise.getName().getId());
+    }
       
     //try to update X times
     int retries = Constants.LIMIT_UPDATE_RETRIES;
@@ -421,13 +426,8 @@ public class StoreTraining {
             throw new NoPermissionException(Permission.WRITE_TRAINING, userUid, e.getWorkout().getUid());
           }
           
-          //update name if changed
-          long enid = (e.getNameId() != null)? e.getNameId().longValue() : 0L;
-          if(exercise.getName() != null && exercise.getName().getId() != enid) {
-            ExerciseNameModel n = getExerciseNameModel(pm, exercise.getName().getId());
-            tx.commit();
-            tx.begin();
-            
+          //update name
+          if(n != null) {
             e.setNameId(n.getId());
             exercise.setName(n);
           }
