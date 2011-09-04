@@ -187,7 +187,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 				spinAmount.addListener(Events.Change, new Listener<BaseEvent>() {
 					@Override
 					public void handleEvent(BaseEvent be) {
-						if(handler != null && spinAmount.getValue() != null && Double.compare(spinAmount.getValue().doubleValue(), food.getAmount()) != 0) {
+						if(handler != null && spinAmount.getValue() != null && spinAmount.isValid() && Double.compare(spinAmount.getValue().doubleValue(), food.getAmount()) != 0) {
 							food.setAmount(spinAmount.getValue().doubleValue());
 							saveData();
 							
