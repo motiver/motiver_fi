@@ -157,9 +157,6 @@ public class StoreNutrition {
     if(name != null) {
       model = FoodName.getClientModel(name);
     }
-    else {
-      throw new Exception("Food name not found");
-    }
     
     return model;
   }
@@ -701,6 +698,12 @@ public class StoreNutrition {
     }
 
     WeekCache cache = new WeekCache();
+
+    //get name
+    FoodNameModel n = null;
+    if(model.getName() != null) {
+      n = getFoodNameModel(pm, model.getName().getId());
+    }
     
     //try to update X times
     int retries = Constants.LIMIT_UPDATE_RETRIES;
@@ -731,13 +734,8 @@ public class StoreNutrition {
                   for(FoodInMealTime f : listFoods) {
                     if(f.getId() == model.getId()) {
 
-                      //update name if changed
-                      long fnid = (f.getNameId() != null)? f.getNameId().longValue() : 0L;
-                      if(model.getName() != null && model.getName().getId() != fnid) {
-                        FoodNameModel n = getFoodNameModel(pm, model.getName().getId());
-                        tx.commit();
-                        tx.begin();
-                        
+                      //update name
+                      if(n != null) {
                         f.setNameId(n.getId());
                         model.setName(n);
                       }
@@ -777,13 +775,8 @@ public class StoreNutrition {
               for(FoodInTime f : listFoods) {
                 if(f.getId() == model.getId()) {
 
-                  //update name if changed
-                  long fnid = (f.getNameId() != null)? f.getNameId().longValue() : 0L;
-                  if(model.getName() != null && model.getName().getId() != fnid) {
-                    FoodNameModel n = getFoodNameModel(pm, model.getName().getId());
-                    tx.commit();
-                    tx.begin();
-                    
+                  //update name
+                  if(n != null) {
                     f.setNameId(n.getId());
                     model.setName(n);
                   }
@@ -821,13 +814,8 @@ public class StoreNutrition {
               for(FoodInMeal f : listFoods) {
                 if(f.getId() == model.getId()) {
 
-                  //update name if changed
-                  long fnid = (f.getNameId() != null)? f.getNameId().longValue() : 0L;
-                  if(model.getName() != null && model.getName().getId() != fnid) {
-                    FoodNameModel n = getFoodNameModel(pm, model.getName().getId());
-                    tx.commit();
-                    tx.begin();
-                    
+                  //update name
+                  if(n != null) {
                     f.setNameId(n.getId());
                     model.setName(n);
                   }
