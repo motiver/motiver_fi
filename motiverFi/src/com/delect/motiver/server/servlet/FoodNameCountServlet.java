@@ -70,7 +70,7 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
           //get times
           Query qT = pm.newQuery(Time.class);
           qT.setFilter("openId == openIdParam");
-          qT.declareParameters("java.lang.Long openIdParam");
+          qT.declareParameters("java.lang.String openIdParam");
           List<Time> times = (List<Time>) qT.execute(user.getUid());
           
           //go through each workouts

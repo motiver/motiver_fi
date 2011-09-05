@@ -65,7 +65,7 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
           //get workouts
           Query qW = pm.newQuery(Workout.class);
           qW.setFilter("openId == openIdParam");
-          qW.declareParameters("java.lang.Long openIdParam");
+          qW.declareParameters("java.lang.String openIdParam");
           List<Workout> workouts = (List<Workout>) qW.execute(user.getUid());
           
           //go through each workouts
