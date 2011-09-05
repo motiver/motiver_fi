@@ -29,6 +29,7 @@ import javax.jdo.Transaction;
 
 import com.delect.motiver.server.Exercise;
 import com.delect.motiver.server.ExerciseName;
+import com.delect.motiver.server.ExerciseNameCount;
 import com.delect.motiver.server.cache.WeekCache;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.server.Workout;
@@ -747,7 +748,6 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Removing exercise: "+exercise.getId());
-      System.out.println("Removing exercise: "+exercise.getId());
     }
     
     boolean ok = false;
@@ -826,6 +826,54 @@ public class StoreTraining {
     }
     
     return ok;
+  }
+
+  /**
+   * Returns count value for single exercise name
+   * @param pm
+   * @param id
+   * @param uid
+   * @return
+   */
+  public static int getExerciseNameCount(PersistenceManager pm, Long id, String uid) {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Loading count for exercise name: "+id+", uid="+uid);
+    }
+    
+    int count = 0;
+    
+    //load from cache
+    WeekCache cache = new WeekCache();
+    count = cache.getExerciseNameCount(id, uid);
+
+    //not found
+    if(count == -1) {    
+      if(logger.isLoggable(Level.FINER)) {
+        logger.log(Level.FINER, "Not found from cache");
+      }
+      
+      Query qUse = pm.newQuery(ExerciseNameCount.class);
+      qUse.setFilter("nameId == nameIdParam && openId == openIdParam");
+      qUse.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
+      qUse.setRange(0, 1);
+      List<ExerciseNameCount> valueCount = (List<ExerciseNameCount>) qUse.execute(id, uid);
+      if(valueCount.size() > 0) {
+        count = valueCount.get(0).getCount();
+      }
+
+      //save to cache
+      if(count >= 0) {
+        cache.addExerciseNameCount(id, uid, count);
+      }
+      else {
+        count = 0;
+      }
+      
+    }
+    
+    return count;
+    
   }
   
   

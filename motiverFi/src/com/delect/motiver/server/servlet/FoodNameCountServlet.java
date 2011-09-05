@@ -39,6 +39,7 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.Time;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
+import com.delect.motiver.server.cache.WeekCache;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class FoodNameCountServlet extends RemoteServiceServlet {
@@ -50,6 +51,8 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    WeekCache cache = new WeekCache();
     
     try {
       //remove old count values
@@ -118,8 +121,12 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             response.getWriter().write("      "+nameId + ": " + tableFoods.get(nameId)+"\n");
             
             //Create model
-            FoodNameCount model = new FoodNameCount(nameId, tableFoods.get(nameId), user.getUid());
+            int count = tableFoods.get(nameId);
+            FoodNameCount model = new FoodNameCount(nameId, count, user.getUid());
             counts.add(model);
+
+            //update cache
+            cache.addExerciseNameCount(nameId, user.getUid(), count);     
           }
           
           pm.makePersistentAll(counts);
