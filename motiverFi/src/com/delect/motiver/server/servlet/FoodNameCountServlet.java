@@ -63,7 +63,7 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
       
       for(UserOpenid user : users) {
         try {
-          response.getWriter().write(user.getEmail()+"\n");
+          response.getWriter().write(user.getEmail()+"<br>");
           
           Hashtable<Long, Integer> tableFoods = new Hashtable<Long, Integer>();
           
@@ -108,22 +108,18 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             }
           }
           
-          //save each count to datastore
-          List<FoodNameCount> counts = new ArrayList<FoodNameCount>();
-          
           Set<Long> set = tableFoods.keySet();
           Iterator<Long> itr = set.iterator();
           for(int i = 0; i < tableFoods.size(); i++) {
             Long nameId = itr.next();
-            response.getWriter().write("      "+nameId + ": " + tableFoods.get(nameId)+"\n");
+            response.getWriter().write("      "+nameId + ": " + tableFoods.get(nameId)+"<br>");
             
             //Create model
             FoodNameCount model = new FoodNameCount(nameId, tableFoods.get(nameId), user.getUid());
-            counts.add(model);
+            
+            pm.makePersistent(model);
+            pm.flush();
           }
-          
-          pm.makePersistentAll(counts);
-          pm.flush();
           
         } catch (IOException e) {
           e.printStackTrace();

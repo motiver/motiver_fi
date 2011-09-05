@@ -58,7 +58,7 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
       
       for(UserOpenid user : users) {
         try {
-          response.getWriter().write(user.getEmail()+"\n");
+          response.getWriter().write(user.getEmail()+"<br>");
           
           Hashtable<Long, Integer> tableExercises = new Hashtable<Long, Integer>();
           
@@ -86,22 +86,17 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
             }
           }
           
-          //save each count to datastore
-          List<ExerciseNameCount> counts = new ArrayList<ExerciseNameCount>();
-          
           Set<Long> set = tableExercises.keySet();
           Iterator<Long> itr = set.iterator();
           for(int i = 0; i < tableExercises.size(); i++) {
             Long nameId = itr.next();
-            response.getWriter().write("      "+nameId + ": " + tableExercises.get(nameId)+"\n");
+            response.getWriter().write("      "+nameId + ": " + tableExercises.get(nameId)+"<br>");
             
             //Create model
             ExerciseNameCount model = new ExerciseNameCount(nameId, tableExercises.get(nameId), user.getUid());
-            counts.add(model);
+            pm.makePersistent(model);
+            pm.flush();
           }
-          
-          pm.makePersistentAll(counts);
-          pm.flush();
           
         } catch (IOException e) {
           e.printStackTrace();
