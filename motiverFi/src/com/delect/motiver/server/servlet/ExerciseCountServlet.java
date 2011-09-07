@@ -55,11 +55,9 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
+    response.setContentType("text/html");
+    
     try {
-      //remove old count values
-//      Query qC = pm.newQuery(ExerciseNameCount.class);
-//      List<ExerciseNameCount> values = (List<ExerciseNameCount>) qC.execute();
-//      pm.deletePersistentAll(values);
       
       //get users
       Query q = pm.newQuery(UserOpenid.class);
@@ -67,41 +65,54 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
       
       for(UserOpenid user : users) {
         try {
-          response.getWriter().write(user.getEmail()+"<br>");
+//          response.getWriter().write(user.getEmail()+"<br>");
           
           Hashtable<Long, Integer> tableExercises = new Hashtable<Long, Integer>();
-          
-          //get workouts
-          Query qW = pm.newQuery(Workout.class);
-          qW.setFilter("openId == openIdParam");
-          qW.declareParameters("java.lang.String openIdParam");
-          List<Workout> workouts = (List<Workout>) qW.execute(user.getUid());
 
-          response.getWriter().write("Workouts found: "+workouts.size());
-          
-          //go through each workouts
-          for(Workout w : workouts) {
-            for(Exercise e : w.getExercises()) {
-              final long nameId = e.getNameId();
-              
-              //if name found
-              if(nameId > 0) {
-                //if id found -> add one to count
-                int count = 0;
-                if(tableExercises.containsKey(nameId)) {
-                  count = tableExercises.get(nameId);
+          //get times (in chunks)
+          int countWorkouts = 0;
+          while(true) {
+            //get workouts
+            Query qW = pm.newQuery(Workout.class);
+            qW.setFilter("openId == openIdParam");
+            qW.declareParameters("java.lang.String openIdParam");
+            qW.setRange(countWorkouts, countWorkouts+100);
+            List<Workout> workouts = (List<Workout>) qW.execute(user.getUid());
+
+            int s = workouts.size();
+//            response.getWriter().write("Workouts found: "+s+" ("+countWorkouts+")<br>");
+            
+            if(s == 0) {
+              break;
+            }
+            
+            countWorkouts += s;
+            
+            //go through each workouts
+            for(Workout w : workouts) {
+              for(Exercise e : w.getExercises()) {
+                final long nameId = e.getNameId();
+                
+                //if name found
+                if(nameId > 0) {
+                  //if id found -> add one to count
+                  int count = 0;
+                  if(tableExercises.containsKey(nameId)) {
+                    count = tableExercises.get(nameId);
+                  }
+                  count++;
+                  tableExercises.put(nameId, count);
                 }
-                count++;
-                tableExercises.put(nameId, count);
               }
             }
           }
+          
           
           Set<Long> set = tableExercises.keySet();
           Iterator<Long> itr = set.iterator();
           for(int i = 0; i < tableExercises.size(); i++) {
             Long nameId = itr.next();
-            response.getWriter().write("      "+nameId + ": " + tableExercises.get(nameId)+"<br>");
+//            response.getWriter().write("      "+nameId + ": " + tableExercises.get(nameId)+"<br>");
             
             Integer count = tableExercises.get(nameId);
             
@@ -123,7 +134,7 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
             pm.flush();
           }
           
-        } catch (IOException e) {
+        } catch (Exception e) {
           logger.log(Level.SEVERE, "Error loading data from user: "+user.getUid(), e);
         }
       }
