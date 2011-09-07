@@ -23,6 +23,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -31,12 +33,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.delect.motiver.server.Exercise;
 import com.delect.motiver.server.ExerciseNameCount;
+import com.delect.motiver.server.FoodNameCount;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
+import com.delect.motiver.server.datastore.StoreNutrition;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class ExerciseCountServlet extends RemoteServiceServlet {
+  
+  /**
+   * Logger for this class
+   */
+  private static final Logger logger = Logger.getLogger(ExerciseCountServlet.class.getName()); 
 
   private static final long serialVersionUID = 5384098111620397L;
 
@@ -48,9 +57,9 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
     
     try {
       //remove old count values
-      Query qC = pm.newQuery(ExerciseNameCount.class);
-      List<ExerciseNameCount> values = (List<ExerciseNameCount>) qC.execute();
-      pm.deletePersistentAll(values);
+//      Query qC = pm.newQuery(ExerciseNameCount.class);
+//      List<ExerciseNameCount> values = (List<ExerciseNameCount>) qC.execute();
+//      pm.deletePersistentAll(values);
       
       //get users
       Query q = pm.newQuery(UserOpenid.class);
@@ -67,6 +76,8 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
           qW.setFilter("openId == openIdParam");
           qW.declareParameters("java.lang.String openIdParam");
           List<Workout> workouts = (List<Workout>) qW.execute(user.getUid());
+
+          response.getWriter().write("Workouts found: "+workouts.size());
           
           //go through each workouts
           for(Workout w : workouts) {
@@ -92,19 +103,33 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
             Long nameId = itr.next();
             response.getWriter().write("      "+nameId + ": " + tableExercises.get(nameId)+"<br>");
             
-            //Create model
-            ExerciseNameCount model = new ExerciseNameCount(nameId, tableExercises.get(nameId), user.getUid());
-            pm.makePersistent(model);
+            Integer count = tableExercises.get(nameId);
+            
+            //check if found
+            q = pm.newQuery(ExerciseNameCount.class);
+            q.setFilter("nameId == nameIdParam && openId == openIdParam");
+            q.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
+            q.setRange(0, 1);
+            List<ExerciseNameCount> valueCount = (List<ExerciseNameCount>) q.execute(nameId, user.getUid());
+            if(valueCount.size() > 0) {
+              ExerciseNameCount model = valueCount.get(0);
+              model.setCount(count);
+            }
+            //not found
+            else {
+              ExerciseNameCount model = new ExerciseNameCount(nameId, count, user.getUid());
+              pm.makePersistent(model);
+            }            
             pm.flush();
           }
           
         } catch (IOException e) {
-          e.printStackTrace();
+          logger.log(Level.SEVERE, "Error loading data from user: "+user.getUid(), e);
         }
       }
       
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.log(Level.SEVERE, "Error loading data", e);
     }
     finally {
       if (!pm.isClosed()) {

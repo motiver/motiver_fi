@@ -23,6 +23,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -39,9 +41,16 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.Time;
 import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.Workout;
+import com.delect.motiver.server.datastore.StoreNutrition;
+import com.extjs.gxt.ui.client.data.Model;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class FoodNameCountServlet extends RemoteServiceServlet {
+  
+  /**
+   * Logger for this class
+   */
+  private static final Logger logger = Logger.getLogger(StoreNutrition.class.getName()); 
 
   private static final long serialVersionUID = 5384098111620397L;
 
@@ -53,9 +62,9 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
     
     try {
       //remove old count values
-      Query qC = pm.newQuery(FoodNameCount.class);
-      List<FoodNameCount> values = (List<FoodNameCount>) qC.execute();
-      pm.deletePersistentAll(values);
+//      Query qC = pm.newQuery(FoodNameCount.class);
+//      List<FoodNameCount> values = (List<FoodNameCount>) qC.execute();
+//      pm.deletePersistentAll(values);
       
       //get users
       Query q = pm.newQuery(UserOpenid.class);
@@ -72,6 +81,8 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
           qT.setFilter("openId == openIdParam");
           qT.declareParameters("java.lang.String openIdParam");
           List<Time> times = (List<Time>) qT.execute(user.getUid());
+
+          response.getWriter().write("Times found: "+times.size());
           
           //go through each workouts
           for(Time t : times) {
@@ -114,20 +125,33 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             Long nameId = itr.next();
             response.getWriter().write("      "+nameId + ": " + tableFoods.get(nameId)+"<br>");
             
-            //Create model
-            FoodNameCount model = new FoodNameCount(nameId, tableFoods.get(nameId), user.getUid());
+            Integer count = tableFoods.get(nameId);
             
-            pm.makePersistent(model);
+            //check if found
+            q = pm.newQuery(FoodNameCount.class);
+            q.setFilter("nameId == nameIdParam && openId == openIdParam");
+            q.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
+            q.setRange(0, 1);
+            List<FoodNameCount> valueCount = (List<FoodNameCount>) q.execute(nameId, user.getUid());
+            if(valueCount.size() > 0) {
+              FoodNameCount model = valueCount.get(0);
+              model.setCount(count);
+            }
+            //not found
+            else {
+              FoodNameCount model = new FoodNameCount(nameId, count, user.getUid());
+              pm.makePersistent(model);
+            }            
             pm.flush();
           }
           
         } catch (IOException e) {
-          e.printStackTrace();
+          logger.log(Level.SEVERE, "Error loading data from user: "+user.getUid(), e);
         }
       }
       
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.log(Level.SEVERE, "Error loading data", e);
     }
     finally {
       if (!pm.isClosed()) {
