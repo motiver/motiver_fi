@@ -30,6 +30,7 @@ import javax.jdo.Transaction;
 import com.delect.motiver.server.Exercise;
 import com.delect.motiver.server.ExerciseName;
 import com.delect.motiver.server.ExerciseNameCount;
+import com.delect.motiver.server.UserOpenid;
 import com.delect.motiver.server.cache.WeekCache;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.server.Workout;
@@ -143,33 +144,15 @@ public class StoreTraining {
     
     ExerciseNameModel model = null;
 
-    //load from cache
-    WeekCache cache = new WeekCache();
-    List<ExerciseName> names = cache.getExerciseNames();
-
-    if(names == null) {
-      if(logger.isLoggable(Level.FINER)) {
-        logger.log(Level.FINER, "Not found from cache");
-      }
-      
-      Query q = pm.newQuery(ExerciseName.class);
-      names = (List<ExerciseName>) q.execute();
-      
-      //save to memcache
-      cache.addExerciseNames(names);
-    }
+    //load all names
+    List<ExerciseName> names = getExerciseNames(pm);
     
-    if(names != null) {
-      for(ExerciseName name : names) {
-        if(name.getId() != null && name.getId().longValue() == nameId) {
-          //convert to client side model
-          model = ExerciseName.getClientModel(name);
-          break;
-        }
+    for(ExerciseName name : names) {
+      if(name.getId() != null && name.getId().longValue() == nameId) {
+        //convert to client side model
+        model = ExerciseName.getClientModel(name);
+        break;
       }
-    }
-    else {
-      throw new Exception("Exercise names not found");
     }
     
     return model;
@@ -187,7 +170,6 @@ public class StoreTraining {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading all exercise names: ");
-      System.out.println("Loading all exercise names: ");
     }
 
     //load from cache
@@ -199,15 +181,23 @@ public class StoreTraining {
         logger.log(Level.FINER, "Not found from cache");
       }
 
-      Query q = pm.newQuery(ExerciseName.class);
-      n = (List<ExerciseName>) q.execute();
+      //load in chunks
+      n = new ArrayList<ExerciseName>();
+      int i = 0;
+      while(true){
+        Query q = pm.newQuery(ExerciseName.class);
+        q.setRange(i, i+100);
+        List<ExerciseName> u = (List<ExerciseName>) q.execute();
+        n.addAll(u);
+        
+        if(u.size() < 100) {
+          break;
+        }
+        i += 100;
+      }
       
       //save to cache
       cache.addExerciseNames(n);
-    }
-    
-    if(n == null) {
-      throw new Exception("Exercise names not found");
     }
     
     return n;

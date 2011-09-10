@@ -26,6 +26,7 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 
+import com.delect.motiver.server.ExerciseName;
 import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.FoodInTime;
@@ -139,23 +140,15 @@ public class StoreNutrition {
     
     FoodNameModel model = null;
 
-    //load from cache
-    WeekCache cache = new WeekCache();
-    FoodName name = cache.getFoodName(nameId);
-
-    if(name == null) {
-      if(logger.isLoggable(Level.FINER)) {
-        logger.log(Level.FINER, "Not found from cache");
-      }
-      
-      name = pm.getObjectById(FoodName.class, nameId);
-      
-      //add to cache
-      cache.addFoodName(name);
-    }
+    //load all names
+    List<FoodName> names = getFoodNames(pm);
     
-    if(name != null) {
-      model = FoodName.getClientModel(name);
+    for(FoodName name : names) {
+      if(name.getId() != null && name.getId().longValue() == nameId) {
+        //convert to client side model
+        model = FoodName.getClientModel(name);
+        break;
+      }
     }
     
     return model;
@@ -175,24 +168,32 @@ public class StoreNutrition {
       logger.log(Level.FINER, "Loading all food names: ");
     }
 
-    //load from cache    
+    //load from cache
     WeekCache cache = new WeekCache();
     List<FoodName> n = cache.getFoodNames();
-     
+    
     if(n == null) {
       if(logger.isLoggable(Level.FINER)) {
         logger.log(Level.FINER, "Not found from cache");
       }
-    
-      Query q = pm.newQuery(FoodName.class);
-      n = (List<FoodName>) q.execute();
+
+      //load in chunks
+      n = new ArrayList<FoodName>();
+      int i = 0;
+      while(true){
+        Query q = pm.newQuery(FoodName.class);
+        q.setRange(i, i+100);
+        List<FoodName> u = (List<FoodName>) q.execute();
+        n.addAll(u);
+        
+        if(u.size() < 100) {
+          break;
+        }
+        i += 100;
+      }
       
       //save to cache
       cache.addFoodNames(n);
-    }
-    
-    if(n == null) {
-      throw new Exception("Food names not found");
     }
     
     return n;
