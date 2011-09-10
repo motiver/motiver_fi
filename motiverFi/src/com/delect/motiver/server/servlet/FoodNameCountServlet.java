@@ -23,6 +23,8 @@ import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
@@ -43,6 +45,11 @@ import com.delect.motiver.server.cache.WeekCache;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class FoodNameCountServlet extends RemoteServiceServlet {
+  
+  /**
+   * Logger for this class
+   */
+  private static final Logger logger = Logger.getLogger(FoodNameCountServlet.class.getName()); 
 
   private static final long serialVersionUID = 5384098111620397L;
 
@@ -54,11 +61,9 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
 
     WeekCache cache = new WeekCache();
     
+    response.setContentType("text/html");
+    
     try {
-      //remove old count values
-      Query qC = pm.newQuery(FoodNameCount.class);
-      List<FoodNameCount> values = (List<FoodNameCount>) qC.execute();
-      pm.deletePersistentAll(values);
       
       //get users
       Query q = pm.newQuery(UserOpenid.class);
@@ -66,35 +71,31 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
       
       for(UserOpenid user : users) {
         try {
-          response.getWriter().write(user.getEmail()+"\n");
           
+//          response.getWriter().write(user.getEmail()+"<br>");  
           Hashtable<Long, Integer> tableFoods = new Hashtable<Long, Integer>();
-          
-          //get times
-          Query qT = pm.newQuery(Time.class);
-          qT.setFilter("openId == openIdParam");
-          qT.declareParameters("java.lang.Long openIdParam");
-          List<Time> times = (List<Time>) qT.execute(user.getUid());
-          
-          //go through each workouts
-          for(Time t : times) {
-            for(FoodInTime f : t.getFoods()) {
-              final long nameId = f.getNameId();
-              
-              //if name found
-              if(nameId > 0) {
-                //if id found -> add one to count
-                int count = 0;
-                if(tableFoods.containsKey(nameId)) {
-                  count = tableFoods.get(nameId);
-                }
-                count++;
-                tableFoods.put(nameId, count);
-              }
-            }
-            for(MealInTime m : t.getMeals()) {
+        
+          //get times (in chunks)
+          int countTimes = 0;
+          while(true) {
+            Query qT = pm.newQuery(Time.class);
+            qT.setFilter("openId == openIdParam");
+            qT.declareParameters("java.lang.String openIdParam");
+            qT.setRange(countTimes, countTimes+100);
+            List<Time> times = (List<Time>) qT.execute(user.getUid());
 
-              for(FoodInMealTime f : m.getFoods()) {
+            int s = times.size();
+//            response.getWriter().write("Times found: "+s+" ("+countTimes+")<br>");
+            
+            if(s == 0) {
+              break;
+            }
+            
+            countTimes += s;
+            
+            //go through each workouts
+            for(Time t : times) {
+              for(FoodInTime f : t.getFoods()) {
                 final long nameId = f.getNameId();
                 
                 //if name found
@@ -108,6 +109,23 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
                   tableFoods.put(nameId, count);
                 }
               }
+              for(MealInTime m : t.getMeals()) {
+
+                for(FoodInMealTime f : m.getFoods()) {
+                  final long nameId = f.getNameId();
+                  
+                  //if name found
+                  if(nameId > 0) {
+                    //if id found -> add one to count
+                    int count = 0;
+                    if(tableFoods.containsKey(nameId)) {
+                      count = tableFoods.get(nameId);
+                    }
+                    count++;
+                    tableFoods.put(nameId, count);
+                  }
+                }
+              }
             }
           }
           
@@ -118,7 +136,7 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
           Iterator<Long> itr = set.iterator();
           for(int i = 0; i < tableFoods.size(); i++) {
             Long nameId = itr.next();
-            response.getWriter().write("      "+nameId + ": " + tableFoods.get(nameId)+"\n");
+//            response.getWriter().write("      "+nameId + ": " + tableFoods.get(nameId)+"<br>");
             
             //Create model
             int count = tableFoods.get(nameId);
@@ -126,19 +144,19 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             counts.add(model);
 
             //update cache
-            cache.addExerciseNameCount(nameId, user.getUid(), count);     
+            cache.addExerciseNameCount(nameId, user.getUid(), count);
           }
           
           pm.makePersistentAll(counts);
           pm.flush();
           
-        } catch (IOException e) {
-          e.printStackTrace();
+        } catch (Exception e) {
+          logger.log(Level.SEVERE, "Error loading data from user: "+user.getUid(), e);
         }
       }
       
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.log(Level.SEVERE, "Error loading data", e);
     }
     finally {
       if (!pm.isClosed()) {

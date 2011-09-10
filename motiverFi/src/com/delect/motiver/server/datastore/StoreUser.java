@@ -17,6 +17,7 @@
  */
 package com.delect.motiver.server.datastore;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -75,8 +76,20 @@ public class StoreUser {
         logger.log(Level.FINER, "Not found from cache");
       }
 
-      Query q = pm.newQuery(UserOpenid.class);
-      users = (List<UserOpenid>) q.execute();
+      //load in chunks
+      users = new ArrayList<UserOpenid>();
+      int i = 0;
+      while(true){
+        Query q = pm.newQuery(UserOpenid.class);
+        q.setRange(i, i+100);
+        List<UserOpenid> u = (List<UserOpenid>) q.execute();
+        users.addAll(u);
+        
+        if(u.size() < 100) {
+          break;
+        }
+        i += 100;
+      }
       
       //save to cache
       cache.setUsers(users);

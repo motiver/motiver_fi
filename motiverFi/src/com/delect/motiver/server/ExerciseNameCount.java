@@ -58,4 +58,8 @@ public class ExerciseNameCount {
 			return 0;
     }
 	}
+
+  public void setCount(Integer count) {
+    this.count = count;
+  }
 }

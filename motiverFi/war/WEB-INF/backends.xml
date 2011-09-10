@@ -3,7 +3,7 @@
   <class>B8</class>
   <options>
    <dynamic>true</dynamic>
-   <public>true</public>
+   <public>false</public>
   </options>
  </backend>
 </backends>
