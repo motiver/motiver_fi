@@ -31,6 +31,8 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
+import com.delect.motiver.server.jdo.ExerciseSearchIndex;
+import com.delect.motiver.server.jdo.FoodSearchIndex;
 import com.delect.motiver.shared.Constants;
 
 

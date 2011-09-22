@@ -17,7 +17,6 @@
  */
 package com.delect.motiver.server.servlet;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -31,14 +30,12 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.delect.motiver.server.Exercise;
-import com.delect.motiver.server.ExerciseNameCount;
-import com.delect.motiver.server.FoodNameCount;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.UserOpenid;
-import com.delect.motiver.server.Workout;
 import com.delect.motiver.server.cache.WeekCache;
-import com.delect.motiver.server.datastore.StoreNutrition;
+import com.delect.motiver.server.jdo.Exercise;
+import com.delect.motiver.server.jdo.ExerciseNameCount;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.Workout;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class ExerciseCountServlet extends RemoteServiceServlet {

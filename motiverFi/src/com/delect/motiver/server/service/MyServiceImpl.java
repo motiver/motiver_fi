@@ -44,39 +44,40 @@ import javax.jdo.Transaction;
 
 import com.delect.motiver.client.service.MyService;
 import com.delect.motiver.server.Base64;
-import com.delect.motiver.server.Cardio;
-import com.delect.motiver.server.CardioValue;
-import com.delect.motiver.server.Circle;
-import com.delect.motiver.server.Comment;
-import com.delect.motiver.server.CommentsRead;
-import com.delect.motiver.server.Exercise;
-import com.delect.motiver.server.ExerciseName;
-import com.delect.motiver.server.ExerciseNameCount;
-import com.delect.motiver.server.ExerciseSearchIndex;
-import com.delect.motiver.server.Food;
-import com.delect.motiver.server.FoodInMeal;
-import com.delect.motiver.server.FoodInMealTime;
-import com.delect.motiver.server.FoodInTime;
-import com.delect.motiver.server.FoodName;
-import com.delect.motiver.server.FoodSearchIndex;
-import com.delect.motiver.server.GuideValue;
-import com.delect.motiver.server.Meal;
-import com.delect.motiver.server.MealInTime;
-import com.delect.motiver.server.Measurement;
-import com.delect.motiver.server.MeasurementValue;
-import com.delect.motiver.server.MicroNutrient;
-import com.delect.motiver.server.MonthlySummary;
-import com.delect.motiver.server.MonthlySummaryExercise;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.Routine;
-import com.delect.motiver.server.Run;
-import com.delect.motiver.server.RunValue;
-import com.delect.motiver.server.Time;
-import com.delect.motiver.server.UserOpenid;
-import com.delect.motiver.server.Workout;
-import com.delect.motiver.server.datastore.StoreNutrition;
-import com.delect.motiver.server.datastore.StoreTraining;
-import com.delect.motiver.server.datastore.StoreUser;
+import com.delect.motiver.server.dao.NutritionManager;
+import com.delect.motiver.server.dao.NutritionManagerImpl;
+import com.delect.motiver.server.dao.TrainingManagerImpl;
+import com.delect.motiver.server.dao.UserManagerImpl;
+import com.delect.motiver.server.jdo.Cardio;
+import com.delect.motiver.server.jdo.CardioValue;
+import com.delect.motiver.server.jdo.Circle;
+import com.delect.motiver.server.jdo.Comment;
+import com.delect.motiver.server.jdo.CommentsRead;
+import com.delect.motiver.server.jdo.Exercise;
+import com.delect.motiver.server.jdo.ExerciseName;
+import com.delect.motiver.server.jdo.ExerciseNameCount;
+import com.delect.motiver.server.jdo.ExerciseSearchIndex;
+import com.delect.motiver.server.jdo.FoodSearchIndex;
+import com.delect.motiver.server.jdo.Measurement;
+import com.delect.motiver.server.jdo.MeasurementValue;
+import com.delect.motiver.server.jdo.MicroNutrient;
+import com.delect.motiver.server.jdo.MonthlySummary;
+import com.delect.motiver.server.jdo.MonthlySummaryExercise;
+import com.delect.motiver.server.jdo.Routine;
+import com.delect.motiver.server.jdo.Run;
+import com.delect.motiver.server.jdo.RunValue;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.Workout;
+import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.FoodInMeal;
+import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
+import com.delect.motiver.server.jdo.nutrition.FoodInTime;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
+import com.delect.motiver.server.jdo.nutrition.GuideValue;
+import com.delect.motiver.server.jdo.nutrition.Meal;
+import com.delect.motiver.server.jdo.nutrition.MealInTime;
+import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
@@ -120,11 +121,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * 
    */
   private static final long serialVersionUID = -7106279162988246661L;
-
-  /**
-   * How long we wait between retries (milliseconds)
-   */
-  public static final int DELAY_BETWEEN_RETRIES = 75;
   
 
   private static final class MyListItem implements Comparable<MyListItem> {
@@ -257,7 +253,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param times
    * @return
    */
-  private static NutritionDayModel calculateEnergyFromTimes(PersistenceManager pm, List<Time> times, String UID) {
+  private static NutritionDayModel calculateEnergyFromTimes(List<Time> times, String UID) {
 
     logger.log(Level.FINE, "calculateEnergyFromTimes()");
     double energy = 0;
@@ -266,9 +262,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     double fet = 0;
 
     try {
+      NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
+      
       List<TimeModel> list = new ArrayList<TimeModel>();
       for(Time time : times) {
-        list.add(StoreNutrition.getTimeModel(pm, time.getId(), UID));
+        list.add(nutritionManager.getTimeModel(time.getId(), UID));
       }
       
       //each time
@@ -528,7 +526,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     try {
       
       //get our uid
-      UserModel u = StoreUser.getUserModel(pm, uid);
+      UserModel u = UserManagerImpl.getUserModel(pm, uid);
       if(u != null) {
         locale = u.getLocale();
       }
@@ -681,7 +679,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //user found
       if(userCurrent != null) {
         
-        user = StoreUser.addUser(pm, userCurrent);
+        user = UserManagerImpl.addUser(pm, userCurrent);
         user.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
         
       }
@@ -885,7 +883,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      exercise = StoreTraining.addExerciseModel(pm, exercise, UID, LOCALE);
+      exercise = TrainingManagerImpl.addExerciseModel(pm, exercise, UID, LOCALE);
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise", e);
@@ -921,7 +919,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      m = StoreTraining.addExerciseNameModel(pm, name, UID, LOCALE);
+      m = TrainingManagerImpl.addExerciseNameModel(pm, name, UID, LOCALE);
     }
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise name", e);
@@ -955,22 +953,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     if(UID == null) {
       return m;
     }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-
-      m = StoreNutrition.addFoodModel(pm, food, UID, LOCALE);
+      NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
+      m = nutritionManager.addFoodModel(food, UID, LOCALE);
 
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding food", e);
       throw new ConnectionException("addFood", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return m;
@@ -996,19 +986,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return m;
     }
 
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
     
     try {
-      m = StoreNutrition.addFoodNameModel(pm, name, UID, LOCALE);
+      m = nutritionManager.addFoodNameModel(name, UID, LOCALE);
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding food name", e);
       throw new ConnectionException("addFoodname", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return m;
@@ -1124,25 +1108,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return list;
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
 
     try {
       //each meal
       for(MealModel meal : meals) {
-        MealModel m = StoreNutrition.addMealModel(pm, meal, UID);
+        MealModel m = nutritionManager.addMealModel(meal, UID);
         if(m != null) {
           list.add(m);
         }
       }
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding meals", e);
       throw new ConnectionException("addMeals", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -3059,7 +3037,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       boolean permissionMeasurement = true;
             
       //get user
-      UserModel user = StoreUser.getUserModel(pm, uidObj);
+      UserModel user = UserManagerImpl.getUserModel(pm, uidObj);
       
       if(user != null) {
         
@@ -3187,7 +3165,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               List<WorkoutModel> arrW = new ArrayList<WorkoutModel>();
               for(Workout w : workouts) {
                 if(fmt.format(w.getDate()).equals(strD)) {
-                  arrW.add( StoreTraining.getWorkoutModel(pm, w.getId(), UID));
+                  arrW.add( TrainingManagerImpl.getWorkoutModel(pm, w.getId(), UID));
                   
                   found = true;
                 }
@@ -3205,7 +3183,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               }
               //if times found
               if(arrT.size() > 0) {
-                NutritionDayModel ndm = calculateEnergyFromTimes(pm, arrT, UID);
+                NutritionDayModel ndm = calculateEnergyFromTimes(arrT, UID);
                 if(ndm.getEnergy() > 0) {
                   ndm.setFoodsPermission(permissionNutritionFoods);
                   bd.setNutrition(ndm);
@@ -3556,7 +3534,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               //get model//workout
               if(xid.matches("w[0-9]*")) {
                 final long id = Long.parseLong(xid.replace("w", ""));
-                WorkoutModel w = StoreTraining.getWorkoutModel(pm, id, UID);
+                WorkoutModel w = TrainingManagerImpl.getWorkoutModel(pm, id, UID);
                 if(w != null) {
                   found = true;
                   c.setWorkout( w );
@@ -3700,7 +3678,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
         List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
 
-        NutritionDayModel m = calculateEnergyFromTimes(pm, times, UID);
+        NutritionDayModel m = calculateEnergyFromTimes(times, UID);
 
         //round
         list.add(m.getEnergy());
@@ -3743,7 +3721,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-      WorkoutModel w = StoreTraining.getWorkoutModel(pm, workout.getId(), UID);      
+      WorkoutModel w = TrainingManagerImpl.getWorkoutModel(pm, workout.getId(), UID);      
       list = w.getExercises();
       
     } catch (Exception e) {
@@ -3925,13 +3903,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     if(UID == null) {
       return list;
     }
-        
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
 
     try {      
       //if in time
       if(meal.getTimeId() != 0) {
-        TimeModel time = StoreNutrition.getTimeModel(pm, meal.getTimeId(), UID);
+        TimeModel time = nutritionManager.getTimeModel(meal.getTimeId(), UID);
         if(time != null) {
           for(MealModel m : time.getMeals()) {
             if(m.getId() == meal.getId()) {
@@ -3943,18 +3921,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       //not in time
       else {
-        MealModel m = StoreNutrition.getMealModel(pm, meal.getId(), UID);
+        MealModel m = nutritionManager.getMealModel(meal.getId(), UID);
         list = m.getFoods();
       }
       
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error loading foods", e);
       throw new ConnectionException("getFoods", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -4059,7 +4031,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     
     try {
       
-      ok = StoreUser.addUserToCircle(pm, UID, uid, target);
+      ok = UserManagerImpl.addUserToCircle(pm, UID, uid, target);
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding user to circle", e);
@@ -4099,7 +4071,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     
     try {
       
-      ok = StoreUser.removeUserToCircle(pm, UID, uid, target);
+      ok = UserManagerImpl.removeUserToCircle(pm, UID, uid, target);
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing user from circle", e);
@@ -4184,7 +4156,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return list;
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
 
     try {
       Query q = pm.newQuery(Meal.class);
@@ -4207,7 +4179,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             break;
           }
           
-          MealModel m = StoreNutrition.getMealModel(pm, w.getId(), UID);                  
+          MealModel m = NutritionManagerImpl.getMealModel(pm, w.getId(), UID);                  
           list.add(m);
           
           i++;
@@ -4215,7 +4187,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
       }
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMeals", e);
       throw new ConnectionException("getMeals", e.getMessage());
     }
     finally {
@@ -4833,7 +4804,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             break;
           }
           
-          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
+          WorkoutModel m = TrainingManagerImpl.getWorkoutModel(pm, w.getId(), UID);
           list.add(m);
           
           i++;
@@ -5515,6 +5486,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
 
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
 
     try {
       //strip time
@@ -5528,7 +5500,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
       //convert to client side models
       for(Time time : times) {
-        TimeModel model = StoreNutrition.getTimeModel(pm, time.getId(), UID);
+        TimeModel model = NutritionManagerImpl.getTimeModel(pm, time.getId(), UID);
         if(model != null) {
           list.add(model);
         }
@@ -5574,7 +5546,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       List<Circle> users = (List<Circle>) q.execute(UID, Permission.COACH);
 
       if(users.size() > 0) {
-        UserModel u = StoreUser.getUserModel(pm, users.get(0).getUid());
+        UserModel u = UserManagerImpl.getUserModel(pm, users.get(0).getUid());
         if(u != null) {
           list.add(u);
         }
@@ -5778,7 +5750,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
       //TODO needs improving
       for(ExerciseModel e : exercises) {
-        StoreTraining.removeExerciseModel(pm, e, UID);
+        TrainingManagerImpl.removeExerciseModel(pm, e, UID);
       }
       
       ok = true;
@@ -5818,13 +5790,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return ok;
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
     
     try {
 
       //TODO needs improving
       for(FoodModel m : foods) {
-        StoreNutrition.removeFoodModel(pm, m, UID);
+        nutritionManager.removeFoodModel(m, UID);
       }
       
       ok = true;
@@ -5833,11 +5805,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing foods", e);
       throw new ConnectionException("removeFoods", e.getMessage());
-    }
-    finally { 
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return ok;
@@ -5923,19 +5890,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return false;
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
 
     try {
-      ok = StoreNutrition.removeMealModel(pm, model, UID);
+      ok = nutritionManager.removeMealModel(model, UID);
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing meal", e);
       throw new ConnectionException("removeMeal", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return ok;
@@ -6082,7 +6044,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         q.declareParameters("java.lang.String openIdParam, java.lang.Long routineIdParam");
         List<Workout> workouts = (List<Workout>) q.execute(UID, r.getId());
         for(Workout mWorkout : workouts) {
-          StoreTraining.removeWorkoutModel(pm, mWorkout.getId(), UID);
+          TrainingManagerImpl.removeWorkoutModel(pm, mWorkout.getId(), UID);
         }
           
         
@@ -6227,13 +6189,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return false;
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
 
     try {
       //each time
       for(TimeModel model : models) {
         
-        boolean removeOk = StoreNutrition.removeTimeModel(pm, model.getId(), UID);
+        boolean removeOk = nutritionManager.removeTimeModel(model.getId(), UID);
         
         if(!removeOk) {
           ok = false;
@@ -6241,13 +6203,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing times", e);
       throw new ConnectionException("removeTime", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return ok;
@@ -6274,7 +6230,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-      ok = StoreTraining.removeWorkoutModel(pm, model.getId(), UID);
+      ok = TrainingManagerImpl.removeWorkoutModel(pm, model.getId(), UID);
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing workout", e);
@@ -6402,7 +6358,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-      u = StoreUser.saveUserModel(pm, u);
+      u = UserManagerImpl.saveUserModel(pm, u);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error saving user", e);
       throw new ConnectionException("saveUserData", e.getMessage());
@@ -6464,7 +6420,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 //      }
       
       //TODO missing equipment search and locale
-      List<ExerciseName> names = StoreTraining.getExerciseNames(pm);
+      List<ExerciseName> names = TrainingManagerImpl.getExerciseNames(pm);
 
       List<ExerciseName> arrNames = new ArrayList<ExerciseName>();
 
@@ -6497,7 +6453,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           //get count
           int countUse = 0;
           try {
-            countUse = StoreTraining.getExerciseNameCount(pm, n.getId(), UID);
+            countUse = TrainingManagerImpl.getExerciseNameCount(pm, n.getId(), UID);
           } catch (Exception e) {
             logger.log(Level.SEVERE, "Error fetching count for exercise name: "+e, e);
           }
@@ -6562,7 +6518,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return list;
     }
       
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
 
     try {
       //split query string
@@ -6574,7 +6530,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       String[] arr = query.split(" ");
       
       //TODO missing equipment search and locale
-      List<FoodName> names = StoreNutrition.getFoodNames(pm);
+      List<FoodName> names = nutritionManager.getFoodNames();
 
       List<FoodName> arrNames = new ArrayList<FoodName>();
         
@@ -6618,7 +6574,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
           int countUse = 0;
           try {
-            countUse = StoreNutrition.getFoodNameCount(pm, UID, n.getId());
+            countUse = nutritionManager.getFoodNameCount(UID, n.getId());
           } catch (Exception e) {
             logger.log(Level.SEVERE, "Error fetching food name count", e);
           }
@@ -6658,11 +6614,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       logger.log(Level.SEVERE, "Error searching food names", e);
 
       throw new ConnectionException("searchFoodNames", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -6897,7 +6848,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         if(ok) {          
           WorkoutModel m = null;
           try {
-            m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
+            m = TrainingManagerImpl.getWorkoutModel(pm, w.getId(), UID);
           } catch (NoPermissionException e) {
             //no permission -> skipping
           }
@@ -7135,7 +7086,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      exercise = StoreTraining.updateExerciseModel(pm, exercise, UID, LOCALE);
+      exercise = TrainingManagerImpl.updateExerciseModel(pm, exercise, UID, LOCALE);
         
     }
     catch (Exception e) {
@@ -7251,7 +7202,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      ok = StoreTraining.updateExerciseOrder(pm, workout.getId(), ids, UID);
+      ok = TrainingManagerImpl.updateExerciseOrder(pm, workout.getId(), ids, UID);
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating exercise order", e);
@@ -7284,20 +7235,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return null;
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManagerImpl.getInstance();
       
     try {
-      food = StoreNutrition.updateFoodModel(pm, food, UID);
+      food = nutritionManager.updateFoodModel(food, UID);
   
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error updating food", e);
       throw new ConnectionException("updateFood", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return food;
@@ -7729,12 +7674,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
         
         --retries;
-        
-        //small delay between retries
-        try {
-          Thread.sleep(DELAY_BETWEEN_RETRIES);
-        }
-        catch(Exception ex) { }
       }
       finally {
         if (tx.isActive()) {
@@ -7772,7 +7711,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      StoreTraining.updateWorkoutModel(pm, model, UID);
+      TrainingManagerImpl.updateWorkoutModel(pm, model, UID);
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating workout", e);
@@ -7833,7 +7772,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      m = StoreTraining.getWorkoutModel(pm, workoutId, UID);
+      m = TrainingManagerImpl.getWorkoutModel(pm, workoutId, UID);
     } catch (Exception e) {
       logger.log(Level.SEVERE, "getWorkout", e);
       throw new ConnectionException("getWorkout", e.getMessage());
@@ -7910,7 +7849,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           break;
         }
 
-        WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
+        WorkoutModel m = TrainingManagerImpl.getWorkoutModel(pm, w.getId(), UID);
         list.add(m);
         
         i++;
@@ -7984,7 +7923,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         WorkoutModel[] arr = new WorkoutModel[workouts.size()];
         int c = 0;
         for(Workout w : workouts) {
-          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
+          WorkoutModel m = TrainingManagerImpl.getWorkoutModel(pm, w.getId(), UID);
 
           arr[c] = m;
           c++;
