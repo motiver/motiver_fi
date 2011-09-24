@@ -21,7 +21,6 @@ import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
 import com.delect.motiver.shared.CommentModel;
-import com.delect.motiver.shared.ConnectionException;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.FoodModel;
@@ -40,6 +39,7 @@ import com.delect.motiver.shared.TicketModel;
 import com.delect.motiver.shared.TimeModel;
 import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.exception.ConnectionException;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 

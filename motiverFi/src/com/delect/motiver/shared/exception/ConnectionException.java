@@ -12,7 +12,7 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.shared;
+package com.delect.motiver.shared.exception;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 

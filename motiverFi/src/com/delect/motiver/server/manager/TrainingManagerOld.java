@@ -15,7 +15,7 @@
 /**
  * 
  */
-package com.delect.motiver.server.dao;
+package com.delect.motiver.server.manager;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,11 +33,11 @@ import com.delect.motiver.server.jdo.ExerciseName;
 import com.delect.motiver.server.jdo.ExerciseNameCount;
 import com.delect.motiver.server.jdo.Workout;
 import com.delect.motiver.server.service.MyServiceImpl;
-import com.delect.motiver.shared.ConnectionException;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.Permission;
+import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
 import com.delect.motiver.shared.WorkoutModel;
 
@@ -45,13 +45,13 @@ import com.delect.motiver.shared.WorkoutModel;
  * @author Antti
  *
  */
-public final class TrainingManagerImpl implements TrainingManager {
+public final class TrainingManagerOld {
 
 
   /**
    * Logger for this class
    */
-  private static final Logger logger = Logger.getLogger(TrainingManagerImpl.class.getName()); 
+  private static final Logger logger = Logger.getLogger(TrainingManagerOld.class.getName()); 
 
 
   /**

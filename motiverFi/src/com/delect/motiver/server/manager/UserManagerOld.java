@@ -15,7 +15,7 @@
 /**
  * 
  */
-package com.delect.motiver.server.dao;
+package com.delect.motiver.server.manager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,7 +36,7 @@ import com.google.appengine.api.users.User;
  * @author Antti
  *
  */
-public final class UserManagerImpl implements UserManager {
+public final class UserManagerOld {
 
   /**
    * Restricted string for aliases
@@ -48,7 +48,7 @@ public final class UserManagerImpl implements UserManager {
   /**
    * Logger for this class
    */
-  private static final Logger logger = Logger.getLogger(UserManagerImpl.class.getName()); 
+  private static final Logger logger = Logger.getLogger(UserManagerOld.class.getName()); 
 
   
   /**

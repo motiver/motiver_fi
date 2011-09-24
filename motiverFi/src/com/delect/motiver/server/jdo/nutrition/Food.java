@@ -65,6 +65,7 @@ public class Food implements Serializable {
 		Food modelServer = new Food();
 		if(model.getName() != null) {
 			modelServer.setNameId(model.getName().getId());
+			modelServer.setName(FoodName.getServerModel(model.getName()));
     }
 		else {
 			modelServer.setNameId(0L);
@@ -74,8 +75,8 @@ public class Food implements Serializable {
 		
 		return modelServer;
 	}
-	
-	@Persistent
+
+  @Persistent
 	public Long uid;
   
   @Persistent
@@ -97,6 +98,8 @@ public class Food implements Serializable {
 	@Persistent
 	private Key time;
 
+	private FoodName n;
+	
 	public Food() {
     
   }
@@ -187,4 +190,12 @@ public class Food implements Serializable {
   public Long getUidOld() {
     return uid;
   } 
+  
+  private void setName(FoodName n) {
+    this.n = n;
+  }
+
+  public FoodName getName() {
+    return n;
+  }
 }
