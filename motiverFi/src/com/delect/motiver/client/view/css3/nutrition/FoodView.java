@@ -232,11 +232,10 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 
 				//buttons layout
 				HBoxLayout layoutButtons = new HBoxLayout();
-				layoutButtons.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);
-				layoutButtons.setPack(BoxLayoutPack.END);
+        layoutButtons.setHBoxLayoutAlign(HBoxLayoutAlign.TOP);
         panelButtons.setLayout(layoutButtons);
         panelButtons.setHeight(16);
-        panelButtons.setWidth(70);
+        panelButtons.setWidth(80);
 
         //edit food link
 				btnEdit.addListener(Events.OnClick, new Listener<BaseEvent>() {

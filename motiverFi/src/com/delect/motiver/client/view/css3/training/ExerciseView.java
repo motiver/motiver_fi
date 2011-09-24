@@ -243,8 +243,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 
         //buttons layout
         HBoxLayout layoutButtons = new HBoxLayout();
-        layoutButtons.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);
-        layoutButtons.setPack(BoxLayoutPack.END);
+        layoutButtons.setHBoxLayoutAlign(HBoxLayoutAlign.TOP);
         panelButtons.setLayout(layoutButtons);
         panelButtons.setHeight(16);
         panelButtons.setWidth(50);
