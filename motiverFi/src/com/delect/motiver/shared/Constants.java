@@ -14,6 +14,8 @@
  ******************************************************************************/
 package com.delect.motiver.shared;
 
+import java.util.logging.Level;
+
 import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
 
@@ -286,4 +288,12 @@ public interface Constants {
   public static final String DRAG_GROUP_USER = "user";
   public static final String DRAG_GROUP_WORKOUT = "wp";   // + workout's ID
 	
+  
+  /**
+   * Log levels
+   */
+  public static final Level LOG_LEVEL_SERVICE = Level.FINE;
+  public static final Level LOG_LEVEL_MANAGER = Level.FINER;
+  public static final Level LOG_LEVEL_DAO = Level.FINEST;
+  
 }

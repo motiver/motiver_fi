@@ -48,6 +48,8 @@ public class FoodInMeal implements Serializable {
 		FoodModel modelClient = new FoodModel();
 		modelClient.setId(model.getId().longValue());
 		modelClient.setAmount(model.getAmount());
+		modelClient.setName(FoodName.getClientModel(model.getName()));
+		
 		return modelClient;
 	}
   
@@ -87,6 +89,8 @@ public class FoodInMeal implements Serializable {
 	@SuppressWarnings("unused")
 	@Persistent
 	private Meal parent;
+
+  private FoodName n;
 
 	public FoodInMeal() {
     
@@ -144,5 +148,13 @@ public class FoodInMeal implements Serializable {
 	
 	public void setNameId(Long name) {
 		this.name = name;
+  }
+
+  public void setName(FoodName n) {
+    this.n = n;
+  }
+  
+  public FoodName getName() {
+    return n;
   }
 }

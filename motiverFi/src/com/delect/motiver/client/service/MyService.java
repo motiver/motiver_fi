@@ -138,7 +138,7 @@ public interface MyService extends RemoteService {
    * @return added meal (null if add not successful)
    * @throws ConnectionException the connection exception
    */
-  public MealModel addMeal(MealModel meal) throws ConnectionException;
+  public MealModel addMeal(MealModel meal, long timeId) throws ConnectionException;
   
   /**
    * Adds meals to db.
@@ -147,7 +147,7 @@ public interface MyService extends RemoteService {
    * @return added meal (null if add not successful)
    * @throws ConnectionException the connection exception
    */
-  public List<MealModel> addMeals(List<MealModel> meals) throws ConnectionException;
+  public List<MealModel> addMeals(List<MealModel> meals, long timeId) throws ConnectionException;
   
   
   /**

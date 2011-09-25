@@ -76,6 +76,36 @@ public class Food implements Serializable {
 		return modelServer;
 	}
 
+  public static FoodInMealTime getFoodInMealTimeModel(Food model) {
+
+    FoodInMealTime modelServer = new FoodInMealTime();
+    modelServer.setId(model.getId());
+    modelServer.setAmount(model.getAmount());
+    modelServer.setNameId(model.getNameId());
+    
+    return modelServer;
+  }
+
+  public static FoodInMeal getFoodInMealModel(Food model) {
+
+    FoodInMeal modelServer = new FoodInMeal();
+    modelServer.setId(model.getId());
+    modelServer.setAmount(model.getAmount());
+    modelServer.setNameId(model.getNameId());
+    
+    return modelServer;
+  }
+
+  public static FoodInTime getFoodInTimeModel(Food model) {
+
+    FoodInTime modelServer = new FoodInTime();
+    modelServer.setId(model.getId());
+    modelServer.setAmount(model.getAmount());
+    modelServer.setNameId(model.getNameId());
+    
+    return modelServer;
+  }
+
   @Persistent
 	public Long uid;
   

@@ -27,6 +27,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.MealModel;
 
 @PersistenceCapable(identityType = IdentityType.DATASTORE)
@@ -49,7 +50,16 @@ public class MealInTime implements Serializable, Comparable<MealInTime> {
 		
 		MealModel modelClient = new MealModel(model.getName());
 		modelClient.setId(model.getId());
-		
+
+    //foods
+    if(model.getFoods() != null) {
+      List<FoodModel> foods = new ArrayList<FoodModel>();
+      for(FoodInMealTime m : model.getFoods()) {
+        foods.add(FoodInMealTime.getClientModel(m));
+      }
+      modelClient.setFoods(foods);
+    }
+    
 		return modelClient;
 	}
 

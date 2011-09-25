@@ -200,7 +200,7 @@ public class MealPresenter extends Presenter {
 					display.setContentEnabled(false);
 					
 					//create model
-					final Request req = rpcService.addMeal(model, new MyAsyncCallback<MealModel>() {
+					final Request req = rpcService.addMeal(model, model.getTimeId(), new MyAsyncCallback<MealModel>() {
 						@Override
 						public void onSuccess(MealModel result) {
 							display.setContentEnabled(true);

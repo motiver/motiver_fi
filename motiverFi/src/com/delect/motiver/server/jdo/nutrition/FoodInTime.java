@@ -48,6 +48,8 @@ public class FoodInTime implements Serializable {
 		FoodModel modelClient = new FoodModel();
 		modelClient.setId(model.getId().longValue());
 		modelClient.setAmount(model.getAmount());
+    modelClient.setName(FoodName.getClientModel(model.getName()));
+    
 		return modelClient;
 	}
   
@@ -86,6 +88,8 @@ public class FoodInTime implements Serializable {
 
 	@Persistent
 	private Time parent;
+
+  private FoodName n;
 
 	public FoodInTime() {
     
@@ -143,5 +147,13 @@ public class FoodInTime implements Serializable {
 	
 	public void setNameId(Long name) {
 		this.name = name;
+  }
+
+  public void setName(FoodName n) {
+    this.n = n;
+  }
+  
+  public FoodName getName() {
+    return n;
   }
 }

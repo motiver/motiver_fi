@@ -288,7 +288,7 @@ public class MealsListPresenter extends Presenter {
 			model.setDate(null);
 			
 			//add meal
-			final Request req = rpcService.addMeal(model, new MyAsyncCallback<MealModel>() {
+			final Request req = rpcService.addMeal(model, 0L, new MyAsyncCallback<MealModel>() {
 				@Override
 				public void onSuccess(MealModel result) {
 					display.setContentEnabled(true);
@@ -314,7 +314,7 @@ public class MealsListPresenter extends Presenter {
       model.setTimeId(time.getId());
 			
 			//add meal
-			final Request req = rpcService.addMeals(meals, new MyAsyncCallback<List<MealModel>>() {
+			final Request req = rpcService.addMeals(meals, time.getId(), new MyAsyncCallback<List<MealModel>>() {
 				@Override
 				public void onSuccess(List<MealModel> result) {
 					display.setContentEnabled(true);

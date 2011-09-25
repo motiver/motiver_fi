@@ -191,7 +191,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 					mealCopy.setId(meal.getId());
 					mealCopy.setUid(time.getUid());
 					mealCopy.setTimeId(time.getId());
-					final Request req = rpcService.addMeal(mealCopy, new MyAsyncCallback<MealModel>() {
+					final Request req = rpcService.addMeal(mealCopy, time.getId(), new MyAsyncCallback<MealModel>() {
 						@Override
 						public void onSuccess(MealModel result) {
 							display.setContentEnabled(true);

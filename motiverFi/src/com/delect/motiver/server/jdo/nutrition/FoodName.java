@@ -88,35 +88,35 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 	 * If food name is trusted
 	 * @param trusted : 0=not trusted, 1=verified, 100=motiver
 	 */
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	public Integer trusted;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	public Long uid;
   
-  @Persistent(defaultFetchGroup="false")
+  @Persistent
   public String openId;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String barcode;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Double carb;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Integer category;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Double energy = 0D;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Double fet;
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Long id;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String locale;
 
 	@Persistent(mappedBy = "foodname", defaultFetchGroup="false")
@@ -125,13 +125,13 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 	@Persistent
 	private String name = "";
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Double portion;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Double price; //in euros
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Double protein;
 	
 	public FoodName(String name) {

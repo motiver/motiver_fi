@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Circle;
+import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.Permission;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
@@ -37,7 +38,7 @@ public class UserManager {
    * Gets openId string
    * @return null if no user found
    */
-  public String getUid(ThreadLocal<HttpServletRequest> request) {
+  public UserOpenid getUser(ThreadLocal<HttpServletRequest> request) {
 
     String coachModeUid = null;
     
@@ -54,10 +55,9 @@ public class UserManager {
     return _getUid(coachModeUid);
   }
   @SuppressWarnings("unchecked")
-  static String _getUid(String coachModeUid) {
+  static UserOpenid _getUid(String coachModeUid) {
 
-    logger.log(Level.FINE, "getUid()");
-
+    UserOpenid user = null;
     String openId = null;
 
     UserService userService = UserServiceFactory.getUserService();
@@ -66,16 +66,17 @@ public class UserManager {
     if(userCurrent != null) {
       openId = userCurrent.getUserId();
     }
-  
-    //if coach mode -> return trainee's uid
-    if(coachModeUid != null) {
-      if(logger.isLoggable(Level.FINE)) {
-        logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
-      }
 
-      PersistenceManager pm =  PMF.get().getPersistenceManager();
-      
-      try {
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    try {
+    
+      //if coach mode -> return trainee
+      if(coachModeUid != null) {
+        if(logger.isLoggable(Level.FINE)) {
+          logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
+        }
+        
         Query q = pm.newQuery(Circle.class);
         q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
         q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
@@ -86,18 +87,23 @@ public class UserManager {
           logger.log(Level.FINE, "Is coach!");
           openId = list.get(0).getUid();
         }
-      } catch (Exception e) {
-        logger.log(Level.SEVERE, "Error checkin coach", e);
       }
-      finally {
-        if(!pm.isClosed()) {
-          pm.close();
-        }
+      
+      if(openId != null) {
+        user = pm.getObjectById(UserOpenid.class, openId);
+      }
+      
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading user", e);
+    }
+    finally {
+      if(!pm.isClosed()) {
+        pm.close();
       }
     }
     
-    return openId;
+    return user;
   }
-  
 
 }

@@ -116,20 +116,21 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-public class MyServiceImpl extends RemoteServiceServlet implements MyService {
+@Deprecated public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
   /**
    * 
    */
   private static final long serialVersionUID = -7106279162988246661L;
   
+  UserManager userManager = UserManager.getInstance();
 
   private static final class MyListItem implements Comparable<MyListItem> {
     
-    public int count = 0;
-    public long id = 0;
-    public MealModel meal = null;
-    public String name = "";
+    @Deprecated public int count = 0;
+    @Deprecated public long id = 0;
+    @Deprecated public MealModel meal = null;
+    @Deprecated public String name = "";
     
     private MyListItem(long id) {
       this.id = id;
@@ -137,7 +138,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
 
     @Override
-    public int compareTo(MyListItem item) {
+    @Deprecated public int compareTo(MyListItem item) {
       return item.count - count;
     }
   }
@@ -153,7 +154,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
 //  @SuppressWarnings("unchecked")
-//  public static String getCoachAccess(String uid) {
+//  @Deprecated public static String getCoachAccess(String uid) {
 //
 //    log.log(Level.FINE, "getCoachAccess()");
 //
@@ -319,7 +320,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param exercise
    * @return duplicated exercise
    */
-  public static Exercise duplicateExercise(Exercise e) {
+  @Deprecated public static Exercise duplicateExercise(Exercise e) {
 
     logger.log(Level.FINE, "duplicateExercise()");
 
@@ -594,7 +595,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return has permission
    */
   @SuppressWarnings("unchecked")
-  public static boolean hasPermission(PersistenceManager pm, int target, String ourUid, String uid) {
+  @Deprecated public static boolean hasPermission(PersistenceManager pm, int target, String ourUid, String uid) {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Checking permission "+target+" for "+ourUid+", "+uid);
@@ -643,7 +644,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param start or end date (time: 00:00:01 or 23:59:59)
    * @return date
    */
-  public static Date stripTime(Date date, boolean isStart) {
+  @Deprecated public static Date stripTime(Date date, boolean isStart) {
 
     logger.log(Level.FINE, "stripTime()");
 
@@ -665,7 +666,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   }
   
   @Override
-  public UserModel getUser() throws ConnectionException {
+  @Deprecated public UserModel getUser() throws ConnectionException {
 
     logger.log(Level.FINE, "getUser()");
     
@@ -703,7 +704,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added cardio (null if add not successful)
    */
   @Override
-  public CardioModel addCardio(CardioModel cardio) throws ConnectionException {
+  @Deprecated public CardioModel addCardio(CardioModel cardio) throws ConnectionException {
 
     logger.log(Level.FINE, "addCardio()");
     
@@ -753,7 +754,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added cardio (null if add not successful)
    */
   @Override
-  public CardioValueModel addCardioValue(CardioModel cardio, CardioValueModel value) throws ConnectionException {
+  @Deprecated public CardioValueModel addCardioValue(CardioModel cardio, CardioValueModel value) throws ConnectionException {
 
     logger.log(Level.FINE, "addCardioValue()");
     
@@ -821,7 +822,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added comment (null if add not successful
    */
   @Override
-  public CommentModel addComment(CommentModel comment) throws ConnectionException  {
+  @Deprecated public CommentModel addComment(CommentModel comment) throws ConnectionException  {
 
     logger.log(Level.FINE, "addComment()");
     
@@ -869,7 +870,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added workout (null if add not successful)
    */
   @Override
-  public ExerciseModel addExercise(ExerciseModel exercise) throws ConnectionException {
+  @Deprecated public ExerciseModel addExercise(ExerciseModel exercise) throws ConnectionException {
 
     logger.log(Level.FINE, "addExercise()");
     
@@ -905,7 +906,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added exercise (null if add not successful)
    */
   @Override
-  public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException {
+  @Deprecated public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException {
 
     ExerciseNameModel m = null;
     
@@ -943,21 +944,21 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public FoodModel addFood(FoodModel food) throws ConnectionException {
 
-    logger.log(Level.FINE, "addFood()");
-
     FoodModel m = null;
     
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return m;
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    if(user == null || user.getUid() == null) {
+      return null;
     }
+    final String UID = user.getUid();
+    final String LOCALE = user.getLocale();
 
     try {
-      NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
-      m = nutritionManager.addFoodModel(food, UID, LOCALE);
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      Food jdo = Food.getServerModel(food);
+      nutritionManager.addFood(jdo, food.getTimeId(), food.getMealId(), UID, LOCALE);
+      m = Food.getClientModel(jdo);
 
     }
     catch (Exception e) {
@@ -973,7 +974,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added name (null if add not successful)
    */
   @Override
-  public FoodNameModel addFoodname(FoodNameModel name) throws ConnectionException {
+  @Deprecated public FoodNameModel addFoodname(FoodNameModel name) throws ConnectionException {
 
     logger.log(Level.FINE, "addFoodname()");
     
@@ -1005,7 +1006,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added name (null if add not successful)
    */
   @Override
-  public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException {
+  @Deprecated public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException {
 
     logger.log(Level.FINE, "addFoodnames()");
     
@@ -1021,7 +1022,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param model
    * @return
    */
-  @Override public GuideValueModel addGuideValue(GuideValueModel model) throws ConnectionException {
+  @Override @Deprecated public GuideValueModel addGuideValue(GuideValueModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "addGuideValue()");
     
@@ -1070,16 +1071,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public MealModel addMeal(MealModel meal) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Adding meal: "+meal.getName());
-    }
+  public MealModel addMeal(MealModel meal, long timeId) throws ConnectionException {
 
     List<MealModel> list = new ArrayList<MealModel>();
     list.add(meal);
     
-    list = addMeals(list);
+    list = addMeals(list, timeId);
     
     if(list != null && list.size() > 0) {
         return list.get(0);
@@ -1095,33 +1092,34 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<MealModel> addMeals(List<MealModel> meals) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Adding meals. Count: "+meals.size());
+  public List<MealModel> addMeals(List<MealModel> meals, long timeId) throws ConnectionException {
+    
+    //get uid
+    UserManager userManager = UserManager.getInstance();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    if(user == null) {
+      return null;
     }
+    final String UID = user.getUid();
     
     List<MealModel> list = new ArrayList<MealModel>();
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
-
     try {
-      //each meal
-      for(MealModel meal : meals) {
-        MealModel m = nutritionManager.addMealModel(meal, UID);
-        if(m != null) {
-          list.add(m);
-        }
+      List<Meal> jdos = new ArrayList<Meal>();
+      for(MealModel m : meals) {
+        jdos.add(Meal.getServerModel(m));
       }
-    }
-    catch (Exception e) {
-      throw new ConnectionException("addMeals", e.getMessage());
+      
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      List<Meal> jdosCopy = nutritionManager.addMeals(jdos, timeId, UID);
+
+      for(Meal m : jdosCopy) {
+        list.add(Meal.getClientModel(m));
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding meals", e);
+      throw new ConnectionException("Error adding meals", e);
     }
     
     return list;
@@ -1133,7 +1131,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added measurement (null if add not successful)
    */
   @Override
-  public MeasurementModel addMeasurement(MeasurementModel meal) throws ConnectionException {
+  @Deprecated public MeasurementModel addMeasurement(MeasurementModel meal) throws ConnectionException {
 
     logger.log(Level.FINE, "addMeasurement()");
     
@@ -1183,7 +1181,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added measurement (null if add not successful)
    */
   @Override
-  public MeasurementValueModel addMeasurementValue(MeasurementModel measurement, MeasurementValueModel value) throws ConnectionException {
+  @Deprecated public MeasurementValueModel addMeasurementValue(MeasurementModel measurement, MeasurementValueModel value) throws ConnectionException {
 
     logger.log(Level.FINE, "addMeasurementValue()");
     
@@ -1238,7 +1236,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
   @SuppressWarnings({ "unchecked", "deprecation" })
   @Override
-  public RoutineModel addRoutine(RoutineModel routine) throws ConnectionException  {
+  @Deprecated public RoutineModel addRoutine(RoutineModel routine) throws ConnectionException  {
 
     logger.log(Level.FINE, "addRoutine()");
 
@@ -1369,7 +1367,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   
   @SuppressWarnings({ "unchecked", "deprecation" })
   @Override
-  public List<RoutineModel> addRoutines(List<RoutineModel> routines) throws ConnectionException  {
+  @Deprecated public List<RoutineModel> addRoutines(List<RoutineModel> routines) throws ConnectionException  {
 
     logger.log(Level.FINE, "addRoutines()");
 
@@ -1505,7 +1503,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public RunModel addRun(RunModel meal) throws ConnectionException {
+  @Deprecated public RunModel addRun(RunModel meal) throws ConnectionException {
 
     logger.log(Level.FINE, "addRun()");
     
@@ -1555,7 +1553,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added run (null if add not successful)
    */
   @Override
-  public RunValueModel addRunValue(RunModel run, RunValueModel value) throws ConnectionException {
+  @Deprecated public RunValueModel addRunValue(RunModel run, RunValueModel value) throws ConnectionException {
 
     logger.log(Level.FINE, "addRunValue()");
     
@@ -1623,7 +1621,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added ticket (null if add not successful
    */
   @Override
-  public TicketModel addTicket(TicketModel ticket) throws ConnectionException  {
+  @Deprecated public TicketModel addTicket(TicketModel ticket) throws ConnectionException  {
 
     logger.log(Level.FINE, "addTicket()");
         
@@ -1658,101 +1656,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added time (null if add not successful)
    * @throws ConnectionException 
    */
-  @SuppressWarnings({ "unchecked", "deprecation" })
   @Override
   public TimeModel addTime(TimeModel time) throws ConnectionException {
 
-    logger.log(Level.FINE, "addTime()");
-
-    TimeModel m = null;
+    TimeModel[] times = new TimeModel[] { time };    
+    times = addTimes(times);
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return m;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Time modelServer = null;
-      
-      //check if same time already exists -> return that instead
-      final Date dStart = stripTime(time.getDate(), true);
-      final Date dEnd = stripTime(time.getDate(), false);
-        
-      Query q = pm.newQuery(Time.class);
-      q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-      q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
-      for(Time t : times) {
-        if(t.getTime() == time.getTime()) {
-          modelServer = t;
-          break;
-        }
-      }
-      
-      //if no similar model found
-      if(modelServer == null) {
-      
-        //if ID is null -> create new one)
-        if(time.getId() == 0) {
-          
-          //convert to server side model
-          modelServer = Time.getServerModel(time);
-        }
-        else {
-          
-          //get model
-          final Time t = pm.getObjectById(Time.class, time.getId());
-          
-          boolean hasPermission = hasPermission(pm, Permission.WRITE_NUTRITION, UID, t.getUid());
-          
-          //create a copy
-          if(hasPermission) {
-  
-            modelServer = duplicateTime(t);
-          }
-        //no permission
-          else {
-            throw new Exception();
-          }
-
-          //set date if set
-          modelServer.setDate(time.getDate());
-        }
-
-        //reset time from date
-        Date d = modelServer.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-          modelServer.setDate(d);
-        }
-  
-        //save user
-        modelServer.setUid(UID);
-  
-        //save time to db
-        pm.makePersistent(modelServer);
-      }
-
-      //convert to client side model (which we return)
-      m = Time.getClientModel(modelServer);
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addTime", e);
-      throw new ConnectionException("addTime", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
-    
+    return (times != null && times.length > 0)? times[0] : null;
   }
 
   /**
@@ -1761,108 +1671,35 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added time (null if add not successful)
    * @throws ConnectionException 
    */
-  @SuppressWarnings({ "deprecation", "unchecked" })
   @Override
-  public TimeModel[] addTimes(TimeModel[] timesParam) throws ConnectionException {
-
-    logger.log(Level.FINE, "addTimes()");
-
-    TimeModel[] list = new TimeModel[timesParam.length];
+  public TimeModel[] addTimes(TimeModel[] times) throws ConnectionException {
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
+    UserManager userManager = UserManager.getInstance();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    if(user == null) {
       return null;
     }
+    final String UID = user.getUid();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
+    TimeModel[] list;
     try {
-      
-      int i = 0;
-      for(TimeModel time : timesParam) {
-    
-        
-        Time modelServer = null;
-        
-        //check if same time already exists -> return that instead
-        final Date dStart = stripTime(time.getDate(), true);
-        final Date dEnd = stripTime(time.getDate(), false);
-          
-        Query q = pm.newQuery(Time.class);
-        q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-        List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
-        for(Time t : times) {
-          if(t.getTime() == time.getTime()) {
-            modelServer = t;
-            break;
-          }
-        }
-        
-        //if no similar model found
-        if(modelServer == null) {
-        
-          //if ID is null -> create new one)
-          if(time.getId() == 0) {
-            
-            //convert to server side model
-            modelServer = Time.getServerModel(time);
-          }
-          else {
-            
-            //get model
-            final Time t = pm.getObjectById(Time.class, time.getId());
-            
-            boolean hasPermission = hasPermission(pm, Permission.WRITE_NUTRITION, UID, t.getUid());
-            
-            //create a copy
-            if(hasPermission) {
-    
-              modelServer = duplicateTime(t);
-            }
-            //no permission
-            else {
-              throw new Exception();
-            }
-
-            //set date if set
-            modelServer.setDate(time.getDate());
-          }
-
-          //reset time from date
-          Date d = modelServer.getDate();
-          if(d != null) {
-            d.setHours(0);
-            d.setMinutes(0);
-            d.setSeconds(0);
-            modelServer.setDate(d);
-          }
-    
-          //save user
-          modelServer.setUid(UID);
-    
-          //save time to db
-          pm.makePersistent(modelServer);
-        }
-
-        //convert to client side model (which we return)
-        TimeModel m = Time.getClientModel(modelServer);
-        
-        list[i] = m;
-        
-        i++;
-        
+      List<Time> jdos = new ArrayList<Time>();
+      for(TimeModel t : times) {
+        jdos.add(Time.getServerModel(t));
       }
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addTimes", e);
-      throw new ConnectionException("addTimes", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      List<Time> jdosCopy = nutritionManager.addTimes(jdos, UID);
+
+      list = new TimeModel[jdosCopy.size()];
+      for(int i = 0; i < jdosCopy.size(); i++) {
+        list[i] = Time.getClientModel(jdosCopy.get(i));
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding times", e);
+      throw new ConnectionException("Error adding times", e);
     }
     
     return list;
@@ -1875,7 +1712,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added workout (null if add not successful
    */
   @Override
-  public WorkoutModel addWorkout(WorkoutModel workout) throws ConnectionException  {
+  @Deprecated public WorkoutModel addWorkout(WorkoutModel workout) throws ConnectionException  {
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     list.add(workout);
@@ -1898,7 +1735,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("deprecation")
   @Override
-  public List<WorkoutModel> addWorkouts(List<WorkoutModel> workouts) throws ConnectionException  {
+  @Deprecated public List<WorkoutModel> addWorkouts(List<WorkoutModel> workouts) throws ConnectionException  {
 
     logger.log(Level.FINE, "addWorkouts()");
     
@@ -2001,7 +1838,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    */
   @Override @SuppressWarnings("unchecked")
-  public Boolean combineExerciseNames(Long firstId, Long[] ids) throws ConnectionException {
+  @Deprecated public Boolean combineExerciseNames(Long firstId, Long[] ids) throws ConnectionException {
 
     logger.log(Level.FINE, "combineExerciseNames()");
 
@@ -2085,7 +1922,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    */
   @Override @SuppressWarnings("unchecked")
-  public Boolean combineFoodNames(Long firstId, Long[] ids) {
+  @Deprecated public Boolean combineFoodNames(Long firstId, Long[] ids) {
 
     logger.log(Level.FINE, "combineFoodNames()");
 
@@ -2161,7 +1998,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     return ok;
   }
 
-  public String convertStreamToString(InputStream is) {
+  @Deprecated public String convertStreamToString(InputStream is) {
 
     logger.log(Level.FINE, "convertStreamToString()");
   /*
@@ -2211,13 +2048,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   }
   }
 
-  @Override public Boolean dummy(MicroNutrientModel model) {
+  @Override @Deprecated public Boolean dummy(MicroNutrientModel model) {
 
     logger.log(Level.FINE, "dummy()");
     return false;
   }
 
-  @Override public MonthlySummaryExerciseModel dummy2(MonthlySummaryExerciseModel model) {
+  @Override @Deprecated public MonthlySummaryExerciseModel dummy2(MonthlySummaryExerciseModel model) {
 
     logger.log(Level.FINE, "dummy2()");
     return new MonthlySummaryExerciseModel();
@@ -2230,7 +2067,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public Boolean fetchRemoveAll(Boolean removeTraining, Boolean removeCardio, Boolean removeNutrition, Boolean removeMeasurement) throws ConnectionException {
+  @Deprecated public Boolean fetchRemoveAll(Boolean removeTraining, Boolean removeCardio, Boolean removeNutrition, Boolean removeMeasurement) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchRemoveAll()");
     
@@ -2455,7 +2292,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values (values for each cardio)
    * @return
    */
-  @Override public Boolean fetchSaveCardios(List<CardioModel> cardios, List<List<CardioValueModel>> values) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveCardios(List<CardioModel> cardios, List<List<CardioValueModel>> values) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveCardios()");
     
@@ -2502,7 +2339,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param names
    * @return
    */
-  @Override public Boolean fetchSaveFoodNames(List<FoodNameModel> names) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveFoodNames(List<FoodNameModel> names) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveFoodNames()");
     
@@ -2535,7 +2372,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values
    * @return
    */
-  @Override public Boolean fetchSaveGuideValues(List<GuideValueModel> values) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveGuideValues(List<GuideValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveGuideValues()");
     
@@ -2582,7 +2419,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param meals
    * @return
    */
-  @Override public Boolean fetchSaveMeals(List<MealModel> meals) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveMeals(List<MealModel> meals) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveMeals()");
     
@@ -2644,7 +2481,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    */
   @Override @SuppressWarnings("unchecked")
-  public Boolean fetchSaveMeasurements(MeasurementModel measurement, List<MeasurementValueModel> values) throws ConnectionException {
+  @Deprecated public Boolean fetchSaveMeasurements(MeasurementModel measurement, List<MeasurementValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveMeasurements()");
 
@@ -2719,7 +2556,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param workouts (workouts for each routine)
    * @return
    */
-  @Override public Boolean fetchSaveRoutines(List<RoutineModel> routines, List<List<WorkoutModel>> workouts) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveRoutines(List<RoutineModel> routines, List<List<WorkoutModel>> workouts) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveRoutines()");
 
@@ -2806,7 +2643,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values (values for each run)
    * @return
    */
-  @Override public Boolean fetchSaveRuns(List<RunModel> runs, List<List<RunValueModel>> values) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveRuns(List<RunModel> runs, List<List<RunValueModel>> values) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveRuns()");
     
@@ -2853,7 +2690,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param times
    * @return
    */
-  @Override public Boolean fetchSaveTimes(List<TimeModel> times) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveTimes(List<TimeModel> times) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveTimes()");
     
@@ -2934,7 +2771,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   }
   
   @Override
-  public Boolean fetchSaveWorkouts(List<WorkoutModel> workouts) throws ConnectionException {
+  @Deprecated public Boolean fetchSaveWorkouts(List<WorkoutModel> workouts) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveWorkouts()");
 
@@ -3010,7 +2847,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public List<BlogData> getBlogData(int index, int limit, int target, Date dateStartParam, Date dateEndParam, String uidObj, Boolean showEmptyDays) throws ConnectionException {
+  @Deprecated public List<BlogData> getBlogData(int index, int limit, int target, Date dateStartParam, Date dateEndParam, String uidObj, Boolean showEmptyDays) throws ConnectionException {
 
     logger.log(Level.FINE, "getBlogData()");
 
@@ -3271,7 +3108,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<CardioModel> getCardios(int index) throws ConnectionException {
+  @Deprecated public List<CardioModel> getCardios(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getCardios()");
 
@@ -3334,7 +3171,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public CardioValueModel getCardioValue(Long cardioId) throws ConnectionException {
+  @Deprecated public CardioValueModel getCardioValue(Long cardioId) throws ConnectionException {
 
     logger.log(Level.FINE, "getCardioValue()");
     
@@ -3386,7 +3223,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<CardioValueModel> getCardioValues(CardioModel cardio, Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<CardioValueModel> getCardioValues(CardioModel cardio, Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getCardioValues()");
     
@@ -3448,7 +3285,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public List<CommentModel> getComments(int index, int limit, String target, String uid, boolean markAsRead) throws ConnectionException {
+  @Deprecated public List<CommentModel> getComments(int index, int limit, String target, String uid, boolean markAsRead) throws ConnectionException {
 
     logger.log(Level.FINE, "getComments()");
 
@@ -3644,7 +3481,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return micronutrients
    */
   @Override @SuppressWarnings("unchecked")
-  public List<Double> getEnergyInCalendar(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<Double> getEnergyInCalendar(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getEnergyInCalendar()");
 
@@ -3705,7 +3542,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<ExerciseModel> getExercises(WorkoutModel workout) throws ConnectionException {
+  @Deprecated public List<ExerciseModel> getExercises(WorkoutModel workout) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading exercises from workout: "+workout.getId());
@@ -3748,7 +3585,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<ExerciseModel> getExercisesFromName(Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
+  @Deprecated public List<ExerciseModel> getExercisesFromName(Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
 
     logger.log(Level.FINE, "getExercisesFromName()");
         
@@ -3840,7 +3677,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return name
    */
   @Override
-  public FoodNameModel getFoodname(Long id) throws ConnectionException {
+  @Deprecated public FoodNameModel getFoodname(Long id) throws ConnectionException {
 
     logger.log(Level.FINE, "getFoodname()");
     
@@ -3889,7 +3726,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<FoodModel> getFoods(MealModel meal) throws ConnectionException {
+  @Deprecated public List<FoodModel> getFoods(MealModel meal) throws ConnectionException {
 
     logger.log(Level.FINE, "getFoods()");
 
@@ -3939,7 +3776,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException 
    */
-  public List<UserModel> getFriends() {
+  @Deprecated public List<UserModel> getFriends() {
 
     logger.log(Level.FINE, "getFriends()");
     
@@ -4015,7 +3852,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return 
    * @throws ConnectionException
    */
-  public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
+  @Deprecated public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Adding user from circle: friendid="+uid+", target="+target);
     }
@@ -4055,7 +3892,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return 
    * @throws ConnectionException
    */
-  public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException {
+  @Deprecated public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException {
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Removing user from circle: friendid="+uid+", target="+target);
     }
@@ -4093,7 +3930,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException 
    */
-  @Override public MealModel getMeal(Long mealId) throws ConnectionException {
+  @Override @Deprecated public MealModel getMeal(Long mealId) throws ConnectionException {
 
     logger.log(Level.FINE, "getMeal()");
     
@@ -4152,12 +3989,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     List<MealModel> list = new ArrayList<MealModel>();
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
+    UserManager userManager = UserManager.getInstance();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    if(user == null) {
       return list;
     }
+    final String UID = user.getUid();
     
-    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     List<Meal> meals = nutritionManager.getMeals(index, UID);
     if(meals != null) {
       for(Meal m : meals) {
@@ -4174,7 +4013,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<MeasurementModel> getMeasurements(int index) throws ConnectionException {
+  @Deprecated public List<MeasurementModel> getMeasurements(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getMeasurements()");
 
@@ -4236,7 +4075,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public MeasurementValueModel getMeasurementValue(Long measurementId) throws ConnectionException {
+  @Deprecated public MeasurementValueModel getMeasurementValue(Long measurementId) throws ConnectionException {
 
     logger.log(Level.FINE, "getMeasurementValue()");
     
@@ -4288,7 +4127,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<MeasurementValueModel> getMeasurementValues(MeasurementModel measurement, Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<MeasurementValueModel> getMeasurementValues(MeasurementModel measurement, Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getMeasurementValues()");
 
@@ -4351,7 +4190,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<MicroNutrientModel> getMicroNutrientsInCalendar(String uid, Date date) throws ConnectionException {
+  @Deprecated public List<MicroNutrientModel> getMicroNutrientsInCalendar(String uid, Date date) throws ConnectionException {
 
     logger.log(Level.FINE, "getMicroNutrientsInCalendar()");
     
@@ -4493,7 +4332,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException
    */
-  public MonthlySummaryModel getMonthlySummary(Long id) throws ConnectionException {
+  @Deprecated public MonthlySummaryModel getMonthlySummary(Long id) throws ConnectionException {
 
     logger.log(Level.FINE, "getMonthlySummary()");
     
@@ -4551,7 +4390,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
   @SuppressWarnings("unchecked")
-  public List<MonthlySummaryModel> getMonthlySummaries() throws ConnectionException {
+  @Deprecated public List<MonthlySummaryModel> getMonthlySummaries() throws ConnectionException {
 
     logger.log(Level.FINE, "getMonthlySummaries()");
     
@@ -4613,7 +4452,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<MealModel> getMostPopularMeals(int index) throws ConnectionException {
+  @Deprecated public List<MealModel> getMostPopularMeals(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getMostPopularMeals()");
 
@@ -4678,7 +4517,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<RoutineModel> getMostPopularRoutines(int index) throws ConnectionException {
+  @Deprecated public List<RoutineModel> getMostPopularRoutines(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getMostPopularRoutines()");
 
@@ -4739,7 +4578,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<WorkoutModel> getMostPopularWorkouts(int index) throws ConnectionException {
+  @Deprecated public List<WorkoutModel> getMostPopularWorkouts(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getMostPopularWorkouts()");
 
@@ -4802,7 +4641,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException 
    */
-  @Override public RoutineModel getRoutine(Long routineId) throws ConnectionException {
+  @Override @Deprecated public RoutineModel getRoutine(Long routineId) throws ConnectionException {
 
     logger.log(Level.FINE, "getRoutine()");
     
@@ -4844,7 +4683,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<RoutineModel> getRoutines(int index) throws ConnectionException {
+  @Deprecated public List<RoutineModel> getRoutines(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getRoutines()");
 
@@ -4902,7 +4741,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<RunModel> getRuns(int index) throws ConnectionException {
+  @Deprecated public List<RunModel> getRuns(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getRuns()");
 
@@ -4965,7 +4804,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public RunValueModel getRunValue(Long runId) throws ConnectionException {
+  @Deprecated public RunValueModel getRunValue(Long runId) throws ConnectionException {
 
     logger.log(Level.FINE, "getRunValue()");
     
@@ -5017,7 +4856,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<RunValueModel> getRunValues(RunModel run, Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<RunValueModel> getRunValues(RunModel run, Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getRunValues()");
     
@@ -5079,7 +4918,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<ExerciseNameModel> getStatisticsTopExercises(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<ExerciseNameModel> getStatisticsTopExercises(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getStatisticsTopExercises()");
 
@@ -5180,7 +5019,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<MealModel> getStatisticsTopMeals(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<MealModel> getStatisticsTopMeals(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getStatisticsTopMeals()");
 
@@ -5277,7 +5116,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public int[] getStatisticsTrainingDays(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public int[] getStatisticsTrainingDays(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getStatisticsTrainingDays()");
     
@@ -5346,7 +5185,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public int[] getStatisticsTrainingTimes(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public int[] getStatisticsTrainingTimes(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getStatisticsTrainingTimes()");
     
@@ -5455,7 +5294,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       return null;
     }
       
-    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     List<Time> times = nutritionManager.getTimes(date, uid, UID);
     if(times != null) {
       for(Time m : times) {
@@ -5472,7 +5311,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @SuppressWarnings("unchecked")
-  public List<UserModel> getTrainees() {
+  @Deprecated public List<UserModel> getTrainees() {
 
     logger.log(Level.FINE, "getTrainees()");
 
@@ -5518,7 +5357,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return remove successful
    */
   @Override
-  public Boolean removeCardio(CardioModel model) throws ConnectionException {
+  @Deprecated public Boolean removeCardio(CardioModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "removeCardio()");
     
@@ -5561,7 +5400,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values to remove
    * @return remove successful
    */
-  @Override public Boolean removeCardioValues(CardioModel model, List<CardioValueModel> values) throws ConnectionException {
+  @Override @Deprecated public Boolean removeCardioValues(CardioModel model, List<CardioValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "removeCardioValues()");
 
@@ -5621,7 +5460,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return delete successfull
    */
   @Override
-  public boolean removeComments(List<CommentModel> comments) throws ConnectionException {
+  @Deprecated public boolean removeComments(List<CommentModel> comments) throws ConnectionException {
 
     logger.log(Level.FINE, "removeComments()");
 
@@ -5673,7 +5512,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return delete successfull
    */
   @Override
-  public boolean removeExercises(List<ExerciseModel> exercises) throws ConnectionException {
+  @Deprecated public boolean removeExercises(List<ExerciseModel> exercises) throws ConnectionException {
 
     if(exercises.size() < 1) {
       return false;
@@ -5721,7 +5560,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return delete successfull
    */
   @Override
-  public boolean removeFoods(List<FoodModel> foods) throws ConnectionException {
+  @Deprecated public boolean removeFoods(List<FoodModel> foods) throws ConnectionException {
 
     logger.log(Level.FINE, "removeFoods()");
 
@@ -5762,7 +5601,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param list
    * @return
    */
-  @Override public Boolean removeGuideValues(List<GuideValueModel> list) throws ConnectionException {
+  @Override @Deprecated public Boolean removeGuideValues(List<GuideValueModel> list) throws ConnectionException {
 
     logger.log(Level.FINE, "removeGuideValues()");
 
@@ -5823,29 +5662,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return removed successfull
    */
   @Override
-  public Boolean removeMeal(MealModel model) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Removing meal "+model.getId());
-    }
-    
-    boolean ok = false;
+  @Deprecated public Boolean removeMeal(MealModel model) throws ConnectionException {
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return false;
+    UserManager userManager = UserManager.getInstance();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    if(user == null) {
+      return null;
     }
+    final String UID = user.getUid();
     
-    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
-
-    try {
-      ok = nutritionManager.removeMealModel(model, UID);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing meal", e);
-      throw new ConnectionException("removeMeal", e.getMessage());
-    }
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    boolean ok = nutritionManager.removeMeal(model.getId(), UID);
     
     return ok;
   }
@@ -5856,7 +5684,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return remove successful
    */
   @Override
-  public Boolean removeMeasurement(MeasurementModel model) throws ConnectionException {
+  @Deprecated public Boolean removeMeasurement(MeasurementModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "removeMeasurement()");
     
@@ -5900,7 +5728,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values to remove
    * @return remove successful
    */
-  @Override public Boolean removeMeasurementValues(MeasurementModel model, List<MeasurementValueModel> values) throws ConnectionException {
+  @Override @Deprecated public Boolean removeMeasurementValues(MeasurementModel model, List<MeasurementValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "removeMeasurementValues()");
 
@@ -5962,7 +5790,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public Boolean removeRoutine(RoutineModel model) throws ConnectionException {
+  @Deprecated public Boolean removeRoutine(RoutineModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "removeRoutine()");
     
@@ -6017,7 +5845,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return remove successful
    */
   @Override
-  public Boolean removeRun(RunModel model) throws ConnectionException {
+  @Deprecated public Boolean removeRun(RunModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "removeRun()");
     
@@ -6061,7 +5889,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values to remove
    * @return remove successful
    */
-  @Override public Boolean removeRunValues(RunModel model, List<RunValueModel> values) throws ConnectionException {
+  @Override @Deprecated public Boolean removeRunValues(RunModel model, List<RunValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "removeRunValues()");
 
@@ -6122,38 +5950,25 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return remove successful
    * @throws ConnectionException 
    */
-  @Override public Boolean removeTimes(TimeModel[] models) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Removing times. Count: "+models.length);
-    }
-    
-    boolean ok = true;
-    
+  @Override
+  public Boolean removeTimes(TimeModel[] models) throws ConnectionException {
+        
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
+    UserManager userManager = UserManager.getInstance();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    if(user == null) {
       return false;
     }
+    final String UID = user.getUid();
     
-    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
-
-    try {
-      //each time
-      for(TimeModel model : models) {
-        
-        boolean removeOk = nutritionManager.removeTimeModel(model.getId(), UID);
-        
-        if(!removeOk) {
-          ok = false;
-        }
-      }
-      
-    } catch (Exception e) {
-      throw new ConnectionException("removeTime", e.getMessage());
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    
+    List<Time> jdos = new ArrayList<Time>();
+    for(TimeModel t : models) {
+      jdos.add(Time.getServerModel(t));
     }
     
-    return ok;
+    return nutritionManager.removeTimes(jdos, UID);
   }
   
   /**
@@ -6162,7 +5977,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return removed successfull
    */
   @Override
-  public Boolean removeWorkout(WorkoutModel model) throws ConnectionException {
+  @Deprecated public Boolean removeWorkout(WorkoutModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "removeWorkout()");
     
@@ -6198,7 +6013,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public UserModel saveToken() throws ConnectionException {
+  @Deprecated public UserModel saveToken() throws ConnectionException {
 
     logger.log(Level.FINE, "saveToken()");
     
@@ -6292,7 +6107,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return save successfull
    * @throws ConnectionException 
    */
-  public UserModel saveUserData(UserModel u) throws ConnectionException {
+  @Deprecated public UserModel saveUserData(UserModel u) throws ConnectionException {
 
     logger.log(Level.FINE, "saveUserData()");
     
@@ -6325,7 +6140,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
+  @Deprecated public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Searching exercises: "+query);
@@ -6450,7 +6265,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return names' models
    */
   @Override
-  public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
+  @Deprecated public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
 
     logger.log(Level.FINE, "searchFoodNames()");
     
@@ -6574,7 +6389,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<MealModel> searchMeals(int index, String query) throws ConnectionException {
+  @Deprecated public List<MealModel> searchMeals(int index, String query) throws ConnectionException {
 
     logger.log(Level.FINE, "searchMeals()");
     
@@ -6659,7 +6474,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<RoutineModel> searchRoutines(int index, String query) throws ConnectionException {
+  @Deprecated public List<RoutineModel> searchRoutines(int index, String query) throws ConnectionException {
 
     logger.log(Level.FINE, "searchRoutines()");
     
@@ -6742,7 +6557,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<WorkoutModel> searchWorkouts(int index, String query) throws ConnectionException {
+  @Deprecated public List<WorkoutModel> searchWorkouts(int index, String query) throws ConnectionException {
 
     logger.log(Level.FINE, "searchWorkouts()");
     
@@ -6833,7 +6648,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
   @SuppressWarnings("unchecked")
-  public List<UserModel> searchUsers(int index, String query) throws ConnectionException {
+  @Deprecated public List<UserModel> searchUsers(int index, String query) throws ConnectionException {
 
     logger.log(Level.FINE, "searchUsers()");
     
@@ -6914,7 +6729,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
   @SuppressWarnings("unchecked")
-  public List<UserModel> getUsersFromCircle(int target) throws ConnectionException {
+  @Deprecated public List<UserModel> getUsersFromCircle(int target) throws ConnectionException {
 
     logger.log(Level.FINE, "getUsersFromCircle()");
     
@@ -6971,7 +6786,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateCardio(CardioModel model) throws ConnectionException {
+  @Deprecated public Boolean updateCardio(CardioModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateCardio()");
 
@@ -7018,7 +6833,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return updated exercise (null if add not successful)
    */
   @Override
-  public ExerciseModel updateExercise(ExerciseModel exercise) throws ConnectionException {
+  @Deprecated public ExerciseModel updateExercise(ExerciseModel exercise) throws ConnectionException {
 
     logger.log(Level.FINE, "Updating exercise");
     
@@ -7056,7 +6871,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public Boolean updateExerciseName(ExerciseNameModel model) throws ConnectionException {
+  @Deprecated public Boolean updateExerciseName(ExerciseNameModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateExerciseName()");
     
@@ -7132,7 +6947,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateExerciseOrder(WorkoutModel workout, Long[] ids) throws ConnectionException {
+  @Deprecated public Boolean updateExerciseOrder(WorkoutModel workout, Long[] ids) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating exercise order for workout: "+workout.getName());
@@ -7172,23 +6987,28 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public FoodModel updateFood(FoodModel food) throws ConnectionException {
 
-    //get uid
-    UserManager userManager = UserManager.getInstance();
-    final String UID = userManager.getUid(this.perThreadRequest);
-    if(UID == null) {
+    FoodModel m = null;
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    if(user == null || user.getUid() == null) {
       return null;
     }
+    final String UID = user.getUid();
+    final String LOCALE = user.getLocale();
+
+    try {
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      Food jdo = Food.getServerModel(food);
+      nutritionManager.addFood(jdo, food.getTimeId(), food.getMealId(), UID, LOCALE);
+      m = Food.getClientModel(jdo);
+
+    }
+    catch (Exception e) {
+      throw new ConnectionException("addFood", e.getMessage());
+    }
     
-    FoodNameModel name = food.getName();
-    
-    NutritionManager nutritionManager = NutritionManager.getInstance();
-    Food jdo = Food.getServerModel(food);
-    nutritionManager.updateFood(jdo, food.getTimeId(), food.getMealId(), UID);
-    
-    food = Food.getClientModel(jdo);
-    food.setName(name);
-    
-    return food;
+    return m;
   }
   
   /**
@@ -7198,7 +7018,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public Boolean updateFoodName(FoodNameModel model) throws ConnectionException {
+  @Deprecated public Boolean updateFoodName(FoodNameModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateFoodName()");
     
@@ -7282,7 +7102,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateMeal(MealModel meal) throws ConnectionException {
+  @Deprecated public Boolean updateMeal(MealModel meal) throws ConnectionException {
 
     logger.log(Level.FINE, "updateMeal()");
     
@@ -7355,7 +7175,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateMeasurement(MeasurementModel model) throws ConnectionException {
+  @Deprecated public Boolean updateMeasurement(MeasurementModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateMeasurement()");
 
@@ -7405,7 +7225,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings({ "unchecked", "deprecation" })
   @Override
-  public Boolean updateRoutine(RoutineModel model) throws ConnectionException {
+  @Deprecated public Boolean updateRoutine(RoutineModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateRoutine()");
     
@@ -7476,7 +7296,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateRun(RunModel model) throws ConnectionException {
+  @Deprecated public Boolean updateRun(RunModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateRun()");
 
@@ -7526,7 +7346,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public Boolean updateTime(TimeModel model) throws ConnectionException {
+  @Deprecated public Boolean updateTime(TimeModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateTime()");
 
@@ -7637,7 +7457,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successfull
    */
   @Override
-  public Boolean updateWorkout(WorkoutModel model) throws ConnectionException {
+  @Deprecated public Boolean updateWorkout(WorkoutModel model) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating workout");
@@ -7698,7 +7518,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException 
    */
-  @Override public WorkoutModel getWorkout(Long workoutId) throws ConnectionException {
+  @Override @Deprecated public WorkoutModel getWorkout(Long workoutId) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading single workout ("+workoutId+")");
@@ -7737,7 +7557,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException {
+  @Deprecated public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading workouts. Index="+index);
@@ -7821,7 +7641,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<WorkoutModel[]> getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<WorkoutModel[]> getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getWorkoutsInCalendar()");
 
@@ -7895,7 +7715,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public List<GuideValueModel> getGuideValues(String uid, int index, Date date) throws ConnectionException {
+  @Deprecated public List<GuideValueModel> getGuideValues(String uid, int index, Date date) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading guide values: "+date);
@@ -7993,7 +7813,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException 
    */
-  public boolean hasTraining(String uid, Date date) throws ConnectionException {
+  @Deprecated public boolean hasTraining(String uid, Date date) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Checking if date '"+date+"' has training");

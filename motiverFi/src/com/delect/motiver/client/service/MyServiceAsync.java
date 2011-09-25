@@ -137,7 +137,7 @@ public interface MyServiceAsync {
    * @param callback the callback
    * @return added meal (null if add not successful)
    */
-  public Request addMeal(MealModel meal, AsyncCallback<MealModel> callback);
+  public Request addMeal(MealModel meal, long timeId, AsyncCallback<MealModel> callback);
   
   /**
    * Adds meals to db.
@@ -146,7 +146,7 @@ public interface MyServiceAsync {
    * @param callback the callback
    * @return added meal (null if add not successful)
    */
-  public Request addMeals(List<MealModel> meals, AsyncCallback<List<MealModel>> callback);
+  public Request addMeals(List<MealModel> meals, long timeId, AsyncCallback<List<MealModel>> callback);
   
   /**
    * Adds measurement to db.

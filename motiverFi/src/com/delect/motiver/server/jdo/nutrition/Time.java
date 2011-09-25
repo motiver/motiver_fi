@@ -28,6 +28,8 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.shared.FoodModel;
+import com.delect.motiver.shared.MealModel;
 import com.delect.motiver.shared.TimeModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -51,6 +53,24 @@ public class Time implements Serializable, Comparable<Time> {
 		TimeModel modelClient = new TimeModel(model.getDate(), (int) model.getTime());
 		modelClient.setId(model.getId());
 		modelClient.setUid(model.getUid());
+		
+		//meals
+		if(model.getMeals() != null) {
+		  List<MealModel> meals = new ArrayList<MealModel>();
+		  for(MealInTime m : model.getMeals()) {
+		    meals.add(MealInTime.getClientModel(m));
+		  }
+		  modelClient.setMeals(meals);
+		}
+		
+    //foods
+    if(model.getFoods() != null) {
+      List<FoodModel> foods = new ArrayList<FoodModel>();
+      for(FoodInTime m : model.getFoods()) {
+        foods.add(FoodInTime.getClientModel(m));
+      }
+      modelClient.setFoods(foods);
+    }
 		
 		return modelClient;
 	}

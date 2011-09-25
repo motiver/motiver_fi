@@ -283,7 +283,7 @@ public abstract class Presenter {
 	 * @param visible boolean
 	 */
 	private void setVisible(boolean visible) {
-		if(container != null && container.isVisible() != visible) {
+		if(container != null && container.isVisible(false) != visible) {
 			container.setVisible(visible);
       if(container.isVisible()) {
         container.layout(true);

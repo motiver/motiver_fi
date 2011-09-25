@@ -21,6 +21,7 @@ public class ConnectionException extends Exception implements IsSerializable {
 	private static final long serialVersionUID = -9090379642268642628L;
 	private String message = "";
 	private String source = "";
+	private Throwable e;
 
 	public ConnectionException() {
 	}
@@ -29,6 +30,11 @@ public class ConnectionException extends Exception implements IsSerializable {
 		this.source  = source;
     this.message = message;
 	}
+	
+  public ConnectionException(String message, Throwable e) {
+    this.message = message;
+    this.e = e;
+  }
 
 	public String getMessage() {
     return message;

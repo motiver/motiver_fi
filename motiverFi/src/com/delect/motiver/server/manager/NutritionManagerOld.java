@@ -19,7 +19,6 @@ package com.delect.motiver.server.manager;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -40,7 +39,6 @@ import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.MealInTime;
 import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.server.service.MyServiceImpl;
-import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.FoodNameModel;
@@ -1398,50 +1396,4 @@ public final class NutritionManagerOld {
     
     return list;
   }
-
-  public List<Time> getTimes(Date date, String uid, String ourUid) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINER)) {
-      logger.log(Level.FINER, "Loading times ("+date+")");
-    }
-    
-    WeekCache cache = new WeekCache();
-    
-    List<Time> list = new ArrayList<Time>();
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      //check permissions
-      if(!MyServiceImpl.hasPermission(pm, Permission.READ_NUTRITION, ourUid, uid)) {
-        throw new NoPermissionException(Permission.READ_NUTRITION, ourUid, uid);
-      }
-
-      //strip time
-      final Date dStart = DateUtils.stripTime(date, true);
-      final Date dEnd = DateUtils.stripTime(date, false);
-      
-      Query q = pm.newQuery(Time.class);
-      q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-      q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
-      for(Time time : times) {
-        list.add(pm.detachCopy(time));
-      }
-      
-    } catch (Exception e) {
-      throw new ConnectionException("Error loading meals", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    
-    return list;
-    
-  }
-  
 }
