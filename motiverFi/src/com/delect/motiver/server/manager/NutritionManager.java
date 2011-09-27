@@ -1,5 +1,6 @@
 package com.delect.motiver.server.manager;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -201,41 +202,64 @@ public class NutritionManager {
       return null;
     }
 
-    //added to time
-    if(timeId != 0) {
-      Time t = dao.addMeals(timeId, models);
-
-      cache.setTimes(uid, t.getDate(), null);  //clear day's cache
-    }
-    //single meals
-    else {
-      models = dao.addMeals(models);
-      
-      for(Meal m : models) {
-        cache.addMeal(m);
+    //copy meals
+    List<Meal> modelsCopy = new ArrayList<Meal>();
+    try {
+      for(Meal meal : models) {
+        //TODO check cache
+        
+        modelsCopy.add(dao.getMeal(meal.getId(), uid));
+        
+        //TODO increment count
+        
+        //create copy
       }
+      
+      //added to time
+      if(timeId != 0) {
+        Time t = dao.addMeals(timeId, modelsCopy);
+
+        cache.setTimes(uid, t.getDate(), null);  //clear day's cache
+      }
+      //single meals
+      else {
+        dao.addMeals(modelsCopy);
+        
+        for(Meal m : modelsCopy) {
+          cache.addMeal(m);
+        }
+      }
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding meal", e);
+      throw new ConnectionException("Error adding meal", e);
     }
     
-    return models;
+    return modelsCopy;
   }
 
 
-  public boolean removeMeal(long id, long timeId, String uid) {
+  public boolean removeMeal(long id, long timeId, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Removing meal");
     }
     
-    //remove from cache
-    cache.removeMeal(id);
-    
-    boolean ok;
+    boolean ok = false;
     try {
       if(timeId != 0) {
-        ok = dao.removeMeal(id, timeId, uid); 
+        Time t = dao.removeMeal(id, timeId, uid);
+        if(t != null) {
+          ok = true;
+
+          //remove from cache
+          cache.setTimes(uid, t.getDate(), null);
+        }
       }
       else {
         ok = dao.removeMeal(id, uid); 
+
+        //remove from cache
+        cache.removeMeal(id);
       }
       
     } catch (Exception e) {

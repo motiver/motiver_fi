@@ -52,7 +52,6 @@ import com.delect.motiver.server.jdo.Comment;
 import com.delect.motiver.server.jdo.CommentsRead;
 import com.delect.motiver.server.jdo.Exercise;
 import com.delect.motiver.server.jdo.ExerciseName;
-import com.delect.motiver.server.jdo.ExerciseNameCount;
 import com.delect.motiver.server.jdo.ExerciseSearchIndex;
 import com.delect.motiver.server.jdo.FoodSearchIndex;
 import com.delect.motiver.server.jdo.Measurement;
@@ -5662,7 +5661,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return removed successfull
    */
   @Override
-  @Deprecated public Boolean removeMeal(MealModel model) throws ConnectionException {
+  public Boolean removeMeal(MealModel model) throws ConnectionException {
     
     //get uid
     UserManager userManager = UserManager.getInstance();
@@ -5673,7 +5672,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     final String UID = user.getUid();
     
     NutritionManager nutritionManager = NutritionManager.getInstance();
-    boolean ok = nutritionManager.removeMeal(model.getId(), UID);
+    boolean ok = nutritionManager.removeMeal(model.getId(), model.getTimeId(), UID);
     
     return ok;
   }

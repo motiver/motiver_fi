@@ -1,8 +1,6 @@
 package com.delect.motiver.server.dao;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -13,7 +11,6 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.cache.WeekCache;
 import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodInMeal;
 import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
@@ -22,15 +19,14 @@ import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.MealInTime;
 import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.manager.UserManager;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.server.util.ObjectConverter;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
-import com.delect.motiver.shared.TimeModel;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
-import com.google.appengine.api.datastore.KeyFactory;
 
 public class NutritionDAO {
 
@@ -55,11 +51,8 @@ public class NutritionDAO {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      
-      //check permissions
-      if(!MyServiceImpl.hasPermission(pm, Permission.READ_NUTRITION, ourUid, uid)) {
-        throw new NoPermissionException(Permission.READ_NUTRITION, ourUid, uid);
-      }
+
+      UserManager.checkPermission(Permission.READ_NUTRITION, ourUid, uid);
 
       //strip time
       final Date dStart = DateUtils.stripTime(date, true);
@@ -120,10 +113,7 @@ public class NutritionDAO {
 
         time = pm.getObjectById(Time.class, timeId);
         if(time != null) {
-          //check permission
-          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, time.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
-          }
+          UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
 
           //get meal
           for(MealInTime meal : time.getMeals()) {
@@ -203,10 +193,7 @@ public class NutritionDAO {
 
         time = pm.getObjectById(Time.class, timeId);
         if(time != null) {
-          //check permission
-          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, time.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
-          }
+          UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
 
           List<FoodInTime> foods = time.getFoods();
           boolean found = false;
@@ -280,10 +267,7 @@ public class NutritionDAO {
         
         meal = pm.getObjectById(Meal.class, mealId);
         if(meal != null) {
-          //check permission
-          if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, meal.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, meal.getUid());
-          }
+          UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, meal.getUid());
 
           List<FoodInMeal> foods = meal.getFoods();
           boolean found = false;
@@ -404,10 +388,7 @@ public class NutritionDAO {
             Time t = pm.getObjectById(Time.class, key);
             
             if(t != null) {
-              
-              if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, t.getUid())) {
-                throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, t.getUid());
-              }
+              UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, t.getUid());
               
               pm.deletePersistent(t);
               tx.commit();
@@ -497,16 +478,17 @@ public class NutritionDAO {
     
   }
 
-  public Time addMeals(long timeId, List<Meal> models) {
+  public Time addMeals(long timeId, List<Meal> models) throws Exception {
 
     Time t = null;
     List<MealInTime> list = new ArrayList<MealInTime>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
-        
-    t = pm.getObjectById(Time.class, timeId);
     
     try {
+      
+      t = pm.getObjectById(Time.class, timeId);
+  
       if(t != null) {
         List<MealInTime> arr = t.getMeals();
         
@@ -519,7 +501,7 @@ public class NutritionDAO {
         t = pm.detachCopy(t);
       }
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding meals", e);
+      throw e;
     }
     finally {
       if (!pm.isClosed()) {
@@ -530,7 +512,7 @@ public class NutritionDAO {
     return t;    
   }
 
-  public List<Meal> addMeals(List<Meal> models) {
+  public List<Meal> addMeals(List<Meal> models) throws Exception {
     
     List<Meal> list = new ArrayList<Meal>();
     
@@ -543,7 +525,7 @@ public class NutritionDAO {
       list = (List<Meal>) pm.detachCopyAll(models);
       
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding meals", e);
+      throw e;
     }
     finally {
       if (!pm.isClosed()) {
@@ -554,7 +536,7 @@ public class NutritionDAO {
     return list;
   }
 
-  public boolean removeMeal(long id, String uid) {
+  public boolean removeMeal(long id, String uid) throws Exception {
     
     boolean ok = false;
 
@@ -565,51 +547,46 @@ public class NutritionDAO {
       int retries = Constants.LIMIT_UPDATE_RETRIES;
       while (true) {
 
-          Transaction tx = pm.currentTransaction();
-          tx.begin();
+        Transaction tx = pm.currentTransaction();
+        tx.begin();
+        
+        try {
           
-          try {
+          Meal t = pm.getObjectById(Meal.class, id);
+          
+          if(t != null) {
+            UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, t.getUid());
             
-            Meal t = pm.getObjectById(Meal.class, id);
-            
-            if(t != null) {
-              
-              if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, t.getUid())) {
-                throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, t.getUid());
-              }
-              
-              pm.deletePersistent(t);
-              tx.commit();
-    
-              ok = true;
-              break;
-            }
-            
+            pm.deletePersistent(t);
+            tx.commit();
+  
+            ok = true;
+            break;
           }
-          catch (Exception e) {
-            if (tx.isActive()) {
-              tx.rollback();
-            }
-            if(e instanceof NoPermissionException) {         
-              throw e;
-            }
-            logger.log(Level.WARNING, "Error deleting meal", e);
-            
-            //retries used
-            if (retries == 0) {          
-              throw e;
-            }
-            logger.log(Level.WARNING, " Retries left: "+retries);
-            
-            --retries;
-          }
-      
+          
         }
-      
+        catch (Exception e) {
+          if (tx.isActive()) {
+            tx.rollback();
+          }
+          if(e instanceof NoPermissionException) {         
+            throw e;
+          }
+          logger.log(Level.WARNING, "Error deleting meal", e);
+          
+          //retries used
+          if (retries == 0) {          
+            throw e;
+          }
+          logger.log(Level.WARNING, " Retries left: "+retries);
+          
+          --retries;
+        }
+    
       }
       
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding meals", e);
+      throw e;
     }
     finally {
       if (!pm.isClosed()) {
@@ -617,6 +594,106 @@ public class NutritionDAO {
       } 
     }
     
+    
+    return ok;
   }
+
+  public Time removeMeal(long id, long timeId, String uid) throws Exception {
+    
+    Time t = null;
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    try {
+    //try to update X times
+      int retries = Constants.LIMIT_UPDATE_RETRIES;
+      while (true) {
+
+        Transaction tx = pm.currentTransaction();
+        tx.begin();
+        
+        try {
+          
+          t = pm.getObjectById(Time.class, timeId);
+          
+          if(t != null) {
+            UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, t.getUid());
+            
+            for(MealInTime m : t.getMeals()) {
+              if(m.getId().longValue() == id) {
+                t.getMeals().remove(m);
+                break;
+              }
+            }
+            pm.flush();
+            tx.commit();
+
+            t = pm.detachCopy(t);
+            
+            break;
+          }
+          
+        }
+        catch (Exception e) {
+          if (tx.isActive()) {
+            tx.rollback();
+          }
+          if(e instanceof NoPermissionException) {         
+            throw e;
+          }
+          logger.log(Level.WARNING, "Error deleting meal", e);
+          
+          //retries used
+          if (retries == 0) {          
+            throw e;
+          }
+          logger.log(Level.WARNING, " Retries left: "+retries);
+          
+          --retries;
+        }
+    
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    
+    return t;
+  }
+
+  public Meal getMeal(long mealId, String uid) throws Exception {
+
+    Meal copy = null;
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
+      Meal meal = pm.getObjectById(Meal.class, mealId);
+      
+      if(meal != null) {
+        UserManager.checkPermission(Permission.READ_NUTRITION, uid, meal.getUid());
+
+        copy = pm.detachCopy(meal);
+        copy.setFoods(new ArrayList<FoodInMeal>(pm.detachCopyAll(meal.getFoods())));
+        
+      }
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return copy;
+  }
+
 
 }

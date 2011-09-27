@@ -21,7 +21,7 @@ package com.delect.motiver.shared.exception;
  * @author Antti
  *
  */
-public class NoPermissionException extends Exception {
+public class NoPermissionException extends ConnectionException {
 
   /**
    * 

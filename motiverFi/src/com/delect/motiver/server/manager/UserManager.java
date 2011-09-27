@@ -9,9 +9,15 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 
 import com.delect.motiver.server.PMF;
+import com.delect.motiver.server.cache.NutritionCache;
+import com.delect.motiver.server.cache.UserCache;
+import com.delect.motiver.server.dao.NutritionDAO;
+import com.delect.motiver.server.dao.UserDAO;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.Permission;
+import com.delect.motiver.shared.exception.ConnectionException;
+import com.delect.motiver.shared.exception.NoPermissionException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -22,14 +28,16 @@ public class UserManager {
    * Logger for this class
    */
   private static final Logger logger = Logger.getLogger(UserManager.class.getName());
-  
-  private static UserManager dao; 
+
+  UserCache cache = UserCache.getInstance();
+  UserDAO dao = UserDAO.getInstance();
+  private static UserManager man; 
 
   public static UserManager getInstance() {
-    if(dao == null) {
-      dao = new UserManager();
+    if(man == null) {
+      man = new UserManager();
     }
-    return dao;
+    return man;
   }
   
 
@@ -104,6 +112,75 @@ public class UserManager {
     }
     
     return user;
+  }
+
+
+
+  private boolean getPermission(int target, String ourUid, String uid) throws ConnectionException {
+
+    boolean ok = false;
+    
+    Circle circle = null;
+    
+    try {
+      //if read
+      if(target == Permission.READ_TRAINING
+          || target == Permission.READ_NUTRITION
+          || target == Permission.READ_NUTRITION_FOODS
+          || target == Permission.READ_CARDIO
+          || target == Permission.READ_MEASUREMENTS) {
+        
+        circle = dao.getCircle(target, ourUid, uid, true);
+      }
+      //write permission -> check if coach
+      else {
+        circle = dao.getCircle(Permission.COACH, ourUid, uid, false);
+      }
+
+      //update to cache
+      cache.setCircle(target, ourUid, uid, circle);
+      
+      if(circle != null) {
+        ok = true;      
+      }
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading permission", e);
+      throw new ConnectionException("Error loading permission", e);
+    }
+    
+    return ok;
+  }
+
+
+  /**
+   * Checks if user has permission to given target. Throws NoPermissionException if not
+   * @param target
+   * @param ourUid
+   * @param uid
+   * @return
+   * @throws NoPermissionException
+   */
+  public static void checkPermission(int target, String ourUid, String uid) throws NoPermissionException {
+
+    //if own data -> return always true
+    if(ourUid.equals(uid)) {
+      return;
+    }
+    
+    UserManager userManager = getInstance();
+    
+    boolean ok = false;
+    
+    try {
+      ok = userManager.getPermission(target, ourUid, uid);
+    } catch (ConnectionException e) {
+      logger.log(Level.SEVERE, "Error checking permissions", e);
+    }
+    
+    if(!ok) {
+      throw new NoPermissionException(target, ourUid, uid);
+    }
+    
   }
 
 }

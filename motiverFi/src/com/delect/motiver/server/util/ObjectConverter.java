@@ -5,10 +5,8 @@ import java.util.List;
 
 import com.delect.motiver.server.jdo.nutrition.FoodInMeal;
 import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
-import com.delect.motiver.server.jdo.nutrition.FoodInTime;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.MealInTime;
-import com.delect.motiver.shared.FoodModel;
 
 public class ObjectConverter {
 
