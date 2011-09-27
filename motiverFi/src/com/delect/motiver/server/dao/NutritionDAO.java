@@ -481,7 +481,6 @@ public class NutritionDAO {
   public Time addMeals(long timeId, List<Meal> models) throws Exception {
 
     Time t = null;
-    List<MealInTime> list = new ArrayList<MealInTime>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -680,7 +679,7 @@ public class NutritionDAO {
         UserManager.checkPermission(Permission.READ_NUTRITION, uid, meal.getUid());
 
         copy = pm.detachCopy(meal);
-        copy.setFoods(new ArrayList<FoodInMeal>(pm.detachCopyAll(meal.getFoods())));
+        copy.setFoods((List<FoodInMeal>) pm.detachCopyAll(meal.getFoods()));
         
       }
     } catch (Exception e) {

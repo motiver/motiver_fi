@@ -28,7 +28,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.FoodModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class FoodInTime implements Serializable {
+public class FoodInTime implements Serializable, Cloneable {
 	
   /**
    * 
@@ -75,6 +75,15 @@ public class FoodInTime implements Serializable {
 		
 		return modelServer;
 	}
+  
+  protected Object clone() throws CloneNotSupportedException {
+    
+    FoodInTime clone = new FoodInTime();
+    clone.setAmount(getAmount());
+    clone.setNameId(getNameId());
+    
+    return clone;
+  }
 	
 	@Persistent
 	private Double amount;

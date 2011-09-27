@@ -31,7 +31,7 @@ import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.MealModel;
 
 @PersistenceCapable(identityType = IdentityType.DATASTORE)
-public class Meal implements Serializable, Comparable<Meal> {
+public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		
   /**
    * 
@@ -78,6 +78,22 @@ public class Meal implements Serializable, Comparable<Meal> {
 		modelServer.setId(model.getId());
 		
 		return modelServer;
+	}
+	
+	public Object clone() throws CloneNotSupportedException {
+	  
+	  Meal clone = new Meal();
+	  clone.setName(getName());
+	  clone.setTime(getTime());
+	  clone.setUid(getUid());
+	  
+	  List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
+	  for(FoodInMeal f : getFoods()) {
+	    foods.add((FoodInMeal) f.clone());
+	  }
+	  clone.setFoods(foods);
+	  
+	  return clone;
 	}
 	
 	/**
