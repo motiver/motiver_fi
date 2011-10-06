@@ -7907,21 +7907,23 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         workouts = (List<Workout>) q.execute(UID);
       }
 
-      Collections.sort(workouts);
-      
-      int i = 0;
-      for(Workout w : workouts) {
+      if(workouts != null) {
+        Collections.sort(workouts);
         
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_WORKOUTS) {
-          list.add(null);
-          break;
-        }
+        int i = 0;
+        for(Workout w : workouts) {
+          
+          //if limit reached -> add null value
+          if(i == Constants.LIMIT_WORKOUTS) {
+            list.add(null);
+            break;
+          }
 
-        WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
-        list.add(m);
-        
-        i++;
+          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
+          list.add(m);
+          
+          i++;
+        }
       }
       
     } catch (Exception e) {
