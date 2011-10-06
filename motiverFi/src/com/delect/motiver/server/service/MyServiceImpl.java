@@ -7889,9 +7889,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         //get routine so we know is it shared
         Routine r = pm.getObjectById(Routine.class, routine.getId());
-        if(r == null) {
-          if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
+        if(r != null) {
+          if(!hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid())) {
+            throw new NoPermissionException(Permission.READ_TRAINING, UID, r.getUid());
           }
           
           q.setFilter("date == null && routineId == routineIdParam");
