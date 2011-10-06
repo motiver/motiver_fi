@@ -34,6 +34,7 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.cache.WeekCache;
 import com.delect.motiver.server.jdo.FoodNameCount;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
 import com.delect.motiver.server.jdo.nutrition.FoodInTime;
 import com.delect.motiver.server.jdo.nutrition.MealInTime;
@@ -91,7 +92,7 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             
             //go through each workouts
             for(Time t : times) {
-              for(FoodInTime f : t.getFoods()) {
+              for(Food f : t.getFoods()) {
                 final long nameId = f.getNameId();
                 
                 //if name found

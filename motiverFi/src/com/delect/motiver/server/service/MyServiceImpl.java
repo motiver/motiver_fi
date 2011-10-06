@@ -2441,10 +2441,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         mMealAdded.setUid(UID);
         
         //foods
-        List<FoodInMeal> list = new ArrayList<FoodInMeal>();
+        List<Food> list = new ArrayList<Food>();
         for(FoodModel food : meal.getFoods()) {
           //add food
-          FoodInMeal foodServer = FoodInMeal.getServerModel(food);
+          Food foodServer = Food.getServerModel(food);
           
           //if no food name -> search for it
           if(food.getName() != null && food.getName().getId() != 0) {
@@ -2736,10 +2736,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
           mTimeAdded.setMeals(listMeals);
           
           //foods
-          List<FoodInTime> list = new ArrayList<FoodInTime>();
+          List<Food> list = new ArrayList<Food>();
           for(FoodModel food : mTime.getFoods()) {
             //add food
-            FoodInTime foodServer = FoodInTime.getServerModel(food);
+            Food foodServer = Food.getServerModel(food);
             
             //if no food name -> search for it
             if(food.getName() != null && food.getName().getId() != 0) {
@@ -4275,7 +4275,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         }
 
         if(t.getFoods() != null) {
-          for(FoodInTime food : t.getFoods()) {
+          for(Food food : t.getFoods()) {
             try {
               //get name
               if(food.getNameId() != 0) {
@@ -7400,8 +7400,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
               timeSimilar.setMeals(listMeals);
               
               //foods
-              List<FoodInTime> listFoods = timeSimilar.getFoods();
-              for(FoodInTime food : m.getFoods()) {
+              List<Food> listFoods = timeSimilar.getFoods();
+              for(Food food : m.getFoods()) {
                 listFoods.add(food);
               }
               timeSimilar.setFoods(listFoods);

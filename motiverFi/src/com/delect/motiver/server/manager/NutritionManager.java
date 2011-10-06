@@ -208,21 +208,29 @@ public class NutritionManager {
       
       //get meals
       for(Meal meal : models) {
-        //check cache
-        Meal jdo = cache.getMeal(meal.getId());
         
-        if(jdo == null) {
-          jdo = dao.getMeal(meal.getId(), uid);
-         
-          cache.addMeal(jdo);
+        //new
+        if(meal.getId() == 0) {
+          meal.setUid(uid);
+          modelsCopy.add(meal);
         }
-        
-        //TODO increment count
-        
-        //add copy
-        Meal clone = (Meal) jdo.clone();
-        clone.setUid(uid);
-        modelsCopy.add(clone);
+        else {
+          //check cache
+          Meal jdo = cache.getMeal(meal.getId());
+          
+          if(jdo == null) {
+            jdo = dao.getMeal(meal.getId(), uid);
+           
+            cache.addMeal(jdo);
+          }
+          
+          //TODO increment count
+          
+          //add copy
+          Meal clone = (Meal) jdo.clone();
+          clone.setUid(uid);
+          modelsCopy.add(clone);
+        }
       }
       
       //added to time

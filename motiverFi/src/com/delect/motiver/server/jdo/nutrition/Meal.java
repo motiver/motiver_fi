@@ -55,8 +55,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     //foods
     if(model.getFoods() != null) {
       List<FoodModel> foods = new ArrayList<FoodModel>();
-      for(FoodInMeal m : model.getFoods()) {
-        foods.add(FoodInMeal.getClientModel(m));
+      for(Food m : model.getFoods()) {
+        foods.add(Food.getClientModel(m));
       }
       modelClient.setFoods(foods);
     }
@@ -87,9 +87,9 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	  clone.setTime(getTime());
 	  clone.setUid(getUid());
 	  
-	  List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
-	  for(FoodInMeal f : getFoods()) {
-	    foods.add((FoodInMeal) f.clone());
+	  List<Food> foods = new ArrayList<Food>();
+	  for(Food f : getFoods()) {
+	    foods.add((Food) f.clone());
 	  }
 	  clone.setFoods(foods);
 	  
@@ -102,8 +102,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   @Persistent
 	private Integer copyCount = 0;
 
-	@Persistent(mappedBy = "parent")
-  private List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
+	@Persistent(mappedBy = "meal")
+  private List<Food> foods = new ArrayList<Food>();
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -134,7 +134,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		return getName().toLowerCase().compareTo(compare.getName().toLowerCase());
 	}
 
-	public List<FoodInMeal> getFoods() {
+	public List<Food> getFoods() {
 		return foods;
 	}
 
@@ -175,7 +175,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		copyCount++;
 	}
 
-	public void setFoods(List<FoodInMeal> foods) {
+	public void setFoods(List<Food> foods) {
 		this.foods = foods;
 	}
 

@@ -31,6 +31,7 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.cache.WeekCache;
 import com.delect.motiver.server.jdo.FoodNameCount;
 import com.delect.motiver.server.jdo.MicroNutrient;
+import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodInMeal;
 import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
 import com.delect.motiver.server.jdo.nutrition.FoodInTime;
@@ -299,8 +300,8 @@ public final class NutritionManagerOld {
         
         //get foods
         if(t.getFoods() != null) {
-          for(FoodInTime f : t.getFoods()) {
-            FoodModel fClient = FoodInTime.getClientModel(f);
+          for(Food f : t.getFoods()) {
+            FoodModel fClient = Food.getClientModel(f);
             fClient.setName(getFoodNameModel(f.getNameId()));
 
             timeFoods.add(fClient);
@@ -370,8 +371,8 @@ public final class NutritionManagerOld {
         
         //get foods
         if(t.getFoods() != null) {
-          for(FoodInMeal f : t.getFoods()) {
-            FoodModel fClient = FoodInMeal.getClientModel(f);
+          for(Food f : t.getFoods()) {
+            FoodModel fClient = Food.getClientModel(f);
             fClient.setName(getFoodNameModel(f.getNameId()));
 
             mealFoods.add(fClient);
@@ -480,18 +481,18 @@ public final class NutritionManagerOld {
               
               //if no foods
               if(time.getFoods() == null) {
-                List<FoodInTime> list = new ArrayList<FoodInTime>();
+                List<Food> list = new ArrayList<Food>();
                 time.setFoods(list);
               }
               
-              FoodInTime f = FoodInTime.getServerModel(model);
+              Food f = Food.getServerModel(model);
               //TODO doesn't add name
               f.setNameId(0L);
               time.getFoods().add(f);
               tx.commit();
               
               long id = f.getId();
-              m = FoodInTime.getClientModel(f);
+              m = Food.getClientModel(f);
               long id2 = m.getId();
               m.setTimeId(model.getTimeId());
               m.setMealId(model.getMealId());
@@ -519,18 +520,18 @@ public final class NutritionManagerOld {
               
               //if no foods
               if(meal.getFoods() == null) {
-                List<FoodInMeal> list = new ArrayList<FoodInMeal>();
+                List<Food> list = new ArrayList<Food>();
                 meal.setFoods(list);
               }
               
-              FoodInMeal f = FoodInMeal.getServerModel(model);
+              Food f = Food.getServerModel(model);
               //TODO doesn't add name
               f.setNameId(0L);
               meal.getFoods().add(f);
               tx.commit();
               
               //return client side model
-              m = FoodInMeal.getClientModel(f);
+              m = Food.getClientModel(f);
               m.setMealId(model.getMealId());
               m.setTimeId(model.getTimeId());
               
@@ -657,7 +658,7 @@ public final class NutritionManagerOld {
               
               //get food
               if(time.getFoods() != null) {
-                for(FoodInTime f : time.getFoods()) {
+                for(Food f : time.getFoods()) {
                   if(f.getId() == model.getId()) {
                     time.getFoods().remove(f);
                     pm.makePersistent(time);
@@ -691,7 +692,7 @@ public final class NutritionManagerOld {
               
               //get food
               if(meal.getFoods() != null) {
-                for(FoodInMeal f : meal.getFoods()) {
+                for(Food f : meal.getFoods()) {
                   if(f.getId() == model.getId()) {
                     meal.getFoods().remove(f);
                     pm.makePersistent(meal);
@@ -836,9 +837,9 @@ public final class NutritionManagerOld {
               }
               
               //get food
-              List<FoodInTime> listFoods = time.getFoods();
+              List<Food> listFoods = time.getFoods();
               if(listFoods != null) {
-                for(FoodInTime f : listFoods) {
+                for(Food f : listFoods) {
                   if(f.getId() == model.getId()) {
 
                     //update name
@@ -875,9 +876,9 @@ public final class NutritionManagerOld {
               }
               
               //get food
-              List<FoodInMeal> listFoods = meal.getFoods();
+              List<Food> listFoods = meal.getFoods();
               if(listFoods != null) {
-                for(FoodInMeal f : listFoods) {
+                for(Food f : listFoods) {
                   if(f.getId() == model.getId()) {
 
                     //update name
@@ -1218,14 +1219,9 @@ public final class NutritionManagerOld {
             mealNew.setId(null);
             mealNew.setUid(uid);
             
-            List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
+            List<Food> foods = new ArrayList<Food>();
             for(FoodModel f : listFoods) {
-              FoodInMeal f2 = FoodInMeal.getServerModel(f);
-              f2.setId(null);
-              if(f.getName() != null) {
-                f2.setNameId(f.getName().getId());
-              }
-              foods.add(f2);
+              foods.add(Food.getServerModel(f));
             }
             mealNew.setFoods(foods);
             

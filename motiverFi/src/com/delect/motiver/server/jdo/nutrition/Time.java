@@ -66,8 +66,8 @@ public class Time implements Serializable, Comparable<Time> {
     //foods
     if(model.getFoods() != null) {
       List<FoodModel> foods = new ArrayList<FoodModel>();
-      for(FoodInTime m : model.getFoods()) {
-        foods.add(FoodInTime.getClientModel(m));
+      for(Food m : model.getFoods()) {
+        foods.add(Food.getClientModel(m));
       }
       modelClient.setFoods(foods);
     }
@@ -100,8 +100,8 @@ public class Time implements Serializable, Comparable<Time> {
 	@Persistent
   private Date date;
 
-	@Persistent(mappedBy = "parent")
-  private List<FoodInTime> foods = new ArrayList<FoodInTime>();
+	@Persistent(mappedBy = "time")
+  private List<Food> foods = new ArrayList<Food>();
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -131,7 +131,7 @@ public class Time implements Serializable, Comparable<Time> {
 		return date;
   }
 
-	public List<FoodInTime> getFoods() {
+	public List<Food> getFoods() {
 		return foods;
 	}
 
@@ -174,7 +174,7 @@ public class Time implements Serializable, Comparable<Time> {
     this.date = date;
   }
 
-	public void setFoods(List<FoodInTime> foods) {
+	public void setFoods(List<Food> foods) {
 		this.foods = foods;
 	}
 

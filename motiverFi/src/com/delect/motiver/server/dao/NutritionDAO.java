@@ -65,7 +65,7 @@ public class NutritionDAO {
       for(Time time : times) {
         Time copy = pm.detachCopy(time);
         copy.setMeals(new ArrayList<MealInTime>(pm.detachCopyAll(time.getMeals())));
-        copy.setFoods(new ArrayList<FoodInTime>(pm.detachCopyAll(time.getFoods())));
+        copy.setFoods(new ArrayList<Food>(pm.detachCopyAll(time.getFoods())));
         
         //find names for each food
         for(MealInTime m : copy.getMeals()) {
@@ -75,7 +75,7 @@ public class NutritionDAO {
             }
           }
         }
-        for(FoodInTime f : copy.getFoods()) {
+        for(Food f : copy.getFoods()) {
           if(f.getNameId().longValue() > 0) {
             f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
           }
@@ -195,11 +195,11 @@ public class NutritionDAO {
         if(time != null) {
           UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
 
-          List<FoodInTime> foods = time.getFoods();
+          List<Food> foods = time.getFoods();
           boolean found = false;
           
           //update if found
-          for(FoodInTime food : foods) {
+          for(Food food : foods) {
             if(food.getId().longValue() == model.getId().longValue()) {
               food.setAmount(model.getAmount());
               food.setNameId(model.getNameId());
@@ -212,11 +212,9 @@ public class NutritionDAO {
 
           //add if not found
           if(!found) {
-            FoodInTime f = Food.getFoodInTimeModel(model);
-            foods.add(f);
+            foods.add(model);
             
             tx.commit();
-            model.setId(f.getId());
           }
 
         }
@@ -269,11 +267,11 @@ public class NutritionDAO {
         if(meal != null) {
           UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, meal.getUid());
 
-          List<FoodInMeal> foods = meal.getFoods();
+          List<Food> foods = meal.getFoods();
           boolean found = false;
           
           //update if found
-          for(FoodInMeal food : foods) {
+          for(Food food : foods) {
             if(food.getId().longValue() == model.getId().longValue()) {
               food.setAmount(model.getAmount());
               food.setNameId(model.getNameId());
@@ -286,11 +284,9 @@ public class NutritionDAO {
 
           //add if not found
           if(!found) {
-            FoodInMeal f = Food.getFoodInMealModel(model);
-            foods.add(f);
+            foods.add(model);
             
             tx.commit();
-            model.setId(f.getId());
           }
         }
         
@@ -445,7 +441,7 @@ public class NutritionDAO {
       for(Time time : models) {
         Time copy = pm.detachCopy(time);
         copy.setMeals(new ArrayList<MealInTime>(pm.detachCopyAll(time.getMeals())));
-        copy.setFoods(new ArrayList<FoodInTime>(pm.detachCopyAll(time.getFoods())));
+        copy.setFoods(new ArrayList<Food>(pm.detachCopyAll(time.getFoods())));
         
         //find names for each food
         for(MealInTime m : copy.getMeals()) {
@@ -455,7 +451,7 @@ public class NutritionDAO {
             }
           }
         }
-        for(FoodInTime f : copy.getFoods()) {
+        for(Food f : copy.getFoods()) {
           if(f.getNameId().longValue() > 0) {
             f.setName(pm.detachCopy(pm.getObjectById(FoodName.class, f.getNameId())));
           }
@@ -519,7 +515,7 @@ public class NutritionDAO {
     
     try {
       
-      pm.makePersistent(models);
+      pm.makePersistentAll(models);
       
       list = (List<Meal>) pm.detachCopyAll(models);
       
@@ -679,7 +675,7 @@ public class NutritionDAO {
         UserManager.checkPermission(Permission.READ_NUTRITION, uid, meal.getUid());
 
         copy = pm.detachCopy(meal);
-        copy.setFoods((List<FoodInMeal>) pm.detachCopyAll(meal.getFoods()));
+        copy.setFoods((List<Food>) pm.detachCopyAll(meal.getFoods()));
         
       }
     } catch (Exception e) {
