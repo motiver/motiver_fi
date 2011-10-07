@@ -8,11 +8,14 @@ import java.util.logging.Logger;
 
 import com.delect.motiver.server.cache.NutritionCache;
 import com.delect.motiver.server.dao.NutritionDAO;
+import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
+import com.delect.motiver.shared.exception.NoPermissionException;
 
 public class NutritionManager {
 
@@ -35,20 +38,31 @@ public class NutritionManager {
   }
 
 
-  public List<Time> getTimes(Date date, String uid, String ourUid) throws ConnectionException {
+  public List<Time> getTimes(UserOpenid user, Date date, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Loading times ("+date+")");
-    }
+    };
     
-    //check cache
-    List<Time> list = cache.getTimes(uid, date);
+    //check permissions
+    userManager.checkPermission(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
     
-    if(list == null) {
-      list = dao.getTimes(date, uid, ourUid);
+    //get from cache
+    List<Time> list;
+    
+    try {    
+      //get from cache
+      list = cache.getTimes(uid, date);
+      
+      if(list == null) {
+        list = dao.getTimes(date, uid);
 
-      //add to cache
-      cache.setTimes(uid, date, list);
+        //add to cache
+        cache.setTimes(uid, date, list);
+      }
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading times", e);
+      throw new ConnectionException("getTimes", e);
     }
   
     return list;
@@ -94,11 +108,14 @@ public class NutritionManager {
   }
 
   
-  public List<Meal> getMeals(int index, String uid) throws ConnectionException {
+  public List<Meal> getMeals(UserOpenid user, int index, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Loading meals ("+index+")");
     }
+    
+    //check permissions
+    userManager.checkPermission(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
     
     List<Meal> list = null;
     
@@ -192,7 +209,7 @@ public class NutritionManager {
   }
 
 
-  public List<Meal> addMeals(List<Meal> models, long timeId, String uid) throws ConnectionException {
+  public List<Meal> addMeals(UserOpenid user, List<Meal> models, long timeId) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Adding meals");
@@ -211,7 +228,14 @@ public class NutritionManager {
         
         //new
         if(meal.getId() == 0) {
-          meal.setUid(uid);
+          
+          //add two foods
+          List<Food> foods = new ArrayList<Food>();
+          foods.add(new Food());
+          foods.add(new Food());
+          meal.setFoods(foods);
+
+          meal.setUid(user.getUid());
           modelsCopy.add(meal);
         }
         else {
@@ -219,7 +243,10 @@ public class NutritionManager {
           Meal jdo = cache.getMeal(meal.getId());
           
           if(jdo == null) {
-            jdo = dao.getMeal(meal.getId(), uid);
+            jdo = dao.getMeal(meal.getId());
+            
+            //check permission
+            userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), jdo.getUid());
            
             cache.addMeal(jdo);
           }
@@ -228,16 +255,23 @@ public class NutritionManager {
           
           //add copy
           Meal clone = (Meal) jdo.clone();
-          clone.setUid(uid);
+          clone.setUid(user.getUid());
           modelsCopy.add(clone);
         }
       }
       
       //added to time
       if(timeId != 0) {
-        Time t = dao.addMeals(timeId, modelsCopy);
+        Time t = dao.getTime(timeId);
+        
+        if(t != null) {
+          //check permission
+          userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), t.getUid());
+          
+          dao.addMeals(timeId, modelsCopy);
 
-        cache.setTimes(uid, t.getDate(), null);  //clear day's cache
+          cache.setTimes(t.getUid(), t.getDate(), null);  //clear day's cache 
+        }
       }
       //single meals
       else {

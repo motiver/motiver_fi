@@ -100,7 +100,7 @@ public class Time implements Serializable, Comparable<Time> {
 	@Persistent
   private Date date;
 
-	@Persistent(mappedBy = "time")
+	@Persistent
   private List<Food> foods = new ArrayList<Food>();
 
 	@PrimaryKey

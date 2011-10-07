@@ -44,15 +44,13 @@ public class NutritionDAO {
     return dao;
   }
 
-  public List<Time> getTimes(Date date, String uid, String ourUid) throws ConnectionException {
+  public List<Time> getTimes(Date date, String uid) throws Exception {
     
     ArrayList<Time> list = new ArrayList<Time>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-
-      UserManager.checkPermission(Permission.READ_NUTRITION, ourUid, uid);
 
       //strip time
       final Date dStart = DateUtils.stripTime(date, true);
@@ -85,7 +83,7 @@ public class NutritionDAO {
       }
       
     } catch (Exception e) {
-      throw new ConnectionException("Error loading times", e.getMessage());
+      throw e;
     }
     finally {
       if (!pm.isClosed()) {
@@ -113,8 +111,6 @@ public class NutritionDAO {
 
         time = pm.getObjectById(Time.class, timeId);
         if(time != null) {
-          UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
-
           //get meal
           for(MealInTime meal : time.getMeals()) {
             if(meal.getId() == mealId) {
@@ -193,7 +189,6 @@ public class NutritionDAO {
 
         time = pm.getObjectById(Time.class, timeId);
         if(time != null) {
-          UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, time.getUid());
 
           List<Food> foods = time.getFoods();
           boolean found = false;
@@ -265,7 +260,6 @@ public class NutritionDAO {
         
         meal = pm.getObjectById(Meal.class, mealId);
         if(meal != null) {
-          UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, meal.getUid());
 
           List<Food> foods = meal.getFoods();
           boolean found = false;
@@ -361,7 +355,7 @@ public class NutritionDAO {
     return list;
   }
 
-  public boolean removeTimes(Long[] keys, String uid) {
+  public boolean removeTimes(Long[] keys, String uid) throws Exception {
     
     boolean ok = false;
 
@@ -384,7 +378,6 @@ public class NutritionDAO {
             Time t = pm.getObjectById(Time.class, key);
             
             if(t != null) {
-              UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, t.getUid());
               
               pm.deletePersistent(t);
               tx.commit();
@@ -429,7 +422,7 @@ public class NutritionDAO {
     return ok;
   }
 
-  public List<Time> addTimes(List<Time> models) {
+  public List<Time> addTimes(List<Time> models) throws Exception {
     
     List<Time> list = new ArrayList<Time>();
     
@@ -492,6 +485,7 @@ public class NutritionDAO {
         }
         
         pm.makePersistent(t);
+        pm.flush();
         
         t = pm.detachCopy(t);
       }
@@ -507,17 +501,13 @@ public class NutritionDAO {
     return t;    
   }
 
-  public List<Meal> addMeals(List<Meal> models) throws Exception {
-    
-    List<Meal> list = new ArrayList<Meal>();
+  public void addMeals(List<Meal> models) throws Exception {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
       
       pm.makePersistentAll(models);
-      
-      list = (List<Meal>) pm.detachCopyAll(models);
       
     } catch (Exception e) {
       throw e;
@@ -527,8 +517,6 @@ public class NutritionDAO {
         pm.close();
       } 
     }
-    
-    return list;
   }
 
   public boolean removeMeal(long id, String uid) throws Exception {
@@ -550,7 +538,6 @@ public class NutritionDAO {
           Meal t = pm.getObjectById(Meal.class, id);
           
           if(t != null) {
-            UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, t.getUid());
             
             pm.deletePersistent(t);
             tx.commit();
@@ -612,7 +599,6 @@ public class NutritionDAO {
           t = pm.getObjectById(Time.class, timeId);
           
           if(t != null) {
-            UserManager.checkPermission(Permission.WRITE_NUTRITION_FOODS, uid, t.getUid());
             
             for(MealInTime m : t.getMeals()) {
               if(m.getId().longValue() == id) {
@@ -662,7 +648,7 @@ public class NutritionDAO {
     return t;
   }
 
-  public Meal getMeal(long mealId, String uid) throws Exception {
+  public Meal getMeal(long mealId) throws Exception {
 
     Meal copy = null;
 
@@ -672,8 +658,6 @@ public class NutritionDAO {
       Meal meal = pm.getObjectById(Meal.class, mealId);
       
       if(meal != null) {
-        UserManager.checkPermission(Permission.READ_NUTRITION, uid, meal.getUid());
-
         copy = pm.detachCopy(meal);
         copy.setFoods((List<Food>) pm.detachCopyAll(meal.getFoods()));
         
@@ -688,6 +672,28 @@ public class NutritionDAO {
     }
     
     return copy;
+  }
+
+  public Time getTime(long timeId) throws Exception {
+    
+    Time t = null;
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
+      
+      t = pm.detachCopy(pm.getObjectById(Time.class, timeId));
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return t;
   }
 
 

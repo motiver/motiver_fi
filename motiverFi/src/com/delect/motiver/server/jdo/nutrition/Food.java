@@ -134,8 +134,8 @@ public class Food implements Serializable, Cloneable {
 	@Persistent
 	private Long name = 0L;
 
-	@Persistent
-	private Time time;
+//	@Persistent
+//	private Time time;
 
 	private FoodName n;
 	

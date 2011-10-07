@@ -1096,29 +1096,19 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     //get uid
     UserManager userManager = UserManager.getInstance();
     UserOpenid user = userManager.getUser(perThreadRequest);
-    if(user == null) {
-      return null;
-    }
-    final String UID = user.getUid();
     
     List<MealModel> list = new ArrayList<MealModel>();
     
-    try {
-      List<Meal> jdos = new ArrayList<Meal>();
-      for(MealModel m : meals) {
-        jdos.add(Meal.getServerModel(m));
-      }
-      
-      NutritionManager nutritionManager = NutritionManager.getInstance();
-      List<Meal> jdosCopy = nutritionManager.addMeals(jdos, timeId, UID);
+    List<Meal> jdos = new ArrayList<Meal>();
+    for(MealModel m : meals) {
+      jdos.add(Meal.getServerModel(m));
+    }
+    
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    List<Meal> jdosCopy = nutritionManager.addMeals(user, jdos, timeId);
 
-      for(Meal m : jdosCopy) {
-        list.add(Meal.getClientModel(m));
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding meals", e);
-      throw new ConnectionException("Error adding meals", e);
+    for(Meal m : jdosCopy) {
+      list.add(Meal.getClientModel(m));
     }
     
     return list;
@@ -3979,24 +3969,20 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return meal' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<MealModel> getMeals(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMeals()");
-
-    List<MealModel> list = new ArrayList<MealModel>();
-    
-    //get uid
-    UserManager userManager = UserManager.getInstance();
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    if(user == null) {
-      return list;
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading meals");
     }
-    final String UID = user.getUid();
+
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
+    List<MealModel> list = new ArrayList<MealModel>();
+      
     NutritionManager nutritionManager = NutritionManager.getInstance();
-    List<Meal> meals = nutritionManager.getMeals(index, UID);
+    List<Meal> meals = nutritionManager.getMeals(user, index, user.getUid());
     if(meals != null) {
       for(Meal m : meals) {
         list.add(Meal.getClientModel(m));
@@ -5273,7 +5259,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return time models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<TimeModel> getTimesInCalendar(String uid, Date date) throws ConnectionException {
 
@@ -5287,14 +5272,11 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       return null;
     }
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
     NutritionManager nutritionManager = NutritionManager.getInstance();
-    List<Time> times = nutritionManager.getTimes(date, uid, UID);
+    List<Time> times = nutritionManager.getTimes(user, date, uid);
     if(times != null) {
       for(Time m : times) {
         list.add(Time.getClientModel(m));
