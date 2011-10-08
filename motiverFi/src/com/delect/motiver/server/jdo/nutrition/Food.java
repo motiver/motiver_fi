@@ -128,8 +128,8 @@ public class Food implements Serializable, Cloneable {
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY) 
 	private Key id = null;
 
-	@Persistent
-	private Meal meal;
+//	@Persistent
+//	private Meal meal;
 
 	@Persistent
 	private Long name = 0L;

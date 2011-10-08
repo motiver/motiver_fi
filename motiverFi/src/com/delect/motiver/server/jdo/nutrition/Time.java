@@ -57,8 +57,8 @@ public class Time implements Serializable, Comparable<Time> {
 		//meals
 		if(model.getMeals() != null) {
 		  List<MealModel> meals = new ArrayList<MealModel>();
-		  for(MealInTime m : model.getMeals()) {
-		    meals.add(MealInTime.getClientModel(m));
+		  for(Meal m : model.getMealsNew()) {
+		    meals.add(Meal.getClientModel(m));
 		  }
 		  modelClient.setMeals(meals);
 		}
@@ -107,9 +107,11 @@ public class Time implements Serializable, Comparable<Time> {
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 
-	@Persistent(mappedBy = "parentTime")
-	private List<MealInTime> meals = new ArrayList<MealInTime>();
+	private List<Meal> meals = new ArrayList<Meal>();
 
+  @Persistent
+  private List<Key> mealsKeys = new ArrayList<Key>();
+  
 	@Persistent
 	private Long time = 0L;	//in seconds from midnight
 
@@ -148,9 +150,17 @@ public class Time implements Serializable, Comparable<Time> {
 		return id;
 	}
 
-	public List<MealInTime> getMeals() {
+  public List<MealInTime> getMeals() {
+    return null;
+  }
+
+	public List<Meal> getMealsNew() {
 	  return meals;
 	}
+
+  public List<Key> getMealsKeys() {
+    return mealsKeys;
+  }
 
 	public long getTime() {
 		if(time != null) {
@@ -188,8 +198,15 @@ public class Time implements Serializable, Comparable<Time> {
 	}
 
 	public void setMeals(List<MealInTime> meals) {
-		this.meals = meals;
 	}
+
+  public void setMealsNew(List<Meal> meals) {
+    this.meals = meals;
+  }
+
+  public void setMealsKeys(List<Key> mealsKeys) {
+    this.mealsKeys = mealsKeys;
+  }
 	
 	public void setTime(Long time) {
     this.time = time;

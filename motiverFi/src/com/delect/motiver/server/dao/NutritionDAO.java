@@ -27,6 +27,7 @@ import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
+import com.google.appengine.api.datastore.Key;
 
 public class NutritionDAO {
 
@@ -62,12 +63,23 @@ public class NutritionDAO {
       List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
       for(Time time : times) {
         Time copy = pm.detachCopy(time);
-        copy.setMeals(new ArrayList<MealInTime>(pm.detachCopyAll(time.getMeals())));
+        //get meals
+        List<Meal> meals = new ArrayList<Meal>();
+        if(time.getMealsKeys().size() > 0) {
+          List<Object> ids = new ArrayList<Object>();
+          for (Key key : time.getMealsKeys()) {
+             ids.add(pm.newObjectIdInstance(Meal.class, key));
+          }
+          meals = (List<Meal>) pm.getObjectsById(ids);
+        }
+        copy.setMealsNew(meals);
+        
+        //get foods
         copy.setFoods(new ArrayList<Food>(pm.detachCopyAll(time.getFoods())));
         
         //find names for each food
-        for(MealInTime m : copy.getMeals()) {
-          for(FoodInMealTime f : m.getFoods()) {
+        for(Meal m : copy.getMealsNew()) {
+          for(Food f : m.getFoods()) {
             if(f.getNameId().longValue() > 0) {
               f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
             }
@@ -321,7 +333,7 @@ public class NutritionDAO {
     
     try {
       Query q = pm.newQuery(Meal.class);
-      q.setFilter("openId == openIdParam && time == null");
+      q.setFilter("openId == openIdParam && timeId == null");
       q.declareParameters("java.lang.String openIdParam");
       q.setRange(index, index + Constants.LIMIT_MEALS + 1);
       List<Meal> meals = (List<Meal>) q.execute(uid);
@@ -475,13 +487,20 @@ public class NutritionDAO {
     
     try {
       
+      //save meals
+      for(Meal m : models) {
+        m.setTime(timeId);
+      }
+      pm.makePersistentAll(models);
+      pm.flush();
+      
       t = pm.getObjectById(Time.class, timeId);
   
       if(t != null) {
-        List<MealInTime> arr = t.getMeals();
+        List<Key> arr = t.getMealsKeys();
         
         for(Meal m : models) {
-          arr.add(ObjectConverter.getMealInTime(m));
+          arr.add(m.getKey());
         }
         
         pm.makePersistent(t);
@@ -659,7 +678,9 @@ public class NutritionDAO {
       
       if(meal != null) {
         copy = pm.detachCopy(meal);
-        copy.setFoods((List<Food>) pm.detachCopyAll(meal.getFoods()));
+        if(meal.getFoods() != null) {
+          copy.setFoods((List<Food>) pm.detachCopyAll(meal.getFoods()));
+        }
         
       }
     } catch (Exception e) {

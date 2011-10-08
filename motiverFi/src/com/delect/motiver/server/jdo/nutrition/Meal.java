@@ -102,7 +102,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   @Persistent
 	private Integer copyCount = 0;
 
-	@Persistent(mappedBy = "meal")
+	@Persistent
+//	(mappedBy = "meal")
   private List<Food> foods = new ArrayList<Food>();
 
 	@PrimaryKey
@@ -113,13 +114,13 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	private String name = "";
 
 	@Persistent
-	private Key time;
+	private Long timeId;
 
 	@Persistent
 	private Long uid;
   
   @Persistent
-  public String openId;
+  private String openId;
 
 	public Meal() {
 		
@@ -155,8 +156,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     return name;
   }
 
-	public Key getTime() {
-		return time;
+	public Long getTime() {
+		return timeId;
 	}
 
 	public String getUid() {
@@ -193,8 +194,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     this.name = name;
   }
 
-	public void setTime(Key time) {
-    this.time = time;
+	public void setTime(Long timeId) {
+    this.timeId = timeId;
   }
 	
 	public void setUid(String openId) {
