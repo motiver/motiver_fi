@@ -15,7 +15,6 @@ import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
-import com.delect.motiver.shared.exception.NoPermissionException;
 
 public class NutritionManager {
 
@@ -76,35 +75,124 @@ public class NutritionManager {
    * @param uID
    * @return
    */
-  public void addFood(Food model, long timeId, long mealId, String uid, String locale) throws ConnectionException {
+  public void addFood(UserOpenid user, Food model, long timeId, long mealId) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding new food: "+model);
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding/updating food: "+model);
     }    
           
     try {
       //update uid
-      model.setUid(uid);
+      model.setUid(user.getUid());
+
+      Time time = null;
+      if(timeId != 0) {
+        time = dao.getTime(timeId);
+      }
       
-      //if food is in meal (which is in time)
-      if(timeId != 0 && mealId != 0) {
-        Time time = dao.updateFoodInMealTime(timeId, mealId, model, uid);
-        cache.setTimes(uid, time.getDate(), null);  //clear day's cache
+      //if food is in time
+      if(timeId != 0 && mealId == 0) {        
+        userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
+        
+        //update if found, otherwise add
+        int i = time.getFoods().indexOf(model);
+        if(i == -1) {
+          time.getFoods().add(model);
+        }
+        else {
+          Food f = time.getFoods().get(i);
+          f.update(model);
+        }
+        dao.updateTime(time);
       }
-      //if added to some time -> save key
-      else if(timeId != 0) {
-        Time time = dao.updateFoodInTime(timeId, model, uid);
-        cache.setTimes(uid, time.getDate(), null);  //clear day's cache
-      }
-      //if added to some meal -> save key
+      //if food is in meal
       else if(mealId != 0) {
-        Meal meal = dao.updateFoodInMeal(mealId, model, uid);
-        cache.addMeal(meal);
+        Meal meal = dao.getMeal(mealId);
+        
+        userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
+
+        //update if found, otherwise add
+        int i = meal.getFoods().indexOf(model);
+        if(i == -1) {
+          meal.getFoods().add(model);
+        }
+        else {
+          Food f = meal.getFoods().get(i);
+          f.update(model);
+        }
+        dao.updateMeal(meal);
+        
+        cache.removeMeal(mealId); //clear cache
+      }
+      
+      //clear cache if in time
+      if(time != null) {
+        cache.setTimes(time.getUid(), time.getDate(), null);  //clear day's cache
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding food", e);
       throw new ConnectionException("Add food", e.getMessage());
     }
+  }
+
+
+  /**
+   * Removes single food
+   * @param pm
+   * @param food
+   * @param uID
+   * @return
+   */
+  public boolean removeFood(UserOpenid user, Food model, long timeId, long mealId) throws ConnectionException {
+
+    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding/updating food: "+model);
+    }
+    
+    boolean ok = false;
+          
+    try {
+      //update uid
+      model.setUid(user.getUid());
+
+      Time time = null;
+      if(timeId != 0) {
+        time = dao.getTime(timeId);
+      }
+      
+      //if food is in time
+      if(timeId != 0 && mealId == 0) {        
+        userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
+
+        time.getFoods().remove(model);
+        dao.updateTime(time);
+      }
+      //if food is in meal
+      else if(mealId != 0) {
+        Meal meal = dao.getMeal(mealId);
+        
+        userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
+
+        //update if found, otherwise add
+        meal.getFoods().remove(model);
+        dao.updateMeal(meal);
+        
+        cache.removeMeal(mealId); //clear cache
+      }
+      
+      //clear cache if in time
+      if(time != null) {
+        cache.setTimes(time.getUid(), time.getDate(), null);  //clear day's cache
+      }
+      
+      ok = true;
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding food", e);
+      throw new ConnectionException("Add food", e.getMessage());
+    }
+    
+    return ok;
   }
 
   

@@ -114,6 +114,16 @@ public class Food implements Serializable, Cloneable {
     
     return modelServer;
   }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof Food) {
+      return ((Food)obj).getId() == getId();
+    }
+    else {
+      return false;
+    }
+  }
 
   @Persistent
 	public Long uid;
@@ -220,5 +230,15 @@ public class Food implements Serializable, Cloneable {
 
   public FoodName getName() {
     return n;
+  }
+
+  /**
+   * Updates food from given model
+   * @param model
+   */
+  public void update(Food model) {
+    setAmount(model.getAmount());
+    setNameId(model.getNameId());
+    setUid(model.getUid());
   }
 }

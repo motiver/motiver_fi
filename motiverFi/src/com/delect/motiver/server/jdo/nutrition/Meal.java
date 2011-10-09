@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jdo.annotations.Element;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -102,8 +103,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   @Persistent
 	private Integer copyCount = 0;
 
-	@Persistent
-//	(mappedBy = "meal")
+	@Persistent(defaultFetchGroup = "true")
+  @Element(dependent = "true")
   private List<Food> foods = new ArrayList<Food>();
 
 	@PrimaryKey
@@ -203,6 +204,21 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	} 
 
   public Long getUidOld() {
-    return uid;
+    return 0L;
   } 
+
+  /**
+   * Updates time from given model
+   * @param model
+   */
+  public void update(Meal model) {
+    setName(model.getName());
+    setTime(model.getTime());
+    setUid(model.getUid());
+    
+    for(Food f : model.getFoods()) {
+      Food fOld = getFoods().get(getFoods().indexOf(f));
+      fOld.update(f);
+    }
+  }
 }

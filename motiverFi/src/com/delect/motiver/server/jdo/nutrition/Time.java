@@ -19,8 +19,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.jdo.annotations.Element;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -55,7 +57,7 @@ public class Time implements Serializable, Comparable<Time> {
 		modelClient.setUid(model.getUid());
 		
 		//meals
-		if(model.getMeals() != null) {
+		if(model.getMealsNew() != null) {
 		  List<MealModel> meals = new ArrayList<MealModel>();
 		  for(Meal m : model.getMealsNew()) {
 		    meals.add(Meal.getClientModel(m));
@@ -100,16 +102,18 @@ public class Time implements Serializable, Comparable<Time> {
 	@Persistent
   private Date date;
 
-	@Persistent
+	@Persistent(defaultFetchGroup = "true")
+	@Element(dependent = "true")
   private List<Food> foods = new ArrayList<Food>();
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 
+	@NotPersistent
 	private List<Meal> meals = new ArrayList<Meal>();
 
-  @Persistent
+  @Persistent(defaultFetchGroup = "true")
   private List<Key> mealsKeys = new ArrayList<Key>();
   
 	@Persistent
@@ -219,4 +223,22 @@ public class Time implements Serializable, Comparable<Time> {
   public Long getUidOld() {
     return uid;
   } 
+
+  /**
+   * Updates time from given model
+   * @param model
+   */
+  public void update(Time model) {
+    setDate(model.getDate());
+    setMealsNew(model.getMealsNew());
+    setMealsKeys(model.getMealsKeys());
+    setTime(model.getTime());
+    setUid(model.getUid());
+    
+    for(Food f : model.getFoods()) {
+      Food fOld = getFoods().get(getFoods().indexOf(f));
+      fOld.update(f);
+    }
+  }
+  
 }

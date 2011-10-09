@@ -95,8 +95,8 @@ public class MealInTime implements Serializable, Comparable<MealInTime> {
 	@Persistent
 	private String name = "";
 
-	@Persistent
-	private Time parentTime;
+//	@Persistent
+//	private Time parentTime;
 
 	public MealInTime() {
 		

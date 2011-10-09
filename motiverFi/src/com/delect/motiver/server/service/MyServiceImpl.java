@@ -67,7 +67,6 @@ import com.delect.motiver.server.jdo.Workout;
 import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodInMeal;
 import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
-import com.delect.motiver.server.jdo.nutrition.FoodInTime;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.GuideValue;
 import com.delect.motiver.server.jdo.nutrition.Meal;
@@ -947,16 +946,11 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     
     //get user
     final UserOpenid user = userManager.getUser(this.perThreadRequest);
-    if(user == null || user.getUid() == null) {
-      return null;
-    }
-    final String UID = user.getUid();
-    final String LOCALE = user.getLocale();
 
     try {
       NutritionManager nutritionManager = NutritionManager.getInstance();
       Food jdo = Food.getServerModel(food);
-      nutritionManager.addFood(jdo, food.getTimeId(), food.getMealId(), UID, LOCALE);
+      nutritionManager.addFood(user, jdo, food.getTimeId(), food.getMealId());
       m = Food.getClientModel(jdo);
 
     }
@@ -5543,35 +5537,26 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   @Override
   @Deprecated public boolean removeFoods(List<FoodModel> foods) throws ConnectionException {
 
-    logger.log(Level.FINE, "removeFoods()");
+    boolean ok = true;
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    if(foods.size() < 1) {
-      return false;
-    }
-    
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
-    
     try {
-
-      //TODO needs improving
-      for(FoodModel m : foods) {
-        nutritionManager.removeFoodModel(m, UID);
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      
+      for(FoodModel food : foods) {
+        Food jdo = Food.getServerModel(food);
+        boolean res = nutritionManager.removeFood(user, jdo, food.getTimeId(), food.getMealId());
+        
+        if(!res) {
+          ok = false;
+        }
       }
-      
-      ok = true;
-      
+
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing foods", e);
-      throw new ConnectionException("removeFoods", e.getMessage());
+      throw new ConnectionException("addFood", e.getMessage());
     }
     
     return ok;
@@ -6972,16 +6957,11 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     
     //get user
     final UserOpenid user = userManager.getUser(this.perThreadRequest);
-    if(user == null || user.getUid() == null) {
-      return null;
-    }
-    final String UID = user.getUid();
-    final String LOCALE = user.getLocale();
 
     try {
       NutritionManager nutritionManager = NutritionManager.getInstance();
       Food jdo = Food.getServerModel(food);
-      nutritionManager.addFood(jdo, food.getTimeId(), food.getMealId(), UID, LOCALE);
+      nutritionManager.addFood(user, jdo, food.getTimeId(), food.getMealId());
       m = Food.getClientModel(jdo);
 
     }

@@ -9,9 +9,7 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.cache.NutritionCache;
 import com.delect.motiver.server.cache.UserCache;
-import com.delect.motiver.server.dao.NutritionDAO;
 import com.delect.motiver.server.dao.UserDAO;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.delect.motiver.server.jdo.nutrition.Food;
-import com.delect.motiver.server.jdo.nutrition.FoodInMeal;
 import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.MealInTime;

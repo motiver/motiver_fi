@@ -8,7 +8,6 @@ import javax.jdo.Query;
 
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Circle;
-import com.delect.motiver.shared.exception.ConnectionException;
 
 public class UserDAO {
 
