@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.jdo.annotations.Element;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.PersistenceCapable;
@@ -55,8 +56,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     //foods
     if(model.getFoods() != null) {
       List<FoodModel> foods = new ArrayList<FoodModel>();
-      for(FoodInMeal m : model.getFoods()) {
-        foods.add(FoodInMeal.getClientModel(m));
+      for(Food m : model.getFoods()) {
+        foods.add(Food.getClientModel(m));
       }
       modelClient.setFoods(foods);
     }
@@ -87,9 +88,9 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	  clone.setTime(getTime());
 	  clone.setUid(getUid());
 	  
-	  List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
-	  for(FoodInMeal f : getFoods()) {
-	    foods.add((FoodInMeal) f.clone());
+	  List<Food> foods = new ArrayList<Food>();
+	  for(Food f : getFoods()) {
+	    foods.add((Food) f.clone());
 	  }
 	  clone.setFoods(foods);
 	  
@@ -102,8 +103,9 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   @Persistent
 	private Integer copyCount = 0;
 
-	@Persistent(mappedBy = "parent")
-  private List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
+	@Persistent(defaultFetchGroup = "true")
+  @Element(dependent = "true")
+  private List<Food> foods = new ArrayList<Food>();
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -113,13 +115,13 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	private String name = "";
 
 	@Persistent
-	private Key time;
+	private Long timeId;
 
 	@Persistent
 	private Long uid;
   
   @Persistent
-  public String openId;
+  private String openId;
 
 	public Meal() {
 		
@@ -134,7 +136,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		return getName().toLowerCase().compareTo(compare.getName().toLowerCase());
 	}
 
-	public List<FoodInMeal> getFoods() {
+	public List<Food> getFoods() {
 		return foods;
 	}
 
@@ -155,8 +157,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     return name;
   }
 
-	public Key getTime() {
-		return time;
+	public Long getTime() {
+		return timeId;
 	}
 
 	public String getUid() {
@@ -175,7 +177,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		copyCount++;
 	}
 
-	public void setFoods(List<FoodInMeal> foods) {
+	public void setFoods(List<Food> foods) {
 		this.foods = foods;
 	}
 
@@ -193,8 +195,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     this.name = name;
   }
 
-	public void setTime(Key time) {
-    this.time = time;
+	public void setTime(Long timeId) {
+    this.timeId = timeId;
   }
 	
 	public void setUid(String openId) {
@@ -202,6 +204,21 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	} 
 
   public Long getUidOld() {
-    return uid;
+    return 0L;
   } 
+
+  /**
+   * Updates time from given model
+   * @param model
+   */
+  public void update(Meal model) {
+    setName(model.getName());
+    setTime(model.getTime());
+    setUid(model.getUid());
+    
+    for(Food f : model.getFoods()) {
+      Food fOld = getFoods().get(getFoods().indexOf(f));
+      fOld.update(f);
+    }
+  }
 }

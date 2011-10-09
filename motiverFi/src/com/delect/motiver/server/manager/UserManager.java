@@ -9,9 +9,7 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.cache.NutritionCache;
 import com.delect.motiver.server.cache.UserCache;
-import com.delect.motiver.server.dao.NutritionDAO;
 import com.delect.motiver.server.dao.UserDAO;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
@@ -43,10 +41,10 @@ public class UserManager {
 
 
   /**
-   * Gets openId string
+   * Returns user. Throws exception if user not found
    * @return null if no user found
    */
-  public UserOpenid getUser(ThreadLocal<HttpServletRequest> request) {
+  public UserOpenid getUser(ThreadLocal<HttpServletRequest> request) throws ConnectionException {
 
     String coachModeUid = null;
     
@@ -62,8 +60,9 @@ public class UserManager {
     
     return _getUid(coachModeUid);
   }
+  
   @SuppressWarnings("unchecked")
-  static UserOpenid _getUid(String coachModeUid) {
+  private UserOpenid _getUid(String coachModeUid) throws ConnectionException {
 
     UserOpenid user = null;
     String openId = null;
@@ -109,6 +108,10 @@ public class UserManager {
       if(!pm.isClosed()) {
         pm.close();
       }
+    }
+    
+    if(user == null) {
+      throw new ConnectionException("_getUid", "");
     }
     
     return user;
@@ -160,7 +163,7 @@ public class UserManager {
    * @return
    * @throws NoPermissionException
    */
-  public static void checkPermission(int target, String ourUid, String uid) throws NoPermissionException {
+  public void checkPermission(int target, String ourUid, String uid) throws NoPermissionException {
 
     //if own data -> return always true
     if(ourUid.equals(uid)) {

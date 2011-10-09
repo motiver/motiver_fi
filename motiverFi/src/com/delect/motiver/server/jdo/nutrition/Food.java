@@ -28,7 +28,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.FoodModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Food implements Serializable {
+public class Food implements Serializable, Cloneable {
 	
   /**
    * 
@@ -75,6 +75,15 @@ public class Food implements Serializable {
 		
 		return modelServer;
 	}
+  
+  protected Object clone() throws CloneNotSupportedException {
+    
+    Food clone = new Food();
+    clone.setAmount(getAmount());
+    clone.setNameId(getNameId());
+    
+    return clone;
+  }
 
   public static FoodInMealTime getFoodInMealTimeModel(Food model) {
 
@@ -105,6 +114,16 @@ public class Food implements Serializable {
     
     return modelServer;
   }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof Food) {
+      return ((Food)obj).getId() == getId();
+    }
+    else {
+      return false;
+    }
+  }
 
   @Persistent
 	public Long uid;
@@ -119,14 +138,14 @@ public class Food implements Serializable {
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY) 
 	private Key id = null;
 
-	@Persistent
-	private Key meal;
+//	@Persistent
+//	private Meal meal;
 
 	@Persistent
 	private Long name = 0L;
 
-	@Persistent
-	private Key time;
+//	@Persistent
+//	private Time time;
 
 	private FoodName n;
 	
@@ -156,10 +175,6 @@ public class Food implements Serializable {
 		return id;
 	}
 
-	public Key getMeal() {
-		return meal;
-	}
-
 	public Long getNameId() {
 		if(name != null) {
 			return name;
@@ -168,10 +183,6 @@ public class Food implements Serializable {
 			return 0L;
     }
   }
-
-	public Key getTime() {
-		return time;
-	}
 
 	public String getUid() {
 		if(openId != null) {
@@ -201,16 +212,8 @@ public class Food implements Serializable {
     }
 	}
 
-	public void setMeal(Key meal) {
-    this.meal = meal;
-  }
-
 	public void setNameId(Long name) {
 		this.name = name;
-  }
-
-	public void setTime(Key time) {
-    this.time = time;
   }
 	
 	public void setUid(String openId) {
@@ -221,11 +224,21 @@ public class Food implements Serializable {
     return uid;
   } 
   
-  private void setName(FoodName n) {
+  public void setName(FoodName n) {
     this.n = n;
   }
 
   public FoodName getName() {
     return n;
+  }
+
+  /**
+   * Updates food from given model
+   * @param model
+   */
+  public void update(Food model) {
+    setAmount(model.getAmount());
+    setNameId(model.getNameId());
+    setUid(model.getUid());
   }
 }

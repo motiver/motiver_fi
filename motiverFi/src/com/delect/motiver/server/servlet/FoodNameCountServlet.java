@@ -34,10 +34,10 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.cache.WeekCache;
 import com.delect.motiver.server.jdo.FoodNameCount;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
-import com.delect.motiver.server.jdo.nutrition.FoodInTime;
-import com.delect.motiver.server.jdo.nutrition.MealInTime;
+import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
+import com.google.appengine.api.datastore.Key;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class FoodNameCountServlet extends RemoteServiceServlet {
@@ -91,7 +91,7 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             
             //go through each workouts
             for(Time t : times) {
-              for(FoodInTime f : t.getFoods()) {
+              for(Food f : t.getFoods()) {
                 final long nameId = f.getNameId();
                 
                 //if name found
@@ -105,9 +105,17 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
                   tableFoods.put(nameId, count);
                 }
               }
-              for(MealInTime m : t.getMeals()) {
+              
+              //get foods
+              List<Object> ids = new ArrayList<Object>();
+              for (Key key : t.getMealsKeys()) {
+                 ids.add(pm.newObjectIdInstance(Meal.class, key));
+              }
+              List<Meal> meals = (List<Meal>) pm.getObjectsById(ids);
+              
+              for(Meal m : meals) {
 
-                for(FoodInMealTime f : m.getFoods()) {
+                for(Food f : m.getFoods()) {
                   final long nameId = f.getNameId();
                   
                   //if name found
