@@ -11,11 +11,11 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import com.delect.motiver.server.PMF;
+import com.delect.motiver.server.jdo.FoodNameCount;
+import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.Food;
-import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.Meal;
-import com.delect.motiver.server.jdo.nutrition.MealInTime;
 import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
@@ -58,12 +58,16 @@ public class NutritionDAO {
         Time copy = pm.detachCopy(time);
         //get meals
         List<Meal> meals = new ArrayList<Meal>();
-        if(time.getMealsKeys().size() > 0) {
-          List<Object> ids = new ArrayList<Object>();
-          for (Key key : time.getMealsKeys()) {
-             ids.add(pm.newObjectIdInstance(Meal.class, key));
+        try {
+          if(time.getMealsKeys().size() > 0) {
+            List<Object> ids = new ArrayList<Object>();
+            for (Key key : time.getMealsKeys()) {
+               ids.add(pm.newObjectIdInstance(Meal.class, key));
+            }
+            meals = (List<Meal>) pm.getObjectsById(ids);
           }
-          meals = (List<Meal>) pm.getObjectsById(ids);
+        } catch (Exception e) {
+          logger.log(Level.SEVERE, "Error loading meals", e);
         }
         copy.setMealsNew(meals);
         
@@ -208,49 +212,31 @@ public class NutritionDAO {
     return ok;
   }
 
-  public List<Time> addTimes(List<Time> models) throws Exception {
-    
-    List<Time> list = new ArrayList<Time>();
+  public void addTimes(List<Time> models) throws Exception {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    
     try {
-      pm.makePersistentAll(models);
       
       for(Time time : models) {
-        Time copy = pm.detachCopy(time);
-        copy.setMeals(new ArrayList<MealInTime>(pm.detachCopyAll(time.getMeals())));
-        copy.setFoods(new ArrayList<Food>(pm.detachCopyAll(time.getFoods())));
-        
-        //find names for each food
-        for(MealInTime m : copy.getMeals()) {
-          for(FoodInMealTime f : m.getFoods()) {
-            if(f.getNameId().longValue() > 0) {
-              f.setName(pm.detachCopy(pm.getObjectById(FoodName.class, f.getNameId())));
-            }
-          }
-        }
-        for(Food f : copy.getFoods()) {
-          if(f.getNameId().longValue() > 0) {
-            f.setName(pm.detachCopy(pm.getObjectById(FoodName.class, f.getNameId())));
-          }
-        }
-        
-        list.add(copy);
+        pm.makePersistent(time);
       }
+      tx.commit();
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding times", e);
     }
     finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
       if (!pm.isClosed()) {
         pm.close();
       } 
-    }
-    
-    
-    return list;
-    
+    }    
   }
 
   public Time addMeals(long timeId, List<Meal> models) throws Exception {
@@ -317,7 +303,7 @@ public class NutritionDAO {
     }
   }
 
-  public boolean removeMeal(long id, String uid) throws Exception {
+  public boolean removeMeal(Meal model) throws Exception {
     
     boolean ok = false;
 
@@ -333,7 +319,7 @@ public class NutritionDAO {
         
         try {
           
-          Meal t = pm.getObjectById(Meal.class, id);
+          Meal t = pm.getObjectById(Meal.class, model.getId());
           
           if(t != null) {
             
@@ -376,74 +362,6 @@ public class NutritionDAO {
     
     
     return ok;
-  }
-
-  public Time removeMeal(long id, long timeId, String uid) throws Exception {
-    
-    Time t = null;
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-    //try to update X times
-      int retries = Constants.LIMIT_UPDATE_RETRIES;
-      while (true) {
-
-        Transaction tx = pm.currentTransaction();
-        tx.begin();
-        
-        try {
-          
-          t = pm.getObjectById(Time.class, timeId);
-          
-          if(t != null) {
-            
-            for(MealInTime m : t.getMeals()) {
-              if(m.getId().longValue() == id) {
-                t.getMeals().remove(m);
-                break;
-              }
-            }
-            pm.flush();
-            tx.commit();
-
-            t = pm.detachCopy(t);
-            
-            break;
-          }
-          
-        }
-        catch (Exception e) {
-          if (tx.isActive()) {
-            tx.rollback();
-          }
-          if(e instanceof NoPermissionException) {         
-            throw e;
-          }
-          logger.log(Level.WARNING, "Error deleting meal", e);
-          
-          //retries used
-          if (retries == 0) {          
-            throw e;
-          }
-          logger.log(Level.WARNING, " Retries left: "+retries);
-          
-          --retries;
-        }
-    
-      }
-      
-    } catch (Exception e) {
-      throw e;
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    
-    return t;
   }
 
   public Meal getMeal(long mealId) throws Exception {
@@ -508,6 +426,9 @@ public class NutritionDAO {
       throw e;
     }
     finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -537,10 +458,106 @@ public class NutritionDAO {
       throw e;
     }
     finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
       if (!pm.isClosed()) {
         pm.close();
       } 
     }
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<FoodName> getFoodNames() throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    List<FoodName> n = new ArrayList<FoodName>();
+    
+    try {
+      
+      int i = 0;
+      while(true){
+        Query q = pm.newQuery(FoodName.class);
+        q.setRange(i, i+100);
+        List<FoodName> u = (List<FoodName>) q.execute();
+        n.addAll(u);
+        
+        if(u.size() < 100) {
+          break;
+        }
+        i += 100;
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return n;
+  }
+
+  @SuppressWarnings("unchecked")
+  public int getFoodNameCount(UserOpenid user, Long id) throws Exception {
+
+    int count = -1;
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
+      
+      Query qUse = pm.newQuery(FoodNameCount.class);
+      qUse.setFilter("nameId == nameIdParam && openId == openIdParam");
+      qUse.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
+      qUse.setRange(0, 1);
+      List<FoodNameCount> valueCount = (List<FoodNameCount>) qUse.execute(id, user.getUid());
+      if(valueCount.size() > 0) {
+        count = valueCount.get(0).getCount();
+      }
+      
+      if(count < 0) {
+        count = 0;
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return count;
+  }
+
+  public void addFoodName(FoodName name) {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    
+    try {
+      
+      pm.makePersistent(name);
+      tx.commit();
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding food name", e);
+    }
+    finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }    
   }
 
 

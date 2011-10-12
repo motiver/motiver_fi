@@ -969,28 +969,15 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   @Override
   @Deprecated public FoodNameModel addFoodname(FoodNameModel name) throws ConnectionException {
 
-    logger.log(Level.FINE, "addFoodname()");
-    
-    FoodNameModel m = null;
-    
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return m;
-    }
-
-    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
-    
-    try {
-      m = nutritionManager.addFoodNameModel(name, UID, LOCALE);
-    }
-    catch (Exception e) {
-      throw new ConnectionException("addFoodname", e.getMessage());
-    }
-    
-    return m;
+      List<FoodNameModel> list = new ArrayList<FoodNameModel>();
+      list.add(name);
+      
+      list = addFoodnames(list);
+      if(list.size() > 0) {
+        return list.get(0);
+      }
+      
+      return null;
   }
 
   /**
@@ -999,15 +986,26 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return added name (null if add not successful)
    */
   @Override
-  @Deprecated public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException {
+  public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException {
 
-    logger.log(Level.FINE, "addFoodnames()");
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    NutritionManager nutritionManager = NutritionManager.getInstance();  
+    
+    List<FoodName> jdoList = new ArrayList<FoodName>();
+    for(FoodNameModel n : names) {
+      jdoList.add(FoodName.getServerModel(n));
+    }
+    jdoList = nutritionManager.addFoodNames(user, jdoList);
+    
+    //convert to client side models
     List<FoodNameModel> list = new ArrayList<FoodNameModel>();
-    for(FoodNameModel name : names)
-      list.add(addFoodname(name));
+    for(FoodName n : jdoList) {
+      list.add(FoodName.getClientModel(n));
+    }
     
     return list;
+    
   }
 
   /**
@@ -1217,7 +1215,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     return m;
   }
 
-  @SuppressWarnings({ "unchecked", "deprecation" })
+  @SuppressWarnings({ "unchecked" })
   @Override
   @Deprecated public RoutineModel addRoutine(RoutineModel routine) throws ConnectionException  {
 
@@ -1348,7 +1346,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     return m;
   }
   
-  @SuppressWarnings({ "unchecked", "deprecation" })
+  @SuppressWarnings({ "unchecked" })
   @Override
   @Deprecated public List<RoutineModel> addRoutines(List<RoutineModel> routines) throws ConnectionException  {
 
@@ -1716,7 +1714,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @param workouts : models to be added
    * @return added workouts (null if add not successful
    */
-  @SuppressWarnings("deprecation")
   @Override
   @Deprecated public List<WorkoutModel> addWorkouts(List<WorkoutModel> workouts) throws ConnectionException  {
 
@@ -5630,16 +5627,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   @Override
   public Boolean removeMeal(MealModel model) throws ConnectionException {
     
-    //get uid
-    UserManager userManager = UserManager.getInstance();
+    //get user
     UserOpenid user = userManager.getUser(perThreadRequest);
-    if(user == null) {
-      return null;
-    }
-    final String UID = user.getUid();
     
     NutritionManager nutritionManager = NutritionManager.getInstance();
-    boolean ok = nutritionManager.removeMeal(model.getId(), model.getTimeId(), UID);
+    
+    Meal jdo = Meal.getServerModel(model);
+    boolean ok = nutritionManager.removeMeal(user, jdo, model.getTimeId());
     
     return ok;
   }
@@ -6104,7 +6098,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * Returns all exercise names
    * @return names' models
    */
-  @SuppressWarnings("unchecked")
   @Override
   @Deprecated public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
 
@@ -6231,117 +6224,17 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return names' models
    */
   @Override
-  @Deprecated public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
+  public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchFoodNames()");
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    
+    NutritionManager nutritionManager = NutritionManager.getInstance();    
+    List<FoodName> jdoList = nutritionManager.searchFoodNames(user, query, limit);
     
     //convert to client side models
     List<FoodNameModel> list = new ArrayList<FoodNameModel>();
-    
-    //get uid and locale
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return list;
-    }
-      
-    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
-
-    try {
-      //split query string
-      //strip special characters
-      query = query.replace("(", "");
-      query = query.replace(")", "");
-      query = query.replace(",", "");
-      query = query.toLowerCase();
-      String[] arr = query.split(" ");
-      
-      //TODO missing equipment search and locale
-      List<FoodName> names = nutritionManager.getFoodNames();
-
-      List<FoodName> arrNames = new ArrayList<FoodName>();
-        
-      for(int i=0; i < names.size(); i++) {
-        FoodName n = names.get(i);
-
-        String name = n.getName();
-        //strip special characters
-        name = name.replace("(", "");
-        name = name.replace(")", "");
-        name = name.replace(",", "");
-        
-        //filter by query (add count variable)
-        int count = 0;
-        for(String s : arr) {
-          //if word long enough
-          if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-            //exact match
-            if(name.toLowerCase().equals( s )) {
-              count += 3;
-            }
-            //partial match
-            else if(name.toLowerCase().contains( s )) {
-              count++;
-            }
-          }
-        }
-        //if motiver's food -> add count
-        if(count > 0) {
-          if(n.getTrusted() == 100) {
-            count += 2;
-          }
-          //if verified
-          else if(n.getTrusted() == 1) {
-            count++;
-          }
-        }
-        
-        //if found
-        if(count > 0) {
-
-          int countUse = 0;
-          try {
-            countUse = nutritionManager.getFoodNameCount(UID, n.getId());
-          } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error fetching food name count", e);
-          }
-          
-          n.setCount(count, countUse);
-          arrNames.add(n);
-        }
-      }
-      
-      //sort array based on count
-      Collections.sort(arrNames);
-      
-      //convert to client model
-      for(int i=0; i < arrNames.size() && i < limit; i++) {
-        FoodName n = arrNames.get(i);
-        if(n.getCountQuery() > 0) {
-          FoodNameModel nameClient = FoodName.getClientModel(n);
-          //if admin -> return also micronutrients
-          if(limit > 100) {
-            List<MicroNutrientModel> listMN = new ArrayList<MicroNutrientModel>();
-            for(MicroNutrient mn : n.getMicroNutrients())
-              listMN.add(MicroNutrient.getClientModel(mn));
-            nameClient.setMicronutrients(listMN);
-          }
-          list.add(nameClient);
-        }
-        else {
-          break;
-        }
-        //limit query (only if not "admin search" (==no query word)
-        if(list.size() >= limit) {
-          break;
-        }
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error searching food names", e);
-
-      throw new ConnectionException("searchFoodNames", e.getMessage());
+    for(FoodName n : jdoList) {
+      list.add(FoodName.getClientModel(n));
     }
     
     return list;
@@ -7184,7 +7077,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @param model to be updated
    * @return update successfull
    */
-  @SuppressWarnings({ "unchecked", "deprecation" })
+  @SuppressWarnings({ "unchecked" })
   @Override
   @Deprecated public Boolean updateRoutine(RoutineModel model) throws ConnectionException {
 

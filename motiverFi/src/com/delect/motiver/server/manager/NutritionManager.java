@@ -1,6 +1,7 @@
 package com.delect.motiver.server.manager;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
@@ -10,9 +11,11 @@ import com.delect.motiver.server.cache.NutritionCache;
 import com.delect.motiver.server.dao.NutritionDAO;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.FoodNameModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 
@@ -262,8 +265,6 @@ public class NutritionManager {
       return null;
     }
     
-    List<Time> list = null;
-    
     try {
       
       for(Time t : models) {
@@ -286,14 +287,14 @@ public class NutritionManager {
       //assume that all times have same date
       cache.setTimes(uid, models.get(0).getDate(), null);
 
-      list = dao.addTimes(models);
+      dao.addTimes(models);
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding times", e);
       throw new ConnectionException("Error adding times", e);
     }
     
-    return list;
+    return models;
   }
 
 
@@ -378,7 +379,7 @@ public class NutritionManager {
   }
 
 
-  public boolean removeMeal(long id, long timeId, String uid) throws ConnectionException {
+  public boolean removeMeal(UserOpenid user, Meal model, long timeId) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Removing meal");
@@ -386,21 +387,23 @@ public class NutritionManager {
     
     boolean ok = false;
     try {
+      
+      //update time
       if(timeId != 0) {
-        Time t = dao.removeMeal(id, timeId, uid);
-        if(t != null) {
-          ok = true;
+        Time time = dao.getTime(timeId);
+        
+        userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
 
-          //remove from cache
-          cache.setTimes(uid, t.getDate(), null);
-        }
-      }
-      else {
-        ok = dao.removeMeal(id, uid); 
-
+        time.getMealsKeys().remove(model);
+        dao.updateTime(time);
+        
         //remove from cache
-        cache.removeMeal(id);
+        cache.setTimes(time.getUid(), time.getDate(), null);
       }
+      
+      //remove meal & cache
+      cache.removeMeal(model.getId());
+      ok = dao.removeMeal(model);
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing meal", e);
@@ -408,6 +411,171 @@ public class NutritionManager {
     }
     
     return ok;
+  }
+
+
+  public List<FoodName> searchFoodNames(UserOpenid user, String query, int limit) throws ConnectionException {
+
+    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching food names: "+query);
+    }
+    
+    List<FoodName> list = new ArrayList<FoodName>();    
+
+    try {
+
+      //load from cache
+      List<FoodName> listAll = cache.getFoodNames();
+      
+      if(listAll == null) {
+        listAll = dao.getFoodNames();
+        
+        //save to cache
+        cache.setFoodNames(listAll);
+      }
+      
+      if(listAll != null) {
+      
+        //split query string
+        //strip special characters
+        query = query.replace("(", "");
+        query = query.replace(")", "");
+        query = query.replace(",", "");
+        query = query.toLowerCase();
+        String[] arr = query.split(" ");
+        
+        //search
+        List<FoodName> result = new ArrayList<FoodName>();
+        
+        for(int i=0; i < listAll.size(); i++) {
+          FoodName n = listAll.get(i);
+  
+          String name = n.getName();
+          
+          //strip special characters
+          name = name.replace("(", "");
+          name = name.replace(")", "");
+          name = name.replace(",", "");
+          
+          //filter by query (add count variable)
+          int count = 0;
+          for(String s : arr) {
+            //if word long enough
+            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
+              //exact match
+              if(name.toLowerCase().equals( s )) {
+                count += 3;
+              }
+              //partial match
+              else if(name.toLowerCase().contains( s )) {
+                count++;
+              }
+            }
+          }
+          //if motiver's food -> add count
+          if(count > 0) {
+            if(n.getTrusted() == 100) {
+              count += 2;
+            }
+            //if verified
+            else if(n.getTrusted() == 1) {
+              count++;
+            }
+          }
+
+          //if found
+          if(count > 0) {
+  
+            int countUse = 0;
+            try {
+              countUse = cache.getFoodNameCount(user, n.getId());
+              
+              if(countUse == -1) {
+                countUse = dao.getFoodNameCount(user, n.getId());
+                
+                cache.setFoodNameCount(user, n.getId(), countUse);
+              }
+              
+            } catch (Exception e) {
+              logger.log(Level.SEVERE, "Error fetching food name count", e);
+            }
+            
+            n.setCount(count, countUse);
+            result.add(n);
+          }
+        }
+        
+        //sort array based on count
+        Collections.sort(result);
+        
+        //convert to client model
+        for(int i=0; i < result.size() && i < limit; i++) {
+          FoodName n = result.get(i);
+          if(n.getCountQuery() > 0) {
+            list.add(n);
+          }
+          else {
+            break;
+          }
+          //limit query
+          if(list.size() >= limit) {
+            break;
+          }
+        }
+      
+      }
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error searching food names", e);
+      throw new ConnectionException("Error searching food names", e);
+    }
+    
+    return list;
+  }
+
+
+  @SuppressWarnings("unused")
+  public List<FoodName> addFoodNames(UserOpenid user, List<FoodName> names) throws ConnectionException {
+
+    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding food names");
+    }
+    
+    List<FoodName> list = new ArrayList<FoodName>(); 
+
+    try {
+      
+      //load from cache
+      List<FoodName> listAll = cache.getFoodNames();
+      
+      if(list == null) {
+        listAll = dao.getFoodNames();
+      }
+      
+      for(FoodName name : names) {
+        
+        //add if not found
+        if(!listAll.contains(name)) {
+          name.setUid(user.getUid());
+          
+          dao.addFoodName(name);
+          
+          //update "cache" array
+          listAll.add(name);
+        }
+        
+        list.add(name);
+      }
+
+      //save to cache
+      cache.setFoodNames(listAll);
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding food names", e);
+      throw new ConnectionException("Error adding food names", e);
+    }
+    
+    return list;
   }
 
 }

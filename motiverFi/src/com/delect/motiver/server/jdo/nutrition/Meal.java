@@ -217,8 +217,14 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     setUid(model.getUid());
     
     for(Food f : model.getFoods()) {
-      Food fOld = getFoods().get(getFoods().indexOf(f));
-      fOld.update(f);
+      int i = getFoods().indexOf(f);
+      if(i != -1) {
+        Food fOld = getFoods().get(i);
+        fOld.update(f);
+      }
+      else {
+        getFoods().add(f);
+      }
     }
   }
 }

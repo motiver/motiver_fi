@@ -49,6 +49,8 @@ public class Food implements Serializable, Cloneable {
 		modelClient.setId(model.getId().longValue());
 		modelClient.setAmount(model.getAmount());
 		modelClient.setUid(model.getUid());
+		modelClient.setName(FoodName.getClientModel(model.getName()));
+		
 		return modelClient;
 	}
   

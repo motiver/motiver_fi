@@ -81,6 +81,20 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 		return modelServer;
 	}
   
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof FoodName) {
+      FoodName name = (FoodName)obj;
+      
+      return  name.getEnergy().equals(getEnergy())
+          && name.getName().equals(getName())
+          && name.getLocale().equals(getLocale());
+    }
+    else {
+      return false;
+    }
+  }
+  
   public Integer countQuery;
   public Integer countUse;
 	
