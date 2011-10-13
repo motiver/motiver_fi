@@ -278,7 +278,7 @@ public class MealsListSubPresenter extends Presenter {
 						});
 						showMorePresenter2.run(display.getMostPopularContainer());
 					}
-					else {		
+					else {
 						//new presenter
 						final MealLinkPresenter wp = new MealLinkPresenter(rpcService, eventBus, (MealLinkDisplay)GWT.create(MealLinkView.class), m, quickSelectionEnabled);
 						addNewMostPopularPresenter(wp);
@@ -331,7 +331,7 @@ public class MealsListSubPresenter extends Presenter {
 						});
 						showMorePresenter.run(display.getMyMealsContainer());
 					}
-					else {		
+					else {
 						//new presenter
 						final MealLinkPresenter wp = new MealLinkPresenter(rpcService, eventBus, (MealLinkDisplay)GWT.create(MealLinkView.class), m, quickSelectionEnabled);
 						addNewMyMealPresenter(wp);

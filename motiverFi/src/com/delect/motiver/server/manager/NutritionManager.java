@@ -45,6 +45,10 @@ public class NutritionManager {
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Loading times ("+date+")");
     };
+
+    if(date == null) {
+      return null;
+    }
     
     //check permissions
     userManager.checkPermission(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
@@ -208,10 +212,28 @@ public class NutritionManager {
     //check permissions
     userManager.checkPermission(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
     
-    List<Meal> list = null;
+    List<Meal> list = new ArrayList<Meal>();
     
     try {
-      list = dao.getMeals(index, uid);
+      List<Long> keys = dao.getMeals(index, uid);
+      
+      for(Long key : keys) {
+
+        //check cache
+        Meal jdo = cache.getMeal(key);
+        
+        if(jdo == null) {
+          jdo = dao.getMeal(key);
+          
+          //check permission
+          userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), jdo.getUid());
+         
+          cache.addMeal(jdo);
+        }
+        
+        list.add(jdo);
+      }
+      
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading meals", e);
       throw new ConnectionException("getMeals", e.getMessage());
@@ -335,7 +357,7 @@ public class NutritionManager {
             jdo = dao.getMeal(meal.getId());
             
             //check permission
-            userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), jdo.getUid());
+            userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), jdo.getUid());
            
             cache.addMeal(jdo);
           }

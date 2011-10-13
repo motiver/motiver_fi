@@ -507,7 +507,7 @@ public interface MyService extends RemoteService {
    * @return foods
    * @throws ConnectionException the connection exception
    */
-  public List<FoodModel> getFoods(MealModel meal) throws ConnectionException;
+  //public List<FoodModel> getFoods(MealModel meal) throws ConnectionException;
   
   /**
    * Returns user all facebook friends that have logged to xlgain.

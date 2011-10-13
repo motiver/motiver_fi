@@ -103,9 +103,10 @@ public class NutritionDAO {
     return list;
   }
 
-  public List<Meal> getMeals(int index, String uid) throws Exception {
+  @SuppressWarnings("unchecked")
+  public List<Long> getMeals(int index, String uid) throws Exception {
 
-    List<Meal> list = new ArrayList<Meal>();
+    List<Long> list = new ArrayList<Long>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -127,7 +128,7 @@ public class NutritionDAO {
             break;
           }
                           
-          list.add(m);
+          list.add(m.getId());
           
           i++;
         }
@@ -371,6 +372,13 @@ public class NutritionDAO {
     
     try {
       meal = pm.getObjectById(Meal.class, mealId);
+      
+      for(Food f : meal.getFoods()) {
+        if(f.getNameId().longValue() > 0) {
+          f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
+        }
+      }
+      
     } catch (Exception e) {
       throw e;
     }

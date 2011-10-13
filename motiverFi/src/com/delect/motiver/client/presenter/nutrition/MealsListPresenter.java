@@ -403,8 +403,7 @@ public class MealsListPresenter extends Presenter {
 				mealsListSearchPresenter.hide();
 	    }
 			
-			//show single meal (clear foods)
-			m.setFoods(null);
+			//show single meal
 			singleMealPresenter = new MealPresenter(rpcService, eventBus, (MealDisplay)GWT.create(MealView.class), m);
 			singleMealPresenter.run(display.getDataContainer());
 			

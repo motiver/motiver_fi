@@ -50,6 +50,7 @@ public interface MyServiceAsync {
   
   /**
    * Adds cardio to db.
+   * 
    *
    * @param cardio : model to be added
    * @param callback the callback
@@ -500,7 +501,7 @@ public interface MyServiceAsync {
    * @param callback the callback
    * @return foods
    */
-  public Request getFoods(MealModel meal, AsyncCallback<List<FoodModel>> callback);
+  //public Request getFoods(MealModel meal, AsyncCallback<List<FoodModel>> callback);
   
   /**
    * Returns user all facebook friends that have logged to xlgain.

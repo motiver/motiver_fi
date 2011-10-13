@@ -15,7 +15,9 @@
 package com.delect.motiver.client.presenter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
@@ -36,7 +38,7 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 public abstract class Presenter {
 	
 	private List<HandlerRegistration> listHandlers = new ArrayList<HandlerRegistration>();
-	private List<Request> rpcRequests = new ArrayList<Request>();
+	private Set<Request> rpcRequests = new HashSet<Request>();
 	protected LayoutContainer container = null;
 	
 	protected SimpleEventBus eventBus;

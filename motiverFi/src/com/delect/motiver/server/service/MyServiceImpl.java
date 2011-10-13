@@ -3705,7 +3705,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return foods
    * @throws ConnectionException 
    */
-  @Override
+  /*@Override
   @Deprecated public List<FoodModel> getFoods(MealModel meal) throws ConnectionException {
 
     logger.log(Level.FINE, "getFoods()");
@@ -3749,7 +3749,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     
     return list;
     
-  }
+  }*/
 
   /**
    * Returns user all facebook friends that have logged to motiver
@@ -5258,10 +5258,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     }
 
     List<TimeModel> list = new ArrayList<TimeModel>();
-
-    if(date == null) {
-      return null;
-    }
     
     //get user
     UserOpenid user = userManager.getUser(perThreadRequest);

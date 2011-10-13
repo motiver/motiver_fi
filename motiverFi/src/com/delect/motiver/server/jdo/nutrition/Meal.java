@@ -54,13 +54,13 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		modelClient.setUid(model.getUid());
 
     //foods
+    List<FoodModel> foods = new ArrayList<FoodModel>();
     if(model.getFoods() != null) {
-      List<FoodModel> foods = new ArrayList<FoodModel>();
       for(Food m : model.getFoods()) {
         foods.add(Food.getClientModel(m));
       }
-      modelClient.setFoods(foods);
     }
+    modelClient.setFoods(foods);
     
 		return modelClient;
 	}

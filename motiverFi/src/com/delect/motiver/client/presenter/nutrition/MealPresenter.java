@@ -126,7 +126,7 @@ public class MealPresenter extends Presenter {
 			}
 			@Override
 			public void foodsVisible() {
-				loadFoods();
+        showFoods();
 			}
 			@Override
 			public void mealRemoved() {
@@ -161,7 +161,7 @@ public class MealPresenter extends Presenter {
 					foodCopy.setUid(meal.getUid());
 					foodCopy.setName(food.getName());
 					foodCopy.setAmount(food.getAmount());
-					rpcService.addFood(foodCopy, new MyAsyncCallback<FoodModel>() {
+					Request req = rpcService.addFood(foodCopy, new MyAsyncCallback<FoodModel>() {
 						@Override
 						public void onSuccess(FoodModel result) {
 							display.setContentEnabled(true);
@@ -177,6 +177,7 @@ public class MealPresenter extends Presenter {
 							fireEvent(new FoodCreatedEvent(result));
 						}
 					});
+					addRequest(req);
 				}
 				//create dummy food
 				else {
@@ -258,7 +259,7 @@ public class MealPresenter extends Presenter {
 	@Override
 	public void onRun() {
     if(meal.getId() != 0) {
-      loadFoods();
+      showFoods();
     }
     //no model -> highlight
     else {
@@ -506,34 +507,6 @@ public class MealPresenter extends Presenter {
         fireEvent(new MealUpdatedEvent(meal));
 	    }
 		}
-	}
-
-	/**
-	 * Loads foods
-	 */
-	void loadFoods() {
-
-    //if meals loaded
-    if(meal.getFoods() != null) {
-      showFoods();
-    }
-    //load from server
-    else {
-
-      //add empty presenter
-      emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING);
-      emptyPresenter.run(display.getBodyContainer());
-    		
-      //fetch foods
-			final Request req = rpcService.getFoods(meal, new MyAsyncCallback<List<FoodModel>>() {
-				@Override
-				public void onSuccess(List<FoodModel> result) {
-          meal.setFoods(result);
-          showFoods();
-        }
-			});
-			addRequest(req);
-    }
 	}
 
 }
