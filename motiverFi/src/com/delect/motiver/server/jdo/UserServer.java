@@ -53,12 +53,6 @@ public class UserServer {
 			modelClient.setGender(model.getGender());
 			modelClient.setLocale(model.getLocale());
 			
-			modelClient.setShareTraining(model.getShareTraining());
-			modelClient.setShareNutrition(model.getShareNutrition());
-      modelClient.setShareNutritionFoods(model.getShareNutritionFoods());
-			modelClient.setShareCardio(model.getShareCardio());
-			modelClient.setShareMeasurement(model.getShareMeasurement());
-			modelClient.setShareCoach(model.getShareCoach());
 			modelClient.setAdmin(model.isAdmin());
 			modelClient.setBanned(model.isBanned());
 			modelClient.setAlias(model.getAlias());

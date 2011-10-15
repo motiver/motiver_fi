@@ -1,13 +1,17 @@
 package com.delect.motiver.server.dao;
 
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
+import javax.jdo.Transaction;
 
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Circle;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.shared.Constants;
 
 public class UserDAO {
 
@@ -46,7 +50,7 @@ public class UserDAO {
       q.setFilter(builder.toString());
       q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
       q.setRange(0,1);
-      List<Circle> list = (List<Circle>)q.execute(uid, ourUid, target);
+      List<Circle> list = (List<Circle>)q.execute(ourUid, uid, target);
       
       if(list.size() > 0) {
         circle = list.get(0);
@@ -61,6 +65,132 @@ public class UserDAO {
     }
     
     return circle;
+  }
+
+  public void addCircle(Circle circle) throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
+      
+      pm.makePersistent(circle);
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+  }
+
+  public boolean removeCircle(Circle model) throws Exception {
+    
+    boolean ok = false;
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    try {
+
+      int retries = Constants.LIMIT_UPDATE_RETRIES;
+      while (true) {
+
+        Transaction tx = pm.currentTransaction();
+        tx.begin();
+        
+        try {
+          
+          Circle t = pm.getObjectById(Circle.class, model.getId());
+          
+          if(t != null) {
+            
+            pm.deletePersistent(t);
+            tx.commit();
+  
+            ok = true;
+            break;
+          }
+          
+        }
+        catch (Exception e) {
+          if (tx.isActive()) {
+            tx.rollback();
+          }
+          logger.log(Level.WARNING, "Error deleting circle", e);
+          
+          //retries used
+          if (retries == 0) {          
+            throw e;
+          }
+          logger.log(Level.WARNING, " Retries left: "+retries);
+          
+          --retries;
+        }
+    
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    
+    return ok;
+  }
+
+  @SuppressWarnings("unchecked")
+  public List<Circle> getCircles(String uid, int target) throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    List<Circle> list = null;
+    
+    try {
+      
+      Query q = pm.newQuery(Circle.class);
+      q.setFilter("openId == openIdParam && target == targetParam");
+      q.declareParameters("java.lang.String openIdParam, java.lang.Integer targetParam");
+      List<Circle> jdo = (List<Circle>) q.execute(uid, target);
+      
+      if(jdo != null) {
+        list = (List<Circle>) pm.detachCopyAll(jdo);
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return list;
+  }
+
+  public UserOpenid getUser(String uid) throws Exception {
+
+    UserOpenid user = null;
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
+      user = pm.getObjectById(UserOpenid.class, uid);
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return user;
   }
 
 }

@@ -19,7 +19,6 @@ import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.exception.NoPermissionException;
 import com.google.appengine.api.datastore.Key;
 
 public class NutritionDAO {
@@ -38,6 +37,7 @@ public class NutritionDAO {
     return dao;
   }
 
+  @SuppressWarnings("unchecked")
   public List<Time> getTimes(Date date, String uid) throws Exception {
     
     ArrayList<Time> list = new ArrayList<Time>();
@@ -181,9 +181,6 @@ public class NutritionDAO {
           catch (Exception e) {
             if (tx.isActive()) {
               tx.rollback();
-            }
-            if(e instanceof NoPermissionException) {         
-              throw e;
             }
             logger.log(Level.WARNING, "Error deleting time", e);
             
@@ -335,9 +332,6 @@ public class NutritionDAO {
         catch (Exception e) {
           if (tx.isActive()) {
             tx.rollback();
-          }
-          if(e instanceof NoPermissionException) {         
-            throw e;
           }
           logger.log(Level.WARNING, "Error deleting meal", e);
           
@@ -566,6 +560,47 @@ public class NutritionDAO {
         pm.close();
       } 
     }    
+  }
+
+  /**
+   * Return single meals
+   * @return
+   * @throws Exception
+   */
+  @SuppressWarnings("unchecked")
+  public List<Meal> getMeals() throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    List<Meal> n = new ArrayList<Meal>();
+    
+    try {
+      
+      int i = 0;
+      while(true){
+        Query q = pm.newQuery(Meal.class);
+        q.setFilter("timeId == null");
+        q.setOrdering("name ASC");
+        q.setRange(i, i+100);
+        List<Meal> u = (List<Meal>) q.execute();
+        n.addAll(u);
+        
+        if(u.size() < 100) {
+          break;
+        }
+        i += 100;
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return n;
   }
 
 

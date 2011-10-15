@@ -14,6 +14,7 @@
  ******************************************************************************/
 package com.delect.motiver.server.jdo;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
@@ -25,7 +26,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Circle {
+public class Circle implements Serializable {
 
   @PrimaryKey
   @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -50,6 +51,15 @@ public class Circle {
     
     date = new Date();
 	}
+
+  public Long getId() {
+    if(id != null) {
+      return id.getId();
+    }
+    else {
+      return 0L;
+    }
+  }
 
 	public String getUid() {
 		if(openId != null) {
@@ -84,5 +94,9 @@ public class Circle {
    */
   public void setTarget(Integer target) {
     this.target = target;
+  }
+
+  public Object getTarget() {
+    return target;
   }
 }

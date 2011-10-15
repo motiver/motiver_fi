@@ -212,11 +212,12 @@ public class PermissionsCirclePresenter extends Presenter {
         emptyPresenter.run(display.getBodyContainer());
       }
       else {
-        
+
+        display.setAllUsersEnabled(false);
         for(UserModel m : list) {
           String id = m.getUid();
-          
-          //if all users (id == -1)
+
+          //if enabled permissions for all users, uid is "-1"
           if(m.getUid().equals("-1")) {
             display.setAllUsersEnabled(true);
           }

@@ -62,12 +62,12 @@ public class UserOpenid implements Serializable {
 			modelClient.setGender(model.getGender());
 			modelClient.setLocale(model.getLocale());
 			
-			modelClient.setShareTraining(model.getShareTraining());
-			modelClient.setShareNutrition(model.getShareNutrition());
-      modelClient.setShareNutritionFoods(model.getShareNutritionFoods());
-			modelClient.setShareCardio(model.getShareCardio());
-			modelClient.setShareMeasurement(model.getShareMeasurement());
-			modelClient.setShareCoach(model.getShareCoach());
+//			modelClient.setShareTraining(model.getShareTraining());
+//			modelClient.setShareNutrition(model.getShareNutrition());
+//      modelClient.setShareNutritionFoods(model.getShareNutritionFoods());
+//			modelClient.setShareCardio(model.getShareCardio());
+//			modelClient.setShareMeasurement(model.getShareMeasurement());
+//			modelClient.setShareCoach(model.getShareCoach());
 			modelClient.setAdmin(model.isAdmin());
 			modelClient.setBanned(model.isBanned());
 			modelClient.setAlias(model.getAlias());
@@ -101,18 +101,18 @@ public class UserOpenid implements Serializable {
 	private String locale;
 	@Persistent
 	private Integer measurementSystem;
-	@Persistent
-	private String shareCardio;
-	@Persistent
-	private String shareCoach;
-	@Persistent
-	private String shareMeasurement;
-	@Persistent
-	private String shareNutrition;
-	@Persistent
-	private String shareNutritionFoods;
-	@Persistent
-	private String shareTraining;
+//	@Persistent
+//	private String shareCardio;
+//	@Persistent
+//	private String shareCoach;
+//	@Persistent
+//	private String shareMeasurement;
+//	@Persistent
+//	private String shareNutrition;
+//	@Persistent
+//	private String shareNutritionFoods;
+//	@Persistent
+//	private String shareTraining;
 	@Persistent
 	private Long timeComments;
 	@Persistent
@@ -186,93 +186,93 @@ public class UserOpenid implements Serializable {
 		return measurementSystem;
 	}
 
-	/**
-	 * Target to share cardio with
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareCardio() {
-		if(shareCardio != null && shareCardio.length() > 0) {
-      return shareCardio;
-    }
-		
-		return "0";
-  }
-
-	/**
-	 * Target to coach
-	 * <br>-1 : share with nobody
-	 * <br>>0 : facebook user id
-	 */
-	public String getShareCoach() {
-		if(shareCoach != null) {
-      return shareCoach;
-    }
-		
-		return "";
-  }
-
-	/**
-	 * Target to share measurements with
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareMeasurement() {
-		if(shareMeasurement != null && shareMeasurement.length() > 0) {
-      return shareMeasurement;
-    }
-		
-		return "0";
-  }
-
-	/**
-	 * Target to share nutrition with (only calories)
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareNutrition() {
-		if(shareNutrition != null && shareNutrition.length() > 0) {
-      return shareNutrition;
-    }
-		
-		return "0";
-  }
-
-	/**
-	 * Target to share foods with
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareNutritionFoods() {
-		if(shareNutritionFoods != null && shareNutritionFoods.length() > 0) {
-      return shareNutritionFoods;
-    }
-		
-		return getShareNutrition();
-  }
-
-	/**
-	 * Target to share training with
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareTraining() {
-		if(shareTraining != null && shareTraining.length() > 0) {
-      return shareTraining;
-    }
-		
-		return "0";
-  }
+//	/**
+//	 * Target to share cardio with
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareCardio() {
+//		if(shareCardio != null && shareCardio.length() > 0) {
+//      return shareCardio;
+//    }
+//		
+//		return "0";
+//  }
+//
+//	/**
+//	 * Target to coach
+//	 * <br>-1 : share with nobody
+//	 * <br>>0 : facebook user id
+//	 */
+//	public String getShareCoach() {
+//		if(shareCoach != null) {
+//      return shareCoach;
+//    }
+//		
+//		return "";
+//  }
+//
+//	/**
+//	 * Target to share measurements with
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareMeasurement() {
+//		if(shareMeasurement != null && shareMeasurement.length() > 0) {
+//      return shareMeasurement;
+//    }
+//		
+//		return "0";
+//  }
+//
+//	/**
+//	 * Target to share nutrition with (only calories)
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareNutrition() {
+//		if(shareNutrition != null && shareNutrition.length() > 0) {
+//      return shareNutrition;
+//    }
+//		
+//		return "0";
+//  }
+//
+//	/**
+//	 * Target to share foods with
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareNutritionFoods() {
+//		if(shareNutritionFoods != null && shareNutritionFoods.length() > 0) {
+//      return shareNutritionFoods;
+//    }
+//		
+//		return getShareNutrition();
+//  }
+//
+//	/**
+//	 * Target to share training with
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareTraining() {
+//		if(shareTraining != null && shareTraining.length() > 0) {
+//      return shareTraining;
+//    }
+//		
+//		return "0";
+//  }
 
 	public Integer getTimeFormat() {
 		return timeFormat;
@@ -385,58 +385,58 @@ public class UserOpenid implements Serializable {
 		this.measurementSystem = measurementSystem;
 	}
 
-	/**
-	 * facebook group id
-	 * <br>"-1" : share with nobody
-	 * <br>"0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareCardio(String shareCardio) {
-		this.shareCardio = shareCardio;
-	}
-
-	/**
-	 * facebook group id
-	 * <br>"-1" : share with nobody (DEFAULT)
-	 */
-	public void setShareCoach(String shareCoach) {
-		this.shareCoach = shareCoach;
-	}
-
-	/**
-	 * facebook group id
-	 * <br>"-1" : share with nobody
-	 * <br>"0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareMeasurement(String shareMeasurement) {
-		this.shareMeasurement = shareMeasurement;
-	}
-
-	/**
-	 * facebook group id
-	 * <br>"-1" : share with nobody
-	 * <br>"0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareNutrition(String shareNutrition) {
-		this.shareNutrition = shareNutrition;
-	}
-
-	/**
-	 * facebook group id
-	 * <br>"-1" : share with nobody
-	 * <br>"0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareNutritionFoods(String shareNutritionFoods) {
-		this.shareNutritionFoods = shareNutritionFoods;
-	}
-
-	/**
-	 * facebook group id
-	 * <br>"-1" : share with nobody
-	 * <br>"0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareTraining(String shareTraining) {
-		this.shareTraining = shareTraining;
-	}
+//	/**
+//	 * facebook group id
+//	 * <br>"-1" : share with nobody
+//	 * <br>"0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareCardio(String shareCardio) {
+//		this.shareCardio = shareCardio;
+//	}
+//
+//	/**
+//	 * facebook group id
+//	 * <br>"-1" : share with nobody (DEFAULT)
+//	 */
+//	public void setShareCoach(String shareCoach) {
+//		this.shareCoach = shareCoach;
+//	}
+//
+//	/**
+//	 * facebook group id
+//	 * <br>"-1" : share with nobody
+//	 * <br>"0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareMeasurement(String shareMeasurement) {
+//		this.shareMeasurement = shareMeasurement;
+//	}
+//
+//	/**
+//	 * facebook group id
+//	 * <br>"-1" : share with nobody
+//	 * <br>"0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareNutrition(String shareNutrition) {
+//		this.shareNutrition = shareNutrition;
+//	}
+//
+//	/**
+//	 * facebook group id
+//	 * <br>"-1" : share with nobody
+//	 * <br>"0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareNutritionFoods(String shareNutritionFoods) {
+//		this.shareNutritionFoods = shareNutritionFoods;
+//	}
+//
+//	/**
+//	 * facebook group id
+//	 * <br>"-1" : share with nobody
+//	 * <br>"0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareTraining(String shareTraining) {
+//		this.shareTraining = shareTraining;
+//	}
 
 	public void setTimeFormat(int timeFormat) {
 		this.timeFormat = timeFormat;

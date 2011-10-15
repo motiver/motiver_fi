@@ -1,5 +1,6 @@
 package com.delect.motiver.server.manager;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -141,7 +142,7 @@ public class UserManager {
       }
 
       //update to cache
-      cache.setCircle(target, ourUid, uid, circle);
+      cache.addCircle(circle);
       
       if(circle != null) {
         ok = true;      
@@ -170,12 +171,10 @@ public class UserManager {
       return;
     }
     
-    UserManager userManager = getInstance();
-    
     boolean ok = false;
     
     try {
-      ok = userManager.getPermission(target, ourUid, uid);
+      ok = getPermission(target, ourUid, uid);
     } catch (ConnectionException e) {
       logger.log(Level.SEVERE, "Error checking permissions", e);
     }
@@ -184,6 +183,109 @@ public class UserManager {
       throw new NoPermissionException(target, ourUid, uid);
     }
     
+  }
+
+
+  /**
+   * Return true if user has permission to given target.
+   * @param target
+   * @param ourUid
+   * @param uid
+   * @return
+   * @throws NoPermissionException
+   */
+  public boolean hasPermission(int target, String ourUid, String uid) {
+
+    //if own data -> return always true
+    if(ourUid.equals(uid)) {
+      return true;
+    }
+    
+    boolean ok = false;
+    
+    try {
+      ok = getPermission(target, ourUid, uid);
+    } catch (ConnectionException e) {
+      logger.log(Level.SEVERE, "Error checking permissions", e);
+    }
+    
+    return ok;    
+  }
+
+  public void addUserToCircle(UserOpenid user, Circle circle) throws ConnectionException {
+    
+    try {
+      
+      circle.setUid(user.getUid());      
+      dao.addCircle(circle);
+      
+      cache.addCircle(circle);
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding user to circle", e);
+      throw new ConnectionException("Error adding user to circle", e);
+    }    
+  }
+
+  public void removeUserFromCircle(UserOpenid user, int target, String uid) throws ConnectionException {
+    
+    try {
+
+      Circle circle = dao.getCircle(target, user.getUid(), uid, false);
+      if(circle != null) {
+        dao.removeCircle(circle);
+      
+        cache.removeCircle(circle);
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding user to circle", e);
+      throw new ConnectionException("Error adding user to circle", e);
+    } 
+  }
+
+
+
+  public List<UserOpenid> getUsersFromCircle(UserOpenid user, int target) throws ConnectionException {
+
+    List<UserOpenid> list = new ArrayList<UserOpenid>();
+    
+    try {
+
+      List<Circle> circles = dao.getCircles(user.getUid(), target);
+      
+      if(circles != null) {
+        for(Circle circle : circles) {
+                    
+          if(!circle.getFriendId().equals("-1")) {
+            UserOpenid u = cache.getUser(circle.getFriendId());
+            
+            if(u == null) {
+              u = dao.getUser(circle.getFriendId());
+
+              if(u != null) {
+                cache.setUser(u);
+              }
+            }
+            
+            if(u != null) {
+              list.add(u);
+            }
+          }
+          //all users
+          else {
+            list.add(new UserOpenid("-1"));
+          }
+          
+        }
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading users", e);
+      throw new ConnectionException("Error loading users", e);
+    } 
+    
+    return list;
   }
 
 }

@@ -1086,7 +1086,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   public List<MealModel> addMeals(List<MealModel> meals, long timeId) throws ConnectionException {
     
     //get uid
-    UserManager userManager = UserManager.getInstance();
     UserOpenid user = userManager.getUser(perThreadRequest);
     
     List<MealModel> list = new ArrayList<MealModel>();
@@ -1656,7 +1655,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   public TimeModel[] addTimes(TimeModel[] times) throws ConnectionException {
     
     //get uid
-    UserManager userManager = UserManager.getInstance();
     UserOpenid user = userManager.getUser(perThreadRequest);
     if(user == null) {
       return null;
@@ -3832,36 +3830,15 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return 
    * @throws ConnectionException
    */
-  @Deprecated public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Adding user from circle: friendid="+uid+", target="+target);
-    }
-    
-    boolean ok = false;
+  public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
 
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
 
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    Circle circle = new Circle(target, user.getUid(), uid);
     
-    try {
-      
-      ok = UserManagerOld.addUserToCircle(pm, UID, uid, target);
-
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding user to circle", e);
-      throw new ConnectionException("addUserToCircle", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    userManager.addUserToCircle(user, circle);
     
-    return ok;
+    return (circle != null);
   }
 
   
@@ -3872,36 +3849,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return 
    * @throws ConnectionException
    */
-  @Deprecated public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException {
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Removing user from circle: friendid="+uid+", target="+target);
-    }
-    
-    boolean ok = false;
+  public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException {
 
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
-    try {
-      
-      ok = UserManagerOld.removeUserToCircle(pm, UID, uid, target);
-
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing user from circle", e);
-      throw new ConnectionException("removeUserFromCircle", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    userManager.removeUserFromCircle(user, target, uid);
     
-    return ok;
+    return true;
   }
   
   /**
@@ -6244,79 +6198,18 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    */
   @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<MealModel> searchMeals(int index, String query) throws ConnectionException {
+  public List<MealModel> searchMeals(int index, String query) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchMeals()");
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    NutritionManager nutritionManager = NutritionManager.getInstance();    
+    List<Meal> jdoList = nutritionManager.searchMeals(user, query, index);
+    
+    //convert to client side models
     List<MealModel> list = new ArrayList<MealModel>();
-    
-    if(query == null) {
-      return list;
-    }
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Query q = pm.newQuery(Meal.class);
-      q.setFilter("time == null");
-      q.setOrdering("name ASC");
-      q.setRange(index, index + Constants.LIMIT_MEALS + 1);
-      List<Meal> meals = (List<Meal>) q.execute();
-      
-      //split query string
-      String[] arr = query.split(" ");
-
-      int i = 0;
-      for(Meal w : meals) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_MEALS) {
-          list.add(null);
-          break;
-        }
-
-        final String name = w.getName();
-        
-        //filter by query
-        boolean ok = false;
-        for(String s : arr) {
-          ok = name.toLowerCase().contains( s.toLowerCase() );
-          if(ok) {
-            break;
-          }
-        }
-
-        //if name matched -> check permission
-        if(ok) {
-          
-          boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid());
-          
-          if(hasPermission) {
-            MealModel m = Meal.getClientModel(w);
-            list.add(m);
-            
-            i++;
-          }
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchMeals", e);
-      throw new ConnectionException("searchMeals", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(Meal n : jdoList) {
+      list.add(Meal.getClientModel(n));
     }
     
     return list;
@@ -6583,54 +6476,24 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return
    * @throws ConnectionException
    */
-  @SuppressWarnings("unchecked")
-  @Deprecated public List<UserModel> getUsersFromCircle(int target) throws ConnectionException {
+  public List<UserModel> getUsersFromCircle(int target) throws ConnectionException {
 
-    logger.log(Level.FINE, "getUsersFromCircle()");
-    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading user from circle: "+target);
+    }
+
     List<UserModel> list = new ArrayList<UserModel>();
-        
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //everything but current user
-      Query q = pm.newQuery(Circle.class);
-      q.setFilter("openId == openIdParam && target == targetParam");
-      q.declareParameters("java.lang.String openIdParam, java.lang.Integer targetParam");
-      List<Circle> users = (List<Circle>) q.execute(UID, target);
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
-      for(Circle c : users) {
-        UserModel m;
-        
-        //get user (id not -1)
-        if(!c.getFriendId().equals("-1")) {
-          UserOpenid u = pm.getObjectById(UserOpenid.class, c.getFriendId());
-        
-          m = UserOpenid.getClientModel(u);
-        }
-        //id == -1 (all users enabled)
-        else {
-          m = new UserModel("-1");
-        }
-        list.add(m);
+    List<UserOpenid> users = userManager.getUsersFromCircle(user, target);
+    if(users != null) {
+      for(UserOpenid m : users) {
+        list.add(UserOpenid.getClientModel(m));
       }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getUsersFromCircle", e);
-      throw new ConnectionException("getUsersFromCircle", e.getMessage());
     }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
+
     return list;
   }
   
