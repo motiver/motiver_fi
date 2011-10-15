@@ -29,7 +29,8 @@ public class UserDAO {
     return dao;
   }
 
-  public Circle getCircle(int target, String ourUid, String uid, boolean includeAll) throws Exception {
+  @SuppressWarnings("unchecked")
+  public Circle getCircle(int target, String ourUid, String uid) throws Exception {
 
     Circle circle = null;
     
@@ -38,12 +39,7 @@ public class UserDAO {
     try {      
       StringBuilder builder = new StringBuilder();
       builder.append("openId == openIdParam && ");
-      if(includeAll) {
-        builder.append("(friendId == friendIdParam || friendId == '-1')");
-      }
-      else {
-        builder.append("friendId == friendIdParam");
-      }
+      builder.append("(friendId == friendIdParam || friendId == '-1')");
       builder.append(" && target == targetParam");
       
       Query q = pm.newQuery(Circle.class);

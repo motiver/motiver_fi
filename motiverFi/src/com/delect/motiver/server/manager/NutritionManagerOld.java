@@ -281,7 +281,7 @@ public final class NutritionManagerOld {
               FoodModel fClient = FoodInMealTime.getClientModel(f);
               fClient.setMealId(meal.getId());
               fClient.setTimeId(meal.getTimeId());
-              fClient.setUid(meal.getUid());
+              fClient.setUid(meal.getUser().getUid());
               fClient.setName(getFoodNameModel(f.getNameId()));
               
               listFoods.add(fClient);
@@ -1162,8 +1162,8 @@ public final class NutritionManagerOld {
             MealModel m = getMealModel(model.getId(), uid);
             
             //check permission
-            if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, m.getUid())) {
-              throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, m.getUid());
+            if(!MyServiceImpl.hasPermission(pm, Permission.WRITE_NUTRITION_FOODS, uid, m.getUser().getUid())) {
+              throw new NoPermissionException(Permission.WRITE_NUTRITION_FOODS, uid, m.getUser().getUid());
             }
             
             //if not our add count

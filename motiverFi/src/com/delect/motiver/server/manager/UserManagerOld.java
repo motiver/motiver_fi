@@ -134,12 +134,6 @@ public final class UserManagerOld {
       userOpenid.setDateFormat(u.getDateFormat());
       userOpenid.setMeasurementSystem(u.getMeasurementSystem());
       userOpenid.setTimeFormat(u.getTimeFormat());
-      userOpenid.setShareTraining(u.getShareTraining());
-      userOpenid.setShareNutrition(u.getShareNutrition());
-      userOpenid.setShareNutritionFoods(u.getShareNutritionFoods());
-      userOpenid.setShareCardio(u.getShareCardio());
-      userOpenid.setShareMeasurement(u.getShareMeasurement());
-      userOpenid.setShareCoach(u.getShareCoach());
       
       //if alias changed -> check that alias not already taken
       String alias = u.getAlias();

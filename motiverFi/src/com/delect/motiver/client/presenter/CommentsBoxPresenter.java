@@ -232,7 +232,7 @@ public class CommentsBoxPresenter extends Presenter {
 		else if(meal != null) {
 			title = meal.getName();
 			target = "m" + meal.getId();
-			uid = meal.getUid();
+			uid = meal.getUser().getUid();
 		}
 		//measurement
 		else if(measurement != null) {

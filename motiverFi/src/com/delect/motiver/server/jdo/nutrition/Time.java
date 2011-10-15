@@ -102,7 +102,7 @@ public class Time implements Serializable, Comparable<Time> {
 	@Persistent
   private Date date;
 
-	@Persistent(defaultFetchGroup = "true")
+	@Persistent
 	@Element(dependent = "true")
   private List<Food> foods = new ArrayList<Food>();
 
@@ -113,7 +113,7 @@ public class Time implements Serializable, Comparable<Time> {
 	@NotPersistent
 	private List<Meal> meals = new ArrayList<Meal>();
 
-  @Persistent(defaultFetchGroup = "true")
+  @Persistent
   private List<Key> mealsKeys = new ArrayList<Key>();
   
 	@Persistent

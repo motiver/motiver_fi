@@ -21,6 +21,7 @@ import java.util.List;
 import javax.jdo.annotations.Element;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -28,6 +29,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.MealModel;
 
@@ -51,7 +53,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		
 		MealModel modelClient = new MealModel(model.getName());
 		modelClient.setId(model.getId());
-		modelClient.setUid(model.getUid());
+//		modelClient.setUid(model.getUid());
 
     //foods
     List<FoodModel> foods = new ArrayList<FoodModel>();
@@ -62,10 +64,13 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     }
     modelClient.setFoods(foods);
     
+    //user
+    modelClient.setUser(UserOpenid.getClientModel(model.getUser()));
+    
 		return modelClient;
 	}
 
-	/**
+  /**
 	 * Converts client object to server side object
 	 * @param model : client side model
 	 * @return Server side model
@@ -87,6 +92,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	  clone.setName(getName());
 	  clone.setTime(getTime());
 	  clone.setUid(getUid());
+	  clone.setUser(getUser());
 	  
 	  List<Food> foods = new ArrayList<Food>();
 	  for(Food f : getFoods()) {
@@ -103,7 +109,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   @Persistent
 	private Integer copyCount = 0;
 
-	@Persistent(defaultFetchGroup = "true")
+	@Persistent
   @Element(dependent = "true")
   private List<Food> foods = new ArrayList<Food>();
 
@@ -122,6 +128,9 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   
   @Persistent
   private String openId;
+
+  @NotPersistent
+  private UserOpenid user;
 
 	public Meal() {
 		
@@ -226,5 +235,21 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
         getFoods().add(f);
       }
     }
+  }
+
+  private UserOpenid getUser() {
+    return user;
+  }
+
+  public void setUser(UserOpenid user) {
+    this.user = user;
+  }
+
+  public Integer getCount() {
+    return copyCount;
+  }
+
+  public void setCount(Integer copyCount) {
+    this.copyCount = copyCount;
   }
 }

@@ -421,7 +421,7 @@ public class MealsListPresenter extends Presenter {
 				}
 				else {
 					//copy to our meals
-					if(!m.getUid().equals(AppController.User.getUid())) {
+					if(!m.getUser().getUid().equals(AppController.User.getUid())) {
 						display.setCopyButtonVisible(true);
 					}
 				}

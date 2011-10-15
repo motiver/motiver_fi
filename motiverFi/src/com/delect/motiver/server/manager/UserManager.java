@@ -14,6 +14,7 @@ import com.delect.motiver.server.cache.UserCache;
 import com.delect.motiver.server.dao.UserDAO;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
@@ -62,7 +63,6 @@ public class UserManager {
     return _getUid(coachModeUid);
   }
   
-  @SuppressWarnings("unchecked")
   private UserOpenid _getUid(String coachModeUid) throws ConnectionException {
 
     UserOpenid user = null;
@@ -75,40 +75,29 @@ public class UserManager {
       openId = userCurrent.getUserId();
     }
 
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
     try {
     
       //if coach mode -> return trainee
       if(coachModeUid != null) {
-        if(logger.isLoggable(Level.FINE)) {
+        if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
           logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
         }
         
-        Query q = pm.newQuery(Circle.class);
-        q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
-        q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
-        q.setRange(0,1);
-        List<Circle> list = (List<Circle>)q.execute(coachModeUid, openId, Permission.COACH);
+        Circle circle = _getCircle(Permission.COACH, coachModeUid, openId);
         
-        if(list.size() > 0) {
-          logger.log(Level.FINE, "Is coach!");
-          openId = list.get(0).getUid();
+        if(circle != null) {
+          logger.log(Constants.LOG_LEVEL_MANAGER, "Is coach!");
+          openId = circle.getUid();
         }
       }
       
       if(openId != null) {
-        user = pm.getObjectById(UserOpenid.class, openId);
+        user = getUser(openId);
       }
       
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading user", e);
-    }
-    finally {
-      if(!pm.isClosed()) {
-        pm.close();
-      }
     }
     
     if(user == null) {
@@ -120,7 +109,24 @@ public class UserManager {
 
 
 
-  private boolean getPermission(int target, String ourUid, String uid) throws ConnectionException {
+  private Circle _getCircle(int target, String uid, String friendUid) throws Exception {
+    
+    Circle circle = cache.getCircle(target, uid, friendUid);
+    
+    if(circle == null) {
+      circle = dao.getCircle(target, uid, friendUid);
+      
+      if(circle != null) {
+        cache.addCircle(circle);
+      }
+    }
+    
+    return circle;
+  }
+
+
+
+  private boolean _checkPermission(int target, String ourUid, String uid) throws ConnectionException {
 
     boolean ok = false;
     
@@ -134,15 +140,12 @@ public class UserManager {
           || target == Permission.READ_CARDIO
           || target == Permission.READ_MEASUREMENTS) {
         
-        circle = dao.getCircle(target, ourUid, uid, true);
+        circle = _getCircle(target, uid, ourUid);
       }
       //write permission -> check if coach
       else {
-        circle = dao.getCircle(Permission.COACH, ourUid, uid, false);
+        circle = _getCircle(Permission.COACH, uid, ourUid);
       }
-
-      //update to cache
-      cache.addCircle(circle);
       
       if(circle != null) {
         ok = true;      
@@ -174,7 +177,7 @@ public class UserManager {
     boolean ok = false;
     
     try {
-      ok = getPermission(target, ourUid, uid);
+      ok = _checkPermission(target, ourUid, uid);
     } catch (ConnectionException e) {
       logger.log(Level.SEVERE, "Error checking permissions", e);
     }
@@ -204,7 +207,7 @@ public class UserManager {
     boolean ok = false;
     
     try {
-      ok = getPermission(target, ourUid, uid);
+      ok = _checkPermission(target, ourUid, uid);
     } catch (ConnectionException e) {
       logger.log(Level.SEVERE, "Error checking permissions", e);
     }
@@ -231,7 +234,7 @@ public class UserManager {
     
     try {
 
-      Circle circle = dao.getCircle(target, user.getUid(), uid, false);
+      Circle circle = dao.getCircle(target, user.getUid(), uid);
       if(circle != null) {
         dao.removeCircle(circle);
       
@@ -258,15 +261,7 @@ public class UserManager {
         for(Circle circle : circles) {
                     
           if(!circle.getFriendId().equals("-1")) {
-            UserOpenid u = cache.getUser(circle.getFriendId());
-            
-            if(u == null) {
-              u = dao.getUser(circle.getFriendId());
-
-              if(u != null) {
-                cache.setUser(u);
-              }
-            }
+            UserOpenid u = getUser(circle.getFriendId());
             
             if(u != null) {
               list.add(u);
@@ -286,6 +281,23 @@ public class UserManager {
     } 
     
     return list;
+  }
+
+
+
+  public UserOpenid getUser(String uid) throws Exception {
+    
+    UserOpenid u = cache.getUser(uid);
+    
+    if(u == null) {
+      u = dao.getUser(uid);
+
+      if(u != null) {
+        cache.setUser(u);
+      }
+    }
+    
+    return u;
   }
 
 }

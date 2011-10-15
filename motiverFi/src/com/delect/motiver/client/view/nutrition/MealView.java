@@ -296,7 +296,7 @@ public class MealView extends MealPresenter.MealDisplay {
 			//buttons
 			if(meal.getId() != 0) {
 
-				if(meal.getUid().equals(AppController.User.getUid())) {
+				if(meal.getUser().getUid().equals(AppController.User.getUid())) {
 					
 					//add food
 					panelBase.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Food().toLowerCase()), 

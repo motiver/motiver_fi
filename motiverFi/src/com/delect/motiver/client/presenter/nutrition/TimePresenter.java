@@ -189,15 +189,14 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 					//create copy
 					MealModel mealCopy = new MealModel();
 					mealCopy.setId(meal.getId());
-					mealCopy.setUid(time.getUid());
+//					mealCopy.setUid(time.getUid());
 					mealCopy.setTimeId(time.getId());
 					final Request req = rpcService.addMeal(mealCopy, time.getId(), new MyAsyncCallback<MealModel>() {
 						@Override
 						public void onSuccess(MealModel result) {
 							display.setContentEnabled(true);
 							
-							result.setUid(time.getUid());
-							result.setUid(time.getUid());
+//							result.setUid(time.getUid());
 							result.setTimeId(time.getId());
 							
 							//fire event
@@ -375,8 +374,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 	 * @param meal : to be updated
 	 */
 	private void addNewMealPresenter(MealModel meal) {
-		meal.setUid(time.getUid());
-		meal.setUid(time.getUid());
+//		meal.setUid(time.getUid());
 		meal.setTimeId(time.getId());
 		final MealPresenter wp = new MealPresenter(rpcService, eventBus, (MealDisplay)GWT.create(MealView.class), meal);
 		addNewPresenter(wp);

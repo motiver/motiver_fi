@@ -15,7 +15,6 @@ import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.FoodNameModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 
@@ -219,19 +218,16 @@ public class NutritionManager {
       
       for(Long key : keys) {
 
-        //check cache
-        Meal jdo = cache.getMeal(key);
         
-        if(jdo == null) {
-          jdo = dao.getMeal(key);
+        Meal jdo = _getMeal(key);
+        
+        if(jdo != null) {
           
           //check permission
           userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), jdo.getUid());
-         
-          cache.addMeal(jdo);
+          
+          list.add(jdo);
         }
-        
-        list.add(jdo);
       }
       
     } catch (Exception e) {
@@ -240,6 +236,29 @@ public class NutritionManager {
     }
     
     return list;
+  }
+
+
+  private Meal _getMeal(Long key) throws Exception {
+    
+    Meal jdo = cache.getMeal(key);
+    
+    if(jdo == null) {
+      jdo = dao.getMeal(key);
+      jdo.setUser(userManager.getUser(jdo.getUid()));
+     
+      cache.addMeal(jdo);
+    }
+    
+    return jdo;
+  }
+
+
+  private void _updateMeal(Meal meal) throws Exception {
+    
+    dao.updateMeal(meal);
+    
+    cache.addMeal(meal);
   }
 
 
@@ -351,22 +370,16 @@ public class NutritionManager {
         }
         else {
           //check cache
-          Meal jdo = cache.getMeal(meal.getId());
+          Meal jdo = _getMeal(meal.getId());
           
-          if(jdo == null) {
-            jdo = dao.getMeal(meal.getId());
-            
-            //check permission
-            userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), jdo.getUid());
-           
-            cache.addMeal(jdo);
-          }
-          
-          //TODO increment count
+          //increment count
+          jdo.setCount(jdo.getCount() + 1);
+          _updateMeal(jdo);
           
           //add copy
           Meal clone = (Meal) jdo.clone();
           clone.setUid(user.getUid());
+          clone.setUser(user);
           modelsCopy.add(clone);
         }
       }
@@ -388,6 +401,7 @@ public class NutritionManager {
       else {
         dao.addMeals(modelsCopy);
         
+        //doesnt cache names
         for(Meal m : modelsCopy) {
           cache.addMeal(m);
         }
@@ -598,6 +612,68 @@ public class NutritionManager {
     }
     
     return list;
+  }
+
+
+  public List<Meal> searchMeals(UserOpenid user, String query, int index) throws ConnectionException {
+
+    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching meals ("+index+")");
+    }
+
+    List<Meal> list = new ArrayList<Meal>();
+    
+    try {
+
+      //split query string
+      String[] arr = query.split(" ");
+
+      //load from cache
+      List<Meal> listAll = dao.getMeals();
+
+      int i = 0;
+      for(Meal m : listAll) {
+        
+        if(!m.getUid().equals(user.getUid()) 
+            && userManager.hasPermission(Permission.READ_NUTRITION, user.getUid(), m.getUid()))  {
+
+          if(i >= index) {
+            
+            final String name = m.getName();
+            
+            //filter by query
+            boolean match = false;
+            for(String s : arr) {
+              match = name.toLowerCase().contains( s.toLowerCase() );
+              if(match) {
+                break;
+              }
+            }
+            
+            if(match) {
+  
+              //get "whole" meal (which has also foods, etc..)
+              Meal meal = _getMeal(m.getId());
+              
+              list.add(meal);
+            }
+          }
+          
+          i++;
+          
+        }
+        
+      }
+      
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding food names", e);
+      throw new ConnectionException("Error adding food names", e);
+    }
+    
+    
+    return list;
+    
   }
 
 }

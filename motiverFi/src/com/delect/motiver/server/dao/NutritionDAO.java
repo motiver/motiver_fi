@@ -288,7 +288,13 @@ public class NutritionDAO {
       
       for(Meal meal : models) {
         pm.makePersistent(meal);
-        meal.getFoods();
+
+        for(Food f : meal.getFoods()) {
+          if(f.getNameId().longValue() > 0) {
+            f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
+          }
+        }
+        
       }
       
     } catch (Exception e) {

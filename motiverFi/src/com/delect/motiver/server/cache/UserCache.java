@@ -52,7 +52,6 @@ public class UserCache {
       return;
     }
     
-    //meal
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_CIRCLE);
     builder.append("_");
@@ -71,7 +70,6 @@ public class UserCache {
       return;
     }
     
-    //meal
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_CIRCLE);
     builder.append("_");
@@ -85,12 +83,34 @@ public class UserCache {
       
   }
 
+  public Circle getCircle(int target, String uid, String friendUid) {
+    if(cache == null) {
+      return null;
+    }
+
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_CIRCLE);
+    builder.append("_");
+    builder.append(target);
+    builder.append("_");
+    builder.append(uid);
+    builder.append("_");
+    builder.append(friendUid);
+    Object obj = cache.get(builder.toString());
+    
+    Circle c = null;
+    if(obj != null && obj instanceof Circle) {
+      c = (Circle)obj;
+    }
+    
+    return c;
+  }
+
   public UserOpenid getUser(String uid) {
     if(cache == null) {
       return null;
     }
     
-    //time
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_USER);
     builder.append(uid);
@@ -109,7 +129,6 @@ public class UserCache {
       return;
     }
     
-    //meal
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_USER);
     builder.append(user.getUid());

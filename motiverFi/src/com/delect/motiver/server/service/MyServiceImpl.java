@@ -6196,7 +6196,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return meals' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<MealModel> searchMeals(int index, String query) throws ConnectionException {
 

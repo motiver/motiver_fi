@@ -158,7 +158,7 @@ public class MealPresenter extends Presenter {
 					foodCopy.setId(food.getId());
 					foodCopy.setMealId(meal.getId());
 					foodCopy.setTimeId(meal.getTimeId());
-					foodCopy.setUid(meal.getUid());
+					foodCopy.setUid(meal.getUser().getUid());
 					foodCopy.setName(food.getName());
 					foodCopy.setAmount(food.getAmount());
 					Request req = rpcService.addFood(foodCopy, new MyAsyncCallback<FoodModel>() {
@@ -168,7 +168,7 @@ public class MealPresenter extends Presenter {
 
 							result.setMealId(meal.getId());
 							result.setTimeId(meal.getTimeId());
-							result.setUid(meal.getUid());
+							result.setUid(meal.getUser().getUid());
 							
 							//add new presenter
 							addNewFoodPresenter(result);
@@ -285,7 +285,7 @@ public class MealPresenter extends Presenter {
 	private void addNewFoodPresenter(FoodModel food) {
 		food.setMealId(meal.getId());
 		food.setTimeId(meal.getTimeId());
-		food.setUid(meal.getUid());
+		food.setUid(meal.getUser().getUid());
 		final FoodPresenter wp = new FoodPresenter(rpcService, eventBus, (FoodDisplay)GWT.create(FoodView.class), food);
 		addNewPresenter(wp);
 	}
@@ -415,10 +415,8 @@ public class MealPresenter extends Presenter {
         }
 				
 				//show user if not our workout
-				if(!meal.getUid().equals(AppController.User.getUid())) {
-					UserModel user = new UserModel();
-					user.setUid(meal.getUid());
-					userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), user, false);
+				if(!meal.getUser().getUid().equals(AppController.User.getUid())) {
+					userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), meal.getUser(), false);
 					userPresenter.run(display.getUserContainer());
 				}
 			}
@@ -430,7 +428,7 @@ public class MealPresenter extends Presenter {
 			}
 			else {
 				for(FoodModel m : meal.getFoods()) {
-					m.setUid(meal.getUid());
+					m.setUid(meal.getUser().getUid());
 					m.setTimeId(meal.getTimeId());
 					m.setMealId(meal.getId());
 					final FoodPresenter fp = new FoodPresenter(rpcService, eventBus, (FoodDisplay)GWT.create(FoodView.class), m);
