@@ -28,10 +28,10 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import com.delect.motiver.server.cache.WeekCache;
-import com.delect.motiver.server.jdo.Exercise;
-import com.delect.motiver.server.jdo.ExerciseName;
-import com.delect.motiver.server.jdo.ExerciseNameCount;
-import com.delect.motiver.server.jdo.Workout;
+import com.delect.motiver.server.jdo.training.Exercise;
+import com.delect.motiver.server.jdo.training.ExerciseName;
+import com.delect.motiver.server.jdo.training.ExerciseNameCount;
+import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;

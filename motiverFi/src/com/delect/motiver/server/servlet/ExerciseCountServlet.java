@@ -32,10 +32,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.cache.WeekCache;
-import com.delect.motiver.server.jdo.Exercise;
-import com.delect.motiver.server.jdo.ExerciseNameCount;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.Workout;
+import com.delect.motiver.server.jdo.training.Exercise;
+import com.delect.motiver.server.jdo.training.ExerciseNameCount;
+import com.delect.motiver.server.jdo.training.Workout;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class ExerciseCountServlet extends RemoteServiceServlet {

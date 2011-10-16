@@ -237,7 +237,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     }
   }
 
-  private UserOpenid getUser() {
+  public UserOpenid getUser() {
     return user;
   }
 

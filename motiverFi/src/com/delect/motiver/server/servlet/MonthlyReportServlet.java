@@ -34,11 +34,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.jdo.Exercise;
 import com.delect.motiver.server.jdo.MonthlySummary;
 import com.delect.motiver.server.jdo.MonthlySummaryExercise;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.Workout;
+import com.delect.motiver.server.jdo.training.Exercise;
+import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 

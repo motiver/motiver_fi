@@ -12,12 +12,13 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo;
+package com.delect.motiver.server.jdo.training;
 
 import java.io.Serializable;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -25,10 +26,11 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.shared.ExerciseModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Exercise implements Serializable {
+public class Exercise implements Serializable, Cloneable {
 	
   /**
    * 
@@ -83,6 +85,21 @@ public class Exercise implements Serializable {
 		
 		return modelServer;
 	}
+  
+  protected Object clone() throws CloneNotSupportedException {
+    
+    Exercise clone = new Exercise();
+    clone.setInfo(getInfo());
+    clone.setNameId(getNameId());
+    clone.setOrder(getOrder());
+    clone.setReps(getReps());
+    clone.setRest(getRest());
+    clone.setSets(getSets());
+    clone.setTempo(getTempo());
+    clone.setWeights(getWeights());
+    
+    return clone;
+  }
 	
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -114,6 +131,9 @@ public class Exercise implements Serializable {
 
 	@Persistent
 	private Workout workout;
+
+  @NotPersistent
+  private ExerciseName n;
 
 	public Exercise() {
     
@@ -238,5 +258,28 @@ public class Exercise implements Serializable {
 	
 	public void setWeights(String weights) {
 		this.weights = weights;
+  }
+  
+  public void setName(ExerciseName n) {
+    this.n = n;
+  }
+
+  public ExerciseName getName() {
+    return n;
+  }
+
+  /**
+   * Updates food from given model
+   * @param model
+   */
+  public void update(Exercise model) {
+    setInfo(model.getInfo());
+    setNameId(model.getNameId());
+    setOrder(model.getOrder());
+    setReps(model.getReps());
+    setRest(model.getRest());
+    setSets(model.getSets());
+    setTempo(model.getTempo());
+    setWeights(model.getWeights());
   }
 }

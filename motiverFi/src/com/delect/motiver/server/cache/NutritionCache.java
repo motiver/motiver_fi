@@ -25,7 +25,6 @@ import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 public class NutritionCache {
 
   private final static String PREFIX_FOOD_NAMES = "fnames";
-  private final static String PREFIX_FOOD_NAME = "fn";
   private final static String PREFIX_FOOD_NAME_COUNT = "fn_c";
   private final static String PREFIX_TIMES = "fn_t";
   private final static String PREFIX_TIME = "t";
@@ -43,6 +42,7 @@ public class NutritionCache {
   private static Cache cache; 
   private static NutritionCache nutritionCache; 
 
+  @SuppressWarnings("unchecked")
   public static NutritionCache getInstance() {
     if(cache == null) {
       try {

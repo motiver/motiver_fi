@@ -12,7 +12,7 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo;
+package com.delect.motiver.server.jdo.training;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,6 +21,7 @@ import java.util.List;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -29,10 +30,13 @@ import javax.persistence.OneToOne;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.shared.WorkoutModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Workout implements Serializable, Comparable<Workout> {
+public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 	
 	/**
    * 
@@ -86,39 +90,66 @@ public class Workout implements Serializable, Comparable<Workout> {
 		
 		return modelServer;
 	}
+  
+  public Object clone() throws CloneNotSupportedException {
+    
+    Workout clone = new Workout();
+    clone.setDate(getDate());
+    clone.setDayInRoutine(getDayInRoutine());
+    clone.setDone(getDone());
+    clone.setInfo(getInfo());
+    clone.setName(getName());
+    clone.setRating(getRating());
+    clone.setRoutineId(getRoutineId());
+    clone.setTimeEnd(getTimeEnd());
+    clone.setTimeStart(getTimeStart());
+    clone.setUid(getUid());
+    
+    List<Exercise> exercises = new ArrayList<Exercise>();
+    for(Exercise e : getExercises()) {
+      exercises.add((Exercise) e.clone());
+    }
+    clone.setExercises(exercises);
+    
+    return clone;
+  }
+  
 	
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	public Integer dayInRoutine = 0;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	public Integer rating = 0;
 	/**
 	 * How many times this have been copied
 	 */
   @Persistent
 	private Integer copyCount = 0;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Date date;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Boolean done = false;
 	@Persistent(mappedBy = "workout")
   private List<Exercise> exercises = new ArrayList<Exercise>();
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String info;
 	@Persistent
 	private String name;
 	@OneToOne
 	private Long routineId = 0L;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Long timeEnd = 0L;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Long timeStart = 0L;
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private Long uid;
-  @Persistent(defaultFetchGroup="false")
+  @Persistent
   public String openId;
+
+  @NotPersistent
+  private UserOpenid user;
 
 	public Workout() {
 		
@@ -293,4 +324,20 @@ public class Workout implements Serializable, Comparable<Workout> {
   public Long getUidOld() {
     return uid;
   } 
+
+  public UserOpenid getUser() {
+    return user;
+  }
+
+  public void setUser(UserOpenid user) {
+    this.user = user;
+  }
+
+  public Integer getCount() {
+    return copyCount;
+  }
+
+  public void setCount(Integer copyCount) {
+    this.copyCount = copyCount;
+  }
 }

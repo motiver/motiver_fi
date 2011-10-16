@@ -26,12 +26,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.delect.motiver.server.jdo.ExerciseName;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.Workout;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.jdo.training.ExerciseName;
+import com.delect.motiver.server.jdo.training.Workout;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 import net.sf.jsr107cache.Cache;
