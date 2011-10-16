@@ -478,16 +478,6 @@ public interface MyService extends RemoteService {
 
   
   /**
-   * Returns all exercises from single workout.
-   *
-   * @param workout the workout
-   * @return exercises
-   * @throws ConnectionException the connection exception
-   */
-  public List<ExerciseModel> getExercises(WorkoutModel workout) throws ConnectionException;
-
-  
-  /**
    * Returns all exercises from given "name". Used for fetching last weights
    *
    * @param nameId the name id

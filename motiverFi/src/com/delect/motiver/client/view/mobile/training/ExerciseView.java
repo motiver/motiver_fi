@@ -103,7 +103,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 		try {
 						
 			//food selection combo
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUid().equals(AppController.User.getUid())) {
 				comboName = addExerciseCombo();
 				containerName.add(comboName);
 				this.add(containerName, rowData);
@@ -118,7 +118,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 				this.add(textName, rowData);
 			}
 
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUid().equals(AppController.User.getUid())) {
 				spinSets  = new SpinnerField();
 				//save value when valid
 				spinSets.addListener(Events.Change, new Listener<BaseEvent>() {
@@ -159,7 +159,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 			//reps
 			HBoxLayoutData flexReps = new HBoxLayoutData(new Margins(0, 0, 0, 10));
 			flexReps.setFlex(1);  
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUid().equals(AppController.User.getUid())) {
 				final TextField<String> tfReps = new TextField<String>();
 				tfReps.addStyleName("field-amount");
 				tfReps.addListener(Events.OnClick, CustomListener.fieldOnClicked);
@@ -187,7 +187,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 			}
 			
 			//weights
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUid().equals(AppController.User.getUid())) {
 				final TextField<String> tfWeights = new TextField<String>();
 				tfWeights.addStyleName("field-amount");
 				tfWeights.addListener(Events.OnClick, CustomListener.fieldOnClicked);
@@ -215,7 +215,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         this.add(textWeights, rowData);
 			}			
 	        
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUid().equals(AppController.User.getUid())) {
 		        
 				//buttons layout
 				HBoxLayout layoutButtons = new HBoxLayout();

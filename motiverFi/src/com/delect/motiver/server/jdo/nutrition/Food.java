@@ -245,4 +245,9 @@ public class Food implements Serializable, Cloneable {
     setNameId(model.getNameId());
     setUid(model.getUid());
   }
+  
+  @Override
+  public String toString() {
+    return "Food: [name: '"+((getName() != null)? getName().getName() : "")+"', "+getAmount()+"]";
+  }
 }

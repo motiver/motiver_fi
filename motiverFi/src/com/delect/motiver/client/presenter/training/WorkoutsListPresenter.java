@@ -447,7 +447,6 @@ public class WorkoutsListPresenter extends Presenter {
       }
 			
 			//show single workout (clear exercises)
-			m.setExercises(null);
 			singleWorkoutPresenter = new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), m);
 			singleWorkoutPresenter.run(display.getDataContainer());
 			

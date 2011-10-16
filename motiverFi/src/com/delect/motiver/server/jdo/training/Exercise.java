@@ -52,6 +52,9 @@ public class Exercise implements Serializable, Cloneable {
 		modelClient.setReps(model.getReps());
 		modelClient.setWeights(model.getWeights());
 		modelClient.setOrder(model.getOrder());
+		
+		modelClient.setWorkout(Workout.getClientModel(model.getWorkout()));
+		
 		return modelClient;
 	}
   
@@ -138,7 +141,7 @@ public class Exercise implements Serializable, Cloneable {
 	@Persistent
 	private String weights;
 
-	@Persistent
+	@Persistent(defaultFetchGroup="true")
 	private Workout workout;
 
   @NotPersistent
@@ -290,5 +293,10 @@ public class Exercise implements Serializable, Cloneable {
     setSets(model.getSets());
     setTempo(model.getTempo());
     setWeights(model.getWeights());
+  }
+  
+  @Override
+  public String toString() {
+    return "Exercise: [name: '"+((getName() != null)? getName().getName() : "")+"', "+getSets()+" x "+getReps()+" x "+getWeights()+"]";
   }
 }

@@ -472,16 +472,6 @@ public interface MyServiceAsync {
 
   
   /**
-   * Returns all exercises from single workout.
-   *
-   * @param workout the workout
-   * @param callback the callback
-   * @return exercises
-   */
-  public Request getExercises(WorkoutModel workout, AsyncCallback<List<ExerciseModel>> callback);
-
-  
-  /**
    * Returns all exercises from given "name". Used for fetching last weights
    *
    * @param nameId the name id

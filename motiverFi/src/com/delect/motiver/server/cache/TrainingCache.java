@@ -18,6 +18,7 @@ import net.sf.jsr107cache.CacheManager;
 
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.training.ExerciseName;
+import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
@@ -25,6 +26,7 @@ public class TrainingCache {
 
   private final static String PREFIX_WORKOUTS = "t_ws";
   private final static String PREFIX_WORKOUT = "t_w";
+  private final static String PREFIX_ROUTINE = "t_r";
   private final static String PREFIX_EXERCISE_NAMES = "t_en";
   private final static String PREFIX_EXERCISE_NAME_COUNT = "t_en_c";
   
@@ -225,6 +227,38 @@ public class TrainingCache {
     builder.append("_");
     builder.append(user.getUid());
     cache.put(builder.toString(), count);
+    
+  }
+
+  public Routine getRoutine(Long routineId) {
+    if(cache == null) {
+      return null;
+    }
+    
+    //routine
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_ROUTINE);
+    builder.append(routineId);
+    Object obj = cache.get(builder.toString());
+    
+    Routine t = null;
+    if(obj != null && obj instanceof Routine) {
+      t = (Routine)obj;
+    }
+    
+    return t;
+  }
+  
+  public void addRoutine(Routine routine) {
+    if(cache == null) {
+      return;
+    }
+    
+    //routine
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_ROUTINE);
+    builder.append(routine.getId());
+    cache.put(builder.toString(), routine);
     
   }
 }

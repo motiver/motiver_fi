@@ -374,4 +374,9 @@ public class FoodName implements Serializable, Comparable<FoodName> {
   public Long getUidOld() {
     return uid;
   } 
+  
+  @Override
+  public String toString() {
+    return "FoodName: ['"+getName()+"', energy: '"+getEnergy()+"', "+getProtein()+" / "+getCarb()+" / "+getFet()+"]";
+  }
 }

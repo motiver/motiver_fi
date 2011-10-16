@@ -148,4 +148,9 @@ public class WorkoutModel extends BaseModelData implements Serializable {
 	public void setUid(String uid) {
 		set("uid", uid);
 	}
+  
+  @Override
+  public String toString() {
+    return "Workout: ['"+getName()+"', exercises: "+getExercises().size()+"]";
+  }
 }

@@ -3340,46 +3340,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   }
 
   /**
-   * Returns all exercises from single workout
-   * @param workout
-   * @return exercises
-   * @throws ConnectionException 
-   */
-  @Override
-  @Deprecated public List<ExerciseModel> getExercises(WorkoutModel workout) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loading exercises from workout: "+workout.getId());
-    }
-    
-    List<ExerciseModel> list = new ArrayList<ExerciseModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      WorkoutModel w = TrainingManagerOld.getWorkoutModel(pm, workout.getId(), UID);      
-      list = w.getExercises();
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error loading exercises", e);
-      throw new ConnectionException("getExercises", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return list;
-  }
-
-  /**
    * Returns all exercises from given "name". Used for fetching last weights
    * @param nameId: exercise name's Id
    * @param dateStart
@@ -6849,12 +6809,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
     //get user
     UserOpenid user = userManager.getUser(perThreadRequest);
-    
-    List<WorkoutModel> list = new ArrayList<WorkoutModel>();
       
     TrainingManager trainingManager = TrainingManager.getInstance();
+
     List<Workout> workouts = null;
-    
     if(routine == null) {
       workouts = trainingManager.getWorkouts(user, index, user.getUid());
     }
@@ -6862,7 +6820,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     else {
       workouts = trainingManager.getWorkouts(user, Routine.getServerModel(routine), user.getUid());
     }
-    
+
+    List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     if(workouts != null) {
       for(Workout m : workouts) {
         list.add(Workout.getClientModel(m));

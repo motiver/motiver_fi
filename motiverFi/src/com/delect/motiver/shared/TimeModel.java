@@ -142,4 +142,9 @@ public class TimeModel extends BaseModelData implements IsSerializable, Comparab
 	public void setUid(String uid) {
 		set("uid", uid);
 	}
+  
+  @Override
+  public String toString() {
+    return "Time: ['"+getTime()+"', meals: "+getMeals().size()+", foods: "+getFoods().size()+"]";
+  }
 }

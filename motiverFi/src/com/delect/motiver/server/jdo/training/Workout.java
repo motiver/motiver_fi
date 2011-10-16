@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.jdo.annotations.Element;
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
 import javax.jdo.annotations.NotPersistent;
@@ -31,6 +32,9 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.shared.ExerciseModel;
+import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.WorkoutModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -61,6 +65,15 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 		modelClient.setDate(model.getDate());
 		modelClient.setDayInRoutine(model.getDayInRoutine());
 		modelClient.setUid(model.getUid());
+		
+    //exercises
+    List<ExerciseModel> exercises = new ArrayList<ExerciseModel>();
+    if(model.getExercises() != null) {
+      for(Exercise m : model.getExercises()) {
+        exercises.add(Exercise.getClientModel(m));
+      }
+    }
+    modelClient.setExercises(exercises);
 		
 		return modelClient;
 	}
@@ -127,6 +140,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 	@Persistent
 	private Boolean done = false;
 	@Persistent(mappedBy = "workout")
+  @Element(dependent = "true")
   private List<Exercise> exercises = new ArrayList<Exercise>();
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -365,5 +379,10 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
         getExercises().add(f);
       }
     }
+  }
+  
+  @Override
+  public String toString() {
+    return "Workout: ['"+getName()+"', exercises: "+getExercises().size()+"]";
   }
 }

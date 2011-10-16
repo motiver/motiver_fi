@@ -88,4 +88,9 @@ public class ExerciseNameModel extends BaseModelData implements IsSerializable {
 	public void setVideo(String video) {
 		set("v", video);
 	}
+  
+  @Override
+  public String toString() {
+    return "ExerciseName: ['"+getName()+"', equipment: '"+getTarget()+"']";
+  }
 }

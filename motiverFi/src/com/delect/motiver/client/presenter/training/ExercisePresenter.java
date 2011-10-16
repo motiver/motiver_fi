@@ -98,10 +98,10 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 	@Override
 	public void onBind() {
 		
-		//if new exercise -> set uid to our
-		if(exercise.getId() == 0) {
-			exercise.setUid(AppController.User.getUid());
-    }
+//		//if new exercise -> set uid to our
+//		if(exercise.getId() == 0) {
+//			exercise.setUid(AppController.User.getUid());
+//    }
 
 		display.setModel(exercise);
 		if(exercise.getId() != 0) {
@@ -242,7 +242,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
     if(exercise.getId() == 0) {
 			
       display.setContentEnabled(false);
-			rpcService.addExercise(exercise, new MyAsyncCallback<ExerciseModel>() {
+			final Request req = rpcService.addExercise(exercise, new MyAsyncCallback<ExerciseModel>() {
 				@Override
 				public void onSuccess(ExerciseModel result) {
 					
@@ -251,7 +251,6 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 				    	
 						//set data
 						exercise.setId(result.getId());
-						exercise.setUid(result.getUid());
 						
 						//fire event
 						eventBus.fireEvent(new ExerciseCreatedEvent(exercise));
@@ -262,6 +261,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 					}
 				}
 			});
+      addRequest(req);
     }
   }
 

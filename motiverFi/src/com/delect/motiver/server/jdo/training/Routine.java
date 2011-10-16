@@ -28,10 +28,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.server.jdo.nutrition.Food;
-import com.delect.motiver.server.jdo.nutrition.Meal;
-import com.delect.motiver.server.jdo.nutrition.Time;
-import com.delect.motiver.shared.MealModel;
+import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.WorkoutModel;
 
@@ -86,6 +83,24 @@ public class Routine implements Comparable<Routine> {
 		
 		return modelServer;
 	}
+  
+  public Object clone() throws CloneNotSupportedException {
+    
+    Routine clone = new Routine();
+    clone.setDate(getDate());
+    clone.setDays(getDays());
+    clone.setInfo(getInfo());
+    clone.setName(getName());
+    clone.setUid(getUid());
+    
+    List<Workout> workouts = new ArrayList<Workout>();
+    for(Workout e : getWorkouts()) {
+      workouts.add((Workout) e.clone());
+    }
+    clone.setWorkouts(workouts);
+    
+    return clone;
+  }
 	
 	@Persistent
 	public Date date;
@@ -117,7 +132,13 @@ public class Routine implements Comparable<Routine> {
   
   @NotPersistent
   public List<Workout> workouts;
-	
+
+  @NotPersistent
+  private UserOpenid user;
+
+  public Routine() {
+  }
+  
 	public Routine(String name) {
 		this.name = name;
 	}
@@ -229,6 +250,22 @@ public class Routine implements Comparable<Routine> {
     this.workouts = workouts;
   } 
 
+  public UserOpenid getUser() {
+    return user;
+  }
+
+  public void setUser(UserOpenid user) {
+    this.user = user;
+  }
+
+  public Integer getCount() {
+    return copyCount;
+  }
+
+  public void setCount(Integer copyCount) {
+    this.copyCount = copyCount;
+  }
+
   /**
    * Updates routine from given model
    * @param model
@@ -250,5 +287,10 @@ public class Routine implements Comparable<Routine> {
         getWorkouts().add(f);
       }
     }
+  }
+  
+  @Override
+  public String toString() {
+    return "Routine: ['"+getName()+"', workouts: "+getWorkouts().size()+"]";
   }
 }

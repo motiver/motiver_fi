@@ -105,7 +105,6 @@ public final class TrainingManagerOld {
           
           //set correct workout id
           eNew.setWorkoutId(w.getId());
-          eNew.setUid(w.getUid());
           
           listEClient.add(eNew);
         }
@@ -661,7 +660,6 @@ public final class TrainingManagerOld {
           model = Exercise.getClientModel(eNew);
           model.setName(name);
           model.setWorkoutId(w.getId());
-          model.setUid(uid);
 
           //clear workout from cache
           WeekCache cache = new WeekCache();

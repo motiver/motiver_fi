@@ -213,7 +213,7 @@ public class WorkoutPresenter extends Presenter {
 			}
 			@Override
 			public void exercisesVisible() {
-				loadExercises();
+				showExercises();
 			}
 			@Override
 			public void newExercise() {
@@ -312,12 +312,7 @@ public class WorkoutPresenter extends Presenter {
 	public void onRun() {
 
     if(workout.getId() != 0) {
-      if(workout.getExercises() == null) {
-        loadExercises();
-      }
-      else {
-        showExercises(workout.getExercises());
-      }
+      showExercises();
     }
     //no model -> hightlight
     else {
@@ -454,29 +449,7 @@ public class WorkoutPresenter extends Presenter {
 		}
 	}
 
-	/**
-	 * Loads exercises and names
-	 */
-	protected void loadExercises() {
-		
-		//add empty presenter
-		emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING);
-		emptyPresenter.run(display.getBodyContainer());
-
-		//hide add button
-		display.setAddButtonVisible(false);
-		
-		//fetch exercises
-		rpcService.getExercises(workout, new MyAsyncCallback<List<ExerciseModel>>() {
-			@Override
-			public void onSuccess(List<ExerciseModel> result) {
-				showExercises(result);
-      }
-		});
-		
-	}
-
-	protected void showExercises(List<ExerciseModel> result) {
+	protected void showExercises() {
 
 		display.setContentEnabled(false);
 		
@@ -507,7 +480,7 @@ public class WorkoutPresenter extends Presenter {
 			}
 			
 			//if no workouts
-			if(result.size() == 0) {
+			if(workout.getExercises().size() == 0) {
 				if(workout.getUid().equals(AppController.User.getUid())) {
 					emptyPresenter = new EmptyWorkoutPresenter(rpcService, eventBus, (EmptyWorkoutDisplay)GWT.create(EmptyWorkoutView.class));
 	      }
@@ -521,9 +494,9 @@ public class WorkoutPresenter extends Presenter {
 			}
 			else {
 				//sort
-				Collections.sort(result);
+				Collections.sort(workout.getExercises());
 				
-				for(ExerciseModel m : result) {
+				for(ExerciseModel m : workout.getExercises()) {
 						
 					//set date & id & order
 					m.setWorkoutId(workout.getId());

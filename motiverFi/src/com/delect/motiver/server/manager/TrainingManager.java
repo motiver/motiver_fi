@@ -321,6 +321,8 @@ public class TrainingManager {
           workout.setDate(d);
         }
         
+        Workout clone = null;
+        
         //new
         if(workout.getId() == 0) {
           
@@ -330,9 +332,7 @@ public class TrainingManager {
           exercises.add(new Exercise());
           workout.setExercises(exercises);
 
-          workout.setUid(user.getUid());
-          workout.setUser(user);
-          modelsCopy.add(workout);
+          clone = workout;
         }
         else {
           //check cache
@@ -343,11 +343,13 @@ public class TrainingManager {
           _updateWorkout(jdo);
           
           //add copy
-          Workout clone = (Workout) jdo.clone();
-          clone.setUid(user.getUid());
-          clone.setUser(user);
-          modelsCopy.add(clone);
+          clone = (Workout) jdo.clone();
         }
+
+        clone.setUid(user.getUid());
+        clone.setUser(user);
+        clone.setDate(workout.getDate());
+        modelsCopy.add(clone);
       }
       
       //remove cache

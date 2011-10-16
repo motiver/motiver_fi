@@ -142,4 +142,9 @@ public class MealModel extends BaseModelData implements IsSerializable {
   public void setUser(UserModel u) {
     set("u", u);
   }	
+  
+  @Override
+  public String toString() {
+    return "Meal: ['"+getName()+"', foods: "+getFoods().size()+"]";
+  }
 }

@@ -252,4 +252,9 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   public void setCount(Integer copyCount) {
     this.copyCount = copyCount;
   }
+  
+  @Override
+  public String toString() {
+    return "Meal: ['"+getName()+"', foods: "+getFoods().size()+"]";
+  }
 }

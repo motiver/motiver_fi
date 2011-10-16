@@ -247,4 +247,9 @@ public class Time implements Serializable, Comparable<Time> {
     }
   }
   
+  @Override
+  public String toString() {
+    return "Time: ['"+getTime()+"', meals: "+getMealsNew().size()+", foods: "+getFoods().size()+"]";
+  }
+  
 }

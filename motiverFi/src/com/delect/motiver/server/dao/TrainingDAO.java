@@ -262,7 +262,7 @@ public class TrainingDAO {
   }
 
   /**
-   * Return single workouts
+   * Return all workouts
    * @return
    * @throws Exception
    */
@@ -282,6 +282,46 @@ public class TrainingDAO {
         q.setOrdering("name ASC");
         q.setRange(i, i+100);
         List<Workout> u = (List<Workout>) q.execute();
+        n.addAll(u);
+        
+        if(u.size() < 100) {
+          break;
+        }
+        i += 100;
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return n;
+  }
+
+  /**
+   * Return all routines
+   * @return
+   * @throws Exception
+   */
+  @SuppressWarnings("unchecked")
+  public List<Routine> getRoutines() throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    List<Routine> n = new ArrayList<Routine>();
+    
+    try {
+      
+      int i = 0;
+      while(true){
+        Query q = pm.newQuery(Routine.class);
+        q.setOrdering("name ASC");
+        q.setRange(i, i+100);
+        List<Routine> u = (List<Routine>) q.execute();
         n.addAll(u);
         
         if(u.size() < 100) {
