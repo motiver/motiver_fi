@@ -276,6 +276,8 @@ public class NutritionManager {
     
     try {
       
+      //TODO missing permission check!!
+      
       //remove cache
       //assume that all times have same date
       cache.setTimes(uid, models.get(0).getDate(), null);
@@ -296,7 +298,8 @@ public class NutritionManager {
   }
 
 
-  public List<Time> addTimes(List<Time> models, String uid) throws ConnectionException {
+  @SuppressWarnings("deprecation")
+  public List<Time> addTimes(UserOpenid user, List<Time> models) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Adding times");
@@ -320,13 +323,13 @@ public class NutritionManager {
         }
   
         //save user
-        t.setUid(uid);
+        t.setUid(user.getUid());
         
       }
       
       //remove cache
       //assume that all times have same date
-      cache.setTimes(uid, models.get(0).getDate(), null);
+      cache.setTimes(user.getUid(), models.get(0).getDate(), null);
 
       dao.addTimes(models);
       
@@ -366,6 +369,7 @@ public class NutritionManager {
           meal.setFoods(foods);
 
           meal.setUid(user.getUid());
+          meal.setUser(user);
           modelsCopy.add(meal);
         }
         else {
@@ -571,7 +575,7 @@ public class NutritionManager {
 
 
   @SuppressWarnings("unused")
-  public List<FoodName> addFoodNames(UserOpenid user, List<FoodName> names) throws ConnectionException {
+  public List<FoodName> addFoodName(UserOpenid user, List<FoodName> names) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Adding food names");

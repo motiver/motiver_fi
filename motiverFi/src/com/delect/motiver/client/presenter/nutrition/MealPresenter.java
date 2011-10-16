@@ -50,8 +50,6 @@ import com.delect.motiver.client.view.nutrition.FoodView;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.FoodNameModel;
 import com.delect.motiver.shared.MealModel;
-import com.delect.motiver.shared.UserModel;
-
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
 /**

@@ -74,6 +74,7 @@ import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.manager.NutritionManager;
 import com.delect.motiver.server.manager.NutritionManagerOld;
+import com.delect.motiver.server.manager.TrainingManager;
 import com.delect.motiver.server.manager.TrainingManagerOld;
 import com.delect.motiver.server.manager.UserManager;
 import com.delect.motiver.server.manager.UserManagerOld;
@@ -125,10 +126,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
   private static final class MyListItem implements Comparable<MyListItem> {
     
-    @Deprecated public int count = 0;
-    @Deprecated public long id = 0;
-    @Deprecated public MealModel meal = null;
-    @Deprecated public String name = "";
+    public int count = 0;
+    public long id = 0;
+    public MealModel meal = null;
+    public String name = "";
     
     private MyListItem(long id) {
       this.id = id;
@@ -136,7 +137,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     }
 
     @Override
-    @Deprecated public int compareTo(MyListItem item) {
+    public int compareTo(MyListItem item) {
       return item.count - count;
     }
   }
@@ -145,107 +146,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   
   static final int MAX_COUNT = 4000;
     
-  /**
-   * Checks if current user has permission to coach given uid
-   * @param uid
-   * @return accesstoken for user
-   * @throws ConnectionException
-   */
-//  @SuppressWarnings("unchecked")
-//  @Deprecated public static String getCoachAccess(String uid) {
-//
-//    log.log(Level.FINE, "getCoachAccess()");
-//
-//    //get uid
-//    final String UID = getUid();
-//    if(UID == null) {
-//      return null;
-//    }
-//
-//    String str = "";
-//    PersistenceManager pm =  PMF.get().getPersistenceManager();
-//    
-//    try {
-//          
-//        //check if found in our database AND has set as coach
-//        Query q = pm.newQuery(UserOpenid.class, "openId == openIdParam && shareCoach == shareCoachParam");
-//        q.declareParameters("java.lang.String openIdParam, java.lang.Long shareCoachParam");
-//        List<UserOpenid> users = (List<UserOpenid>) q.execute(uid, UID);
-//
-//        //data found
-//        if(users.size() > 0) {
-//          //reset token
-//          final UserOpenid user = users.get(0);
-//          str = user.getFbAuthToken();
-//        }
-//
-//    } catch (Exception e) {
-//      log.log(Level.SEVERE, "getCoachAccess", e);
-//      
-//      return null;
-//    }
-//    finally {
-//      if (!pm.isClosed()) {
-//        pm.close();
-//      } 
-//    }
-//    
-//    return str;
-//  }
-  
-  /**
-   * Checks if current user is friend with given uid
-   * @param uid
-   * @return
-   * @throws ConnectionException 
-   */
-  private static boolean areFriends(String uid) {
-
-    logger.log(Level.FINE, "areFriends()");
-
-    boolean areFriends = false;
-    
-//    try {
-//      //if coach mode -> get token from trainee
-//      if(token.contains("____")) {
-//        token = getTraineesToken(token);
-//      }
-//      
-//      //get friends from facebook
-//      URL url = new URL("https://graph.facebook.com/me/friends?access_token=" + URLEncoder.encode(token.replaceAll("____.*", "")));
-//      BufferedReader reader = null;
-//      String line = null;
-//      try {
-//        reader = new BufferedReader(new InputStreamReader(url.openStream()));
-//        line = reader.readLine();
-//      } catch (Exception e1) {
-//        log.log(Level.SEVERE, "", e1);
-//        throw new ConnectionException("areFriends", "Could not connect to Facebook.com");
-//      }
-//      finally {
-//        reader.close();
-//      } 
-//      if(line != null) {
-//        JSONObject json = new JSONObject(line);
-//        JSONArray groups = json.getJSONArray("data");
-//        
-//        for(int i=0; i < groups.length(); i++) {
-//          JSONObject obj = groups.getJSONObject(i);
-//          final long id = obj.getLong("id");
-//          
-//          //check if IDs match
-//          if(id == uid) {
-//            areFriends = true;
-//            break;
-//          }
-//        }
-//      }
-//    } catch (Exception e) {
-//      log.log(Level.SEVERE, "", e);
-//    }
-    
-    return areFriends;
-  }
   
   /**
    * Calculates energy from times (searches meals and foods)
@@ -868,70 +768,67 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return added workout (null if add not successful)
    */
   @Override
-  @Deprecated public ExerciseModel addExercise(ExerciseModel exercise) throws ConnectionException {
+  public ExerciseModel addExercise(ExerciseModel exercise) throws ConnectionException {
 
-    logger.log(Level.FINE, "addExercise()");
+    ExerciseModel m = null;
     
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return null;
-    }
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    Exercise jdo = Exercise.getServerModel(exercise);
+    trainingManager.addExercise(user, jdo, exercise.getWorkoutId());
+    m = Exercise.getClientModel(jdo);
+
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      exercise = TrainingManagerOld.addExerciseModel(pm, exercise, UID, LOCALE);
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding exercise", e);
-      throw new ConnectionException("addExercise", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return exercise;
+    return m;
   }
 
   /**
    * Creates / updates exercisename (updates if already found)
-   * @param workout : model to be added
-   * @return added exercise (null if add not successful)
+   * @param name : model to be added
+   * @return added name (null if add not successful)
    */
   @Override
-  @Deprecated public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException {
+  public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException {
 
-    ExerciseNameModel m = null;
-    
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return m;
-    }
+      List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
+      list.add(name);
+      
+      list = addExercisename(list);
+      if(list.size() > 0) {
+        return list.get(0);
+      }
+      
+      return null;
+  }
 
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+  /**
+   * Creates / updates exercisename (updates if already found)
+   * @param title : model to be added
+   * @return added name (null if add not successful)
+   */
+  @Override
+  public List<ExerciseNameModel> addExercisename(List<ExerciseNameModel> names) throws ConnectionException {
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
-    try {
-      m = TrainingManagerOld.addExerciseNameModel(pm, name, UID, LOCALE);
+    TrainingManager trainingManager = TrainingManager.getInstance();  
+    
+    List<ExerciseName> jdoList = new ArrayList<ExerciseName>();
+    for(ExerciseNameModel n : names) {
+      jdoList.add(ExerciseName.getServerModel(n));
     }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding exercise name", e);
-      throw new ConnectionException("addExercisename", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+    jdoList = trainingManager.addExerciseName(user, jdoList);
+    
+    //convert to client side models
+    List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
+    for(ExerciseName n : jdoList) {
+      list.add(ExerciseName.getClientModel(n));
     }
     
-    return m;
+    return list;
+    
   }
 
   /**
@@ -967,12 +864,12 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return added name (null if add not successful)
    */
   @Override
-  @Deprecated public FoodNameModel addFoodname(FoodNameModel name) throws ConnectionException {
+  public FoodNameModel addFoodname(FoodNameModel name) throws ConnectionException {
 
       List<FoodNameModel> list = new ArrayList<FoodNameModel>();
       list.add(name);
       
-      list = addFoodnames(list);
+      list = addFoodname(list);
       if(list.size() > 0) {
         return list.get(0);
       }
@@ -986,7 +883,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return added name (null if add not successful)
    */
   @Override
-  public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException {
+  public List<FoodNameModel> addFoodname(List<FoodNameModel> names) throws ConnectionException {
 
     final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
@@ -996,7 +893,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     for(FoodNameModel n : names) {
       jdoList.add(FoodName.getServerModel(n));
     }
-    jdoList = nutritionManager.addFoodNames(user, jdoList);
+    jdoList = nutritionManager.addFoodName(user, jdoList);
     
     //convert to client side models
     List<FoodNameModel> list = new ArrayList<FoodNameModel>();
@@ -1656,10 +1553,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     
     //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
-    if(user == null) {
-      return null;
-    }
-    final String UID = user.getUid();
     
     TimeModel[] list;
     try {
@@ -1669,7 +1562,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       }
       
       NutritionManager nutritionManager = NutritionManager.getInstance();
-      List<Time> jdosCopy = nutritionManager.addTimes(jdos, UID);
+      List<Time> jdosCopy = nutritionManager.addTimes(user, jdos);
 
       list = new TimeModel[jdosCopy.size()];
       for(int i = 0; i < jdosCopy.size(); i++) {
@@ -1691,7 +1584,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return added workout (null if add not successful
    */
   @Override
-  @Deprecated public WorkoutModel addWorkout(WorkoutModel workout) throws ConnectionException  {
+  public WorkoutModel addWorkout(WorkoutModel workout) throws ConnectionException  {
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     list.add(workout);
@@ -1713,97 +1606,30 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return added workouts (null if add not successful
    */
   @Override
-  @Deprecated public List<WorkoutModel> addWorkouts(List<WorkoutModel> workouts) throws ConnectionException  {
-
-    logger.log(Level.FINE, "addWorkouts()");
-    
-    List<WorkoutModel> list = new ArrayList<WorkoutModel>();
+  public List<WorkoutModel> addWorkouts(List<WorkoutModel> workouts) throws ConnectionException  {
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-      
+    List<WorkoutModel> list;
+    
     try {
-      Workout modelServer = null;
-      
-      for(WorkoutModel workout : workouts) {
-        //if ID is null -> create new one (no exercises)
-        if(workout.getId() == 0) {
-          
-          //convert to server side model
-          modelServer = Workout.getServerModel(workout);
-        }
-        else {
-          
-          //get model
-          final Workout w = pm.getObjectById(Workout.class, workout.getId());
-                    
-          //create a copy
-          if(hasPermission(pm, Permission.WRITE_TRAINING, UID, w.getUid())) {
-            modelServer = duplicateWorkout(w);
-            
-            //increment copy count IF NOT our workout
-            if(!w.getUid().equals(UID)) {
-              w.incrementCopyCount();
-            }
-          }
-          //no permission
-          else {
-            throw new Exception();
-          }
-          
-          //set routine or date if set
-          modelServer.setDate(workout.getDate());
-          modelServer.setRoutineId(workout.getRoutineId());
-          modelServer.setDayInRoutine(workout.getDayInRoutine());
-          
-        }
-
-        //reset time from date
-        Date d = modelServer.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-          modelServer.setDate(d);
-        }
-
-        //save user
-        modelServer.setUid(UID);
-
-        //save workout to db
-        modelServer = pm.makePersistent(modelServer);
-
-        //if workouts set -> add those
-        if(workout.getExercises() != null) {
-          for(ExerciseModel e : workout.getExercises()) {
-            //new workout
-            if(e.getId() == 0) {
-              e.setWorkoutId(modelServer.getId());
-              this.addExercise(e);
-            }
-          }
-        }
-        
-        //convert to client side model (which we return)
-        WorkoutModel m = Workout.getClientModel(modelServer);
-        
-        //add to array
-        list.add(m);
+      List<Workout> jdos = new ArrayList<Workout>();
+      for(WorkoutModel t : workouts) {
+        jdos.add(Workout.getServerModel(t));
       }
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addWorkouts", e);
-      throw new ConnectionException("addWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      
+      TrainingManager trainingManager = TrainingManager.getInstance();
+      List<Workout> jdosCopy = trainingManager.addWorkouts(user, jdos);
+
+      list = new ArrayList<WorkoutModel>();
+      for(Workout t : jdosCopy) {
+        list.add(Workout.getClientModel(t));
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding workouts", e);
+      throw new ConnectionException("Error adding workouts", e);
     }
     
     return list;
@@ -5434,44 +5260,28 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return delete successfull
    */
   @Override
-  @Deprecated public boolean removeExercises(List<ExerciseModel> exercises) throws ConnectionException {
+  public boolean removeExercises(List<ExerciseModel> exercises) throws ConnectionException {
 
-    if(exercises.size() < 1) {
-      return false;
-    }
+    boolean ok = true;
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Removing exercises. Count: "+exercises.size());
-    }
-    
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
     try {
-
-      //TODO needs improving
-      for(ExerciseModel e : exercises) {
-        TrainingManagerOld.removeExerciseModel(pm, e, UID);
+      TrainingManager trainingManager = TrainingManager.getInstance();
+      
+      for(ExerciseModel exercise : exercises) {
+        Exercise jdo = Exercise.getServerModel(exercise);
+        boolean res = trainingManager.removeExercise(user, jdo, exercise.getWorkoutId());
+        
+        if(!res) {
+          ok = false;
+        }
       }
-      
-      ok = true;
-      
+
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing exercise", e);
-      throw new ConnectionException("removeExercises", e.getMessage());
-    }
-    finally { 
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      throw new ConnectionException("addExercise", e.getMessage());
     }
     
     return ok;
@@ -5482,7 +5292,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return delete successfull
    */
   @Override
-  @Deprecated public boolean removeFoods(List<FoodModel> foods) throws ConnectionException {
+  public boolean removeFoods(List<FoodModel> foods) throws ConnectionException {
 
     boolean ok = true;
     
@@ -6049,124 +5859,21 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return names' models
    */
   @Override
-  @Deprecated public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
+  public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Searching exercises: "+query);
-    }
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    
+    TrainingManager trainingManager = TrainingManager.getInstance();    
+    List<ExerciseName> jdoList = trainingManager.searchExerciseNames(user, query, limit);
     
     //convert to client side models
     List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
-    
-    //get uid
-    //get uid and locale
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //split query string
-      query = query.toLowerCase();
-      String[] arr = query.split(" ");
-      
-      //if some equipment
-//      int equipment = -1;
-//      try {
-//        String s3 = query.replaceAll(".*--([0-9])--.*", "$1");
-//        equipment = Integer.parseInt(s3);
-//        
-//        //remove index from query
-//        query = query.replaceAll("\\(--[0-9]--\\)", "");
-//        query = query.replaceAll("--[0-9]--\\)", "");
-//        query = query.replaceAll("\\(--[0-9]--", "");
-//        query = query.replaceAll("--[0-9]--", "");
-//        query = query.trim();
-//      } catch (Exception e) {
-//        log.log(Level.SEVERE, "searchExerciseNames", e);
-//      }
-      
-      //TODO missing equipment search and locale
-      List<ExerciseName> names = TrainingManagerOld.getExerciseNames(pm);
-
-      List<ExerciseName> arrNames = new ArrayList<ExerciseName>();
-
-      arr = query.split(" ");
-      
-      for(int i=0; i < names.size(); i++) {
-        ExerciseName n = names.get(i);
-        
-        final String name = n.getName();
-        
-        //filter by query (add count variable)
-        int count = 0;
-        for(String s : arr) {
-          //if word long enough
-          if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-            //exact match
-            if(name.toLowerCase().equals( s )) {
-              count += 2;
-            }
-            //partial match
-            else if(name.toLowerCase().contains( s )) {
-              count++;
-            }
-          }
-        }
-        
-        //if found
-        if(count > 0) {
-
-          //get count
-          int countUse = 0;
-          try {
-            countUse = TrainingManagerOld.getExerciseNameCount(pm, n.getId(), UID);
-          } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error fetching count for exercise name: "+e, e);
-          }
-          
-          n.setCount(count, countUse);
-          arrNames.add(n);
-        }
-      }
-      
-      //sort array based on count
-      Collections.sort(arrNames);
-      
-      //convert to client model
-      for(int i=0; i < arrNames.size() && i < limit; i++) {
-        ExerciseName n = arrNames.get(i);
-        if(n.getCountQuery() > 0) {
-          list.add(ExerciseName.getClientModel(n));
-        }
-        else {
-          break;
-        }
-        //limit query (only if not "admin search" (==no query word)
-        if(list.size() >= limit) {
-          break;
-        }
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchExerciseNames", e);
-      throw new ConnectionException("searchExerciseNames", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(ExerciseName n : jdoList) {
+      list.add(ExerciseName.getClientModel(n));
     }
     
     return list;
+    
   }
   
   /**
@@ -6302,85 +6009,19 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return workouts' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<WorkoutModel> searchWorkouts(int index, String query) throws ConnectionException {
+  public List<WorkoutModel> searchWorkouts(int index, String query) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchWorkouts()");
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    TrainingManager trainingManager = TrainingManager.getInstance();    
+    List<Workout> jdoList = trainingManager.searchWorkouts(user, query, index);
+    
+    //convert to client side models
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
-    
-    if(query == null) {
-      return list;
-    }
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Query q = pm.newQuery(Workout.class);
-      q.setFilter("date == null && routineId == 0");
-      q.setOrdering("name ASC");
-      q.setRange(index, index + Constants.LIMIT_WORKOUTS + 1);
-      List<Workout> workouts = (List<Workout>) q.execute();
-      
-      //split query string
-      String[] arr = query.split(" ");
-
-      int i = 0;
-      for(Workout w : workouts) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_WORKOUTS) {
-          list.add(null);
-          break;
-        }
-        
-
-        final String name = w.getName();
-        
-        //filter by query
-        boolean ok = false;
-        for(String s : arr) {
-          ok = name.toLowerCase().contains( s.toLowerCase() );
-          if(ok) {
-            break;
-          }
-        }
-
-        //if name matched -> check permission
-        if(ok) {          
-          WorkoutModel m = null;
-          try {
-            m = TrainingManagerOld.getWorkoutModel(pm, w.getId(), UID);
-          } catch (NoPermissionException e) {
-            //no permission -> skipping
-          }
-
-          if(m != null) {
-              list.add(m);                
-              i++;
-          }
-          
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchWorkouts", e);
-      throw new ConnectionException("searchWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(Workout n : jdoList) {
+      list.add(Workout.getClientModel(n));
     }
     
     return list;
@@ -6394,75 +6035,17 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return
    * @throws ConnectionException
    */
-  @SuppressWarnings("unchecked")
-  @Deprecated public List<UserModel> searchUsers(int index, String query) throws ConnectionException {
+  public List<UserModel> searchUsers(int index, String query) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchUsers()");
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    List<UserOpenid> jdoList = userManager.searchUsers(user, query, index);
+    
+    //convert to client side models
     List<UserModel> list = new ArrayList<UserModel>();
-    
-    if(query == null) {
-      return list;
-    }
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //everything but current user
-      Query q = pm.newQuery(UserOpenid.class);
-      q.setFilter("id != idParam");
-      q.declareParameters("java.lang.String idParam");
-      q.setRange(index, index + Constants.LIMIT_USERS + 1);
-      List<UserOpenid> users = (List<UserOpenid>) q.execute(UID);
-      
-      //split query string
-      String[] arr = query.split(" ");
-
-      int i = 0;
-      for(UserOpenid u : users) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_USERS) {
-          list.add(null);
-          break;
-        }
-        
-        final String name = u.getNickName();
-        
-        //filter by query
-        boolean ok = false;
-        for(String s : arr) {
-          ok = name.toLowerCase().contains( s.toLowerCase() );
-          if(ok) {
-            break;
-          }
-        }
-        
-        if(ok) {
-          UserModel m = UserOpenid.getClientModel(u);
-          list.add(m);
-          
-          i++;
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchUsers", e);
-      throw new ConnectionException("searchUsers", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(UserOpenid n : jdoList) {
+      list.add(UserOpenid.getClientModel(n));
     }
     
     return list;
@@ -6550,35 +6133,25 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return updated exercise (null if add not successful)
    */
   @Override
-  @Deprecated public ExerciseModel updateExercise(ExerciseModel exercise) throws ConnectionException {
+  public ExerciseModel updateExercise(ExerciseModel exercise) throws ConnectionException {
 
-    logger.log(Level.FINE, "Updating exercise");
+    ExerciseModel m = null;
     
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return null;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+
     try {
-      exercise = TrainingManagerOld.updateExerciseModel(pm, exercise, UID, LOCALE);
-        
+      TrainingManager trainingManager = TrainingManager.getInstance();
+      Exercise jdo = Exercise.getServerModel(exercise);
+      trainingManager.addExercise(user, jdo, exercise.getWorkoutId());
+      m = Exercise.getClientModel(jdo);
+
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error updating exercise", e);
-      throw new ConnectionException("updateExercise", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      throw new ConnectionException("addExercise", e.getMessage());
     }
     
-    return exercise;
+    return m;
   }
 
   /**
@@ -7267,80 +6840,111 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return workouts' models (if routine set -> also exercises are returned)
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException {
+  public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loading workouts. Index="+index);
+      logger.log(Level.FINE, "Loading workouts");
     }
 
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
+      
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    List<Workout> workouts = null;
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
+    if(routine == null) {
+      workouts = trainingManager.getWorkouts(user, index, user.getUid());
+    }
+    //from routine
+    else {
+      workouts = trainingManager.getWorkouts(user, Routine.getServerModel(routine), user.getUid());
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Workout.class);
-
-      List<Workout> workouts = null;
-      //if from single routine
-      if(routine != null) {
-        
-        //get routine so we know is it shared
-        Routine r = pm.getObjectById(Routine.class, routine.getId());
-        if(r == null) {
-          if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
-          }
-          
-          q.setFilter("date == null && routineId == routineIdParam");
-          q.declareParameters("java.lang.Long routineIdParam");
-          workouts = (List<Workout>) q.execute(r.getId());
-        }        
+    if(workouts != null) {
+      for(Workout m : workouts) {
+        list.add(Workout.getClientModel(m));
       }
-      //all single workouts
-      else {
-        q.setFilter("date == null && routineId == 0 && openId == openIdParam");
-        q.declareParameters("java.lang.String openIdParam");
-        q.setRange(index, 100);
-        workouts = (List<Workout>) q.execute(UID);
-      }
-
-      Collections.sort(workouts);
-      
-      int i = 0;
-      for(Workout w : workouts) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_WORKOUTS) {
-          list.add(null);
-          break;
-        }
-
-        WorkoutModel m = TrainingManagerOld.getWorkoutModel(pm, w.getId(), UID);
-        list.add(m);
-        
-        i++;
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getWorkouts", e);
-      throw new ConnectionException("getWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
+  
+    
+    
+    
+
+//    if(logger.isLoggable(Level.FINE)) {
+//      logger.log(Level.FINE, "Loading workouts. Index="+index);
+//    }
+//
+//    List<WorkoutModel> list = new ArrayList<WorkoutModel>();
+//    
+//    //get uid
+//    final String UID = getUid();
+//    if(UID == null) {
+//      return list;
+//    }
+//    
+//    PersistenceManager pm =  PMF.get().getPersistenceManager();
+//    
+//    try {
+//      
+//      Query q = pm.newQuery(Workout.class);
+//
+//      List<Workout> workouts = null;
+//      //if from single routine
+//      if(routine != null) {
+//        
+//        //get routine so we know is it shared
+//        Routine r = pm.getObjectById(Routine.class, routine.getId());
+//        if(r == null) {
+//          if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
+//            throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
+//          }
+//          
+//          q.setFilter("date == null && routineId == routineIdParam");
+//          q.declareParameters("java.lang.Long routineIdParam");
+//          workouts = (List<Workout>) q.execute(r.getId());
+//        }        
+//      }
+//      //all single workouts
+//      else {
+//        q.setFilter("date == null && routineId == 0 && openId == openIdParam");
+//        q.declareParameters("java.lang.String openIdParam");
+//        q.setRange(index, 100);
+//        workouts = (List<Workout>) q.execute(UID);
+//      }
+//
+//      Collections.sort(workouts);
+//      
+//      int i = 0;
+//      for(Workout w : workouts) {
+//        
+//        //if limit reached -> add null value
+//        if(i == Constants.LIMIT_WORKOUTS) {
+//          list.add(null);
+//          break;
+//        }
+//
+//        WorkoutModel m = TrainingManagerOld.getWorkoutModel(pm, w.getId(), UID);
+//        list.add(m);
+//        
+//        i++;
+//      }
+//      
+//    } catch (Exception e) {
+//      logger.log(Level.SEVERE, "getWorkouts", e);
+//      throw new ConnectionException("getWorkouts", e.getMessage());
+//    }
+//    finally {
+//      if (!pm.isClosed()) {
+//        pm.close();
+//      } 
+//    }
+//    
+//    return list;
   }
 
   /**
@@ -7351,69 +6955,39 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return workoutmodels in each days ( model[days][day's workouts] )
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<WorkoutModel[]> getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd) throws ConnectionException {
+  public List<WorkoutModel[]> getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd) throws ConnectionException {
 
-    logger.log(Level.FINE, "getWorkoutsInCalendar()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts for "+dateStart+" - "+dateEnd);
+    }
 
     List<WorkoutModel[]> list = new ArrayList<WorkoutModel[]>();
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
-    //check dates
-    if(dateStart.getTime() > dateEnd.getTime()) {
-      return null;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
-      //check permission
-      if(!hasPermission(pm, Permission.READ_TRAINING, UID, uid)) {
-        throw new NoPermissionException(Permission.READ_TRAINING, UID, uid);
-      }
+    TrainingManager trainingManager = TrainingManager.getInstance();
 
-      //go through days
-      final int days = (int)((dateEnd.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-      
-      for(int i=0; i < days; i++) {
-        
-        final Date d = new Date((dateStart.getTime() / 1000 + 3600 * 24 * i) * 1000);
-        //strip time
-        final Date dStart = stripTime(d, true);
-        final Date dEnd = stripTime(d, false);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-        List<Workout> workouts = (List<Workout>) q.execute(uid, dStart, dEnd);
-
-        //convert to client side models
+    //go through days
+    final int days = (int)((dateEnd.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    
+    for(int i=0; i < days; i++) {
+      final Date d = new Date((dateStart.getTime() / 1000 + 3600 * 24 * i) * 1000);
+            
+      List<Workout> workouts = trainingManager.getWorkouts(user, d, uid);
+      if(workouts != null) {
         WorkoutModel[] arr = new WorkoutModel[workouts.size()];
-        int c = 0;
-        for(Workout w : workouts) {
-          WorkoutModel m = TrainingManagerOld.getWorkoutModel(pm, w.getId(), UID);
-
-          arr[c] = m;
-          c++;
+        
+        int j = 0;
+        for(Workout m : workouts) {
+          arr[j] = Workout.getClientModel(m);
+          j++;
         }
+        
         list.add(arr);
       }
       
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getWorkoutsInCalendar", e);
-      throw new ConnectionException("getWorkoutsInCalendar", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
 
     return list;

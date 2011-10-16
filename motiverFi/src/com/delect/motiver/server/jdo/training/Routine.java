@@ -14,10 +14,13 @@
  ******************************************************************************/
 package com.delect.motiver.server.jdo.training;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -25,7 +28,12 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.Meal;
+import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.shared.MealModel;
 import com.delect.motiver.shared.RoutineModel;
+import com.delect.motiver.shared.WorkoutModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Routine implements Comparable<Routine> {
@@ -46,6 +54,15 @@ public class Routine implements Comparable<Routine> {
 		modelClient.setDays(model.getDays());
 		modelClient.setInfo(model.getInfo());
 		modelClient.setUid(model.getUid());
+    
+    //workouts
+    if(model.getWorkouts() != null) {
+      List<WorkoutModel> workouts = new ArrayList<WorkoutModel>();
+      for(Workout m : model.getWorkouts()) {
+        workouts.add(Workout.getClientModel(m));
+      }
+      modelClient.setWorkouts(workouts);
+    }
 		
 		return modelClient;
 	}
@@ -97,6 +114,9 @@ public class Routine implements Comparable<Routine> {
   
   @Persistent
   public String openId;
+  
+  @NotPersistent
+  public List<Workout> workouts;
 	
 	public Routine(String name) {
 		this.name = name;
@@ -161,6 +181,10 @@ public class Routine implements Comparable<Routine> {
     }
   }
 
+  public List<Workout> getWorkouts() {
+    return workouts;
+  }
+
 	/**
 	 * Adds one to copy count
 	 */
@@ -199,5 +223,32 @@ public class Routine implements Comparable<Routine> {
 
   public Long getUidOld() {
     return uid;
+  }
+
+  public void setWorkouts(List<Workout> workouts) {
+    this.workouts = workouts;
   } 
+
+  /**
+   * Updates routine from given model
+   * @param model
+   */
+  public void update(Routine model) {
+    setDate(model.getDate());
+    setDays(model.getDays());
+    setInfo(model.getInfo());
+    setName(model.getName());
+    setUid(model.getUid());
+    
+    for(Workout f : model.getWorkouts()) {
+      int i = getWorkouts().indexOf(f);
+      if(i != -1) {
+        Workout fOld = getWorkouts().get(i);
+        fOld.update(f);
+      }
+      else {
+        getWorkouts().add(f);
+      }
+    }
+  }
 }

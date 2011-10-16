@@ -26,7 +26,6 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.shared.ExerciseModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -85,6 +84,16 @@ public class Exercise implements Serializable, Cloneable {
 		
 		return modelServer;
 	}
+  
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof Exercise) {
+      return ((Exercise)obj).getId() == getId();
+    }
+    else {
+      return false;
+    }
+  }
   
   protected Object clone() throws CloneNotSupportedException {
     

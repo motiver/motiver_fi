@@ -5,11 +5,8 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.jdo.PersistenceManager;
-import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 
-import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.cache.UserCache;
 import com.delect.motiver.server.dao.UserDAO;
 import com.delect.motiver.server.jdo.Circle;
@@ -298,6 +295,63 @@ public class UserManager {
     }
     
     return u;
+  }
+
+
+  public List<UserOpenid> searchUsers(UserOpenid user, String query, int index) throws ConnectionException {
+
+    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching users ("+index+")");
+    }
+
+    List<UserOpenid> list = new ArrayList<UserOpenid>();
+    
+    try {
+
+      //split query string
+      String[] arr = query.split(" ");
+
+      //load from cache
+      List<UserOpenid> listAll = dao.getUsers();
+
+      int i = 0;
+      for(UserOpenid m : listAll) {
+        
+        if(!m.getUid().equals(user.getUid()))  {
+
+          if(i >= index) {
+            
+            final String name = m.getNickName();
+            
+            //filter by query
+            boolean match = false;
+            for(String s : arr) {
+              match = name.toLowerCase().contains( s.toLowerCase() );
+              if(match) {
+                break;
+              }
+            }
+            
+            if(match) {              
+              list.add(m);
+            }
+          }
+          
+          i++;
+          
+        }
+        
+      }
+      
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding exercise names", e);
+      throw new ConnectionException("Error adding exercise names", e);
+    }
+    
+    
+    return list;
+    
   }
 
 }

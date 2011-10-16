@@ -31,8 +31,6 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.Food;
-import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.shared.WorkoutModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -339,5 +337,33 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 
   public void setCount(Integer copyCount) {
     this.copyCount = copyCount;
+  }
+
+  /**
+   * Updates time from given model
+   * @param model
+   */
+  public void update(Workout model) {
+    setDate(model.getDate());
+    setDayInRoutine(model.getDayInRoutine());
+    setDone(model.getDone());
+    setInfo(model.getInfo());
+    setName(model.getName());
+    setRating(model.getRating());
+    setRoutineId(model.getRoutineId());
+    setTimeEnd(model.getTimeEnd());
+    setTimeStart(model.getTimeStart());
+    setUid(model.getUid());
+    
+    for(Exercise f : model.getExercises()) {
+      int i = getExercises().indexOf(f);
+      if(i != -1) {
+        Exercise fOld = getExercises().get(i);
+        fOld.update(f);
+      }
+      else {
+        getExercises().add(f);
+      }
+    }
   }
 }

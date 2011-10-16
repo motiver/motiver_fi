@@ -1,5 +1,6 @@
 package com.delect.motiver.server.dao;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -187,6 +188,46 @@ public class UserDAO {
     }
     
     return user;
+  }
+
+  /**
+   * Return single users
+   * @return
+   * @throws Exception
+   */
+  @SuppressWarnings("unchecked")
+  public List<UserOpenid> getUsers() throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    List<UserOpenid> n = new ArrayList<UserOpenid>();
+    
+    try {
+      
+      int i = 0;
+      while(true){
+        Query q = pm.newQuery(UserOpenid.class);
+        q.setOrdering("name ASC");
+        q.setRange(i, i+100);
+        List<UserOpenid> u = (List<UserOpenid>) q.execute();
+        n.addAll(u);
+        
+        if(u.size() < 100) {
+          break;
+        }
+        i += 100;
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return n;
   }
 
 }

@@ -96,6 +96,15 @@ public interface MyServiceAsync {
   public Request addExercisename(ExerciseNameModel name, AsyncCallback<ExerciseNameModel> callback);
   
   /**
+   * Creates / updates exercisename (updates if already found).
+   *
+   * @param name the name
+   * @param callback the callback
+   * @return added exercise (null if add not successful)
+   */
+  public Request addExercisename(List<ExerciseNameModel> names, AsyncCallback<List<ExerciseNameModel>> callback);
+  
+  /**
    * Adds food to (meal).
    *
    * @param food : model to be added
@@ -120,7 +129,7 @@ public interface MyServiceAsync {
    * @param callback the callback
    * @return added names (null if add not successful)
    */
-  public Request addFoodnames(List<FoodNameModel> names, AsyncCallback<List<FoodNameModel>> callback);
+  public Request addFoodname(List<FoodNameModel> names, AsyncCallback<List<FoodNameModel>> callback);
   
   /**
    * Adds guide value.

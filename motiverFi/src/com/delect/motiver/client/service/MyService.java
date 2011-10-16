@@ -96,6 +96,15 @@ public interface MyService extends RemoteService {
   public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException;
   
   /**
+   * Creates / updates exercisename (updates if already found).
+   *
+   * @param name the name
+   * @return added exercise (null if add not successful)
+   * @throws ConnectionException the connection exception
+   */
+  public List<ExerciseNameModel> addExercisename(List<ExerciseNameModel> names) throws ConnectionException;
+  
+  /**
    * Adds food to (meal).
    *
    * @param food : model to be added
@@ -120,7 +129,7 @@ public interface MyService extends RemoteService {
    * @return added names (null if add not successful)
    * @throws ConnectionException the connection exception
    */
-  public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException;
+  public List<FoodNameModel> addFoodname(List<FoodNameModel> names) throws ConnectionException;
   
   /**
    * Adds guide value.
