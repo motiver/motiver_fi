@@ -390,7 +390,7 @@ public class WorkoutPresenter extends Presenter {
 		final ExerciseModel dummy = new ExerciseModel(new ExerciseNameModel(0L, "", 0));
 		dummy.setWorkoutId(workout.getId());
 		//init new foodpresenter
-    final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), dummy);
+    final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), dummy, workout);
     addNewPresenter(fp);
 	}
 
@@ -503,7 +503,7 @@ public class WorkoutPresenter extends Presenter {
 					m.setDate(workout.getDate());
 					
 					//init new exercisePresenter
-					final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), m);
+					final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), m, workout);
 					addNewPresenter(fp);
 				}
 			}

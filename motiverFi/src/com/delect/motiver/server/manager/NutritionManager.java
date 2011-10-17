@@ -102,14 +102,19 @@ public class NutritionManager {
         
         //update if found, otherwise add
         int i = time.getFoods().indexOf(model);
+        Food f;
         if(i == -1) {
+          f = model;
           time.getFoods().add(model);
         }
         else {
-          Food f = time.getFoods().get(i);
-          f.update(model);
+          f = time.getFoods().get(i);
+          f.update(model, false);
         }
         dao.updateTime(time);
+        
+        //return updated model
+        model.update(f, true);
       }
       //if food is in meal
       else if(mealId != 0) {
@@ -118,15 +123,20 @@ public class NutritionManager {
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
 
         //update if found, otherwise add
-        int i = meal.getFoods().indexOf(model);
+        int i = time.getFoods().indexOf(model);
+        Food f;
         if(i == -1) {
+          f = model;
           meal.getFoods().add(model);
         }
         else {
-          Food f = meal.getFoods().get(i);
-          f.update(model);
+          f = meal.getFoods().get(i);
+          f.update(model, false);
         }
         dao.updateMeal(meal);
+        
+        //return updated model
+        model.update(f, true);
         
         cache.removeMeal(mealId); //clear cache
       }

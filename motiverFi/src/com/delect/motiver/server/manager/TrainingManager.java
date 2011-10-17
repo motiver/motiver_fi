@@ -53,30 +53,39 @@ public class TrainingManager {
           
     try {
 
-      Workout workout = null;
-      if(workoutId != 0) {
-        workout = dao.getWorkout(workoutId);
-      }
+      Workout workout = _getWorkout(workoutId);
       
       if(workoutId != 0) {        
         userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), workout.getUid());
         
         //update if found, otherwise add
         int i = workout.getExercises().indexOf(model);
+        Exercise f;
         if(i == -1) {
+          f = model;
           workout.getExercises().add(model);
         }
         else {
-          Exercise f = workout.getExercises().get(i);
-          f.update(model);
+          f = workout.getExercises().get(i);
+          f.update(model, false);
         }
         dao.updateWorkout(workout);
+        
+        //return updated model
+        model.update(f, true);
       }
       
       //clear cache
-      if(workout != null && workout.getDate() != null) {
-        cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+      if(workout != null) {
+        //in date
+        if(workout.getDate() != null) {
+          cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+        }
+        else {
+          cache.addWorkout(workout);
+        }
       }
+      
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise", e);
       throw new ConnectionException("Add exercise", e.getMessage());

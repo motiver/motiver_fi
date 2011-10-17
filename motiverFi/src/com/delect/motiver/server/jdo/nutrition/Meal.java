@@ -220,7 +220,10 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
    * Updates time from given model
    * @param model
    */
-  public void update(Meal model) {
+  public void update(Meal model, boolean includeId) {
+    if(includeId) {
+      setId(model.getId());
+    }
     setName(model.getName());
     setTime(model.getTime());
     setUid(model.getUid());
@@ -229,7 +232,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
       int i = getFoods().indexOf(f);
       if(i != -1) {
         Food fOld = getFoods().get(i);
-        fOld.update(f);
+        fOld.update(f, includeId);
       }
       else {
         getFoods().add(f);

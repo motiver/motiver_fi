@@ -418,12 +418,17 @@ public class TrainingDAO {
       Workout t = pm.getObjectById(Workout.class, workout.getId());
       
       if(t != null) {
-        t.update(workout);
+        t.update(workout, false);
       }
       
       tx.commit();
-      
-      workout.getExercises();
+
+      //update names
+      for(Exercise f : workout.getExercises()) {
+        if(f.getNameId().longValue() > 0) {
+          f.setName(pm.getObjectById(ExerciseName.class, f.getNameId()));
+        }
+      }
       
     } catch (Exception e) {
       throw e;
@@ -450,7 +455,7 @@ public class TrainingDAO {
       Routine t = pm.getObjectById(Routine.class, routine.getId());
       
       if(t != null) {
-        t.update(routine);
+        t.update(routine, false);
       }
       
       tx.commit();
@@ -479,7 +484,7 @@ public class TrainingDAO {
     
     try {
       Query q = pm.newQuery(Workout.class);
-      q.setFilter("openId == openIdParam && routineId == 0");
+      q.setFilter("openId == openIdParam && routineId == 0 && date == null");
       q.declareParameters("java.lang.String openIdParam");
       q.setRange(index, index + Constants.LIMIT_MEALS + 1);
       List<Workout> workouts = (List<Workout>) q.execute(uid);

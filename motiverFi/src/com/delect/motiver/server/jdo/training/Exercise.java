@@ -52,8 +52,9 @@ public class Exercise implements Serializable, Cloneable {
 		modelClient.setReps(model.getReps());
 		modelClient.setWeights(model.getWeights());
 		modelClient.setOrder(model.getOrder());
+		modelClient.setName(ExerciseName.getClientModel(model.getName()));
 		
-		modelClient.setWorkout(Workout.getClientModel(model.getWorkout()));
+//		modelClient.setWorkout(Workout.getClientModel(model.getWorkout()));
 		
 		return modelClient;
 	}
@@ -284,9 +285,13 @@ public class Exercise implements Serializable, Cloneable {
    * Updates food from given model
    * @param model
    */
-  public void update(Exercise model) {
+  public void update(Exercise model, boolean includeId) {
+    if(includeId) {
+      setId(model.getId());
+    }
     setInfo(model.getInfo());
     setNameId(model.getNameId());
+    setName(model.getName());
     setOrder(model.getOrder());
     setReps(model.getReps());
     setRest(model.getRest());

@@ -228,7 +228,10 @@ public class Time implements Serializable, Comparable<Time> {
    * Updates time from given model
    * @param model
    */
-  public void update(Time model) {
+  public void update(Time model, boolean includeId) {
+    if(includeId) {
+      setId(model.getId());
+    }
     setDate(model.getDate());
     setMealsNew(model.getMealsNew());
     setMealsKeys(model.getMealsKeys());
@@ -239,7 +242,7 @@ public class Time implements Serializable, Comparable<Time> {
       int i = getFoods().indexOf(f);
       if(i != -1) {
         Food fOld = getFoods().get(i);
-        fOld.update(f);
+        fOld.update(f, includeId);
       }
       else {
         getFoods().add(f);

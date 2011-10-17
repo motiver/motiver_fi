@@ -160,7 +160,7 @@ public class ExerciseModel extends BaseModelData implements Serializable, Compar
   }
   
   public WorkoutModel getWorkout() {
-    return get("w");
+    return get("wo");
   }
 	
 	public void setDate(Date date) {
@@ -207,7 +207,7 @@ public class ExerciseModel extends BaseModelData implements Serializable, Compar
 	}
 
   public void setWorkout(WorkoutModel workout) {
-    set("w", workout);
+    set("wo", workout);
   }
   
   @Override

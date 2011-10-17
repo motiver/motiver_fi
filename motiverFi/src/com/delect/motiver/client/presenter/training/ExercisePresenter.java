@@ -41,6 +41,7 @@ import com.delect.motiver.client.view.training.SingleExerciseHistoryView;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
+import com.delect.motiver.shared.WorkoutModel;
 
 /**
  * Shows single exercise
@@ -76,10 +77,11 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 	private SingleExerciseHistoryPresenter lastWeightsPresenter;
 	protected ExerciseModel exercise;
 
-	public ExercisePresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, ExerciseDisplay display, ExerciseModel exercise) {
+	public ExercisePresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, ExerciseDisplay display, ExerciseModel exercise, WorkoutModel workout) {
 		super(rpcService, eventBus);
 		this.display = display;
 	    
+		exercise.setWorkout(workout);
     this.exercise = exercise;
 
 	}
@@ -116,7 +118,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 					
 					List<ExerciseModel> list = new ArrayList<ExerciseModel>();
 					list.add(exercise);
-					rpcService.removeExercises(list, new MyAsyncCallback<Boolean>() {
+					final Request req = rpcService.removeExercises(list, new MyAsyncCallback<Boolean>() {
 						@Override
 						public void onSuccess(Boolean ok) {
 							
@@ -128,6 +130,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 							}
 						}
 					});
+					addRequest(req);
 				}
 
 				@Override
@@ -188,7 +191,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 					lastQuery  = query;
 
           Motiver.setNextCallCacheable(true);
-					rpcService.searchExerciseNames(query, Constants.LIMIT_SEARCH_NAMES, new MyAsyncCallback<List<ExerciseNameModel>>() {
+					final Request req = rpcService.searchExerciseNames(query, Constants.LIMIT_SEARCH_NAMES, new MyAsyncCallback<List<ExerciseNameModel>>() {
 						@Override
 						public void onSuccess(List<ExerciseNameModel> result) {
 							//only if last query
@@ -197,6 +200,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 				      }
 						}
 					});
+					addRequest(req);
 				}
 
 				@Override

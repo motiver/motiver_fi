@@ -423,7 +423,7 @@ public class NutritionDAO {
       Time t = pm.getObjectById(Time.class, time.getId());
       
       if(t != null) {
-        t.update(time);
+        t.update(time, false);
       }
       
       tx.commit();
@@ -455,7 +455,7 @@ public class NutritionDAO {
       Meal t = pm.getObjectById(Meal.class, meal.getId());
       
       if(t != null) {
-        t.update(meal);
+        t.update(meal, false);
       }
       
       tx.commit();

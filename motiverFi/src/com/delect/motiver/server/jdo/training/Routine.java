@@ -270,7 +270,10 @@ public class Routine implements Comparable<Routine> {
    * Updates routine from given model
    * @param model
    */
-  public void update(Routine model) {
+  public void update(Routine model, boolean includeAll) {
+    if(includeAll) {
+      setId(model.getId());
+    }
     setDate(model.getDate());
     setDays(model.getDays());
     setInfo(model.getInfo());
@@ -281,7 +284,7 @@ public class Routine implements Comparable<Routine> {
       int i = getWorkouts().indexOf(f);
       if(i != -1) {
         Workout fOld = getWorkouts().get(i);
-        fOld.update(f);
+        fOld.update(f, includeAll);
       }
       else {
         getWorkouts().add(f);

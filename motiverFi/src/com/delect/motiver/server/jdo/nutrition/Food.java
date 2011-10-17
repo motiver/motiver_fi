@@ -240,7 +240,10 @@ public class Food implements Serializable, Cloneable {
    * Updates food from given model
    * @param model
    */
-  public void update(Food model) {
+  public void update(Food model, boolean includeId) {
+    if(includeId) {
+      setId(model.getId());
+    }
     setAmount(model.getAmount());
     setNameId(model.getNameId());
     setUid(model.getUid());
