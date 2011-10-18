@@ -170,12 +170,11 @@ public class TrainingManager {
   
     return list;
   }
-
   
-  public List<Workout> getWorkouts(UserOpenid user, int index, String uid) throws ConnectionException {
+  public List<Workout> getWorkouts(UserOpenid user, int offset, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading workouts ("+index+")");
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading workouts ("+offset+")");
     }
     
     //check permissions
@@ -184,7 +183,7 @@ public class TrainingManager {
     List<Workout> list = new ArrayList<Workout>();
     
     try {
-      List<Long> keys = dao.getWorkouts(index, uid);
+      List<Long> keys = dao.getWorkouts(offset, Constants.LIMIT_WORKOUTS, uid, 0, 0);
       
       for(Long key : keys) {
 
@@ -207,7 +206,52 @@ public class TrainingManager {
     
     return list;
   }
+  
+  public List<Workout> getMostPopularWorkouts(UserOpenid user, int offset, String uid) throws ConnectionException {
 
+    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading most popular workouts ("+offset+")");
+    }
+    
+    List<Workout> list = new ArrayList<Workout>();
+    
+    try {
+      int i = 0;
+      
+      //while enough found
+      while(list.size() < Constants.LIMIT_WORKOUTS) {
+        List<Long> keys = dao.getWorkouts(i, Constants.LIMIT_WORKOUTS * 2, null, 0, 1);
+        
+        for(Long key : keys) {
+          
+          if(list.size() == Constants.LIMIT_WORKOUTS) {
+            break;
+          }
+            
+          Workout jdo = _getWorkout(key);
+          
+          if(jdo != null) {
+            
+            //check permission
+            if(userManager.hasPermission(Permission.READ_TRAINING, user.getUid(), jdo.getUid())) {
+              if(i >= offset) {
+                list.add(jdo);
+              }
+            }
+            
+          }
+        }
+        
+        i += Constants.LIMIT_WORKOUTS * 2;
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading workouts", e);
+      throw new ConnectionException("getWorkouts", e.getMessage());
+    }
+    
+    return list;
+  }
   
   public List<Workout> getWorkouts(UserOpenid user, Routine routine, String uid) throws ConnectionException {
 

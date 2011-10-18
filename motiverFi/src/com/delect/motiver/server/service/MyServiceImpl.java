@@ -4292,60 +4292,25 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * Returns most popular workouts
    * @return workouts' models
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<WorkoutModel> getMostPopularWorkouts(int index) throws ConnectionException {
+  public List<WorkoutModel> getMostPopularWorkouts(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMostPopularWorkouts()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular workouts");
+    }
+
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+      
+    TrainingManager trainingManager = TrainingManager.getInstance();
+
+    List<Workout> workouts = trainingManager.getWorkouts(user, index, user.getUid());
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Workout.class);
-
-      List<Workout> workouts = null;
-      
-      q.setFilter("date == null && routineId == 0 && copyCount > 0");
-      q.setRange(index, index + Constants.LIMIT_WORKOUTS + 1);
-      q.setOrdering("copyCount DESC");
-      workouts = (List<Workout>) q.execute();
-
-      int i = 0;
-      for(Workout w : workouts) {
-        
-        try {
-          //if limit reached -> add null value
-          if(i == Constants.LIMIT_WORKOUTS) {
-            list.add(null);
-            break;
-          }
-          
-          WorkoutModel m = TrainingManagerOld.getWorkoutModel(pm, w.getId(), UID);
-          list.add(m);
-          
-          i++;
-        } catch (NoPermissionException e) {
-          //no permission skipping this one
-        }
+    if(workouts != null) {
+      for(Workout m : workouts) {
+        list.add(Workout.getClientModel(m));
       }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMostPopularWorkouts", e);
-      throw new ConnectionException("getMostPopularWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -6829,81 +6794,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     }
     
     return list;
-  
-    
-    
-    
-
-//    if(logger.isLoggable(Level.FINE)) {
-//      logger.log(Level.FINE, "Loading workouts. Index="+index);
-//    }
-//
-//    List<WorkoutModel> list = new ArrayList<WorkoutModel>();
-//    
-//    //get uid
-//    final String UID = getUid();
-//    if(UID == null) {
-//      return list;
-//    }
-//    
-//    PersistenceManager pm =  PMF.get().getPersistenceManager();
-//    
-//    try {
-//      
-//      Query q = pm.newQuery(Workout.class);
-//
-//      List<Workout> workouts = null;
-//      //if from single routine
-//      if(routine != null) {
-//        
-//        //get routine so we know is it shared
-//        Routine r = pm.getObjectById(Routine.class, routine.getId());
-//        if(r == null) {
-//          if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
-//            throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
-//          }
-//          
-//          q.setFilter("date == null && routineId == routineIdParam");
-//          q.declareParameters("java.lang.Long routineIdParam");
-//          workouts = (List<Workout>) q.execute(r.getId());
-//        }        
-//      }
-//      //all single workouts
-//      else {
-//        q.setFilter("date == null && routineId == 0 && openId == openIdParam");
-//        q.declareParameters("java.lang.String openIdParam");
-//        q.setRange(index, 100);
-//        workouts = (List<Workout>) q.execute(UID);
-//      }
-//
-//      Collections.sort(workouts);
-//      
-//      int i = 0;
-//      for(Workout w : workouts) {
-//        
-//        //if limit reached -> add null value
-//        if(i == Constants.LIMIT_WORKOUTS) {
-//          list.add(null);
-//          break;
-//        }
-//
-//        WorkoutModel m = TrainingManagerOld.getWorkoutModel(pm, w.getId(), UID);
-//        list.add(m);
-//        
-//        i++;
-//      }
-//      
-//    } catch (Exception e) {
-//      logger.log(Level.SEVERE, "getWorkouts", e);
-//      throw new ConnectionException("getWorkouts", e.getMessage());
-//    }
-//    finally {
-//      if (!pm.isClosed()) {
-//        pm.close();
-//      } 
-//    }
-//    
-//    return list;
   }
 
   /**

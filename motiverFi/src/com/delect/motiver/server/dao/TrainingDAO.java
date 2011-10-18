@@ -476,7 +476,7 @@ public class TrainingDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Long> getWorkouts(int index, String uid) throws Exception {
+  public List<Long> getWorkouts(int offset, int limit, String uid, int routineId, int minCopyCount) throws Exception {
 
     List<Long> list = new ArrayList<Long>();
     
@@ -484,10 +484,15 @@ public class TrainingDAO {
     
     try {
       Query q = pm.newQuery(Workout.class);
-      q.setFilter("openId == openIdParam && routineId == 0 && date == null");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setRange(index, index + Constants.LIMIT_MEALS + 1);
-      List<Workout> workouts = (List<Workout>) q.execute(uid);
+      StringBuilder builder = new StringBuilder();
+      if(uid != null) {
+        builder.append("openId == openIdParam && ");
+      }
+      builder.append("routineId == routineParam && date == null && copyCount >= copyCountParam");
+      q.setFilter(builder.toString());
+      q.declareParameters("java.lang.String openIdParam, java.lang.Integer routineParam, java.lang.Integer copyCountParam");
+      q.setRange(offset, offset + Constants.LIMIT_MEALS + 1);
+      List<Workout> workouts = (List<Workout>) q.execute(uid, routineId, minCopyCount);
             
       //get workouts
       if(workouts != null) {        
@@ -495,7 +500,7 @@ public class TrainingDAO {
         for(Workout m : workouts) {
           
           //if limit reached -> add null value
-          if(i == Constants.LIMIT_WORKOUTS) {
+          if(i == limit) {
             list.add(null);
             break;
           }
@@ -524,7 +529,6 @@ public class TrainingDAO {
     
     return list;
   }
-
 
   public boolean removeWorkouts(Long[] keys, String uid) throws Exception {
     
