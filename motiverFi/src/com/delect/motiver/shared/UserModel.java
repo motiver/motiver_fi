@@ -369,4 +369,8 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
   public void setLogoutUrl(String url) {
     set("u", url);
   }
+  
+  public String toString() {
+    return "User [uid: '"+getUid()+"']";
+  }
 }

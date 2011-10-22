@@ -24,7 +24,6 @@ import com.google.gwt.http.client.Request;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
-import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.MyAsyncCallback;
 import com.delect.motiver.client.event.ExerciseCreatedEvent;

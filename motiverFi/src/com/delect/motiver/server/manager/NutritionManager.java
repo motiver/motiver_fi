@@ -3,6 +3,7 @@ package com.delect.motiver.server.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -14,6 +15,7 @@ import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
@@ -73,6 +75,20 @@ public class NutritionManager {
     return list;
   }
 
+  public List<Time> getTimes(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
+
+    List<Time> list = new ArrayList<Time>();
+    
+    Iterator<Date> i = new DateIterator(dateStart, dateEnd);
+    while(i.hasNext())
+    {
+      final Date date = i.next();
+      list.addAll(getTimes(user, date, uid));
+    }
+    
+    
+    return list;
+  }
 
   /**
    * Adds single food

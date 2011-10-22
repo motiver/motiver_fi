@@ -73,7 +73,6 @@ import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.manager.NutritionManager;
-import com.delect.motiver.server.manager.NutritionManagerOld;
 import com.delect.motiver.server.manager.TrainingManager;
 import com.delect.motiver.server.manager.TrainingManagerOld;
 import com.delect.motiver.server.manager.UserManager;
@@ -162,24 +161,18 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     double fet = 0;
 
     try {
-      NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
-      
-      List<TimeModel> list = new ArrayList<TimeModel>();
-      for(Time time : times) {
-        list.add(nutritionManager.getTimeModel(time.getId(), UID));
-      }
       
       //each time
-      for(TimeModel tClient : list) {
+      for(Time tClient : times) {
         
         //each meal
-        for(MealModel m : tClient.getMeals()) {
+        for(Meal m : tClient.getMealsNew()) {
           
             if(m.getFoods() != null) {
-              for(FoodModel food : m.getFoods()) {
+              for(Food food : m.getFoods()) {
 
                 final double amount = food.getAmount();
-                final FoodNameModel name = food.getName();
+                final FoodName name = food.getName();
                 if(name != null) {
                   energy += (name.getEnergy() / 100) * amount;
                   protein += (name.getProtein() / 100) * amount;
@@ -192,10 +185,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         }
 
         if(tClient.getFoods() != null) {
-          for(FoodModel food : tClient.getFoods()) {
+          for(Food food : tClient.getFoods()) {
 
             final double amount = food.getAmount();
-            final FoodNameModel name = food.getName();
+            final FoodName name = food.getName();
             if(name != null) {
               energy += (name.getEnergy() / 100) * amount;
               protein += (name.getProtein() / 100) * amount;
@@ -2655,19 +2648,18 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
     logger.log(Level.FINE, "getBlogData()");
 
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
+    //new methods
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     
     //check if no uid -> use ours
     if(uidObj == null) {
-      uidObj = UID;
+      uidObj = user.getUid();
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     List<BlogData> data = new ArrayList<BlogData>();
+    
     
     try {
 
@@ -2679,25 +2671,25 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       boolean permissionMeasurement = true;
             
       //get user
-      UserModel user = UserManagerOld.getUserModel(pm, uidObj);
+      UserModel userOther = UserManagerOld.getUserModel(pm, uidObj);
       
-      if(user != null) {
+      if(userOther != null) {
         
-        String uid = user.getUid();
-        if(!hasPermission(pm, Permission.READ_TRAINING, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_TRAINING, UID, uid);
+        String uid = userOther.getUid();
+        if(!hasPermission(pm, Permission.READ_TRAINING, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_TRAINING, user.getUid(), uid);
         }
-        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_NUTRITION, UID, uid);
+        if(!hasPermission(pm, Permission.READ_NUTRITION, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_NUTRITION, user.getUid(), uid);
         }
-        if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, UID, uid);
+        if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
         }
-        if(!hasPermission(pm, Permission.READ_CARDIO, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_CARDIO, UID, uid);
+        if(!hasPermission(pm, Permission.READ_CARDIO, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_CARDIO, user.getUid(), uid);
         }
-        if(!hasPermission(pm, Permission.READ_MEASUREMENTS, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_MEASUREMENTS, UID, uid);
+        if(!hasPermission(pm, Permission.READ_MEASUREMENTS, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_MEASUREMENTS, user.getUid(), uid);
         }
       
         //reset start date
@@ -2719,7 +2711,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
           Date dEnd = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays)) * 1000);
           dEnd = stripTime(dEnd, false);
           
-          final Object[] arrParams = new Object[] {user.getUid(), dStart, dEnd};
+          final Object[] arrParams = new Object[] {userOther.getUid(), dStart, dEnd};
           
           //variables
           List<Workout> workouts = null;
@@ -2741,11 +2733,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
           
           //NUTRITION
           if(permissionNutrition && (target == 0 || target == 2)) {
-            q = pm.newQuery(Time.class);
-            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-            q.setOrdering("date DESC");
-            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-            times = (List<Time>) q.executeWithArray(arrParams);
+            times = nutritionManager.getTimes(user, dStart, dEnd, userOther.getUid());
           }
           
           //CARDIO
@@ -2797,7 +2785,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
             
             //blog data
             BlogData bd = new BlogData();
-            bd.setUser(user);
+            bd.setUser(userOther);
             bd.setDate(d);
     
             boolean found = false;
@@ -2807,7 +2795,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
               List<WorkoutModel> arrW = new ArrayList<WorkoutModel>();
               for(Workout w : workouts) {
                 if(fmt.format(w.getDate()).equals(strD)) {
-                  arrW.add( TrainingManagerOld.getWorkoutModel(pm, w.getId(), UID));
+                  arrW.add( TrainingManagerOld.getWorkoutModel(pm, w.getId(), user.getUid()));
                   
                   found = true;
                 }
@@ -2825,7 +2813,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
               }
               //if times found
               if(arrT.size() > 0) {
-                NutritionDayModel ndm = calculateEnergyFromTimes(arrT, UID);
+                NutritionDayModel ndm = calculateEnergyFromTimes(arrT, user.getUid());
                 if(ndm.getEnergy() > 0) {
                   ndm.setFoodsPermission(permissionNutritionFoods);
                   bd.setNutrition(ndm);
