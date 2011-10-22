@@ -3,6 +3,7 @@ package com.delect.motiver.server.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -10,10 +11,13 @@ import java.util.logging.Logger;
 import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.Meal;
+import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
+import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
@@ -168,6 +172,21 @@ public class TrainingManager {
       throw new ConnectionException("Error loading workouts", e);
     }
   
+    return list;
+  }
+
+  public List<Workout> getWorkouts(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
+
+    List<Workout> list = new ArrayList<Workout>();
+    
+    Iterator<Date> i = new DateIterator(dateStart, dateEnd);
+    while(i.hasNext())
+    {
+      final Date date = i.next();
+      list.addAll(getWorkouts(user, date, uid));
+    }
+    
+    
     return list;
   }
   
@@ -697,6 +716,33 @@ public class TrainingManager {
     
     return list;
     
+  }
+
+  public void updateWorkout(UserOpenid user, Workout model) throws ConnectionException {
+    
+    try {
+      
+      Workout workout = dao.getWorkout(model.getId());
+      
+      userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), workout.getUid());
+  
+      workout.update(model, false);
+      dao.updateWorkout(workout);
+
+      //update workout given as parameter
+      model.update(workout, true);
+
+      //remove from cache (also old date if moved)
+      cache.setWorkouts(workout.getUid(), workout.getDate(), null);
+      if(!model.getDate().equals(workout.getDate())) {
+        cache.setWorkouts(workout.getUid(), model.getDate(), null);
+      }
+    
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error updating workout", e);
+      throw new ConnectionException("Error updating workout", e);
+    }
+  
   }
   
   

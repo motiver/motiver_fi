@@ -2651,6 +2651,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     //new methods
     final UserOpenid user = userManager.getUser(this.perThreadRequest);
     NutritionManager nutritionManager = NutritionManager.getInstance();
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
     //check if no uid -> use ours
     if(uidObj == null) {
@@ -2724,11 +2725,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
           
           //TRAINING
           if(permissionTraining && (target == 0 || target == 1 || target == 5)) {
-            q = pm.newQuery(Workout.class);
-            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-            q.setOrdering("date DESC");
-            workouts = (List<Workout>) q.executeWithArray(arrParams);
+            workouts = trainingManager.getWorkouts(user, dStart, dEnd, userOther.getUid());
           }
           
           //NUTRITION
@@ -6655,36 +6652,17 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return update successfull
    */
   @Override
-  @Deprecated public Boolean updateWorkout(WorkoutModel model) throws ConnectionException {
+  public Boolean updateWorkout(WorkoutModel model) throws ConnectionException {
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Updating workout");
-    }
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    Workout jdo = Workout.getServerModel(model);
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      TrainingManagerOld.updateWorkoutModel(pm, model, UID);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error updating workout", e);
-      throw new ConnectionException("updateWorkout", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    trainingManager.updateWorkout(user, jdo);
+
+    return true;
   }
 
   /**

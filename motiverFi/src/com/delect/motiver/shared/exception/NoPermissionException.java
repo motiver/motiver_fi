@@ -17,11 +17,13 @@
  */
 package com.delect.motiver.shared.exception;
 
+import com.google.gwt.user.client.rpc.IsSerializable;
+
 /**
  * @author Antti
  *
  */
-public class NoPermissionException extends ConnectionException {
+public class NoPermissionException extends ConnectionException implements IsSerializable {
 
   /**
    * 

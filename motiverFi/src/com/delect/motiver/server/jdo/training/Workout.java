@@ -96,6 +96,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 		modelServer.setDate(model.getDate());
 		modelServer.setDayInRoutine(model.getDayInRoutine());
 		modelServer.setInfo(model.getInfo());
+		modelServer.setUid(model.getUid());
 		
 		return modelServer;
 	}
