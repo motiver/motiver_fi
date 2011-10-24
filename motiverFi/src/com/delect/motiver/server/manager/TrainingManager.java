@@ -725,7 +725,10 @@ public class TrainingManager {
       Workout workout = dao.getWorkout(model.getId());
       
       userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), workout.getUid());
-  
+
+      //save old date
+      Date dOld = workout.getDate();
+      
       workout.update(model, false);
       dao.updateWorkout(workout);
 
@@ -734,8 +737,8 @@ public class TrainingManager {
 
       //remove from cache (also old date if moved)
       cache.setWorkouts(workout.getUid(), workout.getDate(), null);
-      if(!model.getDate().equals(workout.getDate())) {
-        cache.setWorkouts(workout.getUid(), model.getDate(), null);
+      if(!dOld.equals(workout.getDate())) {
+        cache.setWorkouts(workout.getUid(), dOld, null);
       }
     
     } catch (Exception e) {
