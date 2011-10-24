@@ -217,7 +217,6 @@ public class WeekCache {
     cache.remove(PREFIX_USERS);
   }
 
-  @SuppressWarnings("unchecked")
   public FoodName getFoodName(Long nameId) {
     if(cache == null) {
       return null;

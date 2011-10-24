@@ -1,6 +1,7 @@
 package com.delect.motiver.server.manager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
@@ -305,6 +306,11 @@ public class TrainingManager {
       cache.addWorkout(jdo);
     }
     
+    //sort exercises
+    if(jdo != null) {
+      Collections.sort(jdo.getExercises());
+    }
+    
     return jdo;
   }
 
@@ -330,7 +336,7 @@ public class TrainingManager {
   }
 
 
-  public boolean removeWorkouts(List<Workout> models, String uid) throws ConnectionException {
+  public boolean removeWorkouts(UserOpenid user, List<Workout> models) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Removing workouts");
@@ -343,18 +349,30 @@ public class TrainingManager {
     boolean ok = false;
     
     try {
-      
-      //TODO missing permission check!!
-      
-      //remove cache
-      //assume that all workouts have same date
-      cache.setWorkouts(uid, models.get(0).getDate(), null);
-
       Long[] keys = new Long[models.size()];
-      for(int i = 0; i < models.size(); i++) {
-        keys[i] = models.get(i).getId();
+      
+      //check permission for each workout
+      int i = 0;
+      for(Workout workout : models) {
+        Workout w = _getWorkout(workout.getId());
+        
+        userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), w.getUid());
+
+        //remove cache
+        if(w.getDate() != null) {
+          cache.setWorkouts(w.getUid(), w.getDate(), null);
+        }
+        else {
+          cache.removeWorkout(w.getId());
+        }
+
+        keys[i] = w.getId();
+        
+        i++;
       }
-      ok = dao.removeWorkouts(keys, uid);
+      
+      //remove all at once
+      ok = dao.removeWorkouts(keys);
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing workouts", e);
@@ -747,6 +765,67 @@ public class TrainingManager {
     }
   
   }
+
+  public Workout getWorkout(UserOpenid user, long id) throws ConnectionException {
+
+    Workout workout = null;
+    
+    try {
+      workout = _getWorkout(id);
+      
+      userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), workout.getUid());
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading workout", e);
+      throw new ConnectionException("Error loading workout", e);
+    }
+    
+    return workout;
+  }  
+
+  /**
+   * Updates exercise order for single workout
+   */
+  public boolean updateExerciseOrder(UserOpenid user, Long workoutId, Long[] ids) throws ConnectionException {
   
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Updating exercise order:");
+    }
+    
+    boolean ok = false;
+
+    try {
+    
+      //get workout
+      Workout w = _getWorkout(workoutId);
+      
+      //reorder exercises
+      for(int i=0; i < ids.length; i++) {
+        Exercise e = null;
+        for(Exercise ex : w.getExercises()) {
+          if(ex.getId().longValue() == ids[i].longValue()) {
+            e = ex;
+            break;
+          }
+        }
+        if(e != null) {
+          e.setOrder(i);
+        }
+        else {
+          ok = false;
+        }
+      }
+  
+      updateWorkout(user, w);
+      
+      ok = true;
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading workout", e);
+      throw new ConnectionException("Error loading workout", e);
+    }
+  
+    return ok;
+  }
   
 }

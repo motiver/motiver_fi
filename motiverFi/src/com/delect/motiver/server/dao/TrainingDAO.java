@@ -530,7 +530,7 @@ public class TrainingDAO {
     return list;
   }
 
-  public boolean removeWorkouts(Long[] keys, String uid) throws Exception {
+  public boolean removeWorkouts(Long[] keys) throws Exception {
     
     boolean ok = false;
 

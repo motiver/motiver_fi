@@ -29,7 +29,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.ExerciseModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Exercise implements Serializable, Cloneable {
+public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
 	
   /**
    * 
@@ -302,6 +302,11 @@ public class Exercise implements Serializable, Cloneable {
   
   @Override
   public String toString() {
-    return "Exercise: [name: '"+((getName() != null)? getName().getName() : "")+"', "+getSets()+" x "+getReps()+" x "+getWeights()+"]";
+    return "Exercise"+getOrder()+": [name: '"+((getName() != null)? getName().getName() : "")+"', "+getSets()+" x "+getReps()+" x "+getWeights()+"]";
+  }
+
+  @Override
+  public int compareTo(Exercise model) {
+    return getOrder() - model.getOrder();
   }
 }

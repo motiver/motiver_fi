@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.http.client.Request;
 import com.google.gwt.user.client.Window;
 
 import com.delect.motiver.client.AppController;
@@ -277,12 +278,13 @@ public class WorkoutsListPresenter extends Presenter {
 	    
     //show single workout
     if(workoutId != 0) {
-			rpcService.getWorkout(workoutId, new MyAsyncCallback<WorkoutModel>() {
+			final Request req = rpcService.getWorkout(workoutId, new MyAsyncCallback<WorkoutModel>() {
 				@Override
 				public void onSuccess(WorkoutModel result) {
           showSingleWorkout(result);
         }
 			});
+			addRequest(req);
     }	    	
     else {
       showMainView();

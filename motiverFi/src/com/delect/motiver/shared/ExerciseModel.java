@@ -212,6 +212,6 @@ public class ExerciseModel extends BaseModelData implements Serializable, Compar
   
   @Override
   public String toString() {
-    return "Exercise: [name: '"+((getName() != null)? getName().getName() : "")+"', "+getSets()+" x "+getReps()+" x "+getWeights()+"]";
+    return "Exercise"+getOrder()+": [name: '"+((getName() != null)? getName().getName() : "")+"', "+getSets()+" x "+getReps()+" x "+getWeights()+"]";
   }
 }

@@ -2792,7 +2792,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
               List<WorkoutModel> arrW = new ArrayList<WorkoutModel>();
               for(Workout w : workouts) {
                 if(fmt.format(w.getDate()).equals(strD)) {
-                  arrW.add( TrainingManagerOld.getWorkoutModel(pm, w.getId(), user.getUid()));
+                  Workout jdo = trainingManager.getWorkout(user, w.getId());                  
+                  arrW.add( Workout.getClientModel(jdo) );
                   
                   found = true;
                 }
@@ -3080,13 +3081,15 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
     List<CommentModel> list = new ArrayList<CommentModel>();
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    if(user.getUid() == null) {
       return null;
     }
 
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
     try {
        
@@ -3122,25 +3125,25 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
             CommentModel c = Comment.getClientModel(cc);
             
             //is unread? (if not our comment and meant for us)
-            if(!UID.equals(c.getUid()) && UID.equals(c.getUidTarget())) {
+            if(!user.getUid().equals(c.getUid()) && user.getUid().equals(c.getUidTarget())) {
               Query qUnread = pm.newQuery(CommentsRead.class); 
               qUnread.setFilter("comment == commentParam && openId == openIdParam");
               qUnread.declareParameters("com.google.appengine.api.datastore.Key commentParam, java.lang.String openIdParam");
               qUnread.setRange(0, 1);
-              List<CommentsRead> unreads = (List<CommentsRead>)qUnread.execute(cc.getKey(), UID);
+              List<CommentsRead> unreads = (List<CommentsRead>)qUnread.execute(cc.getKey(), user.getUid());
               c.setUnread(unreads.size() == 0);
 
               //mark this as read
               if(markAsRead && unreads.size() == 0) {
                 CommentsRead cr = new CommentsRead();
                 cr.setComment(cc.getKey());
-                cr.setUid(UID);
+                cr.setUid(user.getUid());
                 pm.makePersistent(cr);
               }
             }
                   
             //if all comments -> don't return user's own comments
-            if(target != null || !UID.equals(c.getUid())) {
+            if(target != null || !user.getUid().equals(c.getUid())) {
               
               //if all comments -> cut long texts
               if(target == null) {
@@ -3161,7 +3164,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
               //get model//workout
               if(xid.matches("w[0-9]*")) {
                 final long id = Long.parseLong(xid.replace("w", ""));
-                WorkoutModel w = TrainingManagerOld.getWorkoutModel(pm, id, UID);
+                Workout jdo = trainingManager.getWorkout(user, id);
+                WorkoutModel w = Workout.getClientModel(jdo);
                 if(w != null) {
                   found = true;
                   c.setWorkout( w );
@@ -3173,7 +3177,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
                 Routine r = pm.getObjectById(Routine.class, id);
                 if(r != null) {
                   //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
+                  boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, user.getUid(), r.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setRoutine( Routine.getClientModel(r) );
@@ -3186,7 +3190,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
                 Meal m = pm.getObjectById(Meal.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, UID, m.getUid());
+                  boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, user.getUid(), m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setMeal( Meal.getClientModel(m) );
@@ -3199,7 +3203,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
                 Measurement m = pm.getObjectById(Measurement.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_MEASUREMENTS, UID, m.getUid());
+                  boolean hasPermission = hasPermission(pm, Permission.READ_MEASUREMENTS, user.getUid(), m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setMeasurement( Measurement.getClientModel(m) );
@@ -3212,7 +3216,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
                 Cardio m = pm.getObjectById(Cardio.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, m.getUid());
+                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, user.getUid(), m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setCardio( Cardio.getClientModel(m) );
@@ -3225,7 +3229,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
                 Run m = pm.getObjectById(Run.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, m.getUid());
+                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, user.getUid(), m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setRun( Run.getClientModel(m) );
@@ -5427,18 +5431,16 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
       Routine r = pm.getObjectById(Routine.class, model.getId());
       if(r != null) {
-        if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
-          throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
+        if(!hasPermission(pm, Permission.WRITE_TRAINING, user.getUid(), r.getUid())) {
+          throw new NoPermissionException(Permission.WRITE_TRAINING, user.getUid(), r.getUid());
         }
         
         pm.deletePersistent(r);
@@ -5447,13 +5449,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         Query q = pm.newQuery(Workout.class);
         q.setFilter("openId == openIdParam && routineId == routineIdParam");
         q.declareParameters("java.lang.String openIdParam, java.lang.Long routineIdParam");
-        List<Workout> workouts = (List<Workout>) q.execute(UID, r.getId());
-        for(Workout mWorkout : workouts) {
-          TrainingManagerOld.removeWorkoutModel(pm, mWorkout.getId(), UID);
-        }
-          
-        
-        ok = true;
+        List<Workout> workouts = (List<Workout>) q.execute(user.getUid(), r.getId());
+
+        ok = trainingManager.removeWorkouts(user, workouts);
       }
       
     } catch (Exception e) {
@@ -5607,32 +5605,14 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return removed successfull
    */
   @Override
-  @Deprecated public Boolean removeWorkout(WorkoutModel model) throws ConnectionException {
+  public Boolean removeWorkout(WorkoutModel model) throws ConnectionException {
 
-    logger.log(Level.FINE, "removeWorkout()");
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      ok = TrainingManagerOld.removeWorkoutModel(pm, model.getId(), UID);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing workout", e);
-      throw new ConnectionException("removeWorkout", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    List<Workout> list = new ArrayList<Workout>();
+    list.add(Workout.getServerModel(model));
+    Boolean ok = trainingManager.removeWorkouts(user, list);
     
     return ok;
   }
@@ -6147,34 +6127,15 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return update successful
    */
   @Override
-  @Deprecated public Boolean updateExerciseOrder(WorkoutModel workout, Long[] ids) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Updating exercise order for workout: "+workout.getName());
-    }
+  public Boolean updateExerciseOrder(WorkoutModel workout, Long[] ids) throws ConnectionException {
     
     boolean ok = true;
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      ok = TrainingManagerOld.updateExerciseOrder(pm, workout.getId(), ids, UID);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error updating exercise order", e);
-      throw new ConnectionException("updateExerciseOrder", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    ok = trainingManager.updateExerciseOrder(user, workout.getId(), ids);
     
     return ok;
   }
@@ -6685,44 +6646,19 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     }
   }
 
-
-
-
   /**
    * Returns single workout
    * @param workoutId
    * @return
    * @throws ConnectionException 
    */
-  @Override @Deprecated public WorkoutModel getWorkout(Long workoutId) throws ConnectionException {
+  @Override public WorkoutModel getWorkout(Long workoutId) throws ConnectionException {
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loading single workout ("+workoutId+")");
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    WorkoutModel m = null;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      m = TrainingManagerOld.getWorkoutModel(pm, workoutId, UID);
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getWorkout", e);
-      throw new ConnectionException("getWorkout", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    Workout jdo = trainingManager.getWorkout(user, workoutId);                  
+    return Workout.getClientModel(jdo);
   }
 
   /**
