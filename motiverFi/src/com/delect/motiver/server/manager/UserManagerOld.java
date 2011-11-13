@@ -58,7 +58,7 @@ public final class UserManagerOld {
    * @throws Exception
    */
   @SuppressWarnings("unchecked")
-  public static UserModel getUserModel(PersistenceManager pm, String uid) throws Exception {
+  public static UserModel getUsasderModel(PersistenceManager pm, String uid) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading user: "+uid);
@@ -113,72 +113,72 @@ public final class UserManagerOld {
     return user;
   }
 
-  /**
-   * Returns single user
-   * @param pm
-   * @param uid
-   * @throws Exception
-   */
-  @SuppressWarnings("unchecked")
-  public static UserModel saveUserModel(PersistenceManager pm, UserModel u) throws Exception {
-
-    if(logger.isLoggable(Level.FINER)) {
-      logger.log(Level.FINER, "Saving user: "+u.getNickName());
-    }
-    
-    UserOpenid userOpenid = pm.getObjectById(UserOpenid.class, u.getUid());
-    
-    //data found
-    if(userOpenid != null) {
-      userOpenid.setLocale(u.getLocale());
-      userOpenid.setDateFormat(u.getDateFormat());
-      userOpenid.setMeasurementSystem(u.getMeasurementSystem());
-      userOpenid.setTimeFormat(u.getTimeFormat());
-      
-      //if alias changed -> check that alias not already taken
-      String alias = u.getAlias();
-      if(alias != null) {
-        alias = alias.toLowerCase();
-        
-        //check if restricted value
-        boolean restricted = false;
-        for(String s : VALUES_RESTRICTED_ALIASES) {
-          if(s.equals(alias)) {
-            restricted = true;
-            break;
-          }
-        }
-        if( !restricted ) {
-          //if changed
-          if((userOpenid.getAlias() == null && userOpenid.getAlias() != null)
-              || (userOpenid.getAlias() != null && !userOpenid.getAlias().equals(alias))) {
-            Query qAlias = pm.newQuery(UserOpenid.class, "alias == aliasParam && openId != openIdParam");
-            qAlias.declareParameters("java.lang.String aliasParam, java.lang.String openIdParam");
-            qAlias.setRange(0, 1);
-            List<UserOpenid> aliases = (List<UserOpenid>) qAlias.execute(u.getAlias(), u.getUid());
-            //not found
-            if(aliases.size() > 0) {
-              //restore original value
-              alias = userOpenid.getAlias();
-            }
-            
-          }
-          userOpenid.setAlias(alias);
-        }
-      }
-
-      pm.makePersistent(userOpenid);
-      
-      u = UserOpenid.getClientModel(userOpenid);
-      
-      //remove cache
-      //TODO needs improving
-      WeekCache cache = new WeekCache();
-      cache.removeUsers();
-    }
-    
-    return u;
-  }
+//  /**
+//   * Returns single user
+//   * @param pm
+//   * @param uid
+//   * @throws Exception
+//   */
+//  @SuppressWarnings("unchecked")
+//  public static UserModel saveUserModel(PersistenceManager pm, UserModel u) throws Exception {
+//
+//    if(logger.isLoggable(Level.FINER)) {
+//      logger.log(Level.FINER, "Saving user: "+u.getNickName());
+//    }
+//    
+//    UserOpenid userOpenid = pm.getObjectById(UserOpenid.class, u.getUid());
+//    
+//    //data found
+//    if(userOpenid != null) {
+//      userOpenid.setLocale(u.getLocale());
+//      userOpenid.setDateFormat(u.getDateFormat());
+//      userOpenid.setMeasurementSystem(u.getMeasurementSystem());
+//      userOpenid.setTimeFormat(u.getTimeFormat());
+//      
+//      //if alias changed -> check that alias not already taken
+//      String alias = u.getAlias();
+//      if(alias != null) {
+//        alias = alias.toLowerCase();
+//        
+//        //check if restricted value
+//        boolean restricted = false;
+//        for(String s : VALUES_RESTRICTED_ALIASES) {
+//          if(s.equals(alias)) {
+//            restricted = true;
+//            break;
+//          }
+//        }
+//        if( !restricted ) {
+//          //if changed
+//          if((userOpenid.getAlias() == null && userOpenid.getAlias() != null)
+//              || (userOpenid.getAlias() != null && !userOpenid.getAlias().equals(alias))) {
+//            Query qAlias = pm.newQuery(UserOpenid.class, "alias == aliasParam && openId != openIdParam");
+//            qAlias.declareParameters("java.lang.String aliasParam, java.lang.String openIdParam");
+//            qAlias.setRange(0, 1);
+//            List<UserOpenid> aliases = (List<UserOpenid>) qAlias.execute(u.getAlias(), u.getUid());
+//            //not found
+//            if(aliases.size() > 0) {
+//              //restore original value
+//              alias = userOpenid.getAlias();
+//            }
+//            
+//          }
+//          userOpenid.setAlias(alias);
+//        }
+//      }
+//
+//      pm.makePersistent(userOpenid);
+//      
+//      u = UserOpenid.getClientModel(userOpenid);
+//      
+//      //remove cache
+//      //TODO needs improving
+//      WeekCache cache = new WeekCache();
+//      cache.removeUsers();
+//    }
+//    
+//    return u;
+//  }
 
   /**
    * Adds user 
@@ -210,7 +210,7 @@ public final class UserManagerOld {
     //no data -> add new data for this user
     else {
       u = new UserOpenid();
-      u.setId(userCurrent.getUserId());
+      u.setUid(userCurrent.getUserId());
     }
     
     //if user added

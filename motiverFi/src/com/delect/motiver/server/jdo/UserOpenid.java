@@ -78,6 +78,29 @@ public class UserOpenid implements Serializable {
 		return modelClient;
 	}
 	
+  public static UserOpenid getServerModel(UserModel model) {
+    UserOpenid modelServer = new UserOpenid();
+    
+    try {
+      modelServer.setUid(model.getId());
+      modelServer.setDateFormat(model.getDateFormat());
+      modelServer.setTimeFormat(model.getTimeFormat());
+      modelServer.setMeasurementSystem(model.getMeasurementSystem());
+      modelServer.setNickName(model.getNickName());
+      modelServer.setEmail(model.getEmail());
+      modelServer.setTimezone(model.getTimezone());
+      modelServer.setGender(model.getGender());
+      modelServer.setLocale(model.getLocale());
+      modelServer.setAdmin(model.isAdmin());
+      modelServer.setBanned(model.isBanned());
+      modelServer.setAlias(model.getAlias());
+      
+    } catch (Exception e) {
+    }
+    
+    return modelServer;
+  }
+	
 	@Persistent
 	private Boolean admin;
   @Persistent
@@ -133,7 +156,7 @@ public class UserOpenid implements Serializable {
 	}
 	
 	public String getAlias() {
-	  return alias;
+	  return (alias != null)? alias.toLowerCase() : null;
 	}
 
 	public Integer getDateFormat() {
@@ -446,11 +469,23 @@ public class UserOpenid implements Serializable {
 		this.timezone = timezone;
 	}
 	
-	public void setId(String id) {
+	public void setUid(String id) {
 	  this.id = id;
 	}
 	
 	public String toString() {
 	  return "User [uid: '"+getUid()+"']";
 	}
+
+  public void update(UserOpenid model) {
+    setAlias(model.getAlias());
+    setDateFormat(model.getDateFormat());
+    setEmail(model.getEmail());
+    setGender(model.getGender());
+    setLocale(model.getLocale());
+    setMeasurementSystem(model.getMeasurementSystem());
+    setNickName(model.getNickName());
+    setTimeFormat(model.getTimeFormat());
+    setTimezone(model.getTimezone());
+  }
 }

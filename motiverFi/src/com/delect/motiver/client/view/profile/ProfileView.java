@@ -76,6 +76,8 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 	final SimpleComboBox<String> comboTimeformat = new SimpleComboBox<String>();  
   TextField<String> tfAlias = new TextField<String>(); 
 	
+  boolean clearInvalid = false;
+  
 	//listener for comboboxes
 	final Listener<BaseEvent> listener = new Listener<BaseEvent>() {
 		@Override
@@ -86,18 +88,23 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
         int df = comboDateformat.getSelectedIndex();
 				int tf = comboTimeformat.getSelectedIndex();
 				int meas = comboMeas.getSelectedIndex();
-				String alias = (tfAlias.getValue() != null && tfAlias.isValid())? tfAlias.getValue() : "";
-				if(alias.length() == 0) {
-				  alias = null;
-				}
+				String alias = tfAlias.getValue();
 
-				user.setLocale(locale);
-				user.setDateFormat(df);
-				user.setTimeFormat(tf);
-				user.setMeasurementSystem(meas);
-				user.setAlias(alias);
-				
-				handler.saveData(user);
+				//if data has changed
+				if(!user.getLocale().equals(locale)
+				    || user.getDateFormat() != df
+				    || user.getTimeFormat() != tf
+				    || user.getMeasurementSystem() != meas
+				    || !user.getAlias().equals(alias)) {
+				  
+	        user.setLocale(locale);
+	        user.setDateFormat(df);
+	        user.setTimeFormat(tf);
+	        user.setMeasurementSystem(meas);
+	        user.setAlias(alias);
+	        
+	        handler.saveData(user);
+				}
 				
 			} catch (Exception e) {
 	      Motiver.showException(e);
@@ -221,7 +228,16 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 		comboTimeformat.addListener(Events.Change, listener);
 		comboMeas.addListener(Events.Change, listener);
 		comboLocale.addListener(Events.Change, listener);
-		tfAlias.addListener(Events.Change, listener);
+		tfAlias.addListener(Events.Valid, listener);
+    tfAlias.addListener(Events.KeyPress, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        if(clearInvalid) {
+          tfAlias.clearInvalid();
+          clearInvalid = false;
+        }
+      }
+    });
 
 		HBoxLayoutData flex2 = new HBoxLayoutData(new Margins(0, 5, 0, 0));  
     flex2.setFlex(7);  
@@ -244,12 +260,16 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 
   @Override
   public void showAliasTaken(boolean taken) {
+    tfAlias.disableEvents(true);
     if(taken) {
       tfAlias.forceInvalid(AppController.Lang.AliasTaken());
+      clearInvalid = true;
     }
     else {
       tfAlias.clearInvalid();
+      clearInvalid = false;
     }
+    tfAlias.enableEvents(true);
   }
 
 }

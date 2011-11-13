@@ -17,6 +17,13 @@ import com.delect.motiver.shared.Constants;
 public class UserDAO {
 
   /**
+   * Restricted string for aliases
+   */
+  public static final String[] VALUES_RESTRICTED_ALIASES = new String[] {
+    "http","blogs","blogit","admin","motiver","static"
+  };
+  
+  /**
    * Logger for this class
    */
   private static final Logger logger = Logger.getLogger(UserDAO.class.getName());
@@ -228,6 +235,77 @@ public class UserDAO {
     }
     
     return n;
+  }
+
+  @SuppressWarnings("unchecked")
+  public void updateUser(UserOpenid user) throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    
+    try {
+      
+      UserOpenid u = pm.getObjectById(UserOpenid.class, user.getId());
+      
+      if(u != null) {
+        
+        //save old alias so we can restore it if necessary
+        String aliasOld = u.getAlias();
+        boolean resetAlias = false;
+        
+        u.update(user);
+      
+        
+        //check that alias not already taken
+        String alias = u.getAlias();
+        if(alias != null) {
+          
+          //check if restricted value
+          for(String s : VALUES_RESTRICTED_ALIASES) {
+            if(s.equals(alias)) {
+              resetAlias = true;
+              break;
+            }
+          }
+          
+          //if alias set and it have been changed
+          if( !resetAlias && u.getAlias() != null && !u.getAlias().equals(user.getAlias()) ) {
+            
+            //check if not already found
+            Query qAlias = pm.newQuery(UserOpenid.class, "alias == aliasParam && openId != openIdParam");
+            qAlias.declareParameters("java.lang.String aliasParam, java.lang.String openIdParam");
+            qAlias.setRange(0, 1);
+            List<UserOpenid> aliases = (List<UserOpenid>) qAlias.execute(u.getAlias(), u.getUid());
+            //not found
+            if(aliases.size() > 0) {
+              resetAlias = true;
+            }
+          }
+          
+          if(resetAlias) {
+            u.setAlias(aliasOld);
+          }
+        }
+      }
+      
+      tx.commit();
+
+      //update user which was given as parameter
+      user.update(u);
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
   }
 
 }

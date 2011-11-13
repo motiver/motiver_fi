@@ -74,7 +74,6 @@ import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.manager.NutritionManager;
 import com.delect.motiver.server.manager.TrainingManager;
-import com.delect.motiver.server.manager.TrainingManagerOld;
 import com.delect.motiver.server.manager.UserManager;
 import com.delect.motiver.server.manager.UserManagerOld;
 import com.delect.motiver.shared.BlogData;
@@ -336,105 +335,105 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       throw new ConnectionException("duplicateWorkout", e.getMessage());
     }
   }
-
-  /**
-   * Gets openId string
-   * @return null if no user found
-   */
-  private String getUid() {
-
-    String coachModeUid = null;
-    
-    try {
-      String s = this.perThreadRequest.get().getHeader("coach_mode_uid");
-      if(s != null && s.length() > 1) {
-        coachModeUid = s;
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error checkin coach mode", e);
-      coachModeUid = null;
-    }
-    
-    return _getUid(coachModeUid);
-  }
-  @SuppressWarnings("unchecked")
-  static String _getUid(String coachModeUid) {
-
-    logger.log(Level.FINE, "getUid()");
-
-    String openId = null;
-
-    UserService userService = UserServiceFactory.getUserService();
-    User userCurrent = userService.getCurrentUser();
-    
-    if(userCurrent != null) {
-      openId = userCurrent.getUserId();
-    }
-  
-    //if coach mode -> return trainee's uid
-    if(coachModeUid != null) {
-      if(logger.isLoggable(Level.FINE)) {
-        logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
-      }
-
-      PersistenceManager pm =  PMF.get().getPersistenceManager();
-      
-      try {
-        Query q = pm.newQuery(Circle.class);
-        q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
-        q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
-        q.setRange(0,1);
-        List<Circle> list = (List<Circle>)q.execute(coachModeUid, openId, Permission.COACH);
-        
-        if(list.size() > 0) {
-          logger.log(Level.FINE, "Is coach!");
-          openId = list.get(0).getUid();
-        }
-      } catch (Exception e) {
-        logger.log(Level.SEVERE, "Error checkin coach", e);
-      }
-      finally {
-        if(!pm.isClosed()) {
-          pm.close();
-        }
-      }
-    }
-    
-    return openId;
-  }
-
-  /**
-   * Gets user's facebook id (uid) based on auth token
-   * @param object array: uid (long), locale (string)
-   */
-  private Object[] getUidAndLocale() {
-
-    logger.log(Level.FINE, "getUidAndLocale()");
-
-    String uid = getUid();
-    String locale = "";
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      //get our uid
-      UserModel u = UserManagerOld.getUserModel(pm, uid);
-      if(u != null) {
-        locale = u.getLocale();
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error fetching locale", e);
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return new Object[] {uid, locale};
-  }
+//
+//  /**
+//   * Gets openId string
+//   * @return null if no user found
+//   */
+//  private String getUid() {
+//
+//    String coachModeUid = null;
+//    
+//    try {
+//      String s = this.perThreadRequest.get().getHeader("coach_mode_uid");
+//      if(s != null && s.length() > 1) {
+//        coachModeUid = s;
+//      }
+//    } catch (Exception e) {
+//      logger.log(Level.SEVERE, "Error checkin coach mode", e);
+//      coachModeUid = null;
+//    }
+//    
+//    return _getUid(coachModeUid);
+//  }
+//  @SuppressWarnings("unchecked")
+//  static String _getUid(String coachModeUid) {
+//
+//    logger.log(Level.FINE, "getUid()");
+//
+//    String openId = null;
+//
+//    UserService userService = UserServiceFactory.getUserService();
+//    User userCurrent = userService.getCurrentUser();
+//    
+//    if(userCurrent != null) {
+//      openId = userCurrent.getUserId();
+//    }
+//  
+//    //if coach mode -> return trainee's uid
+//    if(coachModeUid != null) {
+//      if(logger.isLoggable(Level.FINE)) {
+//        logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
+//      }
+//
+//      PersistenceManager pm =  PMF.get().getPersistenceManager();
+//      
+//      try {
+//        Query q = pm.newQuery(Circle.class);
+//        q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
+//        q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
+//        q.setRange(0,1);
+//        List<Circle> list = (List<Circle>)q.execute(coachModeUid, openId, Permission.COACH);
+//        
+//        if(list.size() > 0) {
+//          logger.log(Level.FINE, "Is coach!");
+//          openId = list.get(0).getUid();
+//        }
+//      } catch (Exception e) {
+//        logger.log(Level.SEVERE, "Error checkin coach", e);
+//      }
+//      finally {
+//        if(!pm.isClosed()) {
+//          pm.close();
+//        }
+//      }
+//    }
+//    
+//    return openId;
+//  }
+//
+//  /**
+//   * Gets user's facebook id (uid) based on auth token
+//   * @param object array: uid (long), locale (string)
+//   */
+//  private Object[] getUidAndLocale() {
+//
+//    logger.log(Level.FINE, "getUidAndLocale()");
+//
+//    String uid = getUid();
+//    String locale = "";
+//    
+//    PersistenceManager pm =  PMF.get().getPersistenceManager();
+//    
+//    try {
+//      
+//      //get our uid
+//      UserModel u = UserManagerOld.getUserModel(pm, uid);
+//      if(u != null) {
+//        locale = u.getLocale();
+//      }
+//      
+//    } catch (Exception e) {
+//      logger.log(Level.SEVERE, "Error fetching locale", e);
+//    }
+//    finally {
+//      if (!pm.isClosed()) {
+//        pm.close();
+//      } 
+//    }
+//    
+//    return new Object[] {uid, locale};
+//  }
 
   /**
    * Checks if user has permission to given target
@@ -602,7 +601,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     CardioModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -652,7 +652,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     CardioValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -720,7 +721,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     CommentModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -910,7 +912,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     GuideValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1008,7 +1011,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     MeasurementModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1058,7 +1062,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     MeasurementValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1113,7 +1118,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     RoutineModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1244,7 +1250,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<RoutineModel> list = new ArrayList<RoutineModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -1380,7 +1387,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     RunModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1430,7 +1438,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     RunValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1496,7 +1505,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     logger.log(Level.FINE, "addTicket()");
         
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -1642,7 +1652,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = true;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -1717,16 +1728,18 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @param firstId : where other IDs are combined
    * @param ids : other IDs
    * @return
+   * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  @Deprecated public Boolean combineFoodNames(Long firstId, Long[] ids) {
+  @Deprecated public Boolean combineFoodNames(Long firstId, Long[] ids) throws ConnectionException {
 
     logger.log(Level.FINE, "combineFoodNames()");
 
     boolean ok = true;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -1869,7 +1882,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     logger.log(Level.FINE, "fetchRemoveAll()");
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return true;
     }
@@ -2096,7 +2110,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2143,7 +2158,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2176,7 +2192,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2223,7 +2240,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2285,7 +2303,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2360,7 +2379,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2447,7 +2467,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2494,7 +2515,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2575,7 +2597,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2671,8 +2694,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       boolean permissionCardio = true;
       boolean permissionMeasurement = true;
             
-      //get user
-      UserModel userOther = UserManagerOld.getUserModel(pm, uidObj);
+      //get user      
+      UserOpenid userOther = userManager.getUser(uidObj);
       
       if(userOther != null) {
         
@@ -2782,7 +2805,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
             
             //blog data
             BlogData bd = new BlogData();
-            bd.setUser(userOther);
+            bd.setUser(UserOpenid.getClientModel(userOther));
             bd.setDate(d);
     
             boolean found = false;
@@ -2905,7 +2928,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<CardioModel> list = new ArrayList<CardioModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -2968,7 +2992,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     CardioValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -3020,7 +3045,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<CardioValueModel> list = new ArrayList<CardioValueModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -3285,7 +3311,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<Double> list = new ArrayList<Double>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -3349,7 +3376,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     }
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -3437,7 +3465,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     FoodNameModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -3529,14 +3558,15 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return
    * @throws ConnectionException 
    */
-  @Deprecated public List<UserModel> getFriends() {
+  @Deprecated public List<UserModel> getFriends() throws ConnectionException {
 
     logger.log(Level.FINE, "getFriends()");
     
     List<UserModel> list = new ArrayList<UserModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -3646,7 +3676,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     MealModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -3725,7 +3756,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<MeasurementModel> list = new ArrayList<MeasurementModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -3787,7 +3819,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     MeasurementValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -3839,7 +3872,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<MeasurementValueModel> list = new ArrayList<MeasurementValueModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -3902,7 +3936,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<MicroNutrientModel> list = new ArrayList<MicroNutrientModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4044,7 +4079,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     MonthlySummaryModel model = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -4102,7 +4138,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<MonthlySummaryModel> list = new ArrayList<MonthlySummaryModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4164,7 +4201,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<MealModel> list = new ArrayList<MealModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4230,7 +4268,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<RoutineModel> list = new ArrayList<RoutineModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4318,7 +4357,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     RoutineModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -4361,7 +4401,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<RoutineModel> list = new ArrayList<RoutineModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4418,7 +4459,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<RunModel> list = new ArrayList<RunModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4481,7 +4523,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     RunValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -4533,7 +4576,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<RunValueModel> list = new ArrayList<RunValueModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4595,7 +4639,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4696,7 +4741,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<MealModel> list = new ArrayList<MealModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4793,7 +4839,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     int[] count = new int[] {0, 0, 0, 0, 0, 0, 0};
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return count;
     }
@@ -4862,7 +4909,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     int[] count = new int[] {0, 0, 0, 0, 0, 0, 0, 0};
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return count;
     }
@@ -4973,14 +5021,15 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @throws ConnectionException 
    */
   @SuppressWarnings("unchecked")
-  @Deprecated public List<UserModel> getTrainees() {
+  @Deprecated public List<UserModel> getTrainees() throws ConnectionException {
 
     logger.log(Level.FINE, "getTrainees()");
 
     List<UserModel> list = new ArrayList<UserModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4994,7 +5043,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       List<Circle> users = (List<Circle>) q.execute(UID, Permission.COACH);
 
       if(users.size() > 0) {
-        UserModel u = UserManagerOld.getUserModel(pm, users.get(0).getUid());
+        UserModel u = UserOpenid.getClientModel(userManager.getUser(users.get(0).getUid()));
         if(u != null) {
           list.add(u);
         }
@@ -5026,7 +5075,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5073,7 +5123,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5133,7 +5184,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = true;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5249,7 +5301,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5325,7 +5378,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5373,7 +5427,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5480,7 +5535,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5528,7 +5584,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5582,7 +5639,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   public Boolean removeTimes(TimeModel[] models) throws ConnectionException {
         
     //get uid
-    UserManager userManager = UserManager.getInstance();
     UserOpenid user = userManager.getUser(perThreadRequest);
     if(user == null) {
       return false;
@@ -5717,29 +5773,16 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return save successfull
    * @throws ConnectionException 
    */
-  @Deprecated public UserModel saveUserData(UserModel u) throws ConnectionException {
+  public UserModel saveUserData(UserModel u) throws ConnectionException {
 
-    logger.log(Level.FINE, "saveUserData()");
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return u;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
 
-    try {
-      u = UserManagerOld.saveUserModel(pm, u);
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error saving user", e);
-      throw new ConnectionException("saveUserData", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    
+    
+    
+    UserOpenid jdo = UserOpenid.getServerModel(u);
+    userManager.saveUser(user, jdo);
+    u = UserOpenid.getClientModel(jdo);
     
     return u;
   }
@@ -5825,7 +5868,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<RoutineModel> list = new ArrayList<RoutineModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -5983,7 +6027,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6058,7 +6103,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6181,7 +6227,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6265,7 +6312,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6338,7 +6386,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6388,7 +6437,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6459,7 +6509,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6509,7 +6560,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6761,7 +6813,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<GuideValueModel> list = new ArrayList<GuideValueModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -6900,7 +6953,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         FoodName mServer = FoodName.getServerModel(food.getName());
 
         //get uid
-        final String UID = getUid();
+        UserManager userManager = UserManager.getInstance();
+        UserOpenid user = userManager.getUser(perThreadRequest);
+        final String UID = user.getUid();
         if(UID == null) {
           return id;
         }

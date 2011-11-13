@@ -354,4 +354,22 @@ public class UserManager {
     
   }
 
+  public void saveUser(UserOpenid user, UserOpenid updatedModel) throws ConnectionException {
+    
+    
+    try {
+      //to make sure we update our model
+      updatedModel.setUid(user.getUid());
+      
+      dao.updateUser(updatedModel);
+        
+      //update cache
+      cache.setUser(user);
+        
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error saving user", e);
+      throw new ConnectionException("Error saving user", e);
+    }
+  }
+
 }
