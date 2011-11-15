@@ -49,69 +49,69 @@ public final class UserManagerOld {
    * Logger for this class
    */
   private static final Logger logger = Logger.getLogger(UserManagerOld.class.getName()); 
-
-  
-  /**
-   * Returns single user
-   * @param pm
-   * @param uid
-   * @throws Exception
-   */
-  @SuppressWarnings("unchecked")
-  public static UserModel getUsasderModel(PersistenceManager pm, String uid) throws Exception {
-
-    if(logger.isLoggable(Level.FINER)) {
-      logger.log(Level.FINER, "Loading user: "+uid);
-    }
-    
-    UserModel user = null;
-    
-    //load from cache
-    WeekCache cache = new WeekCache();
-    List<UserOpenid> users = cache.getUsers();
-
-    //not found
-    if(users == null) {    
-      if(logger.isLoggable(Level.FINER)) {
-        logger.log(Level.FINER, "Not found from cache");
-      }
-
-      //load in chunks
-      users = new ArrayList<UserOpenid>();
-      int i = 0;
-      while(true){
-        Query q = pm.newQuery(UserOpenid.class);
-        q.setRange(i, i+100);
-        List<UserOpenid> u = (List<UserOpenid>) q.execute();
-        users.addAll(u);
-        
-        if(u.size() < 100) {
-          break;
-        }
-        i += 100;
-      }
-      
-      //save to cache
-      cache.setUsers(users);
-    }
-    
-    if(users != null) {
-      for(UserOpenid u : users) {
-        //if uid matches
-        if(u.getId() != null && u.getId().equals(uid)) {
-          user = UserOpenid.getClientModel(u);
-          break;
-        }
-        //if alias matches
-        else if(u.getAlias() != null && u.getAlias().equals(uid)) {
-          user = UserOpenid.getClientModel(u);
-          break;
-        }
-      }
-    }
-    
-    return user;
-  }
+//
+//  
+//  /**
+//   * Returns single user
+//   * @param pm
+//   * @param uid
+//   * @throws Exception
+//   */
+//  @SuppressWarnings("unchecked")
+//  public static UserModel getUsasderModel(PersistenceManager pm, String uid) throws Exception {
+//
+//    if(logger.isLoggable(Level.FINER)) {
+//      logger.log(Level.FINER, "Loading user: "+uid);
+//    }
+//    
+//    UserModel user = null;
+//    
+//    //load from cache
+//    WeekCache cache = new WeekCache();
+//    List<UserOpenid> users = cache.getUsers();
+//
+//    //not found
+//    if(users == null) {    
+//      if(logger.isLoggable(Level.FINER)) {
+//        logger.log(Level.FINER, "Not found from cache");
+//      }
+//
+//      //load in chunks
+//      users = new ArrayList<UserOpenid>();
+//      int i = 0;
+//      while(true){
+//        Query q = pm.newQuery(UserOpenid.class);
+//        q.setRange(i, i+100);
+//        List<UserOpenid> u = (List<UserOpenid>) q.execute();
+//        users.addAll(u);
+//        
+//        if(u.size() < 100) {
+//          break;
+//        }
+//        i += 100;
+//      }
+//      
+//      //save to cache
+//      cache.setUsers(users);
+//    }
+//    
+//    if(users != null) {
+//      for(UserOpenid u : users) {
+//        //if uid matches
+//        if(u.getId() != null && u.getId().equals(uid)) {
+//          user = UserOpenid.getClientModel(u);
+//          break;
+//        }
+//        //if alias matches
+//        else if(u.getAlias() != null && u.getAlias().equals(uid)) {
+//          user = UserOpenid.getClientModel(u);
+//          break;
+//        }
+//      }
+//    }
+//    
+//    return user;
+//  }
 
 //  /**
 //   * Returns single user
@@ -179,71 +179,71 @@ public final class UserManagerOld {
 //    
 //    return u;
 //  }
-
-  /**
-   * Adds user 
-   * @param pm
-   * @param userCurrent
-   * @return
-   */
-  @SuppressWarnings("unchecked")
-  public static UserModel addUser(PersistenceManager pm, User userCurrent) {
-
-    if(logger.isLoggable(Level.FINER) && userCurrent != null) {
-      logger.log(Level.FINER, "Adding user: "+userCurrent.getEmail());
-    }
-
-    UserModel user = null;
-    
-    //check if user has data in OUR DATABASE
-    Query q = pm.newQuery(UserOpenid.class, "id == openIdParam");
-    q.declareParameters("java.lang.Long openIdParam");
-    q.setRange(0,1);
-    List<UserOpenid> users = (List<UserOpenid>) q.execute(userCurrent.getUserId());
-    
-    UserOpenid u;
-    
-    //data found
-    if(users.size() > 0) {
-      u = users.get(0);
-    }
-    //no data -> add new data for this user
-    else {
-      u = new UserOpenid();
-      u.setUid(userCurrent.getUserId());
-    }
-    
-    //if user added
-    if(u != null) {
-      
-      //save facebook data
-      u.setLocale("fi_FI");
-      u.setBanned(false);
-      u.setNickName(userCurrent.getNickname());
-      u.setEmail(userCurrent.getEmail());
-
-      pm.makePersistent(u);
-      pm.flush();
-      user = UserOpenid.getClientModel(u);
-              
-      //check if someone has set user as coach
-      q = pm.newQuery(Circle.class);
-      q.setFilter("friendId == friendIdParam && target == targetParam");
-      q.declareParameters("java.lang.String friendIdParam, java.lang.Integer targetParam");
-      q.setRange(0,1);
-      List<Circle> cicles = (List<Circle>) q.execute(user.getUid(), Permission.COACH);
-      user.setCoach(cicles.size() > 0);
-
-      //remove cache
-      //TODO needs improving
-      WeekCache cache = new WeekCache();
-      cache.removeUsers();
-      
-    }
-    
-    return user;
-    
-  }
+//
+//  /**
+//   * Adds user 
+//   * @param pm
+//   * @param userCurrent
+//   * @return
+//   */
+//  @SuppressWarnings("unchecked")
+//  public static UserModel addUser(PersistenceManager pm, User userCurrent) {
+//
+//    if(logger.isLoggable(Level.FINER) && userCurrent != null) {
+//      logger.log(Level.FINER, "Adding user: "+userCurrent.getEmail());
+//    }
+//
+//    UserModel user = null;
+//    
+//    //check if user has data in OUR DATABASE
+//    Query q = pm.newQuery(UserOpenid.class, "id == openIdParam");
+//    q.declareParameters("java.lang.Long openIdParam");
+//    q.setRange(0,1);
+//    List<UserOpenid> users = (List<UserOpenid>) q.execute(userCurrent.getUserId());
+//    
+//    UserOpenid u;
+//    
+//    //data found
+//    if(users.size() > 0) {
+//      u = users.get(0);
+//    }
+//    //no data -> add new data for this user
+//    else {
+//      u = new UserOpenid();
+//      u.setUid(userCurrent.getUserId());
+//    }
+//    
+//    //if user added
+//    if(u != null) {
+//      
+//      //save facebook data
+//      u.setLocale("fi_FI");
+//      u.setBanned(false);
+//      u.setNickName(userCurrent.getNickname());
+//      u.setEmail(userCurrent.getEmail());
+//
+//      pm.makePersistent(u);
+//      pm.flush();
+//      user = UserOpenid.getClientModel(u);
+//              
+//      //check if someone has set user as coach
+//      q = pm.newQuery(Circle.class);
+//      q.setFilter("friendId == friendIdParam && target == targetParam");
+//      q.declareParameters("java.lang.String friendIdParam, java.lang.Integer targetParam");
+//      q.setRange(0,1);
+//      List<Circle> cicles = (List<Circle>) q.execute(user.getUid(), Permission.COACH);
+//      user.setCoach(cicles.size() > 0);
+//
+//      //remove cache
+//      //TODO needs improving
+//      WeekCache cache = new WeekCache();
+//      cache.removeUsers();
+//      
+//    }
+//    
+//    return user;
+//    
+//  }
 
   /**
    * Gives friend (friendid) permission to given target to user's (uid) data

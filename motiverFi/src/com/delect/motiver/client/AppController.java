@@ -184,7 +184,7 @@ public class AppController extends Presenter {
       @Override
       public void onSuccess(UserModel result) {
         //logged int
-        if(result.getId() != null) {
+        if(result.getUid() != null) {
           //fire logged in event
           final LoggedInEvent event = new LoggedInEvent(result);
           eventBus.fireEvent(event);

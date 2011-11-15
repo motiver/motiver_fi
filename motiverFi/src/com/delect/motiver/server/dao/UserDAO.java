@@ -247,8 +247,17 @@ public class UserDAO {
     
     try {
       
-      UserOpenid u = pm.getObjectById(UserOpenid.class, user.getId());
+      UserOpenid u = null;
       
+      //throws exception if new user
+      //TODO handle this better
+      try {
+        u = pm.getObjectById(UserOpenid.class, user.getId());
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "User "+user.getId()+" not found");
+      }
+
+      //update old user
       if(u != null) {
         
         //save old alias so we can restore it if necessary
@@ -289,11 +298,17 @@ public class UserDAO {
           }
         }
       }
+      //create new user
+      else {
+        pm.makePersistent(user);
+      }
       
       tx.commit();
 
       //update user which was given as parameter
-      user.update(u);
+      if(u != null) {
+        user.update(u); 
+      }
       
     } catch (Exception e) {
       throw e;

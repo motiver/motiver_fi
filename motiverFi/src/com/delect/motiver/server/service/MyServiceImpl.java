@@ -556,35 +556,24 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
   }
   
   @Override
-  @Deprecated public UserModel getUser() throws ConnectionException {
+  public UserModel getUser() throws ConnectionException {
 
-    logger.log(Level.FINE, "getUser()");
+    UserModel jdo = null;
     
-    UserModel user = new UserModel();
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      UserService userService = UserServiceFactory.getUserService();
-      User userCurrent = userService.getCurrentUser();
+    //get uid
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
-      //user found
-      if(userCurrent != null) {
-        
-        user = UserManagerOld.addUser(pm, userCurrent);
-        user.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
-        
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error loading user", e);
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+    //user found
+    if(user != null) {
+      
+      jdo = UserOpenid.getClientModel(user);
+
+      UserService userService = UserServiceFactory.getUserService();
+      jdo.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
+      
     }
     
-    return user;
+    return jdo;
   }
   
   

@@ -90,6 +90,11 @@ public class UserManager {
       
       if(openId != null) {
         user = getUser(openId);
+        
+        //if not found -> create
+        if(user == null) {
+          user = createUser(userCurrent);
+        }
       }
       
       
@@ -280,18 +285,28 @@ public class UserManager {
     return list;
   }
 
-
-
-  public UserOpenid getUser(String uid) throws Exception {
+  /**
+   * Returns user based on given uid. Returns null if user not found
+   * @param uid
+   * @return
+   * @throws Exception
+   */
+  public UserOpenid getUser(String uid) {
     
-    UserOpenid u = cache.getUser(uid);
+    UserOpenid u = null;
     
-    if(u == null) {
-      u = dao.getUser(uid);
+    try {
+      u = cache.getUser(uid);
+      
+      if(u == null) {
+        u = dao.getUser(uid);
 
-      if(u != null) {
-        cache.setUser(u);
+        if(u != null) {
+          cache.setUser(u);
+        }
       }
+    } catch (Exception e) {
+      logger.log(Level.WARNING, "User "+uid+" not found");
     }
     
     return u;
@@ -364,12 +379,39 @@ public class UserManager {
       dao.updateUser(updatedModel);
         
       //update cache
-      cache.setUser(user);
+      cache.setUser(updatedModel);
         
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error saving user", e);
       throw new ConnectionException("Error saving user", e);
     }
+  }
+
+  /**
+   * Creates new user
+   * @param user
+   * @param userAppengine
+   * @throws ConnectionException
+   */
+  public UserOpenid createUser(User userAppengine) throws ConnectionException {
+    
+    UserOpenid user = new UserOpenid();
+    
+    try {
+      
+      user.update(userAppengine);
+      
+      dao.updateUser(user);
+        
+      //update cache
+      cache.setUser(user);
+        
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error creating user", e);
+      throw new ConnectionException("Error creating user", e);
+    }
+    
+    return user;
   }
 
 }

@@ -23,6 +23,7 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.delect.motiver.shared.UserModel;
+import com.google.appengine.api.users.User;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class UserOpenid implements Serializable {
@@ -41,9 +42,6 @@ public class UserOpenid implements Serializable {
 		UserModel modelClient = new UserModel();
 		
 		try {
-      if(model.getId() != null) {
-        modelClient.setId(model.getId());
-      }
 			if(model.getUid() != null) {
 				modelClient.setUid(model.getUid());
       }
@@ -82,7 +80,7 @@ public class UserOpenid implements Serializable {
     UserOpenid modelServer = new UserOpenid();
     
     try {
-      modelServer.setUid(model.getId());
+      modelServer.setUid(model.getUid());
       modelServer.setDateFormat(model.getDateFormat());
       modelServer.setTimeFormat(model.getTimeFormat());
       modelServer.setMeasurementSystem(model.getMeasurementSystem());
@@ -487,5 +485,13 @@ public class UserOpenid implements Serializable {
     setNickName(model.getNickName());
     setTimeFormat(model.getTimeFormat());
     setTimezone(model.getTimezone());
+  }
+
+  public void update(User model) {
+    setLocale("fi_FI");
+    setBanned(false);
+    setNickName(model.getNickname());
+    setEmail(model.getEmail());
+    setUid(model.getUserId());
   }
 }

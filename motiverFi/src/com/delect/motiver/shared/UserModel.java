@@ -216,9 +216,9 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
 			return 0;
     }
 	}
-  public String getId() {
-    return get("id");
-  }
+//  public String getId() {
+//    return get("id");
+//  }
 	public String getUid() {
 		if(get("uid") != null) {
 			return get("uid");
@@ -358,9 +358,9 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
 		set("tz", timezone);
 	}
 
-	public void setId(String id) {
-		set("id", id);
-	}
+//	public void setId(String id) {
+//		set("id", id);
+//	}
 
   public void setUid(String uid) {
     set("uid", uid);
