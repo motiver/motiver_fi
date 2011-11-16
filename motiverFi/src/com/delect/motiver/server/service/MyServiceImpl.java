@@ -6718,6 +6718,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     //get user
     UserOpenid user = userManager.getUser(perThreadRequest);
       
+<<<<<<< HEAD
     TrainingManager trainingManager = TrainingManager.getInstance();
 
     List<Workout> workouts = null;
@@ -6733,6 +6734,51 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     if(workouts != null) {
       for(Workout m : workouts) {
         list.add(Workout.getClientModel(m));
+=======
+      Query q = pm.newQuery(Workout.class);
+
+      List<Workout> workouts = null;
+      //if from single routine
+      if(routine != null) {
+        
+        //get routine so we know is it shared
+        Routine r = pm.getObjectById(Routine.class, routine.getId());
+        if(r != null) {
+          if(!hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid())) {
+            throw new NoPermissionException(Permission.READ_TRAINING, UID, r.getUid());
+          }
+          
+          q.setFilter("date == null && routineId == routineIdParam");
+          q.declareParameters("java.lang.Long routineIdParam");
+          workouts = (List<Workout>) q.execute(r.getId());
+        }        
+      }
+      //all single workouts
+      else {
+        q.setFilter("date == null && routineId == 0 && openId == openIdParam");
+        q.declareParameters("java.lang.String openIdParam");
+        q.setRange(index, 100);
+        workouts = (List<Workout>) q.execute(UID);
+      }
+
+      if(workouts != null) {
+        Collections.sort(workouts);
+        
+        int i = 0;
+        for(Workout w : workouts) {
+          
+          //if limit reached -> add null value
+          if(i == Constants.LIMIT_WORKOUTS) {
+            list.add(null);
+            break;
+          }
+
+          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
+          list.add(m);
+          
+          i++;
+        }
+>>>>>>> fix#25
       }
     }
     

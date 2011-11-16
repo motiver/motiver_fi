@@ -101,7 +101,7 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
 
           //get this months workouts
           Query qW = pm.newQuery(Workout.class);
-          qW.setFilter("uid == uidParam && date >= dateStartParam && date <= dateEndParam");
+          qW.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
           qW.declareParameters("java.lang.Long uidParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
           List<Workout> workouts = (List<Workout>) qW.execute(user.getUid(), dStart, dEnd);
           
@@ -259,7 +259,7 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
             
             //check if personal best
             Query qIsBest = pm.newQuery(MonthlySummaryExercise.class);
-            qIsBest.setFilter("uid == uidParam && nameId == nameIdParam && type == 0 && length == lengthParam && value > valueParam");
+            qIsBest.setFilter("openId == openIdParam && nameId == nameIdParam && type == 0 && length == lengthParam && value > valueParam");
             qIsBest.declareParameters("java.lang.Long uidParam, java.lang.Long nameIdParam, java.lang.Integer lengthParam, java.lang.Double valueParam");
             List<MonthlySummaryExercise> dataIsBest = (List<MonthlySummaryExercise>)qIsBest.executeWithArray( new Object[] {user.getUid(), nameId, modelE.getLength(), modelE.getValue()} );
             modelE.setPersonalBest(dataIsBest.size() == 0);
@@ -290,7 +290,7 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
             
             //check if personal best
             Query qIsBest = pm.newQuery(MonthlySummaryExercise.class);
-            qIsBest.setFilter("uid == uidParam && nameId == nameIdParam && type == 1 && length == lengthParam && value > valueParam");
+            qIsBest.setFilter("openId == openIdParam && nameId == nameIdParam && type == 1 && length == lengthParam && value > valueParam");
             qIsBest.declareParameters("java.lang.Long uidParam, java.lang.Long nameIdParam, java.lang.Integer lengthParam, java.lang.Double valueParam");
             qIsBest.setRange(0, 1);
             List<MonthlySummaryExercise> dataIsBest = (List<MonthlySummaryExercise>)qIsBest.executeWithArray( new Object[] {user.getUid(), modelE.getNameId(), modelE.getLength(), modelE.getValue()} );

@@ -158,7 +158,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 		 */
 		void printPage();
 	}
-	private BrowserCheckPresenter browserCheckPresenter;
+//	private BrowserCheckPresenter browserCheckPresenter;
 	
 	private CoachModeIndicatorPresenter coachModeIndicatorPresenter;
 	private int connection_count = 0;
@@ -187,7 +187,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     //containers
     headerUserPresenter = new HeaderPresenter(rpcService, eventBus, (HeaderDisplay)GWT.create(HeaderView.class), HeaderTarget.USER, 0);
     shortcutKeysPresenter = new ShortcutKeysPresenter(rpcService, eventBus, (ShortcutKeysDisplay)GWT.create(ShortcutKeysView.class));
-    browserCheckPresenter = new BrowserCheckPresenter(rpcService, eventBus, (BrowserCheckDisplay)GWT.create(BrowserCheckView.class));
+//    browserCheckPresenter = new BrowserCheckPresenter(rpcService, eventBus, (BrowserCheckDisplay)GWT.create(BrowserCheckView.class));
 	    
   }
 
@@ -449,15 +449,15 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     //reload page each xx hours
 		setPageReloadTimer();	    
 
-    //check browser
-		//run in thread so everything else gets loaded first
-		timer = new Timer() {
-			@Override
-			public void run() {
-        browserCheckPresenter.run(display.getMessageContainer());
-			}
-		};
-		timer.schedule(2000);
+//    //check browser
+//		//run in thread so everything else gets loaded first
+//		timer = new Timer() {
+//			@Override
+//			public void run() {
+//        browserCheckPresenter.run(display.getMessageContainer());
+//			}
+//		};
+//		timer.schedule(2000);
 	}
 
 	@Override
@@ -478,9 +478,9 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 		if(coachModeIndicatorPresenter != null) {
 			coachModeIndicatorPresenter.stop();
     }
-		if(browserCheckPresenter != null) {
-			browserCheckPresenter.stop();
-    }
+//		if(browserCheckPresenter != null) {
+//			browserCheckPresenter.stop();
+//    }
 		if(shortcutKeysPresenter != null) {
 			shortcutKeysPresenter.stop();
     }

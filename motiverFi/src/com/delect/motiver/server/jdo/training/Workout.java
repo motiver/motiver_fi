@@ -172,7 +172,18 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 
 	@Override
 	public int compareTo(Workout compare) {
-		return getName().toLowerCase().compareTo(compare.getName().toLowerCase());
+	  String n1 = getName();
+	  String n2 = compare.getName();
+	  
+	  if(n1 == null) {
+	    return 1;
+	  }
+	  else if(n2 == null) {
+	    return -1;
+	  }
+	  else {
+	    return n1.toLowerCase().compareTo(n2.toLowerCase());
+	  }
 	}
 
 	public Date getDate() {
