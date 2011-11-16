@@ -45,7 +45,7 @@ public interface Constants {
 	/**
 	 * Color for graph's data
 	 */
-	public static final String[] COLOR_GRAPH = new String[] {"#6fa3ae", "#e1b051", "#acb564", "#acac90", "#cd6329",  "#2b606a", "#a07010", "#687120" };
+	public static final String[] COLOR_GRAPH = new String[] { "#6fa3ae", "#e1b051", "#acb564", "#acac90", "#cd6329",  "#2b606a", "#a07010", "#687120" };
 	
 	/**
 	 * Cookie name for saving url token

@@ -21,4 +21,12 @@
     <schedule>every mon 01:00</schedule>
   </cron>
   
+  <cron>
+    <url>/motiver/mss</url>
+    <target>indexing</target>
+    <description>Calculate monthly summary</description>
+    <schedule>1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 23:00</schedule>
+    
+  </cron>
+  
 </cronentries>
