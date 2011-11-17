@@ -425,9 +425,15 @@ public class TrainingManager {
           //check cache
           Workout jdo = _getWorkout(workout.getId());
           
+          //check permission
+          userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), jdo.getUid());
+          
           //increment count
-          jdo.setCount(jdo.getCount() + 1);
-          _updateWorkout(jdo);
+          if(!user.getUid().equals(jdo.getUid())) {
+            //increment count
+            jdo.setCount(jdo.getCount() + 1);
+            _updateWorkout(jdo);
+          }
           
           //add copy
           clone = (Workout) jdo.clone();

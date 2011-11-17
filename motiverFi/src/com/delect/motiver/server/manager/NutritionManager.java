@@ -402,9 +402,14 @@ public class NutritionManager {
           //check cache
           Meal jdo = _getMeal(meal.getId());
           
+          //check permission
+          userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), jdo.getUid());
+          
           //increment count
-          jdo.setCount(jdo.getCount() + 1);
-          _updateMeal(jdo);
+          if(!user.getUid().equals(jdo.getUid())) {
+            jdo.setCount(jdo.getCount() + 1);
+            _updateMeal(jdo);
+          }
           
           //add copy
           Meal clone = (Meal) jdo.clone();

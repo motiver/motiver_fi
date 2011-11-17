@@ -103,14 +103,17 @@ public class WorkoutModel extends BaseModelData implements Serializable {
 			return 0;
     }
   }
-	public String getUid() {
-		if(get("uid") != null) {
-			return get("uid");
-    }
-		else {
-			return "";
-		}
-  }
+//	public String getUid() {
+//		if(get("uid") != null) {
+//			return get("uid");
+//    }
+//		else {
+//			return "";
+//		}
+//  }
+  public UserModel getUser() {
+    return get("u");
+  } 
 
 	public void setDate(Date date) {
     set("d", date);
@@ -145,9 +148,12 @@ public class WorkoutModel extends BaseModelData implements Serializable {
 	public void setTimeStart(int timeStart) {
     set("t1", timeStart);
   }
-	public void setUid(String uid) {
-		set("uid", uid);
-	}
+//	public void setUid(String uid) {
+//		set("uid", uid);
+//	}
+  public void setUser(UserModel u) {
+    set("u", u);
+  } 
   
   @Override
   public String toString() {

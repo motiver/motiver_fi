@@ -62,7 +62,6 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 		modelClient.setRating(model.getRating());
 		modelClient.setDate(model.getDate());
 		modelClient.setDayInRoutine(model.getDayInRoutine());
-		modelClient.setUid(model.getUid());
 		
     //exercises
     List<ExerciseModel> exercises = new ArrayList<ExerciseModel>();
@@ -72,6 +71,9 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
       }
     }
     modelClient.setExercises(exercises);
+    
+    //user
+    modelClient.setUser(UserOpenid.getClientModel(model.getUser()));
 		
 		return modelClient;
 	}
@@ -96,7 +98,6 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 		modelServer.setDate(model.getDate());
 		modelServer.setDayInRoutine(model.getDayInRoutine());
 		modelServer.setInfo(model.getInfo());
-		modelServer.setUid(model.getUid());
 		
 		return modelServer;
 	}
