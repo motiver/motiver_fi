@@ -351,7 +351,7 @@ public class WorkoutPresenter extends Presenter {
 
 		//if no exercises -> show empty presenter
 		if(exercisePresenters.size() == 0) {
-			if(workout.getUid().equals(AppController.User.getUid())) {
+			if(workout.getUser().equals(AppController.User)) {
 				emptyPresenter = new EmptyWorkoutPresenter(rpcService, eventBus, (EmptyWorkoutDisplay)GWT.create(EmptyWorkoutView.class));
       }
 			else {
@@ -414,7 +414,7 @@ public class WorkoutPresenter extends Presenter {
 		presenter.run(display.getBodyContainer());
 		
 		//show add button
-		display.setAddButtonVisible( workout.getUid().equals(AppController.User.getUid()) );
+		display.setAddButtonVisible( workout.getUser().equals(AppController.User) );
 	}
 
 
@@ -471,9 +471,9 @@ public class WorkoutPresenter extends Presenter {
 	      }
 				
 				//show user if not our workout
-				if(!workout.getUid().equals(AppController.User.getUid())) {
+				if(!workout.getUser().equals(AppController.User)) {
 					UserModel user = new UserModel();
-					user.setUid(workout.getUid());
+					user.setUid(workout.getUser().getUid());
 					userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), user, false);
 					userPresenter.run(display.getUserContainer());
 				}
@@ -481,7 +481,7 @@ public class WorkoutPresenter extends Presenter {
 			
 			//if no workouts
 			if(workout.getExercises().size() == 0) {
-				if(workout.getUid().equals(AppController.User.getUid())) {
+				if(workout.getUser().equals(AppController.User)) {
 					emptyPresenter = new EmptyWorkoutPresenter(rpcService, eventBus, (EmptyWorkoutDisplay)GWT.create(EmptyWorkoutView.class));
 	      }
 				else {

@@ -341,7 +341,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 			//buttons
 			if(workout.getId() != 0) {
 				
-				if(workout.getUid().equals(AppController.User.getUid())) {
+				if(workout.getUser().equals(AppController.User)) {
 					
 					//add food
 					panelBase.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Exercise().toLowerCase()), 
@@ -477,7 +477,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 					//times
 					panelWorkoutInfo.add(new Text(AppController.Lang.Time() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 					
-					if(workout.getUid().equals(AppController.User.getUid())) {
+					if(workout.getUser().equals(AppController.User)) {
 						TimeSelectFieldView tfStart = new TimeSelectFieldView((int) workout.getTimeStart(), new TimeSelectFieldHandler() {
 							@Override
 							public void timeChanged(int time) {
@@ -530,14 +530,14 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 							handler.saveData(workout);
 						}
 					});
-          panelRating.setEnabled(workout.getUid().equals(AppController.User.getUid()));
+          panelRating.setEnabled(workout.getUser().equals(AppController.User));
           panelWorkoutInfo.add(panelRating, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
 					
           //done
 					imgDone.setVisible(workout.getDone());
 					imgDoneNot.setVisible(!workout.getDone());
 					LayoutContainer lcDone = new LayoutContainer();
-					if(workout.getUid().equals(AppController.User.getUid())) {
+					if(workout.getUser().equals(AppController.User)) {
 						//tooltip and click listener
 						imgDoneNot.setTitle(AppController.Lang.MarkAsDone());
 						final ClickHandler handlerClick = new ClickHandler() {

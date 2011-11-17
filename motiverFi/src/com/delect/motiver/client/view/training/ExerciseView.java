@@ -136,7 +136,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 		try {
 			
 		  //if our exercise
-			if(exercise.getWorkout().getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUser().equals(AppController.User)) {
 
 	      //change order "link" (=drag source)
 				ImageButton btnDrag = new ImageButton(AppController.Lang.ChangeExerciseOrder(), MyResources.INSTANCE.iconBtnDrag());

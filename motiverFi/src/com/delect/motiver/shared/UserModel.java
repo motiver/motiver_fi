@@ -39,6 +39,14 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
 		return getEmail().compareTo(compare.getEmail());
 	}
 	
+	@Override
+	public boolean equals(Object object) {
+	  if(object instanceof UserModel) {
+	    return ((UserModel)object).getUid().equals(getUid());
+	  }
+	  return false;
+	}
+	
 	public String getAlias() {
 	  return get("a");
 	}

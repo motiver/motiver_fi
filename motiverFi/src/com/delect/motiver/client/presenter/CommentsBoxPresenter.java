@@ -220,7 +220,7 @@ public class CommentsBoxPresenter extends Presenter {
 		if(workout != null) {
 			title = workout.getName();
 			target = "w" + workout.getId();
-			uid = workout.getUid();
+			uid = workout.getUser().getUid();
 		}
 		//routine
 		else if(routine != null) {

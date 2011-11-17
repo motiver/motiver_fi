@@ -471,7 +471,7 @@ public class WorkoutsListPresenter extends Presenter {
 				}
 				else {
 					//copy to our workouts
-					if(!m.getUid().equals(AppController.User.getUid())) {
+					if(!m.getUser().equals(AppController.User)) {
 						display.setCopyButtonVisible(true);
 					}
 				}
