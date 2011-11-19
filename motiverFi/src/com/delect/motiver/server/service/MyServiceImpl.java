@@ -75,7 +75,6 @@ import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.manager.NutritionManager;
 import com.delect.motiver.server.manager.TrainingManager;
 import com.delect.motiver.server.manager.UserManager;
-import com.delect.motiver.server.manager.UserManagerOld;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
@@ -108,7 +107,6 @@ import com.google.appengine.api.urlfetch.HTTPMethod;
 import com.google.appengine.api.urlfetch.HTTPRequest;
 import com.google.appengine.api.urlfetch.URLFetchService;
 import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
-import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -4181,63 +4179,25 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return meals' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<MealModel> getMostPopularMeals(int index) throws ConnectionException {
+  public List<MealModel> getMostPopularMeals(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMostPopularMeals()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular meals");
+    }
+
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+      
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+
+    List<Meal> meals = nutritionManager.getMeals(user, index, user.getUid());
 
     List<MealModel> list = new ArrayList<MealModel>();
-    
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Meal.class);
-
-      List<Meal> meals = null;
-      
-      //copy count > 1 and not our meal
-      q.setFilter("time == null && copyCount > 0");
-      q.setRange(index, index + Constants.LIMIT_MEALS + 1);
-      q.setOrdering("copyCount DESC");
-      meals = (List<Meal>) q.execute();
-
-      int i = 0;
-      for(Meal w : meals) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_WORKOUTS) {
-          list.add(null);
-          break;
-        }
-        
-        //check permission
-        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid())) {
-          throw new NoPermissionException(Permission.READ_NUTRITION, UID, w.getUid());
-        }
-        
-        MealModel m = Meal.getClientModel(w);
-        list.add(m);
-        
-        i++;
+    if(meals != null) {
+      for(Meal m : meals) {
+        list.add(Meal.getClientModel(m));
       }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMostPopularMeals", e);
-      throw new ConnectionException("getMostPopularMeals", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -4321,7 +4281,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       
     TrainingManager trainingManager = TrainingManager.getInstance();
 
-    List<Workout> workouts = trainingManager.getWorkouts(user, index, user.getUid());
+    List<Workout> workouts = trainingManager.getMostPopularWorkouts(user, index);
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     if(workouts != null) {

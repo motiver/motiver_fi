@@ -54,7 +54,6 @@ import com.delect.motiver.client.event.handler.OfflineModeEventHandler;
 import com.delect.motiver.client.event.handler.RunShowEventHandler;
 import com.delect.motiver.client.event.handler.TabEventHandler;
 import com.delect.motiver.client.event.handler.WorkoutShowEventHandler;
-import com.delect.motiver.client.presenter.BrowserCheckPresenter.BrowserCheckDisplay;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderDisplay;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderTarget;
 import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageDisplay;
@@ -79,7 +78,6 @@ import com.delect.motiver.client.presenter.statistics.StatisticsPagePresenter.St
 import com.delect.motiver.client.presenter.training.TrainingPagePresenter;
 import com.delect.motiver.client.presenter.training.TrainingPagePresenter.TrainingPageDisplay;
 import com.delect.motiver.client.service.MyServiceAsync;
-import com.delect.motiver.client.view.BrowserCheckView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.HeaderView;
 import com.delect.motiver.client.view.InfoMessageView;

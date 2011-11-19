@@ -294,6 +294,7 @@ public class Routine implements Comparable<Routine> {
   
   @Override
   public String toString() {
-    return "Routine: ['"+getName()+"', workouts: "+getWorkouts().size()+"]";
+    return "Routine: ['"+getName()+"', workouts: "+getWorkouts().size()+"" +
+        ", '"+getUid()+"']";
   }
 }

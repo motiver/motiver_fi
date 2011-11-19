@@ -10,6 +10,7 @@ import java.util.logging.Logger;
 
 import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
+import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
@@ -160,7 +161,13 @@ public class TrainingManager {
       list = cache.getWorkouts(uid, date);
       
       if(list == null) {
-        list = dao.getWorkouts(date, uid);
+        WorkoutSearchParams params = new WorkoutSearchParams(date, uid);
+        List<Long> keys = dao.getWorkouts(params);
+        
+        list = new ArrayList<Workout>();
+        for(Long key : keys) {
+          list.add(_getWorkout(key));
+        }
 
         //add to cache
         cache.setWorkouts(uid, date, list);
@@ -200,13 +207,15 @@ public class TrainingManager {
     List<Workout> list = new ArrayList<Workout>();
     
     try {
-      List<Long> keys = dao.getWorkouts(offset, Constants.LIMIT_WORKOUTS, uid, 0, 0);
+      WorkoutSearchParams params = new WorkoutSearchParams();
+      params.offset = offset;
+      params.limit = Constants.LIMIT_WORKOUTS;
+      params.uid = uid;
+      List<Long> keys = dao.getWorkouts(params);
       
       for(Long key : keys) {
-
         
         Workout jdo = _getWorkout(key);
-        
         if(jdo != null) {
           
           //check permission
@@ -223,8 +232,8 @@ public class TrainingManager {
     
     return list;
   }
-  
-  public List<Workout> getMostPopularWorkouts(UserOpenid user, int offset, String uid) throws ConnectionException {
+
+  public List<Workout> getMostPopularWorkouts(UserOpenid user, int offset) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
       logger.log(Constants.LOG_LEVEL_MANAGER, "Loading most popular workouts ("+offset+")");
@@ -233,20 +242,23 @@ public class TrainingManager {
     List<Workout> list = new ArrayList<Workout>();
     
     try {
-      int i = 0;
+      WorkoutSearchParams params = new WorkoutSearchParams();
+      params.limit = Constants.LIMIT_WORKOUTS * 2;
+      params.minCopyCount = 1;
       
       //while enough found
+      int i = 0;
       while(list.size() < Constants.LIMIT_WORKOUTS) {
-        List<Long> keys = dao.getWorkouts(i, Constants.LIMIT_WORKOUTS * 2, null, 0, 1);
+        params.offset = i;
+        List<Long> keys = dao.getWorkouts(params);
         
         for(Long key : keys) {
           
           if(list.size() == Constants.LIMIT_WORKOUTS) {
             break;
           }
-            
+
           Workout jdo = _getWorkout(key);
-          
           if(jdo != null) {
             
             //check permission
@@ -259,12 +271,17 @@ public class TrainingManager {
           }
         }
         
+        //if no workouts found -> stop
+        if(keys.size() == 0) {
+          break;
+        }
+        
         i += Constants.LIMIT_WORKOUTS * 2;
       }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workouts", e);
-      throw new ConnectionException("getWorkouts", e.getMessage());
+      throw new ConnectionException("getMostPopularWorkouts", e.getMessage());
     }
     
     return list;
@@ -292,6 +309,13 @@ public class TrainingManager {
     return list;
   }
 
+  /**
+   * Returns workout based on key
+   * Fetchs also user and exercises names
+   * @param key
+   * @return
+   * @throws Exception
+   */
   private Workout _getWorkout(Long key) throws Exception {
     
     Workout jdo = cache.getWorkout(key);
@@ -299,7 +323,14 @@ public class TrainingManager {
     if(jdo == null) {
       jdo = dao.getWorkout(key);
       jdo.setUser(userManager.getUser(jdo.getUid()));
-     
+      
+      //find names for each exercise
+      for(Exercise f : jdo.getExercises()) {
+        if(f.getNameId().longValue() > 0) {
+          f.setName(_getExerciseName(f.getNameId()));
+        }
+      }
+      
       cache.addWorkout(jdo);
     }
     
@@ -323,6 +354,36 @@ public class TrainingManager {
     }
     
     return jdo;
+  }
+
+  private ExerciseName _getExerciseName(Long key) throws Exception {
+    
+    List<ExerciseName> names = _getExerciseNames();
+    
+    if(names != null) {
+      for(ExerciseName name : names) {
+        if(name.getId().equals(key)) {
+          return name;
+        }
+      }
+    }
+    
+    return null;
+  }
+
+  private List<ExerciseName> _getExerciseNames() throws Exception {
+
+    //load from cache
+    List<ExerciseName> listAll = cache.getExerciseNames();
+    
+    if(listAll == null) {
+      listAll = dao.getExerciseNames();
+      
+      //save to cache
+      cache.setExerciseNames(listAll);
+    }
+    
+    return listAll;
   }
 
   private void _updateWorkout(Workout workout) throws Exception {
@@ -473,14 +534,7 @@ public class TrainingManager {
     try {
 
       //load from cache
-      List<ExerciseName> listAll = cache.getExerciseNames();
-      
-      if(listAll == null) {
-        listAll = dao.getExerciseNames();
-        
-        //save to cache
-        cache.setExerciseNames(listAll);
-      }
+      List<ExerciseName> listAll = _getExerciseNames();
       
       if(listAll != null) {
       
@@ -571,7 +625,6 @@ public class TrainingManager {
     return list;
   }
 
-
   @SuppressWarnings("unused")
   public List<ExerciseName> addExerciseName(UserOpenid user, List<ExerciseName> names) throws ConnectionException {
 
@@ -631,13 +684,15 @@ public class TrainingManager {
       String[] arr = query.split(" ");
 
       //load from cache
-      List<Workout> listAll = dao.getWorkouts();
+      List<Long> keysAll = dao.getWorkouts(WorkoutSearchParams.all());
 
       int i = 0;
-      for(Workout m : listAll) {
+      for(Long key : keysAll) {
+
+        Workout m = _getWorkout(key);
         
         if(!m.getUid().equals(user.getUid()) 
-            && userManager.hasPermission(Permission.READ_NUTRITION, user.getUid(), m.getUid()))  {
+            && userManager.hasPermission(Permission.READ_TRAINING, user.getUid(), m.getUid()))  {
 
           if(i >= index) {
             

@@ -257,6 +257,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   
   @Override
   public String toString() {
-    return "Meal: ['"+getName()+"', foods: "+getFoods().size()+"]";
+    return "Meal: ['"+getName()+"', foods: "+getFoods().size()+"" +
+        ", '"+getUid()+"']";
   }
 }

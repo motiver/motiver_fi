@@ -1,7 +1,6 @@
 package com.delect.motiver.server.dao;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -11,13 +10,13 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import com.delect.motiver.server.PMF;
+import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.ExerciseNameCount;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
-import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 
 public class TrainingDAO {
@@ -215,93 +214,6 @@ public class TrainingDAO {
     }    
   }
 
-
-  @SuppressWarnings("unchecked")
-  public List<Workout> getWorkouts(Date date, String uid) throws Exception {
-    
-    ArrayList<Workout> list = new ArrayList<Workout>();
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-
-      //strip workout
-      final Date dStart = DateUtils.stripTime(date, true);
-      final Date dEnd = DateUtils.stripTime(date, false);
-      
-      Query q = pm.newQuery(Workout.class);
-      q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-      q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Workout> workouts = (List<Workout>) q.execute(uid, dStart, dEnd);
-      for(Workout workout : workouts) {
-        Workout copy = pm.detachCopy(workout);
-        
-        //get exercises
-        copy.setExercises(new ArrayList<Exercise>(pm.detachCopyAll(workout.getExercises())));
-        
-        //find names for each exercise
-        for(Exercise f : copy.getExercises()) {
-          if(f.getNameId().longValue() > 0) {
-            f.setName(pm.getObjectById(ExerciseName.class, f.getNameId()));
-          }
-        }
-        
-        list.add(copy);
-      }
-      
-    } catch (Exception e) {
-      throw e;
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return list;
-  }
-
-  /**
-   * Return all workouts
-   * @return
-   * @throws Exception
-   */
-  @SuppressWarnings("unchecked")
-  public List<Workout> getWorkouts() throws Exception {
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    List<Workout> n = new ArrayList<Workout>();
-    
-    try {
-      
-      int i = 0;
-      while(true){
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("routineId == 0");
-        q.setOrdering("name ASC");
-        q.setRange(i, i+100);
-        List<Workout> u = (List<Workout>) q.execute();
-        n.addAll(u);
-        
-        if(u.size() < 100) {
-          break;
-        }
-        i += 100;
-      }
-      
-    } catch (Exception e) {
-      throw e;
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return n;
-  }
-
   /**
    * Return all routines
    * @return
@@ -476,48 +388,89 @@ public class TrainingDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Long> getWorkouts(int offset, int limit, String uid, int routineId, int minCopyCount) throws Exception {
+  public List<Long> getWorkouts(WorkoutSearchParams params) throws Exception {
 
     List<Long> list = new ArrayList<Long>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      Query q = pm.newQuery(Workout.class);
-      StringBuilder builder = new StringBuilder();
-      if(uid != null) {
-        builder.append("openId == openIdParam && ");
-      }
-      builder.append("routineId == routineParam && date == null && copyCount >= copyCountParam");
-      q.setFilter(builder.toString());
-      q.declareParameters("java.lang.String openIdParam, java.lang.Integer routineParam, java.lang.Integer copyCountParam");
-      q.setRange(offset, offset + Constants.LIMIT_MEALS + 1);
-      List<Workout> workouts = (List<Workout>) q.execute(uid, routineId, minCopyCount);
+
+      int c = 0; 
+      while(true){
+        int offset = params.offset + c;
+        int limit = offset + (params.limit - c);
+        if(limit - offset > 100) {
+          limit = offset + 100; 
+        }
+        limit++;
+        
+        Query q = pm.newQuery(Workout.class);
+        StringBuilder builder = new StringBuilder();
+        if(params.uid != null) {
+          builder.append("openId == openIdParam && ");
+        }
+        if(params.routineId != null) {
+          builder.append("routineId == routineParam");
+        }
+        else {
+          builder.append("routineId == 0");
+        }
+        if(params.date != null) {
+          builder.append(" && date == dateParam");
+        }
+        else {
+          builder.append(" && date == null");
+        }
+        if(params.minCopyCount > 0) {
+          builder.append(" && copyCount >= copyCountParam");
+        }
+        switch(params.order) {
+          case COUNT:
+            q.setOrdering("copyCount DESC");
+            break;
+          case DATE:
+            q.setOrdering("date DESC");
+            break;
+          default:
+            q.setOrdering("name ASC");
+            break;
+        }
+        q.setFilter(builder.toString());
+        q.declareParameters("java.lang.String openIdParam, java.lang.Integer routineParam, java.lang.Integer copyCountParam, java.util.Date dateParam");
+        q.setRange(offset, limit);
+        List<Workout> workouts = (List<Workout>) q.executeWithArray(params.uid, params.routineId, params.minCopyCount, params.date);
+              
+        //get workouts
+        if(workouts != null) {
+          int i = 0;
+          for(Workout m : workouts) {
             
-      //get workouts
-      if(workouts != null) {        
-        int i = 0;
-        for(Workout m : workouts) {
+            //if limit reached -> add null value
+            if(list.size() >= params.limit) {
+              list.add(null);
+              break;
+            }
+            
+            list.add(m.getId());
+            
+            i++;
+          }
           
-          //if limit reached -> add null value
-          if(i == limit) {
-            list.add(null);
+          //if enough found or last query didn't return enough rows
+          if(list.size() >= params.limit || workouts.size() < limit) {
             break;
           }
           
-          //find names for each exercise
-          for(Exercise f : m.getExercises()) {
-            if(f.getNameId().longValue() > 0) {
-              f.setName(pm.getObjectById(ExerciseName.class, f.getNameId()));
-            }
-          }
+          c+= 100;
           
-          list.add(m.getId());
-          
-          i++;
         }
-        
+        else {
+          break;
+        }
       }
+        
+        
     } catch (Exception e) {
       throw e;
     }

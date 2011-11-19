@@ -397,6 +397,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
   
   @Override
   public String toString() {
-    return "Workout: ['"+getName()+"', exercises: "+getExercises().size()+", date: '"+getDate()+"']";
+    return "Workout: ['"+getName()+"', exercises: "+getExercises().size()+", date: '"+getDate()+"'" +
+    		", '"+getUid()+"']";
   }
 }

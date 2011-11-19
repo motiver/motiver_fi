@@ -104,7 +104,7 @@ public class NutritionDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Long> getMeals(int index, String uid) throws Exception {
+  public List<Long> getMeals(int offset, int limit, String uid, Integer timeId, int minCopyCount) throws Exception {
 
     List<Long> list = new ArrayList<Long>();
     
@@ -112,10 +112,21 @@ public class NutritionDAO {
     
     try {
       Query q = pm.newQuery(Meal.class);
-      q.setFilter("openId == openIdParam && timeId == null");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setRange(index, index + Constants.LIMIT_MEALS + 1);
-      List<Meal> meals = (List<Meal>) q.execute(uid);
+      StringBuilder builder = new StringBuilder();
+      if(uid != null) {
+        builder.append("openId == openIdParam && ");
+      }
+      if(timeId != null) {
+        builder.append("timeId == timeParam");
+      }
+      else {
+        builder.append("timeId == null");
+      }
+      builder.append(" && copyCount >= copyCountParam");
+      q.setFilter(builder.toString());
+      q.declareParameters("java.lang.String openIdParam, java.lang.Integer timeParam, java.lang.Integer copyCountParam");
+      q.setRange(offset, offset + limit + 1);
+      List<Meal> meals = (List<Meal>) q.execute(uid, timeId, minCopyCount);
             
       //get meals
       if(meals != null) {        
@@ -123,11 +134,18 @@ public class NutritionDAO {
         for(Meal m : meals) {
           
           //if limit reached -> add null value
-          if(i == Constants.LIMIT_MEALS) {
+          if(i == limit) {
             list.add(null);
             break;
           }
-                          
+          
+          //find names for each exercise
+          for(Food f : m.getFoods()) {
+            if(f.getNameId().longValue() > 0) {
+              f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
+            }
+          }
+          
           list.add(m.getId());
           
           i++;
