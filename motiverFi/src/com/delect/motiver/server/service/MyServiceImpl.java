@@ -4191,7 +4191,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       
     NutritionManager nutritionManager = NutritionManager.getInstance();
 
-    List<Meal> meals = nutritionManager.getMeals(user, index, user.getUid());
+    List<Meal> meals = nutritionManager.getMostPopularMeals(user, index);
 
     List<MealModel> list = new ArrayList<MealModel>();
     if(meals != null) {

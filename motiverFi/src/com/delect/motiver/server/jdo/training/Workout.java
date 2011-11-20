@@ -382,6 +382,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
     setTimeEnd(model.getTimeEnd());
     setTimeStart(model.getTimeStart());
     setUid(model.getUid());
+    setCount(model.getCount());
     
     for(Exercise f : model.getExercises()) {
       int i = getExercises().indexOf(f);

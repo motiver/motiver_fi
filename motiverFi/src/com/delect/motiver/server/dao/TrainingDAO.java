@@ -43,14 +43,7 @@ public class TrainingDAO {
     try {
       
       for(Workout workout : models) {
-        pm.makePersistent(workout);
-
-        for(Exercise f : workout.getExercises()) {
-          if(f.getNameId().longValue() > 0) {
-            f.setName(pm.getObjectById(ExerciseName.class, f.getNameId()));
-          }
-        }
-        
+        pm.makePersistent(workout);        
       }
       
     } catch (Exception e) {
@@ -406,6 +399,7 @@ public class TrainingDAO {
         limit++;
         
         Query q = pm.newQuery(Workout.class);
+        q.setOrdering("name ASC");
         StringBuilder builder = new StringBuilder();
         if(params.uid != null) {
           builder.append("openId == openIdParam && ");
@@ -424,18 +418,9 @@ public class TrainingDAO {
         }
         if(params.minCopyCount > 0) {
           builder.append(" && copyCount >= copyCountParam");
+          q.setOrdering("copyCount DESC");
         }
-        switch(params.order) {
-          case COUNT:
-            q.setOrdering("copyCount DESC");
-            break;
-          case DATE:
-            q.setOrdering("date DESC");
-            break;
-          default:
-            q.setOrdering("name ASC");
-            break;
-        }
+
         q.setFilter(builder.toString());
         q.declareParameters("java.lang.String openIdParam, java.lang.Integer routineParam, java.lang.Integer copyCountParam, java.util.Date dateParam");
         q.setRange(offset, limit);
@@ -443,7 +428,6 @@ public class TrainingDAO {
               
         //get workouts
         if(workouts != null) {
-          int i = 0;
           for(Workout m : workouts) {
             
             //if limit reached -> add null value
@@ -453,8 +437,6 @@ public class TrainingDAO {
             }
             
             list.add(m.getId());
-            
-            i++;
           }
           
           //if enough found or last query didn't return enough rows

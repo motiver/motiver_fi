@@ -92,6 +92,14 @@ public class MealModel extends BaseModelData implements IsSerializable {
 			return 0L;
     }
   }
+  public int getCount() {
+    if(get("cc") != null) {
+      return get("cc");
+    }
+    else {
+      return 0;
+    }
+  }
 //	public String getUid() {
 //		if(get("uid") != null) {
 //			return get("uid");
@@ -136,6 +144,9 @@ public class MealModel extends BaseModelData implements IsSerializable {
 	public void setTimeId(long id) {
 		set("tid", id);
 	}
+  public void setCount(int cc) {
+    set("cc", cc);
+  }
 //	public void setUid(String uid) {
 //		set("uid", uid);
 //	}

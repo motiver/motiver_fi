@@ -53,6 +53,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		
 		MealModel modelClient = new MealModel(model.getName());
 		modelClient.setId(model.getId());
+		modelClient.setCount(model.getCount());
 
     //foods
     List<FoodModel> foods = new ArrayList<FoodModel>();
@@ -226,6 +227,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     setName(model.getName());
     setTime(model.getTime());
     setUid(model.getUid());
+    setCount(model.getCount());
     
     for(Food f : model.getFoods()) {
       int i = getFoods().indexOf(f);

@@ -97,7 +97,7 @@ public class MealLinkView extends MealLinkPresenter.MealLinkDisplay {
 			//spacer
 			HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 0, 0, 10));
       flex.setFlex(1);  
-      this.add(new Text(), flex);  
+      this.add(new Text(), flex);
 	        
       //username
       if(!meal.getUser().getUid().equals(AppController.User.getUid())) {

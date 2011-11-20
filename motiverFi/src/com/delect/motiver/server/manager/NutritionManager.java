@@ -10,15 +10,18 @@ import java.util.logging.Logger;
 
 import com.delect.motiver.server.cache.NutritionCache;
 import com.delect.motiver.server.dao.NutritionDAO;
+import com.delect.motiver.server.dao.helper.MealSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
+import com.google.appengine.api.datastore.Key;
 
 public class NutritionManager {
 
@@ -63,7 +66,25 @@ public class NutritionManager {
       
       if(list == null) {
         list = dao.getTimes(date, uid);
+        
+        for(Time time : list) {
 
+          //get meals
+          List<Meal> meals = new ArrayList<Meal>();
+          for(Key key : time.getMealsKeys()) {
+            meals.add(_getMeal(key.getId()));
+          }
+          time.setMealsNew(meals);
+          
+          //find names for each food
+          for(Food f : time.getFoods()) {
+            if(f.getNameId().longValue() > 0) {
+              f.setName(_getFoodName(f.getNameId()));
+            }
+          }
+        }
+        
+        
         //add to cache
         cache.setTimes(uid, date, list);
       }
@@ -139,7 +160,7 @@ public class NutritionManager {
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
 
         //update if found, otherwise add
-        int i = time.getFoods().indexOf(model);
+        int i = meal.getFoods().indexOf(model);
         Food f;
         if(i == -1) {
           f = model;
@@ -240,7 +261,11 @@ public class NutritionManager {
     List<Meal> list = new ArrayList<Meal>();
     
     try {
-      List<Long> keys = dao.getMeals(index, uid);
+      MealSearchParams params = new MealSearchParams();
+      params.offset = index;
+      params.limit = Constants.LIMIT_MEALS;
+      params.uid = uid;
+      List<Long> keys = dao.getMeals(params);
       
       for(Long key : keys) {
 
@@ -263,6 +288,61 @@ public class NutritionManager {
     
     return list;
   }
+  
+  public List<Meal> getMostPopularMeals(UserOpenid user, int offset) throws ConnectionException {
+
+    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
+      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading most popular meals ("+offset+")");
+    }
+    
+    List<Meal> list = new ArrayList<Meal>();
+    
+    try {
+      int i = 0;
+      
+      //while enough found
+      MealSearchParams params = new MealSearchParams();
+      params.limit = Constants.LIMIT_MEALS * 2;
+      params.minCopyCount = 1;
+      while(list.size() < Constants.LIMIT_MEALS) {
+        params.offset = i;
+        List<Long> keys = dao.getMeals(params);
+        
+        for(Long key : keys) {
+          
+          if(list.size() == Constants.LIMIT_MEALS) {
+            break;
+          }
+            
+          Meal jdo = _getMeal(key);
+          
+          if(jdo != null) {
+            
+            //check permission
+            if(userManager.hasPermission(Permission.READ_TRAINING, user.getUid(), jdo.getUid())) {
+              if(i >= offset) {
+                list.add(jdo);
+              }
+            }
+            
+          }
+        }
+        
+        //if no workouts found -> stop
+        if(keys.size() == 0) {
+          break;
+        }
+        
+        i += Constants.LIMIT_WORKOUTS * 2;
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading meals", e);
+      throw new ConnectionException("getMostPopularMeals", e.getMessage());
+    }
+    
+    return list;
+  }
 
 
   private Meal _getMeal(Long key) throws Exception {
@@ -272,11 +352,48 @@ public class NutritionManager {
     if(jdo == null) {
       jdo = dao.getMeal(key);
       jdo.setUser(userManager.getUser(jdo.getUid()));
+      
+      //find names for each food
+      for(Food f : jdo.getFoods()) {
+        if(f.getNameId().longValue() > 0) {
+          f.setName(_getFoodName(f.getNameId()));
+        }
+      }
      
       cache.addMeal(jdo);
     }
     
     return jdo;
+  }
+
+  private FoodName _getFoodName(Long key) throws Exception {
+    
+    List<FoodName> names = _getFoodNames();
+    
+    if(names != null) {
+      for(FoodName name : names) {
+        if(name.getId().equals(key)) {
+          return name;
+        }
+      }
+    }
+    
+    return null;
+  }
+
+  private List<FoodName> _getFoodNames() throws Exception {
+
+    //load from cache
+    List<FoodName> listAll = cache.getFoodNames();
+    
+    if(listAll == null) {
+      listAll = dao.getFoodNames();
+      
+      //save to cache
+      cache.setFoodNames(listAll);
+    }
+    
+    return listAll;
   }
 
 
@@ -428,6 +545,18 @@ public class NutritionManager {
           userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), t.getUid());
           
           dao.addMeals(timeId, modelsCopy);
+          
+          //get foods
+          for(Meal meal : modelsCopy) {
+            for(Food f : meal.getFoods()) {
+              if(f.getNameId().longValue() > 0) {
+                f.setName(_getFoodName(f.getNameId()));
+              }
+            }
+
+            //cache
+            cache.addMeal(meal);
+          }
 
           cache.setTimes(t.getUid(), t.getDate(), null);  //clear day's cache 
         }
@@ -435,12 +564,20 @@ public class NutritionManager {
       //single meals
       else {
         dao.addMeals(modelsCopy);
-        
-        //doesnt cache names
-        for(Meal m : modelsCopy) {
-          cache.addMeal(m);
+
+        //get foods
+        for(Meal meal : modelsCopy) {
+          for(Food f : meal.getFoods()) {
+            if(f.getNameId().longValue() > 0) {
+              f.setName(_getFoodName(f.getNameId()));
+            }
+          }
+
+          //cache
+          cache.addMeal(meal);
         }
       }
+      
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding meal", e);
       throw new ConnectionException("Error adding meal", e);
@@ -664,10 +801,12 @@ public class NutritionManager {
       String[] arr = query.split(" ");
 
       //load from cache
-      List<Meal> listAll = dao.getMeals();
+      List<Long> keysAll = dao.getMeals(MealSearchParams.all());
 
       int i = 0;
-      for(Meal m : listAll) {
+      for(Long key : keysAll) {
+        
+        Meal m = _getMeal(key);
         
         if(!m.getUid().equals(user.getUid()) 
             && userManager.hasPermission(Permission.READ_NUTRITION, user.getUid(), m.getUid()))  {

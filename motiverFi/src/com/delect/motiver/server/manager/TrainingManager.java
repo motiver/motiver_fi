@@ -12,6 +12,8 @@ import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -513,13 +515,25 @@ public class TrainingManager {
       }
 
       dao.addWorkouts(modelsCopy);
+
+      //get exercises
+      for(Workout workout : modelsCopy) {
+        for(Exercise f : workout.getExercises()) {
+          if(f.getNameId().longValue() > 0) {
+            f.setName(_getExerciseName(f.getNameId()));
+          }
+        }
+
+        //cache
+        cache.addWorkout(workout);
+      }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding workouts", e);
       throw new ConnectionException("Error adding workouts", e);
     }
     
-    return models;
+    return modelsCopy;
   }
 
 

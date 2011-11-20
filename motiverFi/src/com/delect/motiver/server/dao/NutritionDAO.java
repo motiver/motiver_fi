@@ -11,6 +11,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import com.delect.motiver.server.PMF;
+import com.delect.motiver.server.dao.helper.MealSearchParams;
 import com.delect.motiver.server.jdo.FoodNameCount;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.Food;
@@ -56,37 +57,37 @@ public class NutritionDAO {
       List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
       for(Time time : times) {
         Time copy = pm.detachCopy(time);
-        //get meals
-        List<Meal> meals = new ArrayList<Meal>();
-        try {
-          if(time.getMealsKeys().size() > 0) {
-            List<Object> ids = new ArrayList<Object>();
-            for (Key key : time.getMealsKeys()) {
-               ids.add(pm.newObjectIdInstance(Meal.class, key));
-            }
-            meals = (List<Meal>) pm.getObjectsById(ids);
-          }
-        } catch (Exception e) {
-          logger.log(Level.SEVERE, "Error loading meals", e);
-        }
-        copy.setMealsNew(meals);
-        
-        //get foods
-        copy.setFoods(new ArrayList<Food>(pm.detachCopyAll(time.getFoods())));
-        
-        //find names for each food
-        for(Meal m : copy.getMealsNew()) {
-          for(Food f : m.getFoods()) {
-            if(f.getNameId().longValue() > 0) {
-              f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
-            }
-          }
-        }
-        for(Food f : copy.getFoods()) {
-          if(f.getNameId().longValue() > 0) {
-            f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
-          }
-        }
+//        //get meals
+//        List<Meal> meals = new ArrayList<Meal>();
+//        try {
+//          if(time.getMealsKeys().size() > 0) {
+//            List<Object> ids = new ArrayList<Object>();
+//            for (Key key : time.getMealsKeys()) {
+//               ids.add(pm.newObjectIdInstance(Meal.class, key));
+//            }
+//            meals = (List<Meal>) pm.getObjectsById(ids);
+//          }
+//        } catch (Exception e) {
+//          logger.log(Level.SEVERE, "Error loading meals", e);
+//        }
+//        copy.setMealsNew(meals);
+//        
+//        //get foods
+//        copy.setFoods(new ArrayList<Food>(pm.detachCopyAll(time.getFoods())));
+//        
+//        //find names for each food
+//        for(Meal m : copy.getMealsNew()) {
+//          for(Food f : m.getFoods()) {
+//            if(f.getNameId().longValue() > 0) {
+//              f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
+//            }
+//          }
+//        }
+//        for(Food f : copy.getFoods()) {
+//          if(f.getNameId().longValue() > 0) {
+//            f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
+//          }
+//        }
         
         list.add(copy);
       }
@@ -104,54 +105,72 @@ public class NutritionDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Long> getMeals(int offset, int limit, String uid, Integer timeId, int minCopyCount) throws Exception {
+  public List<Long> getMeals(MealSearchParams params) throws Exception {
 
     List<Long> list = new ArrayList<Long>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      Query q = pm.newQuery(Meal.class);
-      StringBuilder builder = new StringBuilder();
-      if(uid != null) {
-        builder.append("openId == openIdParam && ");
-      }
-      if(timeId != null) {
-        builder.append("timeId == timeParam");
-      }
-      else {
-        builder.append("timeId == null");
-      }
-      builder.append(" && copyCount >= copyCountParam");
-      q.setFilter(builder.toString());
-      q.declareParameters("java.lang.String openIdParam, java.lang.Integer timeParam, java.lang.Integer copyCountParam");
-      q.setRange(offset, offset + limit + 1);
-      List<Meal> meals = (List<Meal>) q.execute(uid, timeId, minCopyCount);
+
+      int c = 0; 
+      while(true){
+        int offset = params.offset + c;
+        int limit = offset + (params.limit - c);
+        if(limit - offset > 100) {
+          limit = offset + 100; 
+        }
+        limit++;
+        
+        Query q = pm.newQuery(Meal.class);
+        q.setOrdering("name ASC");
+        StringBuilder builder = new StringBuilder();
+        if(params.uid != null) {
+          builder.append("openId == openIdParam && ");
+        }
+        if(params.timeId != null) {
+          builder.append("timeId == timeParam");
+        }
+        else {
+          builder.append("timeId == null");
+        }
+        if(params.minCopyCount > 0) {
+          builder.append(" && copyCount >= copyCountParam");
+          q.setOrdering("copyCount DESC");
+        }
+        
+        q.setFilter(builder.toString());
+        q.declareParameters("java.lang.String openIdParam, java.lang.Integer timeParam, java.lang.Integer copyCountParam");
+        q.setRange(offset, limit);
+        List<Meal> meals = (List<Meal>) q.execute(params.uid, params.timeId, params.minCopyCount);
+              
+        //get meals
+        if(meals != null) {
+          for(Meal m : meals) {
             
-      //get meals
-      if(meals != null) {        
-        int i = 0;
-        for(Meal m : meals) {
+            //if limit reached -> add null value
+            if(list.size() >= params.limit) {
+              list.add(null);
+              break;
+            }
+            
+            list.add(m.getId());
+          }
           
-          //if limit reached -> add null value
-          if(i == limit) {
-            list.add(null);
+          //if enough found or last query didn't return enough rows
+          if(list.size() >= params.limit || meals.size() < limit) {
             break;
           }
           
-          //find names for each exercise
-          for(Food f : m.getFoods()) {
-            if(f.getNameId().longValue() > 0) {
-              f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
-            }
-          }
+          c+= 100;
           
-          list.add(m.getId());
-          
-          i++;
         }
-        
+        else {
+          break;
+        }
       }
+        
+        
     } catch (Exception e) {
       throw e;
     }
@@ -163,6 +182,67 @@ public class NutritionDAO {
     
     return list;
   }
+//
+//  @SuppressWarnings("unchecked")
+//  public List<Long> getMeals(int offset, int limit, String uid, Integer timeId, int minCopyCount) throws Exception {
+//
+//    List<Long> list = new ArrayList<Long>();
+//    
+//    PersistenceManager pm =  PMF.get().getPersistenceManager();
+//    
+//    try {
+//      Query q = pm.newQuery(Meal.class);
+//      StringBuilder builder = new StringBuilder();
+//      if(uid != null) {
+//        builder.append("openId == openIdParam && ");
+//      }
+//      if(timeId != null) {
+//        builder.append("timeId == timeParam");
+//      }
+//      else {
+//        builder.append("timeId == null");
+//      }
+//      builder.append(" && copyCount >= copyCountParam");
+//      q.setFilter(builder.toString());
+//      q.declareParameters("java.lang.String openIdParam, java.lang.Integer timeParam, java.lang.Integer copyCountParam");
+//      q.setRange(offset, offset + limit + 1);
+//      List<Meal> meals = (List<Meal>) q.execute(uid, timeId, minCopyCount);
+//            
+//      //get meals
+//      if(meals != null) {        
+//        int i = 0;
+//        for(Meal m : meals) {
+//          
+//          //if limit reached -> add null value
+//          if(i == limit) {
+//            list.add(null);
+//            break;
+//          }
+//          
+//          //find names for each exercise
+//          for(Food f : m.getFoods()) {
+//            if(f.getNameId().longValue() > 0) {
+//              f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
+//            }
+//          }
+//          
+//          list.add(m.getId());
+//          
+//          i++;
+//        }
+//        
+//      }
+//    } catch (Exception e) {
+//      throw e;
+//    }
+//    finally {
+//      if (!pm.isClosed()) {
+//        pm.close();
+//      } 
+//    }
+//    
+//    return list;
+//  }
 
   public boolean removeTimes(Long[] keys, String uid) throws Exception {
     
@@ -306,13 +386,6 @@ public class NutritionDAO {
       
       for(Meal meal : models) {
         pm.makePersistent(meal);
-
-        for(Food f : meal.getFoods()) {
-          if(f.getNameId().longValue() > 0) {
-            f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
-          }
-        }
-        
       }
       
     } catch (Exception e) {
@@ -586,46 +659,46 @@ public class NutritionDAO {
     }    
   }
 
-  /**
-   * Return single meals
-   * @return
-   * @throws Exception
-   */
-  @SuppressWarnings("unchecked")
-  public List<Meal> getMeals() throws Exception {
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    List<Meal> n = new ArrayList<Meal>();
-    
-    try {
-      
-      int i = 0;
-      while(true){
-        Query q = pm.newQuery(Meal.class);
-        q.setFilter("timeId == null");
-        q.setOrdering("name ASC");
-        q.setRange(i, i+100);
-        List<Meal> u = (List<Meal>) q.execute();
-        n.addAll(u);
-        
-        if(u.size() < 100) {
-          break;
-        }
-        i += 100;
-      }
-      
-    } catch (Exception e) {
-      throw e;
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return n;
-  }
+//  /**
+//   * Return single meals
+//   * @return
+//   * @throws Exception
+//   */
+//  @SuppressWarnings("unchecked")
+//  public List<Meal> getMeals() throws Exception {
+//    
+//    PersistenceManager pm =  PMF.get().getPersistenceManager();
+//
+//    List<Meal> n = new ArrayList<Meal>();
+//    
+//    try {
+//      
+//      int i = 0;
+//      while(true){
+//        Query q = pm.newQuery(Meal.class);
+//        q.setFilter("timeId == null");
+//        q.setOrdering("name ASC");
+//        q.setRange(i, i+100);
+//        List<Meal> u = (List<Meal>) q.execute();
+//        n.addAll(u);
+//        
+//        if(u.size() < 100) {
+//          break;
+//        }
+//        i += 100;
+//      }
+//      
+//    } catch (Exception e) {
+//      throw e;
+//    }
+//    finally {
+//      if (!pm.isClosed()) {
+//        pm.close();
+//      } 
+//    }
+//    
+//    return n;
+//  }
 
 
 }

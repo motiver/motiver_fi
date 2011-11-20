@@ -279,6 +279,7 @@ public class Routine implements Comparable<Routine> {
     setInfo(model.getInfo());
     setName(model.getName());
     setUid(model.getUid());
+    setCount(model.getCount());
     
     for(Workout f : model.getWorkouts()) {
       int i = getWorkouts().indexOf(f);
