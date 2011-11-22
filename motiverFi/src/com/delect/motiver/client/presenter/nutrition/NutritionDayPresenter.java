@@ -526,7 +526,7 @@ public class NutritionDayPresenter extends Presenter {
 			
 			//add new presenter
 			TimeModel time = new TimeModel(Functions.trimDateToDatabase(date, true), timeDbl);
-			time.setUid(AppController.User.getUid());
+			time.setUser(AppController.User);
 			final TimePresenter tp = new TimePresenter(rpcService, eventBus, (TimeDisplay)GWT.create(TimeView.class), time);
 			addNewPresenter(tp, true);
 			

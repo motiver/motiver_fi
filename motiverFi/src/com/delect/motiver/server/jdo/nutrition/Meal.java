@@ -82,6 +82,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		
 		Meal modelServer = new Meal(model.getName());
 		modelServer.setId(model.getId());
+    if(model.getUser() != null)
+      modelServer.setUid(model.getUser().getUid());
 		
 		return modelServer;
 	}
@@ -217,7 +219,7 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   } 
 
   /**
-   * Updates time from given model
+   * Updates meal from given model
    * @param model
    */
   public void update(Meal model, boolean includeId) {
@@ -228,16 +230,27 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     setTime(model.getTime());
     setUid(model.getUid());
     setCount(model.getCount());
-    
-    for(Food f : model.getFoods()) {
-      int i = getFoods().indexOf(f);
-      if(i != -1) {
-        Food fOld = getFoods().get(i);
-        fOld.update(f, includeId);
+
+    //if foods removed -> check which was removed
+    if(getFoods().size() > model.getFoods().size()) {
+      for(Food f : getFoods()) {
+        if(!model.getFoods().contains(f)) {
+          getFoods().remove(f);
+        }
       }
-      else {
-        getFoods().add(f);
-      }
+    }
+    //new food added
+    else {
+      for(Food f : model.getFoods()) {
+          int i = getFoods().indexOf(f);
+          if(i != -1) {
+            Food fOld = getFoods().get(i);
+            fOld.update(f, includeId);
+          }
+          else {
+            getFoods().add(f);
+          }
+        }
     }
   }
 

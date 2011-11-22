@@ -253,11 +253,12 @@ public class TrainingDAO {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      workout = pm.getObjectById(Workout.class, workoutId);
+      Workout jdo = pm.getObjectById(Workout.class, workoutId);
       
-      for(Exercise f : workout.getExercises()) {
-        if(f.getNameId().longValue() > 0) {
-          f.setName(pm.getObjectById(ExerciseName.class, f.getNameId()));
+      if(jdo != null) {
+        workout = pm.detachCopy(jdo);
+        if(jdo.getExercises().size() > 0) {
+          workout.setExercises(new ArrayList<Exercise>(pm.detachCopyAll(jdo.getExercises())));
         }
       }
       
@@ -323,7 +324,7 @@ public class TrainingDAO {
       Workout t = pm.getObjectById(Workout.class, workout.getId());
       
       if(t != null) {
-        t.update(workout, false);
+        t.update(workout, false, false);
       }
       
       tx.commit();
@@ -360,7 +361,7 @@ public class TrainingDAO {
       Routine t = pm.getObjectById(Routine.class, routine.getId());
       
       if(t != null) {
-        t.update(routine, false);
+        t.update(routine, false, false);
       }
       
       tx.commit();

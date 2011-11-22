@@ -16,7 +16,6 @@ import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.Time;
-import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
@@ -82,6 +81,8 @@ public class NutritionManager {
               f.setName(_getFoodName(f.getNameId()));
             }
           }
+
+          time.setUser(userManager.getUser(time.getUid()));
         }
         
         
@@ -524,8 +525,7 @@ public class NutritionManager {
           
           //increment count
           if(!user.getUid().equals(jdo.getUid())) {
-            jdo.setCount(jdo.getCount() + 1);
-            _updateMeal(jdo);
+            incrementMealCount(jdo.getId());
           }
           
           //add copy
@@ -544,18 +544,20 @@ public class NutritionManager {
           //check permission
           userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), t.getUid());
           
-          dao.addMeals(timeId, modelsCopy);
-          
-          //get foods
-          for(Meal meal : modelsCopy) {
-            for(Food f : meal.getFoods()) {
-              if(f.getNameId().longValue() > 0) {
-                f.setName(_getFoodName(f.getNameId()));
-              }
-            }
+          t = dao.addMeals(t.getId(), modelsCopy);
 
-            //cache
-            cache.addMeal(meal);
+          //get meals
+          List<Meal> meals = new ArrayList<Meal>();
+          for(Key key : t.getMealsKeys()) {
+            meals.add(_getMeal(key.getId()));
+          }
+          t.setMealsNew(meals);
+          
+          //find names for each food
+          for(Food f : t.getFoods()) {
+            if(f.getNameId().longValue() > 0) {
+              f.setName(_getFoodName(f.getNameId()));
+            }
           }
 
           cache.setTimes(t.getUid(), t.getDate(), null);  //clear day's cache 
@@ -567,14 +569,7 @@ public class NutritionManager {
 
         //get foods
         for(Meal meal : modelsCopy) {
-          for(Food f : meal.getFoods()) {
-            if(f.getNameId().longValue() > 0) {
-              f.setName(_getFoodName(f.getNameId()));
-            }
-          }
-
-          //cache
-          cache.addMeal(meal);
+          meal = _getMeal(meal.getId());
         }
       }
       
@@ -848,6 +843,48 @@ public class NutritionManager {
     
     return list;
     
+  }
+
+  public void updateMeal(UserOpenid user, Meal model) throws ConnectionException {
+    
+    try {
+      
+      Meal meal = _getMeal(model.getId());
+      
+      userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
+      
+      meal.update(model, false);
+      dao.updateMeal(meal);
+
+      //update meal given as parameter
+      model.update(meal, true);
+      model.setCount(meal.getCount());
+
+      //update cache (also old date if moved)
+      cache.addMeal(meal);
+    
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error updating meal", e);
+      throw new ConnectionException("Error updating meal", e);
+    }
+  
+  }
+
+  public void incrementMealCount(long mealId) throws ConnectionException {
+    
+    try {
+      
+      Meal meal = _getMeal(mealId);
+      dao.incrementMealCount(meal);
+
+      //update cache
+      cache.addMeal(meal);
+    
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error updating meal", e);
+      throw new ConnectionException("Error updating meal", e);
+    }
+  
   }
 
 }

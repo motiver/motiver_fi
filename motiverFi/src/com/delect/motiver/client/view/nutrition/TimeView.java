@@ -318,7 +318,7 @@ public class TimeView extends TimePresenter.TimeDisplay {
 			});
       panelHeader.add(tf);
 			
-			if(time.getUid().equals(AppController.User.getUid())) {
+			if(time.getUser().equals(AppController.User)) {
 		        
 				//spacer
 				HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 10, 0, 10));

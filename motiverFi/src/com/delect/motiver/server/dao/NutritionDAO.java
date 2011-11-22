@@ -41,7 +41,7 @@ public class NutritionDAO {
   @SuppressWarnings("unchecked")
   public List<Time> getTimes(Date date, String uid) throws Exception {
     
-    ArrayList<Time> list = new ArrayList<Time>();
+    List<Time> list = new ArrayList<Time>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -55,41 +55,11 @@ public class NutritionDAO {
       q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
       q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
       List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
-      for(Time time : times) {
-        Time copy = pm.detachCopy(time);
-//        //get meals
-//        List<Meal> meals = new ArrayList<Meal>();
-//        try {
-//          if(time.getMealsKeys().size() > 0) {
-//            List<Object> ids = new ArrayList<Object>();
-//            for (Key key : time.getMealsKeys()) {
-//               ids.add(pm.newObjectIdInstance(Meal.class, key));
-//            }
-//            meals = (List<Meal>) pm.getObjectsById(ids);
-//          }
-//        } catch (Exception e) {
-//          logger.log(Level.SEVERE, "Error loading meals", e);
-//        }
-//        copy.setMealsNew(meals);
-//        
-//        //get foods
-//        copy.setFoods(new ArrayList<Food>(pm.detachCopyAll(time.getFoods())));
-//        
-//        //find names for each food
-//        for(Meal m : copy.getMealsNew()) {
-//          for(Food f : m.getFoods()) {
-//            if(f.getNameId().longValue() > 0) {
-//              f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
-//            }
-//          }
-//        }
-//        for(Food f : copy.getFoods()) {
-//          if(f.getNameId().longValue() > 0) {
-//            f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
-//          }
-//        }
-        
-        list.add(copy);
+      for(Time jdo : times) {
+        Time t = pm.detachCopy(jdo);
+        t.setMealsKeys(jdo.getMealsKeys()); 
+        t.setFoods(new ArrayList<Food>(pm.detachCopyAll(jdo.getFoods()))); 
+        list.add(t);
       }
       
     } catch (Exception e) {
@@ -335,12 +305,13 @@ public class NutritionDAO {
     }    
   }
 
-  public Time addMeals(long timeId, List<Meal> models) throws Exception {
-
+  public Time addMeals(Long timeId, List<Meal> models) throws Exception {
+    
     Time t = null;
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
+    Transaction tx = null;
     try {
       
       //save meals
@@ -351,21 +322,27 @@ public class NutritionDAO {
         meal.getFoods();
       }
       pm.flush();
+
+      tx = pm.currentTransaction();
+      tx.begin();
       
-      t = pm.getObjectById(Time.class, timeId);
+      Time jdo = pm.getObjectById(Time.class, timeId);
   
-      if(t != null) {
-        List<Key> arr = t.getMealsKeys();
+      if(jdo != null) {
+        List<Key> arr = jdo.getMealsKeys();
         
         for(Meal m : models) {
           arr.add(m.getKey());
         }
-        
-        pm.makePersistent(t);
-        pm.flush();
-        
-        t = pm.detachCopy(t);
       }
+      
+      tx.commit();
+      
+      //get detached copy
+      t = pm.detachCopy(jdo);
+      t.setMealsKeys(jdo.getMealsKeys());
+      t.setFoods(new ArrayList<Food>(pm.detachCopyAll(jdo.getFoods())));
+      
     } catch (Exception e) {
       throw e;
     }
@@ -375,7 +352,7 @@ public class NutritionDAO {
       } 
     }
     
-    return t;    
+    return t;
   }
 
   public void addMeals(List<Meal> models) throws Exception {
@@ -462,12 +439,11 @@ public class NutritionDAO {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      meal = pm.getObjectById(Meal.class, mealId);
+      Meal jdo = pm.getObjectById(Meal.class, mealId);
       
-      for(Food f : meal.getFoods()) {
-        if(f.getNameId().longValue() > 0) {
-          f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
-        }
+      if(jdo != null) {
+        meal = pm.detachCopy(jdo);
+        meal.setFoods(new ArrayList<Food>(pm.detachCopyAll(jdo.getFoods())));
       }
       
     } catch (Exception e) {
@@ -546,12 +522,48 @@ public class NutritionDAO {
       Meal t = pm.getObjectById(Meal.class, meal.getId());
       
       if(t != null) {
+        int c = t.getCount();
         t.update(meal, false);
+        
+        //restore count
+        t.setCount(c);
       }
       
       tx.commit();
       
       meal.getFoods();
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+  }
+
+  public void incrementMealCount(Meal meal) throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    
+    try {
+      
+      Meal t = pm.getObjectById(Meal.class, meal.getId());
+      
+      if(t != null) {
+        t.setCount(t.getCount() + 1);
+      }
+      
+      tx.commit();
+      
+      meal.update(t, true);
       
     } catch (Exception e) {
       throw e;

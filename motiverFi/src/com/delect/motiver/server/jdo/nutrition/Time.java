@@ -30,6 +30,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.MealModel;
 import com.delect.motiver.shared.TimeModel;
@@ -54,7 +55,7 @@ public class Time implements Serializable, Comparable<Time> {
 		
 		TimeModel modelClient = new TimeModel(model.getDate(), (int) model.getTime());
 		modelClient.setId(model.getId());
-		modelClient.setUid(model.getUid());
+		modelClient.setUser(UserOpenid.getClientModel(model.getUser()));
 		
 		//meals
 		if(model.getMealsNew() != null) {
@@ -89,6 +90,8 @@ public class Time implements Serializable, Comparable<Time> {
 		
 		Time modelServer = new Time(model.getDate(), (long) model.getTime());
 		modelServer.setId(model.getId());
+    if(model.getUser() != null)
+      modelServer.setUid(model.getUser().getUid());
 		
 		return modelServer;
 	}
@@ -118,6 +121,9 @@ public class Time implements Serializable, Comparable<Time> {
   
 	@Persistent
 	private Long time = 0L;	//in seconds from midnight
+
+  @NotPersistent
+  private UserOpenid user;
 
 	public Time() {
 		
@@ -224,6 +230,14 @@ public class Time implements Serializable, Comparable<Time> {
     return uid;
   } 
 
+  public UserOpenid getUser() {
+    return user;
+  }
+
+  public void setUser(UserOpenid user) {
+    this.user = user;
+  }
+
   /**
    * Updates time from given model
    * @param model
@@ -237,22 +251,33 @@ public class Time implements Serializable, Comparable<Time> {
     setMealsKeys(model.getMealsKeys());
     setTime(model.getTime());
     setUid(model.getUid());
-    
-    for(Food f : model.getFoods()) {
-      int i = getFoods().indexOf(f);
-      if(i != -1) {
-        Food fOld = getFoods().get(i);
-        fOld.update(f, includeId);
+
+    //if foods removed -> check which was removed
+    if(getFoods().size() > model.getFoods().size()) {
+      for(Food f : getFoods()) {
+        if(!model.getFoods().contains(f)) {
+          getFoods().remove(f);
+        }
       }
-      else {
-        getFoods().add(f);
-      }
+    }
+    //new food added
+    else {
+      for(Food f : model.getFoods()) {
+          int i = getFoods().indexOf(f);
+          if(i != -1) {
+            Food fOld = getFoods().get(i);
+            fOld.update(f, includeId);
+          }
+          else {
+            getFoods().add(f);
+          }
+        }
     }
   }
   
   @Override
   public String toString() {
-    return "Time: ['"+getTime()+"', meals: "+getMealsNew().size()+", foods: "+getFoods().size()+"" +
+    return "Time: ['"+getTime()+"', meals: "+getMealsNew().size()+", meals (keys): "+getMealsKeys().size()+", foods: "+getFoods().size()+"" +
         ", '"+getUid()+"']";
   }
   

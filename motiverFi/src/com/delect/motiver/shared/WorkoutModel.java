@@ -113,7 +113,15 @@ public class WorkoutModel extends BaseModelData implements Serializable {
 //  }
   public UserModel getUser() {
     return get("u");
-  } 
+  }
+  public int getCount() {
+    if(get("cc") != null) {
+      return get("cc");
+    }
+    else {
+      return 0;
+    }
+  }
 
 	public void setDate(Date date) {
     set("d", date);
@@ -154,6 +162,9 @@ public class WorkoutModel extends BaseModelData implements Serializable {
   public void setUser(UserModel u) {
     set("u", u);
   } 
+  public void setCount(int cc) {
+    set("cc", cc);
+  }
   
   @Override
   public String toString() {

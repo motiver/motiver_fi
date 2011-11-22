@@ -391,9 +391,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
     combo.setMinChars(Constants.LIMIT_MIN_QUERY_WORD);
     combo.setTemplate(template );  
     combo.setStore(store);
-    if(AppController.IsSupportedBrowser) {
-			combo.setEmptyText(AppController.Lang.EnterKeywordToSearchForFoods());
-    }
+		combo.setEmptyText(AppController.Lang.EnterKeywordToSearchForFoods());
     combo.setHideTrigger(true);
     combo.setTriggerAction(TriggerAction.ALL);
     combo.setValidateOnBlur(false);

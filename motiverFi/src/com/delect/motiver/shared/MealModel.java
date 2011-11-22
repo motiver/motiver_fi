@@ -100,14 +100,6 @@ public class MealModel extends BaseModelData implements IsSerializable {
       return 0;
     }
   }
-//	public String getUid() {
-//		if(get("uid") != null) {
-//			return get("uid");
-//    }
-//		else {
-//			return "";
-//    }
-//  }
   public UserModel getUser() {
     return get("u");
   } 
@@ -147,9 +139,6 @@ public class MealModel extends BaseModelData implements IsSerializable {
   public void setCount(int cc) {
     set("cc", cc);
   }
-//	public void setUid(String uid) {
-//		set("uid", uid);
-//	}
   public void setUser(UserModel u) {
     set("u", u);
   }	

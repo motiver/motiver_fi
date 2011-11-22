@@ -51,6 +51,7 @@ public class Routine implements Comparable<Routine> {
 		modelClient.setDays(model.getDays());
 		modelClient.setInfo(model.getInfo());
 		modelClient.setUid(model.getUid());
+    modelClient.setCount(model.getCount());
     
     //workouts
     if(model.getWorkouts() != null) {
@@ -270,8 +271,8 @@ public class Routine implements Comparable<Routine> {
    * Updates routine from given model
    * @param model
    */
-  public void update(Routine model, boolean includeAll) {
-    if(includeAll) {
+  public void update(Routine model, boolean includeId, boolean includeCount) {
+    if(includeId) {
       setId(model.getId());
     }
     setDate(model.getDate());
@@ -279,17 +280,30 @@ public class Routine implements Comparable<Routine> {
     setInfo(model.getInfo());
     setName(model.getName());
     setUid(model.getUid());
-    setCount(model.getCount());
-    
-    for(Workout f : model.getWorkouts()) {
-      int i = getWorkouts().indexOf(f);
-      if(i != -1) {
-        Workout fOld = getWorkouts().get(i);
-        fOld.update(f, includeAll);
+    if(includeCount) {
+      setCount(model.getCount());
+    }
+
+    //if workouts removed -> check which was removed
+    if(getWorkouts().size() > model.getWorkouts().size()) {
+      for(Workout f : getWorkouts()) {
+        if(!model.getWorkouts().contains(f)) {
+          getWorkouts().remove(f);
+        }
       }
-      else {
-        getWorkouts().add(f);
-      }
+    }
+    //new workout added
+    else {
+      for(Workout f : model.getWorkouts()) {
+          int i = getWorkouts().indexOf(f);
+          if(i != -1) {
+            Workout fOld = getWorkouts().get(i);
+            fOld.update(f, includeId, includeCount);
+          }
+          else {
+            getWorkouts().add(f);
+          }
+        }
     }
   }
   

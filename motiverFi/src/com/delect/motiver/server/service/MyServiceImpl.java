@@ -6254,72 +6254,17 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return update successful
    */
   @Override
-  @Deprecated public Boolean updateMeal(MealModel meal) throws ConnectionException {
+  public Boolean updateMeal(MealModel model) throws ConnectionException {
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    logger.log(Level.FINE, "updateMeal()");
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    Meal jdo = Meal.getServerModel(model);
     
-    boolean ok = false;
-    
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Meal mealServer = null;
-      //if in time
-      if(meal.getTimeId() != 0) {
-        //get time
-        Time time = pm.getObjectById(Time.class, meal.getTimeId());
-        if(time != null) {
-          if(!hasPermission(pm, Permission.WRITE_NUTRITION, UID, time.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_NUTRITION, UID, time.getUid());
-          }
-          
-          //get meal
-          for(MealInTime m : time.getMeals()) {
-            if(m.getId() == meal.getId()) {
-              //update meal
-              m.setName(meal.getName());
-              
-              ok = true;
-              
-              break;
-            }
-          }
-        }
-      }
-      //not in time
-      else {
-        mealServer = pm.getObjectById(Meal.class, meal.getId());
-        //check if correct user
-        if(mealServer != null) {
-          if(!hasPermission(pm, Permission.WRITE_NUTRITION, UID, mealServer.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_NUTRITION, UID, mealServer.getUid());
-          }
-          
-          mealServer.setName(meal.getName());
-          
-          ok = true;
-        }
-      }
+    nutritionManager.updateMeal(user, jdo);
 
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "updateMeal", e);
-      throw new ConnectionException("updateMeal", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    return true;
   }
 
   /**

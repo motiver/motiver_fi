@@ -12,8 +12,6 @@ import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.Food;
-import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -819,11 +817,11 @@ public class TrainingManager {
       //save old date
       Date dOld = workout.getDate();
       
-      workout.update(model, false);
+      workout.update(model, false, false);
       dao.updateWorkout(workout);
 
       //update workout given as parameter
-      model.update(workout, true);
+      model.update(workout, true, true);
 
       //remove from cache (also old date if moved)
       cache.setWorkouts(workout.getUid(), workout.getDate(), null);

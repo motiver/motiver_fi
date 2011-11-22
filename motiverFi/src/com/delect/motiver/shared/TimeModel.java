@@ -103,15 +103,10 @@ public class TimeModel extends BaseModelData implements IsSerializable, Comparab
 	public int getTime() {
     return get("t");
   }
-
-	public String getUid() {
-		if(get("uid") != null) {
-			return get("uid");
-    }
-		else {
-			return "";
-    }
-  }
+  public UserModel getUser() {
+    return get("u");
+  } 
+  
 	public void setCarb(Double carb) {
     set("c", carb);
 	}
@@ -139,9 +134,9 @@ public class TimeModel extends BaseModelData implements IsSerializable, Comparab
 	public void setTime(int time) {
     set("t", time);
   }
-	public void setUid(String uid) {
-		set("uid", uid);
-	}
+  public void setUser(UserModel u) {
+    set("u", u);
+  } 
   
   @Override
   public String toString() {

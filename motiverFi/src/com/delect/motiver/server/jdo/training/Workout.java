@@ -62,6 +62,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 		modelClient.setRating(model.getRating());
 		modelClient.setDate(model.getDate());
 		modelClient.setDayInRoutine(model.getDayInRoutine());
+    modelClient.setCount(model.getCount());
 		
     //exercises
     List<ExerciseModel> exercises = new ArrayList<ExerciseModel>();
@@ -98,6 +99,8 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 		modelServer.setDate(model.getDate());
 		modelServer.setDayInRoutine(model.getDayInRoutine());
 		modelServer.setInfo(model.getInfo());
+		if(model.getUser() != null)
+		  modelServer.setUid(model.getUser().getUid());
 		
 		return modelServer;
 	}
@@ -368,7 +371,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
    * Updates time from given model
    * @param model
    */
-  public void update(Workout model, boolean includeId) {
+  public void update(Workout model, boolean includeId, boolean includeCount) {
     if(includeId) {
       setId(model.getId());
     }
@@ -382,17 +385,30 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
     setTimeEnd(model.getTimeEnd());
     setTimeStart(model.getTimeStart());
     setUid(model.getUid());
-    setCount(model.getCount());
-    
-    for(Exercise f : model.getExercises()) {
-      int i = getExercises().indexOf(f);
-      if(i != -1) {
-        Exercise fOld = getExercises().get(i);
-        fOld.update(f, includeId);
+    if(includeCount) {
+      setCount(model.getCount());
+    }
+
+    //if exercises removed -> check which was removed
+    if(getExercises().size() > model.getExercises().size()) {
+      for(Exercise f : getExercises()) {
+        if(!model.getExercises().contains(f)) {
+          getExercises().remove(f);
+        }
       }
-      else {
-        getExercises().add(f);
-      }
+    }
+    //new exercise added
+    else {
+      for(Exercise f : model.getExercises()) {
+          int i = getExercises().indexOf(f);
+          if(i != -1) {
+            Exercise fOld = getExercises().get(i);
+            fOld.update(f, includeId);
+          }
+          else {
+            getExercises().add(f);
+          }
+        }
     }
   }
   

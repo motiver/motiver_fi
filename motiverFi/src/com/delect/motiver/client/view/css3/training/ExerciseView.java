@@ -434,9 +434,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
     combo.setMinChars(Constants.LIMIT_MIN_QUERY_WORD);
     combo.setTemplate(nameTemplate);  
     combo.setStore(store);
-    if(AppController.IsSupportedBrowser) {
-      combo.setEmptyText(AppController.Lang.EnterKeywordToSearchForExercises());
-    }
+    combo.setEmptyText(AppController.Lang.EnterKeywordToSearchForExercises());
     combo.setLoadingText(AppController.Lang.Loading());
     combo.setHideTrigger(true);
     combo.setTriggerAction(TriggerAction.ALL);

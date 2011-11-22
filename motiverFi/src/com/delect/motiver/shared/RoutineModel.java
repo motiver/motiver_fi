@@ -69,6 +69,15 @@ public class RoutineModel extends BaseModelData implements IsSerializable {
 			return "";
     }
   }
+  public int getCount() {
+    if(get("cc") != null) {
+      return get("cc");
+    }
+    else {
+      return 0;
+    }
+  }
+  
 	public List<WorkoutModel> getWorkouts() {
 		return get("w");
 	}
@@ -94,4 +103,7 @@ public class RoutineModel extends BaseModelData implements IsSerializable {
 	public void setWorkouts(List<WorkoutModel> w) {
 		set("w", w);
 	}
+  public void setCount(int cc) {
+    set("cc", cc);
+  }
 }

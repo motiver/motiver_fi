@@ -24,6 +24,8 @@ import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class NutritionCache {
 
+  private final static boolean CACHE_ON = false;
+  
   private final static String PREFIX_FOOD_NAMES = "fnames";
   private final static String PREFIX_FOOD_NAME_COUNT = "fn_c";
   private final static String PREFIX_TIMES = "fn_t";
@@ -62,6 +64,10 @@ public class NutritionCache {
   }
 
   public List<Time> getTimes(String uid, Date date) {
+    
+    if(cache == null || !CACHE_ON) {
+      return null;
+    }
 
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_TIMES);
@@ -91,6 +97,10 @@ public class NutritionCache {
 
   public void setTimes(String uid, Date date, List<Time> list) {
     
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
     Map<Long, Time> map = null;
     if(list != null) {
       map = new HashMap<Long, Time>();
@@ -112,7 +122,8 @@ public class NutritionCache {
 
 
   public Time getTime(Long timeId) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return null;
     }
     
@@ -130,10 +141,11 @@ public class NutritionCache {
     return t;
   }
 
-  public Meal getMeal(Long mealId) {
-    if(cache == null) {
+  public Meal getMeal(Long mealId) {   
+    
+    if(cache == null || !CACHE_ON) {
       return null;
-    }
+    } 
     
     //meal
     StringBuilder builder = new StringBuilder();
@@ -145,14 +157,19 @@ public class NutritionCache {
     if(obj != null && obj instanceof Meal) {
       t = (Meal)obj;
     }
+
+    logger.log(Level.WARNING, "Loaded meal from cache: "+t);
     
     return t;
   }
   
   public void addMeal(Meal meal) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
+
+    logger.log(Level.WARNING, "Saving meal to cache: "+meal);
     
     //meal
     StringBuilder builder = new StringBuilder();
@@ -163,7 +180,8 @@ public class NutritionCache {
   }
   
   public void removeMeal(Long mealId) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
 
@@ -176,7 +194,8 @@ public class NutritionCache {
   
   @SuppressWarnings("unchecked")
   public List<FoodName> getFoodNames() {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return null;
     }
     
@@ -201,7 +220,8 @@ public class NutritionCache {
   }
   
   public void setFoodNames(List<FoodName> names) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     
@@ -221,7 +241,8 @@ public class NutritionCache {
 
 
   public int getFoodNameCount(UserOpenid user, Long id) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return -1;
     }
     
@@ -236,7 +257,8 @@ public class NutritionCache {
   }
   
   public void setFoodNameCount(UserOpenid user, Long id, int count) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     

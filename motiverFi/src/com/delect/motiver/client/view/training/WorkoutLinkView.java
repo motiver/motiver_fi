@@ -147,6 +147,10 @@ public class WorkoutLinkView extends WorkoutLinkPresenter.WorkoutLinkDisplay {
 			HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 5, 0, 0));
       flex.setFlex(1);  
       this.add(new Text(), flex);  
+
+      //name
+      Text textTemp = new Text(Integer.toString(workout.getCount()));
+      this.add(textTemp, new HBoxLayoutData(new Margins(0)));
 	        
       //username
       if(!workout.getUser().equals(AppController.User)) {
@@ -157,6 +161,7 @@ public class WorkoutLinkView extends WorkoutLinkPresenter.WorkoutLinkDisplay {
         panelUsername.addText(workout.getUser().getNickName());
         this.add(panelUsername, new HBoxLayoutData(new Margins(0)));
       }
+      
       //show remove button
       else if(workout.getDate() != null) {
 				//buttons layout

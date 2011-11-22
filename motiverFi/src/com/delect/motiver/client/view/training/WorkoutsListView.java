@@ -84,7 +84,7 @@ public class WorkoutsListView extends WorkoutsListPresenter.WorkoutsListDisplay 
 		tfSearch.addListener(Events.Valid, new Listener<BaseEvent>() {
 			@Override
 			public void handleEvent(BaseEvent be) {
-				if(handler != null && !lastQuery.equals(tfSearch.getValue())) {
+				if(handler != null && tfSearch.getValue() != null && !lastQuery.equals(tfSearch.getValue())) {
 					lastQuery = tfSearch.getValue();
 					handler.search(tfSearch.getValue());
 				}
