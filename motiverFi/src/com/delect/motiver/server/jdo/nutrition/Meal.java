@@ -87,7 +87,8 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		
 		return modelServer;
 	}
-	
+
+  @Override
 	public Object clone() throws CloneNotSupportedException {
 	  
 	  Meal clone = new Meal();
@@ -96,11 +97,11 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	  clone.setUid(getUid());
 	  clone.setUser(getUser());
 	  
-	  List<Food> foods = new ArrayList<Food>();
-	  for(Food f : getFoods()) {
-	    foods.add((Food) f.clone());
-	  }
-	  clone.setFoods(foods);
+//	  List<Food> foods = new ArrayList<Food>();
+//	  for(Food f : getFoods()) {
+//	    foods.add((Food) f.clone());
+//	  }
+//	  clone.setFoods(foods);
 	  
 	  return clone;
 	}
@@ -111,9 +112,11 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
   @Persistent
 	private Integer copyCount = 0;
 
-	@Persistent
-  @Element(dependent = "true")
+	@NotPersistent
   private List<Food> foods = new ArrayList<Food>();
+
+  @Persistent
+  private List<Key> foodsKeys = new ArrayList<Key>();
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -150,6 +153,10 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 	public List<Food> getFoods() {
 		return foods;
 	}
+
+  public List<Key> getFoodsKeys() {
+    return foodsKeys;
+  }
 
 	public Long getId() {
 		if(id != null) {
@@ -192,6 +199,10 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
 		this.foods = foods;
 	}
 
+  public void setFoodsKeys(List<Key> foodsKeys) {
+    this.foodsKeys = foodsKeys;
+  }
+
 	public void setId(Long id) {
 		
 		Key k = null;
@@ -232,23 +243,19 @@ public class Meal implements Serializable, Comparable<Meal>, Cloneable {
     setCount(model.getCount());
 
     //if foods removed -> check which was removed
-    if(getFoods().size() > model.getFoods().size()) {
-      for(Food f : getFoods()) {
-        if(!model.getFoods().contains(f)) {
-          getFoods().remove(f);
+    if(getFoodsKeys().size() > model.getFoodsKeys().size()) {
+      for(Key f : getFoodsKeys()) {
+        if(!model.getFoodsKeys().contains(f)) {
+          getFoodsKeys().remove(f);
         }
       }
     }
     //new food added
     else {
-      for(Food f : model.getFoods()) {
-          int i = getFoods().indexOf(f);
-          if(i != -1) {
-            Food fOld = getFoods().get(i);
-            fOld.update(f, includeId);
-          }
-          else {
-            getFoods().add(f);
+      for(Key f : model.getFoodsKeys()) {
+          int i = getFoodsKeys().indexOf(f);
+          if(i == -1) {
+            getFoodsKeys().add(f);
           }
         }
     }

@@ -79,7 +79,8 @@ public class Food implements Serializable, Cloneable {
 		return modelServer;
 	}
   
-  protected Object clone() throws CloneNotSupportedException {
+	@Override
+  public Object clone() throws CloneNotSupportedException {
     
     Food clone = new Food();
     clone.setAmount(getAmount());
@@ -129,10 +130,10 @@ public class Food implements Serializable, Cloneable {
   }
 
   @Persistent
-	public Long uid;
+  private Long uid;
   
   @Persistent
-  public String openId;
+  private String openId;
 
 	@Persistent
 	private Double amount;

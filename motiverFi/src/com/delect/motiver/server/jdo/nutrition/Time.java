@@ -97,30 +97,32 @@ public class Time implements Serializable, Comparable<Time> {
 	}
 	
 	@Persistent
-	public Long uid;
+	private Long uid;
   
   @Persistent
-  public String openId;
+  private String openId;
 
 	@Persistent
   private Date date;
 
-	@Persistent
-	@Element(dependent = "true")
+	@NotPersistent
   private List<Food> foods = new ArrayList<Food>();
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 
-	@NotPersistent
-	private List<Meal> meals = new ArrayList<Meal>();
-
   @Persistent
   private List<Key> mealsKeys = new ArrayList<Key>();
+
+  @Persistent
+  private List<Key> foodsKeys = new ArrayList<Key>();
   
 	@Persistent
 	private Long time = 0L;	//in seconds from midnight
+
+  @NotPersistent
+  private List<Meal> meals = new ArrayList<Meal>();
 
   @NotPersistent
   private UserOpenid user;
@@ -167,7 +169,11 @@ public class Time implements Serializable, Comparable<Time> {
 	public List<Meal> getMealsNew() {
 	  return meals;
 	}
-
+  
+  public List<Key> getFoodsKeys() {
+    return foodsKeys;
+  }
+	
   public List<Key> getMealsKeys() {
     return mealsKeys;
   }
@@ -214,6 +220,10 @@ public class Time implements Serializable, Comparable<Time> {
     this.meals = meals;
   }
 
+  public void setFoodsKeys(List<Key> foodsKeys) {
+    this.foodsKeys = foodsKeys;
+  }
+
   public void setMealsKeys(List<Key> mealsKeys) {
     this.mealsKeys = mealsKeys;
   }
@@ -253,23 +263,19 @@ public class Time implements Serializable, Comparable<Time> {
     setUid(model.getUid());
 
     //if foods removed -> check which was removed
-    if(getFoods().size() > model.getFoods().size()) {
-      for(Food f : getFoods()) {
-        if(!model.getFoods().contains(f)) {
-          getFoods().remove(f);
+    if(getFoodsKeys().size() > model.getFoodsKeys().size()) {
+      for(Key f : getFoodsKeys()) {
+        if(!model.getFoodsKeys().contains(f)) {
+          getFoodsKeys().remove(f);
         }
       }
     }
     //new food added
     else {
-      for(Food f : model.getFoods()) {
-          int i = getFoods().indexOf(f);
-          if(i != -1) {
-            Food fOld = getFoods().get(i);
-            fOld.update(f, includeId);
-          }
-          else {
-            getFoods().add(f);
+      for(Key f : model.getFoodsKeys()) {
+          int i = getFoodsKeys().indexOf(f);
+          if(i == -1) {
+            getFoodsKeys().add(f);
           }
         }
     }

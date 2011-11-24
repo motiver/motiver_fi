@@ -58,7 +58,7 @@ public class NutritionDAO {
       for(Time jdo : times) {
         Time t = pm.detachCopy(jdo);
         t.setMealsKeys(jdo.getMealsKeys()); 
-        t.setFoods(new ArrayList<Food>(pm.detachCopyAll(jdo.getFoods()))); 
+        t.setFoodsKeys(jdo.getFoodsKeys()); 
         list.add(t);
       }
       
@@ -319,7 +319,6 @@ public class NutritionDAO {
         meal.setTime(timeId);
         
         pm.makePersistent(meal);
-        meal.getFoods();
       }
       pm.flush();
 
@@ -527,6 +526,8 @@ public class NutritionDAO {
         
         //restore count
         t.setCount(c);
+        
+        pm.flush();
       }
       
       tx.commit();
@@ -660,6 +661,64 @@ public class NutritionDAO {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding food name", e);
+    }
+    finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }    
+  }
+
+  /**
+   * Returns foods based on given keys
+   * @param keys
+   * @return
+   */
+  public List<Food> getFoods(List<Key> keys) {
+    
+    if(keys.size() == 0) {
+      return null;
+    }
+    
+    List<Food> list = null;
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
+      
+      Query q = pm.newQuery("select from " + Food.class.getName() + " where id == :keys");
+      list = new ArrayList<Food>(pm.detachCopyAll((List<Food>)q.execute(keys)));
+       
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading foods", e);
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return list;
+  }
+
+  public void addFood(Food model) {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    
+    try {
+      
+      pm.makePersistent(model);
+      tx.commit();
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding food", e);
     }
     finally {
       if(tx.isActive()) {

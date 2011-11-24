@@ -74,11 +74,16 @@ public class NutritionManager {
             meals.add(_getMeal(key.getId()));
           }
           time.setMealsNew(meals);
-          
-          //find names for each food
-          for(Food f : time.getFoods()) {
-            if(f.getNameId().longValue() > 0) {
-              f.setName(_getFoodName(f.getNameId()));
+
+          List<Key> keys = time.getFoodsKeys();
+          if(keys.size() > 0) {
+            time.setFoods(dao.getFoods(keys));
+            
+            //find names for each food
+            for(Food f : time.getFoods()) {
+              if(f.getNameId().longValue() > 0) {
+                f.setName(_getFoodName(f.getNameId()));
+              }
             }
           }
 
@@ -134,25 +139,19 @@ public class NutritionManager {
         time = dao.getTime(timeId);
       }
       
+      //add food
+      dao.addFood(model);
+      
       //if food is in time
       if(timeId != 0 && mealId == 0) {        
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
         
         //update if found, otherwise add
-        int i = time.getFoods().indexOf(model);
-        Food f;
+        int i = time.getFoodsKeys().indexOf(model.getKey());
         if(i == -1) {
-          f = model;
-          time.getFoods().add(model);
-        }
-        else {
-          f = time.getFoods().get(i);
-          f.update(model, false);
+          time.getFoodsKeys().add(model.getKey());
         }
         dao.updateTime(time);
-        
-        //return updated model
-        model.update(f, true);
       }
       //if food is in meal
       else if(mealId != 0) {
@@ -161,20 +160,11 @@ public class NutritionManager {
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
 
         //update if found, otherwise add
-        int i = meal.getFoods().indexOf(model);
-        Food f;
+        int i = meal.getFoodsKeys().indexOf(model.getKey());
         if(i == -1) {
-          f = model;
-          meal.getFoods().add(model);
-        }
-        else {
-          f = meal.getFoods().get(i);
-          f.update(model, false);
+          meal.getFoodsKeys().add(model.getKey());
         }
         dao.updateMeal(meal);
-        
-        //return updated model
-        model.update(f, true);
         
         cache.removeMeal(mealId); //clear cache
       }
@@ -353,11 +343,16 @@ public class NutritionManager {
     if(jdo == null) {
       jdo = dao.getMeal(key);
       jdo.setUser(userManager.getUser(jdo.getUid()));
-      
-      //find names for each food
-      for(Food f : jdo.getFoods()) {
-        if(f.getNameId().longValue() > 0) {
-          f.setName(_getFoodName(f.getNameId()));
+
+      List<Key> keys = jdo.getFoodsKeys();
+      if(keys.size() > 0) {
+        jdo.setFoods(dao.getFoods(keys));
+        
+        //find names for each food
+        for(Food f : jdo.getFoods()) {
+          if(f.getNameId().longValue() > 0) {
+            f.setName(_getFoodName(f.getNameId()));
+          }
         }
       }
      
@@ -507,10 +502,16 @@ public class NutritionManager {
         if(meal.getId() == 0) {
           
           //add two foods
-          List<Food> foods = new ArrayList<Food>();
-          foods.add(new Food());
-          foods.add(new Food());
-          meal.setFoods(foods);
+          Food food1 = new Food();
+          Food food2 = new Food();
+          dao.addFood(food1);
+          dao.addFood(food2);
+          
+          //set keys
+          List<Key> foods = new ArrayList<Key>();
+          foods.add(food1.getKey());
+          foods.add(food2.getKey());
+          meal.setFoodsKeys(foods);
 
           meal.setUid(user.getUid());
           meal.setUser(user);
@@ -532,6 +533,17 @@ public class NutritionManager {
           Meal clone = (Meal) jdo.clone();
           clone.setUid(user.getUid());
           clone.setUser(user);
+          
+          //add copy of each food
+          List<Key> keysNew = new ArrayList<Key>();
+          List<Food> foodsOld = dao.getFoods(jdo.getFoodsKeys());
+          for(Food f : foodsOld) {
+            Food fNew = (Food)f.clone();
+            dao.addFood(fNew);
+            keysNew.add(fNew.getKey());
+          }
+          clone.setFoodsKeys(keysNew);
+          
           modelsCopy.add(clone);
         }
       }
@@ -566,11 +578,12 @@ public class NutritionManager {
       //single meals
       else {
         dao.addMeals(modelsCopy);
+      }
 
-        //get foods
-        for(Meal meal : modelsCopy) {
-          meal = _getMeal(meal.getId());
-        }
+      //get complete meals
+      for(int i = 0; i < modelsCopy.size(); i++) {
+        Meal meal = modelsCopy.get(i);
+        modelsCopy.set(i, _getMeal(meal.getId()));
       }
       
     } catch (Exception e) {
@@ -737,7 +750,6 @@ public class NutritionManager {
   }
 
 
-  @SuppressWarnings("unused")
   public List<FoodName> addFoodName(UserOpenid user, List<FoodName> names) throws ConnectionException {
 
     if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
@@ -751,7 +763,7 @@ public class NutritionManager {
       //load from cache
       List<FoodName> listAll = cache.getFoodNames();
       
-      if(list == null) {
+      if(listAll == null) {
         listAll = dao.getFoodNames();
       }
       

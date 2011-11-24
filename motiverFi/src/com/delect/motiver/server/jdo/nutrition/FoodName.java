@@ -103,13 +103,13 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 	 * @param trusted : 0=not trusted, 1=verified, 100=motiver
 	 */
 	@Persistent
-	public Integer trusted;
+	private Integer trusted;
 
 	@Persistent
-	public Long uid;
+	private Long uid;
   
   @Persistent
-  public String openId;
+  private String openId;
 
 	@Persistent
 	private String barcode;
