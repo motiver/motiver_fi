@@ -292,9 +292,9 @@ public interface Constants {
   /**
    * Log levels
    */
-  public static final Level LOG_LEVEL_SERVICE = Level.WARNING;
-  public static final Level LOG_LEVEL_MANAGER = Level.WARNING;
-  public static final Level LOG_LEVEL_DAO = Level.WARNING;
+  public static final Level LOG_LEVEL_SERVICE = Level.FINE;
+  public static final Level LOG_LEVEL_MANAGER = Level.FINER;
+  public static final Level LOG_LEVEL_DAO = Level.FINEST;
   public static final Level LOG_LEVEL_CACHE = Level.WARNING;
   
 }

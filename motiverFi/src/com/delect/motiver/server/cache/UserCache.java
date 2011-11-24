@@ -15,6 +15,8 @@ import com.delect.motiver.server.jdo.UserOpenid;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class UserCache {
+
+  private final static boolean CACHE_ON = true;
   
   private final static int CACHE_EXPIRE_SECONDS = 604800;
   
@@ -48,7 +50,8 @@ public class UserCache {
   }
 
   public void addCircle(Circle circle) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     
@@ -66,7 +69,8 @@ public class UserCache {
   }
 
   public void removeCircle(Circle circle) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     
@@ -84,7 +88,8 @@ public class UserCache {
   }
 
   public Circle getCircle(int target, String uid, String friendUid) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return null;
     }
 
@@ -107,7 +112,8 @@ public class UserCache {
   }
 
   public UserOpenid getUser(String uid) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return null;
     }
     
@@ -125,7 +131,8 @@ public class UserCache {
   }
 
   public void setUser(UserOpenid user) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     

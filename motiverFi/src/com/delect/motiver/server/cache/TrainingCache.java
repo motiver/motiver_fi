@@ -24,6 +24,8 @@ import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class TrainingCache {
 
+  private final static boolean CACHE_ON = true;
+
   private final static String PREFIX_WORKOUTS = "t_ws";
   private final static String PREFIX_WORKOUT = "t_w";
   private final static String PREFIX_ROUTINE = "t_r";
@@ -63,6 +65,10 @@ public class TrainingCache {
 
   @SuppressWarnings("unchecked")
   public List<Workout> getWorkouts(String uid, Date date) {
+    
+    if(cache == null || !CACHE_ON) {
+      return null;
+    }
 
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_WORKOUTS);
@@ -92,6 +98,10 @@ public class TrainingCache {
 
   public void setWorkouts(String uid, Date date, List<Workout> list) {
     
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
     Map<Long, Workout> map = null;
     if(list != null) {
       map = new HashMap<Long, Workout>();
@@ -112,7 +122,8 @@ public class TrainingCache {
   }
 
   public Workout getWorkout(Long workoutId) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return null;
     }
     
@@ -131,7 +142,8 @@ public class TrainingCache {
   }
   
   public void addWorkout(Workout workout) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     
@@ -144,7 +156,8 @@ public class TrainingCache {
   }
   
   public void removeWorkout(Long workoutId) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
 
@@ -157,7 +170,8 @@ public class TrainingCache {
   
   @SuppressWarnings("unchecked")
   public List<ExerciseName> getExerciseNames() {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return null;
     }
     
@@ -182,7 +196,8 @@ public class TrainingCache {
   }
   
   public void setExerciseNames(List<ExerciseName> names) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     
@@ -202,7 +217,8 @@ public class TrainingCache {
 
 
   public int getExerciseNameCount(UserOpenid user, Long id) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return -1;
     }
     
@@ -217,7 +233,8 @@ public class TrainingCache {
   }
   
   public void setExerciseNameCount(UserOpenid user, Long id, int count) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     
@@ -231,7 +248,8 @@ public class TrainingCache {
   }
 
   public Routine getRoutine(Long routineId) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return null;
     }
     
@@ -250,7 +268,8 @@ public class TrainingCache {
   }
   
   public void addRoutine(Routine routine) {
-    if(cache == null) {
+    
+    if(cache == null || !CACHE_ON) {
       return;
     }
     

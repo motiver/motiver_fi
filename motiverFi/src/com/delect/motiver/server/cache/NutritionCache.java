@@ -24,7 +24,7 @@ import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class NutritionCache {
 
-  private final static boolean CACHE_ON = false;
+  private final static boolean CACHE_ON = true;
   
   private final static String PREFIX_FOOD_NAMES = "fnames";
   private final static String PREFIX_FOOD_NAME_COUNT = "fn_c";
