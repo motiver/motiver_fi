@@ -377,6 +377,6 @@ public class FoodName implements Serializable, Comparable<FoodName> {
   
   @Override
   public String toString() {
-    return "FoodName: ['"+getName()+"', energy: '"+getEnergy()+"', "+getProtein()+" / "+getCarb()+" / "+getFet()+"]";
+    return "FoodName: [id: "+getId()+", '"+getName()+"', energy: '"+getEnergy()+"', "+getProtein()+" / "+getCarb()+" / "+getFet()+"]";
   }
 }

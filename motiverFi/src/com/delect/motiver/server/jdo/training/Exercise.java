@@ -302,7 +302,7 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
   
   @Override
   public String toString() {
-    return "Exercise"+getOrder()+": [name: '"+((getName() != null)? getName().getName() : "")+"', "+getSets()+" x "+getReps()+" x "+getWeights()+"]";
+    return "Exercise: [id: "+getId()+", name: '"+((getName() != null)? getName().getName() : "")+"', "+getSets()+" x "+getReps()+" x "+getWeights()+"]";
   }
 
   @Override

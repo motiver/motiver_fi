@@ -252,6 +252,6 @@ public class Food implements Serializable, Cloneable {
   
   @Override
   public String toString() {
-    return "Food: [name: '"+((getName() != null)? getName().getName() : "")+"', "+getAmount()+"]";
+    return "Food: [id: "+getId()+", name: '"+((getName() != null)? getName().getName() : "")+"', "+getAmount()+"]";
   }
 }

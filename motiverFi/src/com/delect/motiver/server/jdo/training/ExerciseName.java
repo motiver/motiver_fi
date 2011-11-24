@@ -239,6 +239,6 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
   
   @Override
   public String toString() {
-    return "ExerciseName: ['"+getName()+"', equipment: '"+getTarget()+"']";
+    return "ExerciseName: [id: "+getId()+", '"+getName()+"', equipment: '"+getTarget()+"']";
   }
 }

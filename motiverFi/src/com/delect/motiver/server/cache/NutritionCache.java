@@ -157,8 +157,6 @@ public class NutritionCache {
     if(obj != null && obj instanceof Meal) {
       t = (Meal)obj;
     }
-
-    logger.log(Level.WARNING, "Loaded meal from cache: "+t);
     
     return t;
   }
@@ -168,8 +166,6 @@ public class NutritionCache {
     if(cache == null || !CACHE_ON) {
       return;
     }
-
-    logger.log(Level.WARNING, "Saving meal to cache: "+meal);
     
     //meal
     StringBuilder builder = new StringBuilder();
