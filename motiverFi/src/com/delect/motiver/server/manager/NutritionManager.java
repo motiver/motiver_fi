@@ -204,11 +204,14 @@ public class NutritionManager {
         time = dao.getTime(timeId);
       }
       
+      //remove food
+      dao.removeFood(model);
+      
       //if food is in time
       if(timeId != 0 && mealId == 0) {        
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
 
-        time.getFoods().remove(model);
+        time.getFoodsKeys().remove(model.getKey());
         dao.updateTime(time);
       }
       //if food is in meal
@@ -218,7 +221,7 @@ public class NutritionManager {
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
 
         //update if found, otherwise add
-        meal.getFoods().remove(model);
+        meal.getFoodsKeys().remove(model.getKey());
         dao.updateMeal(meal);
         
         cache.removeMeal(mealId); //clear cache
@@ -610,7 +613,7 @@ public class NutritionManager {
         
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
 
-        time.getMealsKeys().remove(model);
+        time.getMealsKeys().remove(model.getKey());
         dao.updateTime(time);
         
         //remove from cache

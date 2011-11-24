@@ -432,6 +432,64 @@ public class NutritionDAO {
     return ok;
   }
 
+  public boolean removeFood(Food model) throws Exception {
+    
+    boolean ok = false;
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    try {
+    //try to update X times
+      int retries = Constants.LIMIT_UPDATE_RETRIES;
+      while (true) {
+
+        Transaction tx = pm.currentTransaction();
+        tx.begin();
+        
+        try {
+          
+          Food t = pm.getObjectById(Food.class, model.getId());
+          
+          if(t != null) {
+            
+            pm.deletePersistent(t);
+            tx.commit();
+  
+            ok = true;
+            break;
+          }
+          
+        }
+        catch (Exception e) {
+          if (tx.isActive()) {
+            tx.rollback();
+          }
+          logger.log(Level.WARNING, "Error deleting food", e);
+          
+          //retries used
+          if (retries == 0) {          
+            throw e;
+          }
+          logger.log(Level.WARNING, " Retries left: "+retries);
+          
+          --retries;
+        }
+    
+      }
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    
+    return ok;
+  }
+
   public Meal getMeal(long mealId) throws Exception {
 
     Meal meal = null;
