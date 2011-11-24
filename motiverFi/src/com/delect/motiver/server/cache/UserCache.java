@@ -55,6 +55,10 @@ public class UserCache {
       return;
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving permission circle: "+circle);
+    }
+    
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_CIRCLE);
     builder.append("_");
@@ -72,6 +76,10 @@ public class UserCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing permission circle: "+circle);
     }
     
     StringBuilder builder = new StringBuilder();
@@ -108,6 +116,10 @@ public class UserCache {
       c = (Circle)obj;
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded permission circle ("+target+", "+uid+", "+friendUid+"): "+c);
+    }
+    
     return c;
   }
 
@@ -115,6 +127,10 @@ public class UserCache {
     
     if(cache == null || !CACHE_ON) {
       return null;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading user ("+uid+")");
     }
     
     StringBuilder builder = new StringBuilder();
@@ -127,6 +143,10 @@ public class UserCache {
       t = (UserOpenid)obj;
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded user: "+t);
+    }
+    
     return t;
   }
 
@@ -134,6 +154,10 @@ public class UserCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving user: "+user);
     }
     
     StringBuilder builder = new StringBuilder();

@@ -93,6 +93,10 @@ public class TrainingCache {
       }
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded workouts ("+uid+", "+date+"): "+workouts);
+    }
+    
     return workouts;
   }
 
@@ -138,6 +142,10 @@ public class TrainingCache {
       t = (Workout)obj;
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded workout ("+workoutId+"): "+t);
+    }
+    
     return t;
   }
   
@@ -145,6 +153,10 @@ public class TrainingCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving single workout: "+workout);
     }
     
     //workout
@@ -159,6 +171,10 @@ public class TrainingCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing single workout: "+workoutId);
     }
 
     StringBuilder builder = new StringBuilder();
@@ -192,6 +208,10 @@ public class TrainingCache {
       }
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded exercise names: "+names.size());
+    }
+    
     return names;
   }
   
@@ -199,6 +219,10 @@ public class TrainingCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving exercise names: "+names.size());
     }
     
     Map<Long, ExerciseName> map = new HashMap<Long, ExerciseName>();
@@ -228,14 +252,24 @@ public class TrainingCache {
     builder.append("_");
     builder.append(user.getUid());
     Object obj = cache.get(builder.toString());
-        
-    return  (obj != null)? (Integer)obj : -1;
+
+    int c = (obj != null)? (Integer)obj : -1;
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded exercise name count ("+user.getUid()+", "+id+"): "+c);
+    }
+    
+    return  c;
   }
   
   public void setExerciseNameCount(UserOpenid user, Long id, int count) {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving exercise name count ("+user.getUid()+", "+id+", "+count+")");
     }
     
     StringBuilder builder = new StringBuilder();
@@ -264,6 +298,10 @@ public class TrainingCache {
       t = (Routine)obj;
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded single routine ("+routineId+"): "+t);
+    }
+    
     return t;
   }
   
@@ -271,6 +309,10 @@ public class TrainingCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving single routine: "+routine);
     }
     
     //routine

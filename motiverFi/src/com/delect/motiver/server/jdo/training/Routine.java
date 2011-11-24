@@ -271,7 +271,7 @@ public class Routine implements Comparable<Routine> {
    * Updates routine from given model
    * @param model
    */
-  public void update(Routine model, boolean includeId, boolean includeCount) {
+  public void update(Routine model, boolean includeId) {
     if(includeId) {
       setId(model.getId());
     }
@@ -280,9 +280,7 @@ public class Routine implements Comparable<Routine> {
     setInfo(model.getInfo());
     setName(model.getName());
     setUid(model.getUid());
-    if(includeCount) {
-      setCount(model.getCount());
-    }
+    setCount(model.getCount());
 
     //if workouts removed -> check which was removed
     if(getWorkouts().size() > model.getWorkouts().size()) {
@@ -298,7 +296,7 @@ public class Routine implements Comparable<Routine> {
           int i = getWorkouts().indexOf(f);
           if(i != -1) {
             Workout fOld = getWorkouts().get(i);
-            fOld.update(f, includeId, includeCount);
+            fOld.update(f, includeId);
           }
           else {
             getWorkouts().add(f);

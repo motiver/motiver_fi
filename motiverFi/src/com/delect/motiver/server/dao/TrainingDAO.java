@@ -12,6 +12,7 @@ import javax.jdo.Transaction;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.ExerciseNameCount;
@@ -324,7 +325,7 @@ public class TrainingDAO {
       Workout t = pm.getObjectById(Workout.class, workout.getId());
       
       if(t != null) {
-        t.update(workout, false, false);
+        t.update(workout, false);
       }
       
       tx.commit();
@@ -361,7 +362,7 @@ public class TrainingDAO {
       Routine t = pm.getObjectById(Routine.class, routine.getId());
       
       if(t != null) {
-        t.update(routine, false, false);
+        t.update(routine, false);
       }
       
       tx.commit();
@@ -528,6 +529,38 @@ public class TrainingDAO {
     
     
     return ok;
+  }
+
+  public void incrementWorkoutCount(Workout workout) throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    
+    try {
+      
+      Workout t = pm.getObjectById(Workout.class, workout.getId());
+      
+      if(t != null) {
+        t.setCount(t.getCount() + 1);
+      }
+      
+      tx.commit();
+      
+      workout.update(t, true);
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
   }
 
 }

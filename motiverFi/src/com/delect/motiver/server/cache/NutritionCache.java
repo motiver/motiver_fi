@@ -92,6 +92,10 @@ public class NutritionCache {
       }
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded times ("+uid+", "+date+"): "+times);
+    }
+    
     return times;
   }
 
@@ -99,6 +103,10 @@ public class NutritionCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding times ("+uid+", "+date+"): "+list);
     }
     
     Map<Long, Time> map = null;
@@ -138,6 +146,10 @@ public class NutritionCache {
       t = (Time)obj;
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded single time ("+timeId+"): "+t);
+    }
+    
     return t;
   }
 
@@ -158,6 +170,10 @@ public class NutritionCache {
       t = (Meal)obj;
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded single meal ("+mealId+"): "+t);
+    }
+    
     return t;
   }
   
@@ -165,6 +181,10 @@ public class NutritionCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving single meal: "+meal);
     }
     
     //meal
@@ -179,6 +199,10 @@ public class NutritionCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing single meal: "+mealId);
     }
 
     StringBuilder builder = new StringBuilder();
@@ -212,6 +236,10 @@ public class NutritionCache {
       }
     }
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded food names: "+names.size());
+    }
+    
     return names;
   }
   
@@ -219,6 +247,10 @@ public class NutritionCache {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving food names: "+names.size());
     }
     
     Map<Long, FoodName> map = new HashMap<Long, FoodName>();
@@ -248,14 +280,24 @@ public class NutritionCache {
     builder.append("_");
     builder.append(user.getUid());
     Object obj = cache.get(builder.toString());
-        
-    return  (obj != null)? (Integer)obj : -1;
+
+    int c = (obj != null)? (Integer)obj : -1;
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded food name count ("+user.getUid()+", "+id+"): "+c);
+    }
+    
+    return  c;
   }
   
   public void setFoodNameCount(UserOpenid user, Long id, int count) {
     
     if(cache == null || !CACHE_ON) {
       return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving food name count ("+user.getUid()+", "+id+", "+count+")");
     }
     
     StringBuilder builder = new StringBuilder();

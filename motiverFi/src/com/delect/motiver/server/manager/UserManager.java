@@ -44,6 +44,10 @@ public class UserManager {
    * @return null if no user found
    */
   public UserOpenid getUser(ThreadLocal<HttpServletRequest> request) throws ConnectionException {
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading user: "+request);
+    }
 
     String coachModeUid = null;
     
@@ -61,6 +65,10 @@ public class UserManager {
   }
   
   private UserOpenid _getUid(String coachModeUid) throws ConnectionException {
+    
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Loading user: "+coachModeUid);
+    }
 
     UserOpenid user = null;
     String openId = null;
@@ -76,14 +84,14 @@ public class UserManager {
     
       //if coach mode -> return trainee
       if(coachModeUid != null) {
-        if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-          logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
+        if(logger.isLoggable(Level.FINER)) {
+          logger.log(Level.FINER, "Checking if user "+openId+" is coach to "+coachModeUid);
         }
         
         Circle circle = _getCircle(Permission.COACH, coachModeUid, openId);
         
         if(circle != null) {
-          logger.log(Constants.LOG_LEVEL_MANAGER, "Is coach!");
+          logger.log(Level.FINER, "Is coach!");
           openId = circle.getUid();
         }
       }
@@ -113,6 +121,10 @@ public class UserManager {
 
   private Circle _getCircle(int target, String uid, String friendUid) throws Exception {
     
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Loading permission circle ("+target+", "+uid+", "+friendUid+")");
+    }
+    
     Circle circle = cache.getCircle(target, uid, friendUid);
     
     if(circle == null) {
@@ -129,6 +141,10 @@ public class UserManager {
 
 
   private boolean _checkPermission(int target, String ourUid, String uid) throws ConnectionException {
+    
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "Checking permissions ("+target+", "+ourUid+", "+uid+")");
+    }
 
     boolean ok = false;
     
@@ -170,6 +186,10 @@ public class UserManager {
    * @throws NoPermissionException
    */
   public void checkPermission(int target, String ourUid, String uid) throws NoPermissionException {
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Checking permissions ("+target+", "+ourUid+", "+uid+")");
+    }
 
     //if own data -> return always true
     if(ourUid.equals(uid)) {
@@ -200,6 +220,10 @@ public class UserManager {
    * @throws NoPermissionException
    */
   public boolean hasPermission(int target, String ourUid, String uid) {
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Checking if user has permission ("+target+", "+ourUid+", "+uid+")");
+    }
 
     //if own data -> return always true
     if(ourUid.equals(uid)) {
@@ -219,6 +243,10 @@ public class UserManager {
 
   public void addUserToCircle(UserOpenid user, Circle circle) throws ConnectionException {
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding permission to user ("+circle+")");
+    }
+    
     try {
       
       circle.setUid(user.getUid());      
@@ -233,6 +261,10 @@ public class UserManager {
   }
 
   public void removeUserFromCircle(UserOpenid user, int target, String uid) throws ConnectionException {
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing permission from user ("+target+", "+uid+")");
+    }
     
     try {
 
@@ -252,6 +284,10 @@ public class UserManager {
 
 
   public List<UserOpenid> getUsersFromCircle(UserOpenid user, int target) throws ConnectionException {
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading permissions ("+target+")");
+    }
 
     List<UserOpenid> list = new ArrayList<UserOpenid>();
     
@@ -293,6 +329,10 @@ public class UserManager {
    */
   public UserOpenid getUser(String uid) {
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading single user ("+uid+")");
+    }
+    
     UserOpenid u = null;
     
     try {
@@ -315,8 +355,8 @@ public class UserManager {
 
   public List<UserOpenid> searchUsers(UserOpenid user, String query, int index) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching users ("+index+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Searching users ("+index+", "+query+")");
     }
 
     List<UserOpenid> list = new ArrayList<UserOpenid>();
@@ -371,6 +411,10 @@ public class UserManager {
 
   public void saveUser(UserOpenid user, UserOpenid updatedModel) throws ConnectionException {
     
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving user ("+user.getUid()+", "+updatedModel+")");
+    }
+    
     
     try {
       //to make sure we update our model
@@ -394,6 +438,10 @@ public class UserManager {
    * @throws ConnectionException
    */
   public UserOpenid createUser(User userAppengine) throws ConnectionException {
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Creating new user ("+userAppengine+")");
+    }
     
     UserOpenid user = new UserOpenid();
     

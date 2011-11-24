@@ -45,9 +45,9 @@ public class NutritionManager {
 
   public List<Time> getTimes(UserOpenid user, Date date, String uid) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading times ("+date+")");
-    };
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading times ("+uid+", "+date+")");
+    }
 
     if(date == null) {
       return null;
@@ -104,6 +104,10 @@ public class NutritionManager {
 
   public List<Time> getTimes(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading times ("+uid+", "+dateStart+" - "+dateEnd+")");
+    }
+
     List<Time> list = new ArrayList<Time>();
     
     Iterator<Date> i = new DateIterator(dateStart, dateEnd);
@@ -126,9 +130,9 @@ public class NutritionManager {
    */
   public void addFood(UserOpenid user, Food model, long timeId, long mealId) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding/updating food: "+model);
-    }    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding/updating food ("+timeId+", "+mealId+"): "+model);
+    }
           
     try {
       //update uid
@@ -189,8 +193,8 @@ public class NutritionManager {
    */
   public boolean removeFood(UserOpenid user, Food model, long timeId, long mealId) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding/updating food: "+model);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing food ("+timeId+", "+mealId+"): "+model);
     }
     
     boolean ok = false;
@@ -245,8 +249,8 @@ public class NutritionManager {
   
   public List<Meal> getMeals(UserOpenid user, int index, String uid) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading meals ("+index+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading meals ("+index+", "+uid+")");
     }
     
     //check permissions
@@ -285,8 +289,8 @@ public class NutritionManager {
   
   public List<Meal> getMostPopularMeals(UserOpenid user, int offset) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading most popular meals ("+offset+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular meals ("+offset+")");
     }
     
     List<Meal> list = new ArrayList<Meal>();
@@ -340,6 +344,10 @@ public class NutritionManager {
 
 
   private Meal _getMeal(Long key) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_getMeal ("+key+")");
+    }
     
     Meal jdo = cache.getMeal(key);
     
@@ -366,6 +374,10 @@ public class NutritionManager {
   }
 
   private FoodName _getFoodName(Long key) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_getFoodName ("+key+")");
+    }
     
     List<FoodName> names = _getFoodNames();
     
@@ -382,6 +394,10 @@ public class NutritionManager {
 
   private List<FoodName> _getFoodNames() throws Exception {
 
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_getFoodNames");
+    }
+
     //load from cache
     List<FoodName> listAll = cache.getFoodNames();
     
@@ -397,6 +413,10 @@ public class NutritionManager {
 
 
   private void _updateMeal(Meal meal) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_updateMeal ("+meal+")");
+    }
     
     dao.updateMeal(meal);
     
@@ -406,8 +426,8 @@ public class NutritionManager {
 
   public boolean removeTimes(List<Time> models, String uid) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Removing times");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing times ("+uid+"): "+models.size());
     }
     
     if(models.size() == 0) {
@@ -443,8 +463,8 @@ public class NutritionManager {
   @SuppressWarnings("deprecation")
   public List<Time> addTimes(UserOpenid user, List<Time> models) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding times");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding times: "+models.size());
     }
     
     if(models.size() == 0) {
@@ -486,8 +506,8 @@ public class NutritionManager {
 
   public List<Meal> addMeals(UserOpenid user, List<Meal> models, long timeId) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding meals");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding meals ("+timeId+"): "+models.size());
     }
     
     if(models.size() == 0) {
@@ -600,8 +620,8 @@ public class NutritionManager {
 
   public boolean removeMeal(UserOpenid user, Meal model, long timeId) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Removing meal");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing meal ("+timeId+"): "+model);
     }
     
     boolean ok = false;
@@ -635,8 +655,8 @@ public class NutritionManager {
 
   public List<FoodName> searchFoodNames(UserOpenid user, String query, int limit) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching food names: "+query);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Searching food names: "+query);
     }
     
     List<FoodName> list = new ArrayList<FoodName>();    
@@ -755,8 +775,8 @@ public class NutritionManager {
 
   public List<FoodName> addFoodName(UserOpenid user, List<FoodName> names) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding food names");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding food names: "+names.size());
     }
     
     List<FoodName> list = new ArrayList<FoodName>(); 
@@ -799,8 +819,8 @@ public class NutritionManager {
 
   public List<Meal> searchMeals(UserOpenid user, String query, int index) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching meals ("+index+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Searching meals ("+index+"): "+query);
     }
 
     List<Meal> list = new ArrayList<Meal>();
@@ -861,6 +881,10 @@ public class NutritionManager {
   }
 
   public void updateMeal(UserOpenid user, Meal model) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating meal: "+model);
+    }
     
     try {
       
@@ -886,6 +910,10 @@ public class NutritionManager {
   }
 
   public void incrementMealCount(long mealId) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Inrementing meal count: "+mealId);
+    }
     
     try {
       

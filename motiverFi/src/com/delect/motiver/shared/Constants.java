@@ -287,14 +287,5 @@ public interface Constants {
    */
   public static final String DRAG_GROUP_USER = "user";
   public static final String DRAG_GROUP_WORKOUT = "wp";   // + workout's ID
-	
-  
-  /**
-   * Log levels
-   */
-  public static final Level LOG_LEVEL_SERVICE = Level.FINE;
-  public static final Level LOG_LEVEL_MANAGER = Level.FINER;
-  public static final Level LOG_LEVEL_DAO = Level.FINEST;
-  public static final Level LOG_LEVEL_CACHE = Level.WARNING;
-  
+	  
 }

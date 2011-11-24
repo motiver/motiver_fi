@@ -12,6 +12,7 @@ import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -50,8 +51,8 @@ public class TrainingManager {
    */
   public void addExercise(UserOpenid user, Exercise model, long workoutId) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding/updating exercise: "+model);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding/updating exercise: "+model);
     }    
           
     try {
@@ -79,7 +80,7 @@ public class TrainingManager {
       }
       
       //clear cache
-      if(workout != null) {
+      if(workout != null) {        
         //in date
         if(workout.getDate() != null) {
           cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
@@ -105,8 +106,8 @@ public class TrainingManager {
    */
   public boolean removeExercise(UserOpenid user, Exercise model, long workoutId) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding/updating exercise: "+model);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing exercise: "+model);
     }
     
     boolean ok = false;
@@ -142,9 +143,9 @@ public class TrainingManager {
 
   public List<Workout> getWorkouts(UserOpenid user, Date date, String uid) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading workouts ("+date+")");
-    };
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts ("+uid+", "+date+")");
+    }
 
     if(date == null) {
       return null;
@@ -182,6 +183,10 @@ public class TrainingManager {
 
   public List<Workout> getWorkouts(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts ("+uid+", "+dateStart+" - "+dateEnd+")");
+    }
+
     List<Workout> list = new ArrayList<Workout>();
     
     Iterator<Date> i = new DateIterator(dateStart, dateEnd);
@@ -197,8 +202,8 @@ public class TrainingManager {
   
   public List<Workout> getWorkouts(UserOpenid user, int offset, String uid) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading workouts ("+offset+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts ("+offset+", "+uid+")");
     }
     
     //check permissions
@@ -235,8 +240,8 @@ public class TrainingManager {
 
   public List<Workout> getMostPopularWorkouts(UserOpenid user, int offset) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading most popular workouts ("+offset+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular workouts ("+offset+")");
     }
     
     List<Workout> list = new ArrayList<Workout>();
@@ -289,8 +294,8 @@ public class TrainingManager {
   
   public List<Workout> getWorkouts(UserOpenid user, Routine routine, String uid) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Loading workouts from routine ("+routine+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts from routine ("+routine+", "+uid+")");
     }
     
     //check permissions
@@ -317,10 +322,14 @@ public class TrainingManager {
    * @throws Exception
    */
   private Workout _getWorkout(Long key) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_getWorkout ("+key+")");
+    }
     
     Workout jdo = cache.getWorkout(key);
     
-    if(jdo == null) {
+    if(jdo == null) {      
       jdo = dao.getWorkout(key);
       jdo.setUser(userManager.getUser(jdo.getUid()));
       
@@ -343,6 +352,10 @@ public class TrainingManager {
   }
 
   private Routine _getRoutine(Long key) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_getRoutine ("+key+")");
+    }
     
     Routine jdo = cache.getRoutine(key);
     
@@ -357,6 +370,10 @@ public class TrainingManager {
   }
 
   private ExerciseName _getExerciseName(Long key) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_getExerciseName ("+key+")");
+    }
     
     List<ExerciseName> names = _getExerciseNames();
     
@@ -373,6 +390,10 @@ public class TrainingManager {
 
   private List<ExerciseName> _getExerciseNames() throws Exception {
 
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_getExerciseNames");
+    }
+
     //load from cache
     List<ExerciseName> listAll = cache.getExerciseNames();
     
@@ -387,6 +408,10 @@ public class TrainingManager {
   }
 
   private void _updateWorkout(Workout workout) throws Exception {
+
+    if(logger.isLoggable(Level.FINER)) {
+      logger.log(Level.FINER, "_updateWorkout ("+workout+")");
+    }
     
     dao.updateWorkout(workout);
     
@@ -396,8 +421,8 @@ public class TrainingManager {
 
   public boolean removeWorkouts(UserOpenid user, List<Workout> models) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Removing workouts");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing workouts: "+models.size());
     }
     
     if(models.size() == 0) {
@@ -445,8 +470,8 @@ public class TrainingManager {
   @SuppressWarnings("deprecation")
   public List<Workout> addWorkouts(UserOpenid user, List<Workout> models) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding workouts");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding workouts: "+models.size());
     }
     
     if(models.size() == 0) {
@@ -491,9 +516,7 @@ public class TrainingManager {
           
           //increment count
           if(!user.getUid().equals(jdo.getUid())) {
-            //increment count
-            jdo.setCount(jdo.getCount() + 1);
-            _updateWorkout(jdo);
+            incrementWorkoutCount(jdo.getId());
           }
           
           //add copy
@@ -537,8 +560,8 @@ public class TrainingManager {
 
   public List<ExerciseName> searchExerciseNames(UserOpenid user, String query, int limit) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching exercise names: "+query);
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Searching exercise names: "+query);
     }
     
     List<ExerciseName> list = new ArrayList<ExerciseName>();    
@@ -640,8 +663,8 @@ public class TrainingManager {
   @SuppressWarnings("unused")
   public List<ExerciseName> addExerciseName(UserOpenid user, List<ExerciseName> names) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Adding exercise names");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding exercise names: "+names.size());
     }
     
     List<ExerciseName> list = new ArrayList<ExerciseName>(); 
@@ -684,8 +707,8 @@ public class TrainingManager {
 
   public List<Workout> searchWorkouts(UserOpenid user, String query, int index) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching workouts ("+index+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Searching workouts ("+query+")");
     }
 
     List<Workout> list = new ArrayList<Workout>();
@@ -747,8 +770,8 @@ public class TrainingManager {
 
   public List<Routine> searchRoutines(UserOpenid user, String query, int index) throws ConnectionException {
 
-    if(logger.isLoggable(Constants.LOG_LEVEL_MANAGER)) {
-      logger.log(Constants.LOG_LEVEL_MANAGER, "Searching routines ("+index+")");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Searching routines ("+query+")");
     }
 
     List<Routine> list = new ArrayList<Routine>();
@@ -807,6 +830,10 @@ public class TrainingManager {
   }
 
   public void updateWorkout(UserOpenid user, Workout model) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating workout: "+model);
+    }
     
     try {
       
@@ -817,11 +844,11 @@ public class TrainingManager {
       //save old date
       Date dOld = workout.getDate();
       
-      workout.update(model, false, false);
+      workout.update(model, false);
       dao.updateWorkout(workout);
 
       //update workout given as parameter
-      model.update(workout, true, true);
+      model.update(workout, true);
 
       //remove from cache (also old date if moved)
       cache.setWorkouts(workout.getUid(), workout.getDate(), null);
@@ -837,6 +864,10 @@ public class TrainingManager {
   }
 
   public Workout getWorkout(UserOpenid user, long id) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading single workout: "+id);
+    }
 
     Workout workout = null;
     
@@ -859,7 +890,7 @@ public class TrainingManager {
   public boolean updateExerciseOrder(UserOpenid user, Long workoutId, Long[] ids) throws ConnectionException {
   
     if(logger.isLoggable(Level.FINER)) {
-      logger.log(Level.FINER, "Updating exercise order:");
+      logger.log(Level.FINER, "Updating exercise order ("+workoutId+", "+ids+")");
     }
     
     boolean ok = false;
@@ -896,6 +927,27 @@ public class TrainingManager {
     }
   
     return ok;
+  }
+
+  public void incrementWorkoutCount(long workoutId) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Inrementing workout count: "+workoutId);
+    }
+    
+    try {
+      
+      Workout workout = _getWorkout(workoutId);
+      dao.incrementWorkoutCount(workout);
+
+      //update cache
+      cache.addWorkout(workout);
+    
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error updating workout", e);
+      throw new ConnectionException("Error updating workout", e);
+    }
+  
   }
   
 }

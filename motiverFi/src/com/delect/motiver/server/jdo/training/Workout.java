@@ -371,7 +371,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
    * Updates time from given model
    * @param model
    */
-  public void update(Workout model, boolean includeId, boolean includeCount) {
+  public void update(Workout model, boolean includeId) {
     if(includeId) {
       setId(model.getId());
     }
@@ -385,9 +385,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
     setTimeEnd(model.getTimeEnd());
     setTimeStart(model.getTimeStart());
     setUid(model.getUid());
-    if(includeCount) {
-      setCount(model.getCount());
-    }
+    setCount(model.getCount());
 
     //if exercises removed -> check which was removed
     if(getExercises().size() > model.getExercises().size()) {
