@@ -10,9 +10,9 @@ import java.util.logging.Logger;
 
 import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
+import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -237,6 +237,44 @@ public class TrainingManager {
     
     return list;
   }
+  
+  public List<Routine> getRoutines(UserOpenid user, int offset, String uid) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading routines ("+offset+", "+uid+")");
+    }
+    
+    //check permissions
+    userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), uid);
+    
+    List<Routine> list = new ArrayList<Routine>();
+    
+    try {
+      RoutineSearchParams params = new RoutineSearchParams();
+      params.offset = offset;
+      params.limit = Constants.LIMIT_WORKOUTS;
+      params.uid = uid;
+      List<Long> keys = dao.getRoutines(params);
+      
+      for(Long key : keys) {
+        
+        Routine jdo = _getRoutine(key);
+        if(jdo != null) {
+          
+          //check permission
+          userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), jdo.getUid());
+          
+          list.add(jdo);
+        }
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading routines", e);
+      throw new ConnectionException("getRoutines", e.getMessage());
+    }
+    
+    return list;
+  }
 
   public List<Workout> getMostPopularWorkouts(UserOpenid user, int offset) throws ConnectionException {
 
@@ -287,6 +325,60 @@ public class TrainingManager {
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workouts", e);
       throw new ConnectionException("getMostPopularWorkouts", e.getMessage());
+    }
+    
+    return list;
+  }
+
+  public List<Routine> getMostPopularRoutines(UserOpenid user, int offset) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular routines ("+offset+")");
+    }
+    
+    List<Routine> list = new ArrayList<Routine>();
+    
+    try {
+      RoutineSearchParams params = new RoutineSearchParams();
+      params.limit = Constants.LIMIT_ROUTINES * 2;
+      params.minCopyCount = 1;
+      
+      //while enough found
+      int i = 0;
+      while(list.size() < Constants.LIMIT_ROUTINES) {
+        params.offset = i;
+        List<Long> keys = dao.getRoutines(params);
+        
+        for(Long key : keys) {
+          
+          if(list.size() == Constants.LIMIT_ROUTINES) {
+            break;
+          }
+
+          Routine jdo = _getRoutine(key);
+          if(jdo != null) {
+            
+            //check permission
+            if(userManager.hasPermission(Permission.READ_TRAINING, user.getUid(), jdo.getUid())) {
+              if(i >= offset) {
+                list.add(jdo);
+              }
+            }
+            
+          }
+        }
+        
+        //if no routines found -> stop
+        if(keys.size() == 0) {
+          break;
+        }
+        
+        i += Constants.LIMIT_ROUTINES * 2;
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading routines", e);
+      throw new ConnectionException("getMostPopularRoutines", e.getMessage());
     }
     
     return list;
@@ -351,17 +443,25 @@ public class TrainingManager {
     return jdo;
   }
 
-  private Routine _getRoutine(Long key) throws Exception {
+  private Routine _getRoutine(Long routineId) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
-      logger.log(Level.FINER, "_getRoutine ("+key+")");
+      logger.log(Level.FINER, "_getRoutine ("+routineId+")");
     }
     
-    Routine jdo = cache.getRoutine(key);
+    Routine jdo = cache.getRoutine(routineId);
     
     if(jdo == null) {
-      jdo = dao.getRoutine(key);
+      jdo = dao.getRoutine(routineId);
       jdo.setUser(userManager.getUser(jdo.getUid()));
+      
+      //get workouts
+      List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routineId));
+      ArrayList<Workout> list = new ArrayList<Workout>();
+      for(Long key : keys) {
+        list.add(_getWorkout(key));
+      }
+      jdo.setWorkouts(list);
      
       cache.addRoutine(jdo);
     }
@@ -466,7 +566,6 @@ public class TrainingManager {
     
   }
 
-
   @SuppressWarnings("deprecation")
   public List<Workout> addWorkouts(UserOpenid user, List<Workout> models) throws ConnectionException {
 
@@ -526,6 +625,8 @@ public class TrainingManager {
         clone.setUid(user.getUid());
         clone.setUser(user);
         clone.setDate(workout.getDate());
+        clone.setRoutineId(workout.getRoutineId());
+        clone.setDayInRoutine(workout.getDayInRoutine());
         modelsCopy.add(clone);
       }
       
@@ -547,11 +648,85 @@ public class TrainingManager {
 
         //cache
         cache.addWorkout(workout);
+        
+        //clear routine cache
+        if(workout.getRoutineId() != null) {
+          cache.removeRoutine(workout.getRoutineId());
+        }
       }
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding workouts", e);
       throw new ConnectionException("Error adding workouts", e);
+    }
+    
+    return modelsCopy;
+  }
+
+  public List<Routine> addRoutines(UserOpenid user, List<Routine> models) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding routines: "+models.size());
+    }
+    
+    if(models.size() == 0) {
+      return null;
+    }
+
+    List<Routine> modelsCopy = new ArrayList<Routine>();
+    
+    try {
+      
+      //get routines
+      for(Routine routine : models) {
+        
+        Routine clone = null;
+        
+        //new
+        if(routine.getId() == 0) {
+          clone = routine;
+        }
+        else {
+          //check cache
+          Routine jdo = _getRoutine(routine.getId());
+          
+          //check permission
+          userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), jdo.getUid());
+          
+          //increment count
+          if(!user.getUid().equals(jdo.getUid())) {
+            incrementRoutineCount(jdo.getId());
+          }
+          
+          //add copy
+          clone = (Routine) jdo.clone();
+        }
+
+        clone.setUid(user.getUid());
+        clone.setUser(user);
+        clone.setDate(routine.getDate());
+        modelsCopy.add(clone);
+      }
+
+      dao.addRoutines(modelsCopy);
+
+      //get exercises
+      for(Routine routine : modelsCopy) {
+        //get workouts
+        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routine.getId()));
+        ArrayList<Workout> list = new ArrayList<Workout>();
+        for(Long key : keys) {
+          list.add(_getWorkout(key));
+        }
+        routine.setWorkouts(list);
+
+        //cache
+        cache.addRoutine(routine);
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding routines", e);
+      throw new ConnectionException("Error adding routines", e);
     }
     
     return modelsCopy;
@@ -882,7 +1057,28 @@ public class TrainingManager {
     }
     
     return workout;
-  }  
+  }
+
+  public Routine getRoutine(UserOpenid user, long id) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading single routine: "+id);
+    }
+
+    Routine routine = null;
+    
+    try {
+      routine = _getRoutine(id);
+      
+      userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), routine.getUid());
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading routine", e);
+      throw new ConnectionException("Error loading routine", e);
+    }
+    
+    return routine;
+  }    
 
   /**
    * Updates exercise order for single workout
@@ -946,6 +1142,27 @@ public class TrainingManager {
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating workout", e);
       throw new ConnectionException("Error updating workout", e);
+    }
+  
+  }
+
+  public void incrementRoutineCount(long routineId) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Inrementing routine count: "+routineId);
+    }
+    
+    try {
+      
+      Routine routine = _getRoutine(routineId);
+      dao.incrementRoutineCount(routine);
+
+      //update cache
+      cache.addRoutine(routine);
+    
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error updating routine", e);
+      throw new ConnectionException("Error updating routine", e);
     }
   
   }

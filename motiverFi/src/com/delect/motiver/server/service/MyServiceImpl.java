@@ -4207,59 +4207,25 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * Returns most popular
    * @return routines' models
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<RoutineModel> getMostPopularRoutines(int index) throws ConnectionException {
+  public List<RoutineModel> getMostPopularRoutines(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMostPopularRoutines()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular routines");
+    }
 
-    //convert to client side models
-    List<RoutineModel> list = new ArrayList<RoutineModel>();
-    
-    //get uid
+    //get user
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Query q = pm.newQuery(Routine.class);
-      q.setFilter("date == null && copyCount > 0");
-      q.setOrdering("copyCount DESC");
-      q.setRange(index, index + Constants.LIMIT_ROUTINES + 1);
-      List<Routine> routines = (List<Routine>) q.execute();
-
-      int i = 0;
-      for(Routine r : routines) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_ROUTINES) {
-          list.add(null);
-          break;
-        }
-
-        //check permission
-        if(!hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid())) {
-          throw new NoPermissionException(Permission.READ_TRAINING, UID, r.getUid());
-        }
-        
-        RoutineModel m = Routine.getClientModel(r);
-        list.add(m);
-        
-        i++;
-      }
       
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMostPopularRoutines", e);
-      throw new ConnectionException("getMostPopularRoutines", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+    TrainingManager trainingManager = TrainingManager.getInstance();
+
+    List<Routine> routines = trainingManager.getMostPopularRoutines(user, index);
+
+    List<RoutineModel> list = new ArrayList<RoutineModel>();
+    if(routines != null) {
+      for(Routine m : routines) {
+        list.add(Routine.getClientModel(m));
+      }
     }
     
     return list;
@@ -4299,97 +4265,38 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return
    * @throws ConnectionException 
    */
-  @Override @Deprecated public RoutineModel getRoutine(Long routineId) throws ConnectionException {
+  @Override public RoutineModel getRoutine(Long routineId) throws ConnectionException {
 
-    logger.log(Level.FINE, "getRoutine()");
-    
-    RoutineModel m = null;
-    
-    //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return null;
-    }
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      final Routine w = pm.getObjectById(Routine.class, routineId);
-      if(w != null) {
-        if(!hasPermission(pm, Permission.READ_TRAINING, UID, w.getUid())) {
-          throw new NoPermissionException(Permission.READ_TRAINING, UID, w.getUid());
-        }
-        
-        m = Routine.getClientModel(w);
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getRoutine", e);
-      throw new ConnectionException("getRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    Routine jdo = trainingManager.getRoutine(user, routineId);                  
+    return Routine.getClientModel(jdo);
   }
 
   /**
    * Returns all routines that aren't in calendar
    * @return routines' models
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<RoutineModel> getRoutines(int index) throws ConnectionException {
+  public List<RoutineModel> getRoutines(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getRoutines()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading routines");
+    }
 
-    //convert to client side models
-    List<RoutineModel> list = new ArrayList<RoutineModel>();
-    
-    //get uid
+    //get user
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
 
-    try {
-      Query q = pm.newQuery(Routine.class);
-      q.setFilter("openId == openIdParam && date == null");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setRange(index, 100);
-      List<Routine> routines = (List<Routine>) q.execute(UID);
-      
-      Collections.sort(routines);
+    TrainingManager trainingManager = TrainingManager.getInstance();
 
-      int i = 0;
-      for(Routine r : routines) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_ROUTINES) {
-          list.add(null);
-          break;
-        }
-        
-        RoutineModel m = Routine.getClientModel(r);
-        list.add(m);
-        
-        i++;
+    List<Routine> routines = trainingManager.getRoutines(user, index, user.getUid());
+
+    List<RoutineModel> list = new ArrayList<RoutineModel>();
+    if(routines != null) {
+      for(Routine m : routines) {
+        list.add(Routine.getClientModel(m));
       }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getRoutines", e);
-      throw new ConnectionException("getRoutines", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;

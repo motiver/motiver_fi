@@ -106,4 +106,10 @@ public class RoutineModel extends BaseModelData implements IsSerializable {
   public void setCount(int cc) {
     set("cc", cc);
   }
+  
+  @Override
+  public String toString() {
+    return "Routine: [id: "+getId()+", '"+getName()+"', workouts: "+((getWorkouts() != null)? getWorkouts().size() : "")+"" +
+        ", '"+getUid()+"']";
+  }
 }

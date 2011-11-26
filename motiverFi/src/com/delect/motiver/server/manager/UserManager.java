@@ -11,7 +11,6 @@ import com.delect.motiver.server.cache.UserCache;
 import com.delect.motiver.server.dao.UserDAO;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;

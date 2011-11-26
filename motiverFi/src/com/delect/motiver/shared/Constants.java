@@ -14,8 +14,6 @@
  ******************************************************************************/
 package com.delect.motiver.shared;
 
-import java.util.logging.Level;
-
 import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
 

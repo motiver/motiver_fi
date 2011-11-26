@@ -24,7 +24,7 @@ import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class TrainingCache {
 
-  private final static boolean CACHE_ON = true;
+  private final static boolean CACHE_ON = false;
 
   private final static String PREFIX_WORKOUTS = "t_ws";
   private final static String PREFIX_WORKOUT = "t_w";
@@ -180,6 +180,23 @@ public class TrainingCache {
     StringBuilder builder = new StringBuilder();
     builder.append(PREFIX_WORKOUT);
     builder.append(workoutId);
+
+    cache.remove(builder.toString());
+  }
+  
+  public void removeRoutine(Long routineId) {
+    
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing single routine: "+routineId);
+    }
+
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_ROUTINE);
+    builder.append(routineId);
 
     cache.remove(builder.toString());
   }
