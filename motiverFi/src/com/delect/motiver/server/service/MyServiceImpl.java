@@ -35,12 +35,18 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
+import javax.mail.Message;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
 
 import com.delect.motiver.client.service.MyService;
 import com.delect.motiver.server.Base64;
@@ -1270,9 +1276,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return added ticket (null if add not successful
    */
   @Override
-  @Deprecated public TicketModel addTicket(TicketModel ticket) throws ConnectionException  {
-
-    logger.log(Level.FINE, "addTicket()");
+  public TicketModel addTicket(TicketModel ticket) throws ConnectionException  {
         
     //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
@@ -1282,18 +1286,21 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     }
           
     try {
-      String data = "<ticket><priority>" + ticket.getPriority() + "</priority><summary>" + ticket.getTitle() + "</summary><version-id>1</version-id><milestone-id>4</milestone-id><description>" + ticket.getDesc() + "\n\nBy: " + ticket.getUid() + "</description></ticket>";
-      HTTPRequest req = new HTTPRequest(new URL("http://motiver.unfuddle.com/api/v1/projects/1/tickets"), HTTPMethod.POST); 
-      req.setHeader(new HTTPHeader("Authorization", "Basic " + Base64.encode("user:HCz1d7").trim())); 
-      req.setHeader(new HTTPHeader("Content-Type", "application/xml")); 
-      req.setPayload(data.getBytes()); 
-      URLFetchService urlFetchService = URLFetchServiceFactory.getURLFetchService(); 
-      urlFetchService.fetch(req);
+
+      //send email with info
+      Properties props = new Properties();
+      Session session = Session.getDefaultInstance(props, null);
+      Message msg = new MimeMessage(session);
+      msg.setFrom(new InternetAddress("antti@motiver.fi", "Motiver.fi user"));
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("jira@delect.atlassian.net", "JIRA"));
+      msg.setSubject(ticket.getTitle());
+      msg.setText(ticket.getTitle());
+      Transport.send(msg);
       
       //TODO we don't check the response!
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "addTicket", e);
+      logger.log(Level.SEVERE, "Error adding ticket", e);
       throw new ConnectionException("addTicket", e.getMessage());
     }
     
