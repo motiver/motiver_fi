@@ -94,11 +94,11 @@ public class Routine implements Comparable<Routine> {
     clone.setName(getName());
     clone.setUid(getUid());
     
-    List<Workout> workouts = new ArrayList<Workout>();
-    for(Workout e : getWorkouts()) {
-      workouts.add((Workout) e.clone());
-    }
-    clone.setWorkouts(workouts);
+//    List<Workout> workouts = new ArrayList<Workout>();
+//    for(Workout e : getWorkouts()) {
+//      workouts.add((Workout) e.clone());
+//    }
+//    clone.setWorkouts(workouts);
     
     return clone;
   }
@@ -282,27 +282,29 @@ public class Routine implements Comparable<Routine> {
     setUid(model.getUid());
     setCount(model.getCount());
 
-    //if workouts removed -> check which was removed
-    if(getWorkouts().size() > model.getWorkouts().size()) {
-      for(Workout f : getWorkouts()) {
-        if(!model.getWorkouts().contains(f)) {
-          getWorkouts().remove(f);
-        }
-      }
-    }
-    //new workout added
-    else {
-      for(Workout f : model.getWorkouts()) {
-          int i = getWorkouts().indexOf(f);
-          if(i != -1) {
-            Workout fOld = getWorkouts().get(i);
-            fOld.update(f, includeId);
-          }
-          else {
-            getWorkouts().add(f);
-          }
-        }
-    }
+//    if(getWorkouts() != null && model.getWorkouts() != null) {
+//      //if workouts removed -> check which was removed
+//      if(getWorkouts().size() > model.getWorkouts().size()) {
+//        for(Workout f : getWorkouts()) {
+//          if(!model.getWorkouts().contains(f)) {
+//            getWorkouts().remove(f);
+//          }
+//        }
+//      }
+//      //new workout added
+//      else {
+//        for(Workout f : model.getWorkouts()) {
+//            int i = getWorkouts().indexOf(f);
+//            if(i != -1) {
+//              Workout fOld = getWorkouts().get(i);
+//              fOld.update(f, includeId);
+//            }
+//            else {
+//              getWorkouts().add(f);
+//            }
+//          }
+//      }
+//    }
   }
   
   @Override

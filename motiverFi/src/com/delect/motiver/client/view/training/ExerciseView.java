@@ -164,9 +164,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfReps.addStyleName("field-amount");
         tfReps.addListener(Events.OnClick, CustomListener.fieldOnClicked);
         tfReps.setValue(exercise.getReps());
-        if(AppController.IsSupportedBrowser) {
-          tfReps.setEmptyText(AppController.Lang.Reps());
-        }
+        tfReps.setEmptyText(AppController.Lang.Reps());
         tfReps.setWidth(100);
         tfReps.addListener(Events.Change, new Listener<BaseEvent>() {
           @Override
@@ -188,9 +186,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfWeights.addStyleName("field-amount");
         tfWeights.addListener(Events.OnClick, CustomListener.fieldOnClicked);
         tfWeights.setValue(exercise.getWeights());
-        if(AppController.IsSupportedBrowser) {
-          tfWeights.setEmptyText(AppController.Lang.Weights());
-        }
+        tfWeights.setEmptyText(AppController.Lang.Weights());
         tfWeights.addListener(Events.Change, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {
@@ -287,9 +283,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
     spinSets.setEditable(true);
     spinSets.setPropertyEditorType(Integer.class);
     spinSets.setFormat(NumberFormat.getFormat("0"));
-    if(AppController.IsSupportedBrowser) {
-      spinSets.setEmptyText(AppController.Lang.Sets());
-    }
+    spinSets.setEmptyText(AppController.Lang.Sets());
     if(exercise.getSets() != 0) {
       spinSets.setValue(exercise.getSets());
     }

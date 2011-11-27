@@ -96,6 +96,10 @@ public interface Constants {
 	 */
 	public static final int DAYS_SEARCH_INDEXES_EXPIRE = 21;
 	/**
+	 * Default number of days in routine
+	 */
+  public static final int DAYS_ROUTINE_DEFAULT = 7;
+	/**
 	 * How often comments are refreshed in comment box (milliseconds)
 	 */
 	public static final int DELAY_COMMENTS_REFRESH = 1000 * 60 * 5;	//5 min

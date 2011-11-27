@@ -1096,265 +1096,48 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     return m;
   }
 
-  @SuppressWarnings({ "unchecked" })
   @Override
-  @Deprecated public RoutineModel addRoutine(RoutineModel routine) throws ConnectionException  {
-
-    logger.log(Level.FINE, "addRoutine()");
-
-    RoutineModel m = null;
-    
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return m;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Routine modelServer = null;
-      
-      //if ID is null -> create new one (no exercises)
-      if(routine.getId() == 0) {
-        
-        //convert to server side model
-        modelServer = Routine.getServerModel(routine);
-      }
-      else {
-        
-        //get model
-        final Routine r = pm.getObjectById(Routine.class, routine.getId());
-        
-        boolean hasPermission = true;
-        
-        //if not ours -> check if we have permission to copy it
-        if(!r.getUid().equals(UID)) {
-          hasPermission = hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid());
-        }
-        
-        //create a copy
-        if(hasPermission) {
-          modelServer = duplicateRoutine(r);
-          
-          //increment copy count IF NOT our routine
-          if(!r.getUid().equals(UID)) {
-            r.incrementCopyCount();
-          }
-        }
-        //no permission
-        else {
-          throw new Exception();
-        }
-        
-        modelServer.setDate(routine.getDate());
-        
-      }
-
-      //reset time from date
-      Date d = modelServer.getDate();
-      if(d != null) {
-        d.setHours(0);
-        d.setMinutes(0);
-        d.setSeconds(0);
-        modelServer.setDate(d);
-      }
-      
-      //save user
-      modelServer.setUid(UID);
-      //default length: 7 days
-      if(modelServer.getDays() == 0) {
-        modelServer.setDays(7);
-      }
-
-      //save routine to db
-      modelServer = pm.makePersistent(modelServer);
-
-      //if workouts set -> add those
-      if(routine.getWorkouts() != null) {
-        for(WorkoutModel w : routine.getWorkouts()) {
-          //new workout
-          if(w.getId() == 0) {
-            w.setRoutineId(modelServer.getId());
-            this.addWorkout(w);
-          }
-        }
-      }
-      
-      //convert to client side model (which we return)
-      m = Routine.getClientModel(modelServer);
-      
-      //get workouts and copy those also (IF NOT new routine)
-      if(routine.getId() != 0) {
-
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("date == null && routineId == routineIdParam && dayInRoutine > 0");
-        q.declareParameters("java.lang.Long routineIdParam");
-        List<Workout> workouts = (List<Workout>) q.execute(routine.getId());
-
-        for(Workout w : workouts) {
-          Workout wNew = duplicateWorkout(w);
-          //set new routine id
-          wNew.setRoutineId(modelServer.getId());
-          //if routine has date -> set workout date based on that
-          if(routine.getDate() != null) {
-            final Date dateNew = new Date( (routine.getDate().getTime() / 1000 + 3600 * 24 * (wNew.getDayInRoutine().intValue() - 1) ) * 1000);
-            //reset time from date
-            dateNew.setHours(0);
-            dateNew.setMinutes(0);
-            dateNew.setSeconds(0);
-
-            wNew.setDate(dateNew);
-          }
-          wNew.setUid(UID);
-
-          pm.makePersistent(wNew);
-        }
-        
-      }
-      
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addRoutine", e);
-      throw new ConnectionException("addRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
-  }
-  
-  @SuppressWarnings({ "unchecked" })
-  @Override
-  @Deprecated public List<RoutineModel> addRoutines(List<RoutineModel> routines) throws ConnectionException  {
-
-    logger.log(Level.FINE, "addRoutines()");
+  public RoutineModel addRoutine(RoutineModel routine) throws ConnectionException  {
 
     List<RoutineModel> list = new ArrayList<RoutineModel>();
+    list.add(routine);
+    list = addRoutines(list);
+    
+    //get new routine
+    RoutineModel model = null;
+    
+    if(list.size() > 0) {
+      model = list.get(0);
+    }
+    
+    return model;
+  }
+  
+  @Override
+  public List<RoutineModel> addRoutines(List<RoutineModel> routines) throws ConnectionException  {
     
     //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    List<RoutineModel> list;
     
     try {
-      Routine modelServer = null;
-      
-      for(RoutineModel routine : routines) {
-        //if ID is null -> create new one (no exercises)
-        if(routine.getId() == 0) {
-          
-          //convert to server side model
-          modelServer = Routine.getServerModel(routine);
-        }
-        else {
-          
-          //get model
-          final Routine r = pm.getObjectById(Routine.class, routine.getId());
-          
-          boolean hasPermission = hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid());
-          
-          //create a copy
-          if(hasPermission) {
-            modelServer = duplicateRoutine(r);
-            
-            //increment copy count IF NOT our routine
-            if(!r.getUid().equals(UID)) {
-              r.incrementCopyCount();
-            }
-          }
-            //no permission
-          else {
-            throw new Exception();
-          }
-          
-          modelServer.setDate(routine.getDate());
-          
-        }
-
-        //reset time from date
-        Date d = modelServer.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-          modelServer.setDate(d);
-        }
-        
-        //save user
-        modelServer.setUid(UID);
-        //default length: 7 days
-        if(modelServer.getDays() == 0) {
-          modelServer.setDays(7);
-        }
-
-        //save routine to db
-        modelServer = pm.makePersistent(modelServer);
-
-        //if workouts set -> add those
-        if(routine.getWorkouts() != null) {
-          for(WorkoutModel w : routine.getWorkouts()) {
-            //new workout
-            if(w.getId() == 0) {
-              w.setRoutineId(modelServer.getId());
-              this.addWorkout(w);
-            }
-          }
-        }
-        
-        //convert to client side model (which we return)
-        RoutineModel m = Routine.getClientModel(modelServer);
-        
-        //get workouts and copy those also (IF NOT new routine)
-        if(routine.getId() != 0) {
-
-          Query q = pm.newQuery(Workout.class);
-          q.setFilter("date == null && routineId == routineIdParam && dayInRoutine > 0");
-          q.declareParameters("java.lang.Long routineIdParam");
-          List<Workout> workouts = (List<Workout>) q.execute(routine.getId());
-
-          for(Workout w : workouts) {
-            Workout wNew = duplicateWorkout(w);
-            //set new routine id
-            wNew.setRoutineId(modelServer.getId());
-            //if routine has date -> set workout date based on that
-            if(routine.getDate() != null) {
-              final Date dateNew = new Date( (routine.getDate().getTime() / 1000 + 3600 * 24 * (wNew.getDayInRoutine().intValue() - 1) ) * 1000);
-              //reset time from date
-              dateNew.setHours(0);
-              dateNew.setMinutes(0);
-              dateNew.setSeconds(0);
-
-              wNew.setDate(dateNew);
-            }
-            wNew.setUid(UID);
-
-            pm.makePersistent(wNew);
-          }
-          
-        }
-        
-        //add to array
-        list.add(m);
+      List<Routine> jdos = new ArrayList<Routine>();
+      for(RoutineModel t : routines) {
+        jdos.add(Routine.getServerModel(t));
       }
       
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addRoutines", e);
-      throw new ConnectionException("addRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      TrainingManager trainingManager = TrainingManager.getInstance();
+      List<Routine> jdosCopy = trainingManager.addRoutines(user, jdos);
+
+      list = new ArrayList<RoutineModel>();
+      for(Routine t : jdosCopy) {
+        list.add(Routine.getClientModel(t));
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding routines", e);
+      throw new ConnectionException("Error adding routines", e);
     }
     
     return list;
@@ -6229,72 +6012,18 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @param model to be updated
    * @return update successfull
    */
-  @SuppressWarnings({ "unchecked" })
   @Override
-  @Deprecated public Boolean updateRoutine(RoutineModel model) throws ConnectionException {
+  public Boolean updateRoutine(RoutineModel model) throws ConnectionException {
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    logger.log(Level.FINE, "updateRoutine()");
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    Routine jdo = Routine.getServerModel(model);
     
-    boolean ok = false;
-    
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Routine r = pm.getObjectById(Routine.class, model.getId());
-      if(r != null) {
-        if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
-          throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
-        }
-          
-        boolean daysRemoved = r.getDays() > model.getDays(); 
+    trainingManager.updateRoutine(user, jdo);
 
-        //reset time from date
-        Date d = model.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-        }
-        
-        //update workout
-        r.setDate(d);
-        r.setDays(model.getDays());
-        r.setName(model.getName());
-        
-        //if days removed -> remove workouts
-        if(daysRemoved) {
-          Query q = pm.newQuery(Workout.class);
-          q.setFilter("date == null && routineId == routineIdParam && dayInRoutine > daysParam");
-          q.declareParameters("java.lang.Long routineIdParam, java.lang.Integer daysParam");
-          List<Workout> workouts = (List<Workout>) q.execute(r.getId(), r.getDays());
-          if(workouts != null) {
-            pm.deletePersistentAll(workouts);
-          }
-          
-        }
-        
-        ok = true;
-      }
-
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "updateRoutine", e);
-      throw new ConnectionException("updateRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    return true;
   }
   
   /**

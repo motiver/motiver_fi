@@ -663,6 +663,7 @@ public class TrainingManager {
     return modelsCopy;
   }
 
+  @SuppressWarnings("deprecation")
   public List<Routine> addRoutines(UserOpenid user, List<Routine> models) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
@@ -684,6 +685,11 @@ public class TrainingManager {
         
         //new
         if(routine.getId() == 0) {
+          //default number of days
+          if(routine.getDays() == 0) {
+            routine.setDays(Constants.DAYS_ROUTINE_DEFAULT);
+          }
+          
           clone = routine;
         }
         else {
@@ -700,27 +706,42 @@ public class TrainingManager {
           
           //add copy
           clone = (Routine) jdo.clone();
-        }
+          clone.setUid(user.getUid());
+          clone.setUser(user);
+          clone.setDate(routine.getDate());
+          dao.addRoutine(clone);
 
-        clone.setUid(user.getUid());
-        clone.setUser(user);
-        clone.setDate(routine.getDate());
+          //add workouts
+          ArrayList<Workout> list = new ArrayList<Workout>();
+          for(Workout wOld : jdo.getWorkouts()) {
+            
+            Workout wClone = (Workout) wOld.clone();
+
+            //set also date
+            if(routine.getDate() != null) {
+              final Date dateNew = new Date( (routine.getDate().getTime() / 1000 + 3600 * 24 * (wClone.getDayInRoutine().intValue() - 1) ) * 1000);
+              //reset time from date
+              dateNew.setHours(0);
+              dateNew.setMinutes(0);
+              dateNew.setSeconds(0);
+              wClone.setDate(dateNew);
+            }
+            
+            wClone.setUid(user.getUid());
+            wClone.setUser(user);
+            wClone.setRoutineId(clone.getId());
+            
+            list.add(wClone);
+          }
+          dao.addWorkouts(list);
+          clone.setWorkouts(list);
+        }
+        
         modelsCopy.add(clone);
       }
 
-      dao.addRoutines(modelsCopy);
-
-      //get exercises
+      //cache
       for(Routine routine : modelsCopy) {
-        //get workouts
-        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routine.getId()));
-        ArrayList<Workout> list = new ArrayList<Workout>();
-        for(Long key : keys) {
-          list.add(_getWorkout(key));
-        }
-        routine.setWorkouts(list);
-
-        //cache
         cache.addRoutine(routine);
       }
       
@@ -835,7 +856,6 @@ public class TrainingManager {
     return list;
   }
 
-  @SuppressWarnings("unused")
   public List<ExerciseName> addExerciseName(UserOpenid user, List<ExerciseName> names) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
@@ -849,7 +869,7 @@ public class TrainingManager {
       //load from cache
       List<ExerciseName> listAll = cache.getExerciseNames();
       
-      if(list == null) {
+      if(listAll == null) {
         listAll = dao.getExerciseNames();
       }
       
@@ -1030,10 +1050,39 @@ public class TrainingManager {
       if(!dOld.equals(workout.getDate())) {
         cache.setWorkouts(workout.getUid(), dOld, null);
       }
+      cache.removeWorkout(workout.getId());
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating workout", e);
       throw new ConnectionException("Error updating workout", e);
+    }
+  
+  }
+
+  public void updateRoutine(UserOpenid user, Routine model) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating routine: "+model);
+    }
+    
+    try {
+      
+      Routine routine = dao.getRoutine(model.getId());
+      
+      userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), routine.getUid());
+      
+      routine.update(model, false);
+      dao.updateRoutine(routine);
+
+      //update routine given as parameter
+      model.update(routine, true);
+
+      //remove from cache
+      cache.removeRoutine(routine.getId());
+    
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error updating routine", e);
+      throw new ConnectionException("Error updating routine", e);
     }
   
   }

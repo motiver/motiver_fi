@@ -19,6 +19,7 @@ import com.delect.motiver.server.jdo.training.ExerciseNameCount;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.RoutineModel;
 
 public class TrainingDAO {
 
@@ -302,7 +303,11 @@ public class TrainingDAO {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      routine = pm.getObjectById(Routine.class, routineId);
+      Routine jdo = pm.getObjectById(Routine.class, routineId);
+      
+      if(jdo != null) {
+        routine = pm.detachCopy(jdo);
+      }
       
     } catch (Exception e) {
       throw e;
@@ -410,16 +415,16 @@ public class TrainingDAO {
           builder.append("openId == openIdParam && ");
         }
         if(params.routineId != null) {
-          builder.append("routineId == routineParam");
+          builder.append("routineId == routineParam && ");
         }
-        else {
-          builder.append("routineId == 0");
+        else if(params.date == null) {
+          builder.append("routineId == 0 && ");
         }
         if(params.date != null) {
-          builder.append(" && date == dateParam");
+          builder.append("date == dateParam");
         }
         else {
-          builder.append(" && date == null");
+          builder.append("date == null");
         }
         if(params.minCopyCount > 0) {
           builder.append(" && copyCount >= copyCountParam");
@@ -674,6 +679,20 @@ public class TrainingDAO {
       if (!pm.isClosed()) {
         pm.close();
       } 
+    }
+  }
+
+
+  public void addRoutine(Routine routine) throws Exception {
+
+    List<Routine> list = new ArrayList<Routine>();
+    list.add(routine);
+    addRoutines(list);
+    
+    //get new routine
+
+    if(list.size() > 0) {
+      routine = list.get(0);
     }
   }
 
