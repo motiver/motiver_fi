@@ -19,7 +19,6 @@ import com.delect.motiver.server.jdo.training.ExerciseNameCount;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.RoutineModel;
 
 public class TrainingDAO {
 

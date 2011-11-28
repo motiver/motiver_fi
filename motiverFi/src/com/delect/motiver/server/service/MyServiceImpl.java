@@ -27,7 +27,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,7 +48,6 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import com.delect.motiver.client.service.MyService;
-import com.delect.motiver.server.Base64;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Cardio;
 import com.delect.motiver.server.jdo.CardioValue;
@@ -73,7 +71,9 @@ import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.GuideValue;
 import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.MealInTime;
+import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -108,11 +108,6 @@ import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
-import com.google.appengine.api.urlfetch.HTTPHeader;
-import com.google.appengine.api.urlfetch.HTTPMethod;
-import com.google.appengine.api.urlfetch.HTTPRequest;
-import com.google.appengine.api.urlfetch.URLFetchService;
-import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
@@ -155,7 +150,66 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @param times
    * @return
    */
-  private static NutritionDayModel calculateEnergyFromTimes(List<Time> times, String UID) {
+  @Deprecated private static NutritionDayModel calculateEnergyFromTimesOfDays(List<TimeJDO> times, String UID) {
+
+    logger.log(Level.FINE, "calculateEnergyFromTimes()");
+    double energy = 0;
+    double protein = 0; 
+    double carbs = 0;
+    double fet = 0;
+
+    try {
+      
+      //each time
+      for(TimeJDO tClient : times) {
+        
+        //each meal
+        for(MealJDO m : tClient.getMealsNew()) {
+          
+            if(m.getFoods() != null) {
+              for(Food food : m.getFoods()) {
+
+                final double amount = food.getAmount();
+                final FoodName name = food.getName();
+                if(name != null) {
+                  energy += (name.getEnergy() / 100) * amount;
+                  protein += (name.getProtein() / 100) * amount;
+                  carbs += (name.getCarb() / 100) * amount;
+                  fet += (name.getFet() / 100) * amount;
+                }
+              }
+            }
+          
+        }
+
+        if(tClient.getFoods() != null) {
+          for(Food food : tClient.getFoods()) {
+
+            final double amount = food.getAmount();
+            final FoodName name = food.getName();
+            if(name != null) {
+              energy += (name.getEnergy() / 100) * amount;
+              protein += (name.getProtein() / 100) * amount;
+              carbs += (name.getCarb() / 100) * amount;
+              fet += (name.getFet() / 100) * amount;
+            }
+          }
+        }
+      }
+      
+    } catch (Exception e1) {
+      logger.log(Level.SEVERE, "calculateEnergyFromTimes", e1);
+    }
+
+    return new NutritionDayModel(energy, protein, carbs, fet);
+  }
+  /**
+   * Calculates energy from times (searches meals and foods)
+   * @param pm 
+   * @param times
+   * @return
+   */
+  @Deprecated private static NutritionDayModel calculateEnergyFromTimes(List<Time> times, String UID) {
 
     logger.log(Level.FINE, "calculateEnergyFromTimes()");
     double energy = 0;
@@ -976,16 +1030,16 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     
     List<MealModel> list = new ArrayList<MealModel>();
     
-    List<Meal> jdos = new ArrayList<Meal>();
+    List<MealJDO> jdos = new ArrayList<MealJDO>();
     for(MealModel m : meals) {
-      jdos.add(Meal.getServerModel(m));
+      jdos.add(MealJDO.getServerModel(m));
     }
     
     NutritionManager nutritionManager = NutritionManager.getInstance();
-    List<Meal> jdosCopy = nutritionManager.addMeals(user, jdos, timeId);
+    List<MealJDO> jdosCopy = nutritionManager.addMeals(user, jdos, timeId);
 
-    for(Meal m : jdosCopy) {
-      list.add(Meal.getClientModel(m));
+    for(MealJDO m : jdosCopy) {
+      list.add(MealJDO.getClientModel(m));
     }
     
     return list;
@@ -1336,17 +1390,17 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     
     TimeModel[] list;
     try {
-      List<Time> jdos = new ArrayList<Time>();
+      List<TimeJDO> jdos = new ArrayList<TimeJDO>();
       for(TimeModel t : times) {
-        jdos.add(Time.getServerModel(t));
+        jdos.add(TimeJDO.getServerModel(t));
       }
       
       NutritionManager nutritionManager = NutritionManager.getInstance();
-      List<Time> jdosCopy = nutritionManager.addTimes(user, jdos);
+      List<TimeJDO> jdosCopy = nutritionManager.addTimes(user, jdos);
 
       list = new TimeModel[jdosCopy.size()];
       for(int i = 0; i < jdosCopy.size(); i++) {
-        list[i] = Time.getClientModel(jdosCopy.get(i));
+        list[i] = TimeJDO.getClientModel(jdosCopy.get(i));
       }
       
     } catch (Exception e) {
@@ -2516,7 +2570,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
           
           //variables
           List<Workout> workouts = null;
-          List<Time> times = null;
+          List<TimeJDO> times = null;
           List<CardioValue> cValues = null;
           List<RunValue> rValues = null;
           List<MeasurementValue> mValues = null;
@@ -2603,15 +2657,15 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
             
             //go through TIMES
             if(times != null) {
-              List<Time> arrT = new ArrayList<Time>();
-              for(Time t : times) {
+              List<TimeJDO> arrT = new ArrayList<TimeJDO>();
+              for(TimeJDO t : times) {
                 if(fmt.format(t.getDate()).equals(strD)) {
                   arrT.add(t);
                 }
               }
               //if times found
               if(arrT.size() > 0) {
-                NutritionDayModel ndm = calculateEnergyFromTimes(arrT, user.getUid());
+                NutritionDayModel ndm = calculateEnergyFromTimesOfDays(arrT, user.getUid());
                 if(ndm.getEnergy() > 0) {
                   ndm.setFoodsPermission(permissionNutritionFoods);
                   bd.setNutrition(ndm);
@@ -3510,10 +3564,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     List<MealModel> list = new ArrayList<MealModel>();
       
     NutritionManager nutritionManager = NutritionManager.getInstance();
-    List<Meal> meals = nutritionManager.getMeals(user, index, user.getUid());
+    List<MealJDO> meals = nutritionManager.getMeals(user, index, user.getUid());
     if(meals != null) {
-      for(Meal m : meals) {
-        list.add(Meal.getClientModel(m));
+      for(MealJDO m : meals) {
+        list.add(MealJDO.getClientModel(m));
       }
     }
     
@@ -3981,12 +4035,12 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       
     NutritionManager nutritionManager = NutritionManager.getInstance();
 
-    List<Meal> meals = nutritionManager.getMostPopularMeals(user, index);
+    List<MealJDO> meals = nutritionManager.getMostPopularMeals(user, index);
 
     List<MealModel> list = new ArrayList<MealModel>();
     if(meals != null) {
-      for(Meal m : meals) {
-        list.add(Meal.getClientModel(m));
+      for(MealJDO m : meals) {
+        list.add(MealJDO.getClientModel(m));
       }
     }
     
@@ -4651,10 +4705,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     UserOpenid user = userManager.getUser(perThreadRequest);
       
     NutritionManager nutritionManager = NutritionManager.getInstance();
-    List<Time> times = nutritionManager.getTimes(user, date, uid);
+    List<TimeJDO> times = nutritionManager.getTimes(user, date, uid);
     if(times != null) {
-      for(Time m : times) {
-        list.add(Time.getClientModel(m));
+      for(TimeJDO m : times) {
+        list.add(TimeJDO.getClientModel(m));
       }
     }
 
@@ -5005,7 +5059,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     
     NutritionManager nutritionManager = NutritionManager.getInstance();
     
-    Meal jdo = Meal.getServerModel(model);
+    MealJDO jdo = MealJDO.getServerModel(model);
     boolean ok = nutritionManager.removeMeal(user, jdo, model.getTimeId());
     
     return ok;
@@ -5293,9 +5347,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     
     NutritionManager nutritionManager = NutritionManager.getInstance();
     
-    List<Time> jdos = new ArrayList<Time>();
+    List<TimeJDO> jdos = new ArrayList<TimeJDO>();
     for(TimeModel t : models) {
-      jdos.add(Time.getServerModel(t));
+      jdos.add(TimeJDO.getServerModel(t));
     }
     
     return nutritionManager.removeTimes(jdos, UID);
@@ -5489,12 +5543,12 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
     NutritionManager nutritionManager = NutritionManager.getInstance();    
-    List<Meal> jdoList = nutritionManager.searchMeals(user, query, index);
+    List<MealJDO> jdoList = nutritionManager.searchMeals(user, query, index);
     
     //convert to client side models
     List<MealModel> list = new ArrayList<MealModel>();
-    for(Meal n : jdoList) {
-      list.add(Meal.getClientModel(n));
+    for(MealJDO n : jdoList) {
+      list.add(MealJDO.getClientModel(n));
     }
     
     return list;
@@ -5957,7 +6011,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
     final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
     NutritionManager nutritionManager = NutritionManager.getInstance();
-    Meal jdo = Meal.getServerModel(model);
+    MealJDO jdo = MealJDO.getServerModel(model);
     
     nutritionManager.updateMeal(user, jdo);
 

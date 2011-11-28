@@ -18,8 +18,8 @@ import net.sf.jsr107cache.CacheManager;
 
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
-import com.delect.motiver.server.jdo.nutrition.Meal;
-import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.jdo.nutrition.MealJDO;
+import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class NutritionCache {
@@ -63,7 +63,7 @@ public class NutritionCache {
     return nutritionCache;
   }
 
-  public List<Time> getTimes(String uid, Date date) {
+  public List<TimeJDO> getTimes(String uid, Date date) {
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -79,14 +79,14 @@ public class NutritionCache {
     
     Object obj = cache.get(builder.toString());
 
-    List<Time> times = null;
+    List<TimeJDO> times = null;
     
     if(obj instanceof Map) {
-      times = new ArrayList<Time>();
-      Map<Long, Time> map = (Map<Long, Time>)obj;
+      times = new ArrayList<TimeJDO>();
+      Map<Long, TimeJDO> map = (Map<Long, TimeJDO>)obj;
       
-      Collection<Time> c = map.values();
-      Iterator<Time> itr = c.iterator();
+      Collection<TimeJDO> c = map.values();
+      Iterator<TimeJDO> itr = c.iterator();
       while(itr.hasNext()) {
         times.add(itr.next());
       }
@@ -99,7 +99,7 @@ public class NutritionCache {
     return times;
   }
 
-  public void setTimes(String uid, Date date, List<Time> list) {
+  public void setTimes(String uid, Date date, List<TimeJDO> list) {
     
     if(cache == null || !CACHE_ON) {
       return;
@@ -109,10 +109,10 @@ public class NutritionCache {
       logger.log(Level.FINE, "Adding times ("+uid+", "+date+"): "+list);
     }
     
-    Map<Long, Time> map = null;
+    Map<Long, TimeJDO> map = null;
     if(list != null) {
-      map = new HashMap<Long, Time>();
-      for(Time t : list) {
+      map = new HashMap<Long, TimeJDO>();
+      for(TimeJDO t : list) {
         map.put(t.getId(), t);
       }
     }
@@ -129,7 +129,7 @@ public class NutritionCache {
   }
 
 
-  public Time getTime(Long timeId) {
+  public TimeJDO getTime(Long timeId) {
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -141,9 +141,9 @@ public class NutritionCache {
     builder.append(timeId);
     Object obj = cache.get(builder.toString());
     
-    Time t = null;
-    if(obj != null && obj instanceof Time) {
-      t = (Time)obj;
+    TimeJDO t = null;
+    if(obj != null && obj instanceof TimeJDO) {
+      t = (TimeJDO)obj;
     }
     
     if(logger.isLoggable(Level.FINE)) {
@@ -153,7 +153,7 @@ public class NutritionCache {
     return t;
   }
 
-  public Meal getMeal(Long mealId) {   
+  public MealJDO getMeal(Long mealId) {   
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -165,9 +165,9 @@ public class NutritionCache {
     builder.append(mealId);
     Object obj = cache.get(builder.toString());
     
-    Meal t = null;
-    if(obj != null && obj instanceof Meal) {
-      t = (Meal)obj;
+    MealJDO t = null;
+    if(obj != null && obj instanceof MealJDO) {
+      t = (MealJDO)obj;
     }
     
     if(logger.isLoggable(Level.FINE)) {
@@ -177,7 +177,7 @@ public class NutritionCache {
     return t;
   }
   
-  public void addMeal(Meal meal) {
+  public void addMeal(MealJDO meal) {
     
     if(cache == null || !CACHE_ON) {
       return;

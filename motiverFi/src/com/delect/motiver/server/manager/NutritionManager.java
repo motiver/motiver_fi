@@ -14,8 +14,8 @@ import com.delect.motiver.server.dao.helper.MealSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
-import com.delect.motiver.server.jdo.nutrition.Meal;
-import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.jdo.nutrition.MealJDO;
+import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
@@ -43,7 +43,7 @@ public class NutritionManager {
   }
 
 
-  public List<Time> getTimes(UserOpenid user, Date date, String uid) throws ConnectionException {
+  public List<TimeJDO> getTimes(UserOpenid user, Date date, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading times ("+uid+", "+date+")");
@@ -57,7 +57,7 @@ public class NutritionManager {
     userManager.checkPermission(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
     
     //get from cache
-    List<Time> list;
+    List<TimeJDO> list;
     
     try {    
       //get from cache
@@ -66,10 +66,10 @@ public class NutritionManager {
       if(list == null) {
         list = dao.getTimes(date, uid);
         
-        for(Time time : list) {
+        for(TimeJDO time : list) {
 
           //get meals
-          List<Meal> meals = new ArrayList<Meal>();
+          List<MealJDO> meals = new ArrayList<MealJDO>();
           for(Key key : time.getMealsKeys()) {
             meals.add(_getMeal(key.getId()));
           }
@@ -102,13 +102,13 @@ public class NutritionManager {
     return list;
   }
 
-  public List<Time> getTimes(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
+  public List<TimeJDO> getTimes(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading times ("+uid+", "+dateStart+" - "+dateEnd+")");
     }
 
-    List<Time> list = new ArrayList<Time>();
+    List<TimeJDO> list = new ArrayList<TimeJDO>();
     
     Iterator<Date> i = new DateIterator(dateStart, dateEnd);
     while(i.hasNext())
@@ -138,7 +138,7 @@ public class NutritionManager {
       //update uid
       model.setUid(user.getUid());
 
-      Time time = null;
+      TimeJDO time = null;
       if(timeId != 0) {
         time = dao.getTime(timeId);
       }
@@ -159,7 +159,7 @@ public class NutritionManager {
       }
       //if food is in meal
       else if(mealId != 0) {
-        Meal meal = dao.getMeal(mealId);
+        MealJDO meal = dao.getMeal(mealId);
         
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
 
@@ -203,7 +203,7 @@ public class NutritionManager {
       //update uid
       model.setUid(user.getUid());
 
-      Time time = null;
+      TimeJDO time = null;
       if(timeId != 0) {
         time = dao.getTime(timeId);
       }
@@ -220,7 +220,7 @@ public class NutritionManager {
       }
       //if food is in meal
       else if(mealId != 0) {
-        Meal meal = dao.getMeal(mealId);
+        MealJDO meal = dao.getMeal(mealId);
         
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
 
@@ -247,7 +247,7 @@ public class NutritionManager {
   }
 
   
-  public List<Meal> getMeals(UserOpenid user, int index, String uid) throws ConnectionException {
+  public List<MealJDO> getMeals(UserOpenid user, int index, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading meals ("+index+", "+uid+")");
@@ -256,7 +256,7 @@ public class NutritionManager {
     //check permissions
     userManager.checkPermission(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
     
-    List<Meal> list = new ArrayList<Meal>();
+    List<MealJDO> list = new ArrayList<MealJDO>();
     
     try {
       MealSearchParams params = new MealSearchParams();
@@ -268,7 +268,7 @@ public class NutritionManager {
       for(Long key : keys) {
 
         
-        Meal jdo = _getMeal(key);
+        MealJDO jdo = _getMeal(key);
         
         if(jdo != null) {
           
@@ -287,13 +287,13 @@ public class NutritionManager {
     return list;
   }
   
-  public List<Meal> getMostPopularMeals(UserOpenid user, int offset) throws ConnectionException {
+  public List<MealJDO> getMostPopularMeals(UserOpenid user, int offset) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading most popular meals ("+offset+")");
     }
     
-    List<Meal> list = new ArrayList<Meal>();
+    List<MealJDO> list = new ArrayList<MealJDO>();
     
     try {
       int i = 0;
@@ -312,7 +312,7 @@ public class NutritionManager {
             break;
           }
             
-          Meal jdo = _getMeal(key);
+          MealJDO jdo = _getMeal(key);
           
           if(jdo != null) {
             
@@ -343,13 +343,13 @@ public class NutritionManager {
   }
 
 
-  private Meal _getMeal(Long key) throws Exception {
+  private MealJDO _getMeal(Long key) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getMeal ("+key+")");
     }
     
-    Meal jdo = cache.getMeal(key);
+    MealJDO jdo = cache.getMeal(key);
     
     if(jdo == null) {
       jdo = dao.getMeal(key);
@@ -412,7 +412,7 @@ public class NutritionManager {
   }
 
 
-  private void _updateMeal(Meal meal) throws Exception {
+  private void _updateMeal(MealJDO meal) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_updateMeal ("+meal+")");
@@ -424,7 +424,7 @@ public class NutritionManager {
   }
 
 
-  public boolean removeTimes(List<Time> models, String uid) throws ConnectionException {
+  public boolean removeTimes(List<TimeJDO> models, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Removing times ("+uid+"): "+models.size());
@@ -461,7 +461,7 @@ public class NutritionManager {
 
 
   @SuppressWarnings("deprecation")
-  public List<Time> addTimes(UserOpenid user, List<Time> models) throws ConnectionException {
+  public List<TimeJDO> addTimes(UserOpenid user, List<TimeJDO> models) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Adding times: "+models.size());
@@ -473,7 +473,7 @@ public class NutritionManager {
     
     try {
       
-      for(Time t : models) {
+      for(TimeJDO t : models) {
 
         //reset time from date
         Date d = t.getDate();
@@ -504,7 +504,7 @@ public class NutritionManager {
   }
 
 
-  public List<Meal> addMeals(UserOpenid user, List<Meal> models, long timeId) throws ConnectionException {
+  public List<MealJDO> addMeals(UserOpenid user, List<MealJDO> models, long timeId) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Adding meals ("+timeId+"): "+models.size());
@@ -514,12 +514,12 @@ public class NutritionManager {
       return null;
     }
 
-    List<Meal> modelsCopy = new ArrayList<Meal>();
+    List<MealJDO> modelsCopy = new ArrayList<MealJDO>();
     
     try {
       
       //get meals
-      for(Meal meal : models) {
+      for(MealJDO meal : models) {
         
         //new
         if(meal.getId() == 0) {
@@ -542,7 +542,7 @@ public class NutritionManager {
         }
         else {
           //check cache
-          Meal jdo = _getMeal(meal.getId());
+          MealJDO jdo = _getMeal(meal.getId());
           
           //check permission
           userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), jdo.getUid());
@@ -553,7 +553,7 @@ public class NutritionManager {
           }
           
           //add copy
-          Meal clone = (Meal) jdo.clone();
+          MealJDO clone = (MealJDO) jdo.clone();
           clone.setUid(user.getUid());
           clone.setUser(user);
           
@@ -573,7 +573,7 @@ public class NutritionManager {
       
       //added to time
       if(timeId != 0) {
-        Time t = dao.getTime(timeId);
+        TimeJDO t = dao.getTime(timeId);
         
         if(t != null) {
           //check permission
@@ -582,7 +582,7 @@ public class NutritionManager {
           t = dao.addMeals(t.getId(), modelsCopy);
 
           //get meals
-          List<Meal> meals = new ArrayList<Meal>();
+          List<MealJDO> meals = new ArrayList<MealJDO>();
           for(Key key : t.getMealsKeys()) {
             meals.add(_getMeal(key.getId()));
           }
@@ -605,7 +605,7 @@ public class NutritionManager {
 
       //get complete meals
       for(int i = 0; i < modelsCopy.size(); i++) {
-        Meal meal = modelsCopy.get(i);
+        MealJDO meal = modelsCopy.get(i);
         modelsCopy.set(i, _getMeal(meal.getId()));
       }
       
@@ -618,7 +618,7 @@ public class NutritionManager {
   }
 
 
-  public boolean removeMeal(UserOpenid user, Meal model, long timeId) throws ConnectionException {
+  public boolean removeMeal(UserOpenid user, MealJDO model, long timeId) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Removing meal ("+timeId+"): "+model);
@@ -629,7 +629,7 @@ public class NutritionManager {
       
       //update time
       if(timeId != 0) {
-        Time time = dao.getTime(timeId);
+        TimeJDO time = dao.getTime(timeId);
         
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
 
@@ -817,13 +817,13 @@ public class NutritionManager {
   }
 
 
-  public List<Meal> searchMeals(UserOpenid user, String query, int index) throws ConnectionException {
+  public List<MealJDO> searchMeals(UserOpenid user, String query, int index) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Searching meals ("+index+"): "+query);
     }
 
-    List<Meal> list = new ArrayList<Meal>();
+    List<MealJDO> list = new ArrayList<MealJDO>();
     
     try {
 
@@ -836,7 +836,7 @@ public class NutritionManager {
       int i = 0;
       for(Long key : keysAll) {
         
-        Meal m = _getMeal(key);
+        MealJDO m = _getMeal(key);
         
         if(!m.getUid().equals(user.getUid()) 
             && userManager.hasPermission(Permission.READ_NUTRITION, user.getUid(), m.getUid()))  {
@@ -857,7 +857,7 @@ public class NutritionManager {
             if(match) {
   
               //get "whole" meal (which has also foods, etc..)
-              Meal meal = _getMeal(m.getId());
+              MealJDO meal = _getMeal(m.getId());
               
               list.add(meal);
             }
@@ -880,7 +880,7 @@ public class NutritionManager {
     
   }
 
-  public void updateMeal(UserOpenid user, Meal model) throws ConnectionException {
+  public void updateMeal(UserOpenid user, MealJDO model) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating meal: "+model);
@@ -888,7 +888,7 @@ public class NutritionManager {
     
     try {
       
-      Meal meal = _getMeal(model.getId());
+      MealJDO meal = _getMeal(model.getId());
       
       userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
       
@@ -917,7 +917,7 @@ public class NutritionManager {
     
     try {
       
-      Meal meal = _getMeal(mealId);
+      MealJDO meal = _getMeal(mealId);
       dao.incrementMealCount(meal);
 
       //update cache

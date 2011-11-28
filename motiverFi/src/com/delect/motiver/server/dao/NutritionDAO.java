@@ -16,8 +16,8 @@ import com.delect.motiver.server.jdo.FoodNameCount;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
-import com.delect.motiver.server.jdo.nutrition.Meal;
-import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.jdo.nutrition.MealJDO;
+import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 import com.google.appengine.api.datastore.Key;
@@ -39,9 +39,9 @@ public class NutritionDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Time> getTimes(Date date, String uid) throws Exception {
+  public List<TimeJDO> getTimes(Date date, String uid) throws Exception {
     
-    List<Time> list = new ArrayList<Time>();
+    List<TimeJDO> list = new ArrayList<TimeJDO>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -51,12 +51,12 @@ public class NutritionDAO {
       final Date dStart = DateUtils.stripTime(date, true);
       final Date dEnd = DateUtils.stripTime(date, false);
       
-      Query q = pm.newQuery(Time.class);
+      Query q = pm.newQuery(TimeJDO.class);
       q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
       q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
-      for(Time jdo : times) {
-        Time t = pm.detachCopy(jdo);
+      List<TimeJDO> times = (List<TimeJDO>) q.execute(uid, dStart, dEnd);
+      for(TimeJDO jdo : times) {
+        TimeJDO t = pm.detachCopy(jdo);
         t.setMealsKeys(jdo.getMealsKeys()); 
         t.setFoodsKeys(jdo.getFoodsKeys()); 
         list.add(t);
@@ -92,7 +92,7 @@ public class NutritionDAO {
         }
         limit++;
         
-        Query q = pm.newQuery(Meal.class);
+        Query q = pm.newQuery(MealJDO.class);
         q.setOrdering("name ASC");
         StringBuilder builder = new StringBuilder();
         if(params.uid != null) {
@@ -112,11 +112,11 @@ public class NutritionDAO {
         q.setFilter(builder.toString());
         q.declareParameters("java.lang.String openIdParam, java.lang.Integer timeParam, java.lang.Integer copyCountParam");
         q.setRange(offset, limit);
-        List<Meal> meals = (List<Meal>) q.execute(params.uid, params.timeId, params.minCopyCount);
+        List<MealJDO> meals = (List<MealJDO>) q.execute(params.uid, params.timeId, params.minCopyCount);
               
         //get meals
         if(meals != null) {
-          for(Meal m : meals) {
+          for(MealJDO m : meals) {
             
             //if limit reached -> add null value
             if(list.size() >= params.limit) {
@@ -161,7 +161,7 @@ public class NutritionDAO {
 //    PersistenceManager pm =  PMF.get().getPersistenceManager();
 //    
 //    try {
-//      Query q = pm.newQuery(Meal.class);
+//      Query q = pm.newQuery(MealJDO.class);
 //      StringBuilder builder = new StringBuilder();
 //      if(uid != null) {
 //        builder.append("openId == openIdParam && ");
@@ -176,12 +176,12 @@ public class NutritionDAO {
 //      q.setFilter(builder.toString());
 //      q.declareParameters("java.lang.String openIdParam, java.lang.Integer timeParam, java.lang.Integer copyCountParam");
 //      q.setRange(offset, offset + limit + 1);
-//      List<Meal> meals = (List<Meal>) q.execute(uid, timeId, minCopyCount);
+//      List<MealJDO> meals = (List<MealJDO>) q.execute(uid, timeId, minCopyCount);
 //            
 //      //get meals
 //      if(meals != null) {        
 //        int i = 0;
-//        for(Meal m : meals) {
+//        for(MealJDO m : meals) {
 //          
 //          //if limit reached -> add null value
 //          if(i == limit) {
@@ -234,7 +234,7 @@ public class NutritionDAO {
           
           try {
             
-            Time t = pm.getObjectById(Time.class, key);
+            TimeJDO t = pm.getObjectById(TimeJDO.class, key);
             
             if(t != null) {
               
@@ -278,7 +278,7 @@ public class NutritionDAO {
     return ok;
   }
 
-  public void addTimes(List<Time> models) throws Exception {
+  public void addTimes(List<TimeJDO> models) throws Exception {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -287,7 +287,7 @@ public class NutritionDAO {
     
     try {
       
-      for(Time time : models) {
+      for(TimeJDO time : models) {
         pm.makePersistent(time);
       }
       tx.commit();
@@ -305,9 +305,9 @@ public class NutritionDAO {
     }    
   }
 
-  public Time addMeals(Long timeId, List<Meal> models) throws Exception {
+  public TimeJDO addMeals(Long timeId, List<MealJDO> models) throws Exception {
     
-    Time t = null;
+    TimeJDO t = null;
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -315,7 +315,7 @@ public class NutritionDAO {
     try {
       
       //save meals
-      for(Meal meal : models) {
+      for(MealJDO meal : models) {
         meal.setTime(timeId);
         
         pm.makePersistent(meal);
@@ -325,12 +325,12 @@ public class NutritionDAO {
       tx = pm.currentTransaction();
       tx.begin();
       
-      Time jdo = pm.getObjectById(Time.class, timeId);
+      TimeJDO jdo = pm.getObjectById(TimeJDO.class, timeId);
   
       if(jdo != null) {
         List<Key> arr = jdo.getMealsKeys();
         
-        for(Meal m : models) {
+        for(MealJDO m : models) {
           arr.add(m.getKey());
         }
       }
@@ -354,13 +354,13 @@ public class NutritionDAO {
     return t;
   }
 
-  public void addMeals(List<Meal> models) throws Exception {
+  public void addMeals(List<MealJDO> models) throws Exception {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
       
-      for(Meal meal : models) {
+      for(MealJDO meal : models) {
         pm.makePersistent(meal);
       }
       
@@ -374,7 +374,7 @@ public class NutritionDAO {
     }
   }
 
-  public boolean removeMeal(Meal model) throws Exception {
+  public boolean removeMeal(MealJDO model) throws Exception {
     
     boolean ok = false;
 
@@ -390,7 +390,7 @@ public class NutritionDAO {
         
         try {
           
-          Meal t = pm.getObjectById(Meal.class, model.getId());
+          MealJDO t = pm.getObjectById(MealJDO.class, model.getId());
           
           if(t != null) {
             
@@ -490,13 +490,13 @@ public class NutritionDAO {
     return ok;
   }
 
-  public Meal getMeal(long mealId) throws Exception {
+  public MealJDO getMeal(long mealId) throws Exception {
 
-    Meal meal = null;
+    MealJDO meal = null;
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      Meal jdo = pm.getObjectById(Meal.class, mealId);
+      MealJDO jdo = pm.getObjectById(MealJDO.class, mealId);
       
       if(jdo != null) {
         meal = pm.detachCopy(jdo);
@@ -515,14 +515,14 @@ public class NutritionDAO {
     return meal;
   }
 
-  public Time getTime(long timeId) throws Exception {
+  public TimeJDO getTime(long timeId) throws Exception {
     
-    Time t = null;
+    TimeJDO t = null;
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
-      t = pm.getObjectById(Time.class, timeId);
+      t = pm.getObjectById(TimeJDO.class, timeId);
     } catch (Exception e) {
       throw e;
     }
@@ -535,7 +535,7 @@ public class NutritionDAO {
     return t;
   }
 
-  public void updateTime(Time time) throws Exception {
+  public void updateTime(TimeJDO time) throws Exception {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -544,7 +544,7 @@ public class NutritionDAO {
     
     try {
       
-      Time t = pm.getObjectById(Time.class, time.getId());
+      TimeJDO t = pm.getObjectById(TimeJDO.class, time.getId());
       
       if(t != null) {
         t.update(time, false);
@@ -567,7 +567,7 @@ public class NutritionDAO {
     }
   }
 
-  public void updateMeal(Meal meal) throws Exception {
+  public void updateMeal(MealJDO meal) throws Exception {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -576,7 +576,7 @@ public class NutritionDAO {
     
     try {
       
-      Meal t = pm.getObjectById(Meal.class, meal.getId());
+      MealJDO t = pm.getObjectById(MealJDO.class, meal.getId());
       
       if(t != null) {
         int c = t.getCount();
@@ -605,7 +605,7 @@ public class NutritionDAO {
     }
   }
 
-  public void incrementMealCount(Meal meal) throws Exception {
+  public void incrementMealCount(MealJDO meal) throws Exception {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -614,7 +614,7 @@ public class NutritionDAO {
     
     try {
       
-      Meal t = pm.getObjectById(Meal.class, meal.getId());
+      MealJDO t = pm.getObjectById(MealJDO.class, meal.getId());
       
       if(t != null) {
         t.setCount(t.getCount() + 1);
@@ -794,21 +794,21 @@ public class NutritionDAO {
 //   * @throws Exception
 //   */
 //  @SuppressWarnings("unchecked")
-//  public List<Meal> getMeals() throws Exception {
+//  public List<MealJDO> getMeals() throws Exception {
 //    
 //    PersistenceManager pm =  PMF.get().getPersistenceManager();
 //
-//    List<Meal> n = new ArrayList<Meal>();
+//    List<MealJDO> n = new ArrayList<MealJDO>();
 //    
 //    try {
 //      
 //      int i = 0;
 //      while(true){
-//        Query q = pm.newQuery(Meal.class);
+//        Query q = pm.newQuery(MealJDO.class);
 //        q.setFilter("timeId == null");
 //        q.setOrdering("name ASC");
 //        q.setRange(i, i+100);
-//        List<Meal> u = (List<Meal>) q.execute();
+//        List<MealJDO> u = (List<MealJDO>) q.execute();
 //        n.addAll(u);
 //        
 //        if(u.size() < 100) {
