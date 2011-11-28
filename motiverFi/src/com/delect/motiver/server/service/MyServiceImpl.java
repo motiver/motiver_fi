@@ -203,65 +203,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
     return new NutritionDayModel(energy, protein, carbs, fet);
   }
-  /**
-   * Calculates energy from times (searches meals and foods)
-   * @param pm 
-   * @param times
-   * @return
-   */
-  @Deprecated private static NutritionDayModel calculateEnergyFromTimes(List<Time> times, String UID) {
-
-    logger.log(Level.FINE, "calculateEnergyFromTimes()");
-    double energy = 0;
-    double protein = 0; 
-    double carbs = 0;
-    double fet = 0;
-
-    try {
-      
-      //each time
-      for(Time tClient : times) {
-        
-        //each meal
-        for(Meal m : tClient.getMealsNew()) {
-          
-            if(m.getFoods() != null) {
-              for(Food food : m.getFoods()) {
-
-                final double amount = food.getAmount();
-                final FoodName name = food.getName();
-                if(name != null) {
-                  energy += (name.getEnergy() / 100) * amount;
-                  protein += (name.getProtein() / 100) * amount;
-                  carbs += (name.getCarb() / 100) * amount;
-                  fet += (name.getFet() / 100) * amount;
-                }
-              }
-            }
-          
-        }
-
-        if(tClient.getFoods() != null) {
-          for(Food food : tClient.getFoods()) {
-
-            final double amount = food.getAmount();
-            final FoodName name = food.getName();
-            if(name != null) {
-              energy += (name.getEnergy() / 100) * amount;
-              protein += (name.getProtein() / 100) * amount;
-              carbs += (name.getCarb() / 100) * amount;
-              fet += (name.getFet() / 100) * amount;
-            }
-          }
-        }
-      }
-      
-    } catch (Exception e1) {
-      logger.log(Level.SEVERE, "calculateEnergyFromTimes", e1);
-    }
-
-    return new NutritionDayModel(energy, protein, carbs, fet);
-  }
   
   /**
    * Duplicates single exercise
@@ -3130,60 +3071,14 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @param date
    * @return micronutrients
    */
-  @Override @SuppressWarnings("unchecked")
-  @Deprecated public List<Double> getEnergyInCalendar(Date dateStart, Date dateEnd) throws ConnectionException {
-
-    logger.log(Level.FINE, "getEnergyInCalendar()");
-
-    if(dateStart.getTime() > dateEnd.getTime()) {
-      return null;
-    }
-    
-    List<Double> list = new ArrayList<Double>();
+  @Override
+  public List<Double> getEnergyInCalendar(Date dateStart, Date dateEnd) throws ConnectionException {
     
     //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
+    NutritionManager nutritionManager = NutritionManager.getInstance();
 
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //go through days
-      final int days = (int)((dateEnd.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-      
-      for(int i=0; i < days; i++) {
-        
-        final Date d = new Date((dateStart.getTime() / 1000 + 3600 * 24 * i) * 1000);
-        //strip time
-        final Date dStart = stripTime(d, true);
-        final Date dEnd = stripTime(d, false);
-        
-        //get times
-        Query q = pm.newQuery(Time.class);
-        q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-        List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
-
-        NutritionDayModel m = calculateEnergyFromTimes(times, UID);
-
-        //round
-        list.add(m.getEnergy());
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getEnergyInCalendar", e);
-      throw new ConnectionException("getEnergyInCalendar", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    return list;
+    return nutritionManager.getTotalEnergy(user, dateStart, dateEnd, user.getUid());
   }
 
   /**
@@ -3289,47 +3184,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return name
    */
   @Override
-  @Deprecated public FoodNameModel getFoodname(Long id) throws ConnectionException {
+  public FoodNameModel getFoodname(Long id) throws ConnectionException {
 
-    logger.log(Level.FINE, "getFoodname()");
-    
-    FoodNameModel m = null;
-    
-    //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return m;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     
-    try {
-  
-      FoodName f = pm.getObjectById(FoodName.class, id);
-      
-      if(f != null) {
-        m = FoodName.getClientModel(f);
-        
-        //micronutrients
-        List<MicroNutrientModel> list = new ArrayList<MicroNutrientModel>();
-        for(MicroNutrient mn : f.getMicroNutrients()) {
-          list.add(MicroNutrient.getClientModel(mn));
-        }
-        m.setMicronutrients(list);
-      }
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "getFoodname", e);
-      throw new ConnectionException("getFoodname", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    FoodName jdo = nutritionManager.getFoodName(user, id);                  
+    return FoodName.getClientModel(jdo);
   }
   
   /**
@@ -3500,49 +3361,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return
    * @throws ConnectionException 
    */
-  @Override @Deprecated public MealModel getMeal(Long mealId) throws ConnectionException {
+  @Override public MealModel getMeal(Long mealId) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMeal()");
-    
-    MealModel m = null;
-    
-    //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return null;
-    }
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      final Meal w = pm.getObjectById(Meal.class, mealId);
-      if(w != null) {
-        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid())) {
-          throw new NoPermissionException(Permission.READ_NUTRITION, UID, w.getUid());
-        }
-        
-        m = Meal.getClientModel(w);
-        
-        //get date from time
-        if(m.getTimeId() != 0) {
-          Time t = pm.getObjectById(Time.class, m.getTimeId());
-          if(t != null) {
-            m.setDate(t.getDate());
-          }
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMeal", e);
-      throw new ConnectionException("getMeal", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    MealJDO jdo = nutritionManager.getMeal(user, mealId);                  
+    return MealJDO.getClientModel(jdo);
   }
 
   /**

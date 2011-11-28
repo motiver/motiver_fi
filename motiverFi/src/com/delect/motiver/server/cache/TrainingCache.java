@@ -226,7 +226,7 @@ public class TrainingCache {
     }
     
     if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loaded exercise names: "+names.size());
+      logger.log(Level.FINE, "Loaded exercise names: "+((names != null)? names.size() : 0));
     }
     
     return names;

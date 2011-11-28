@@ -25,7 +25,11 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.delect.motiver.server.jdo.MicroNutrient;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.training.Exercise;
+import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.FoodNameModel;
+import com.delect.motiver.shared.MicroNutrientModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class FoodName implements Serializable, Comparable<FoodName> {
@@ -54,6 +58,15 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 		modelClient.setLocale(model.getLocale());
 		modelClient.setTrusted(model.getTrusted());
 		modelClient.setUid(model.getUid());
+    
+    //micronutrients
+    List<MicroNutrientModel> micronutrients = new ArrayList<MicroNutrientModel>();
+    if(model.getMicroNutrients() != null) {
+      for(MicroNutrient m : model.getMicroNutrients()) {
+        micronutrients.add(MicroNutrient.getClientModel(m));
+      }
+    }
+    modelClient.setMicronutrients(micronutrients);
 		
 		return modelClient;
 	}
@@ -77,6 +90,15 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 		modelServer.setPortion(model.getPortion());
 		modelServer.setLocale(model.getLocale());
 		modelServer.setTrusted(model.getTrusted());
+    
+    //micronutrients
+    List<MicroNutrient> micronutrients = new ArrayList<MicroNutrient>();
+    if(model.getMicroNutrients() != null) {
+      for(MicroNutrientModel m : model.getMicroNutrients()) {
+        micronutrients.add(MicroNutrient.getServerModel(m));
+      }
+    }
+    modelServer.setMicronutrients(micronutrients);
 		
 		return modelServer;
 	}
@@ -133,7 +155,7 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 	@Persistent
 	private String locale;
 
-	@Persistent(mappedBy = "foodname", defaultFetchGroup="false")
+	@Persistent(mappedBy = "foodname", defaultFetchGroup="true")
   private List<MicroNutrient> micronutrients = new ArrayList<MicroNutrient>();
 
 	@Persistent

@@ -237,7 +237,7 @@ public class NutritionCache {
     }
     
     if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loaded food names: "+names.size());
+      logger.log(Level.FINE, "Loaded food names: "+ ((names != null)? names.size() : 0));
     }
     
     return names;

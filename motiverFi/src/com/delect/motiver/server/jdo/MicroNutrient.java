@@ -158,4 +158,9 @@ public class MicroNutrient implements Serializable {
   public Long getUidOld() {
     return uid;
   } 
+  
+  @Override
+  public String toString() {
+    return "MicroNutrient: [id: "+getId()+", '"+getNameId()+"', value: '"+getValue()+"']";
+  }
 }

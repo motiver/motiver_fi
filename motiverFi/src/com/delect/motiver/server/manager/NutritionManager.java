@@ -16,8 +16,11 @@ import com.delect.motiver.server.jdo.nutrition.Food;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.util.DateIterator;
+import com.delect.motiver.server.util.NutritionUtils;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.NutritionDayModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.google.appengine.api.datastore.Key;
@@ -928,6 +931,84 @@ public class NutritionManager {
       throw new ConnectionException("Error updating meal", e);
     }
   
+  }
+
+  public FoodName getFoodName(UserOpenid user, Long id) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading single name: "+id);
+    }
+
+    FoodName name = null;
+    
+    try {
+      name = _getFoodName(id);
+      
+      userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), name.getUid());
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading name", e);
+      throw new ConnectionException("Error loading name", e);
+    }
+    
+    return name;
+  }
+
+  public MealJDO getMeal(UserOpenid user, long id) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading single meal: "+id);
+    }
+
+    MealJDO meal = null;
+    
+    try {
+      meal = _getMeal(id);
+      
+      userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), meal.getUid());
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading meal", e);
+      throw new ConnectionException("Error loading meal", e);
+    }
+    
+    return meal;
+  }
+
+
+  public List<Double> getTotalEnergy(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Calculating total energy: "+dateStart+" - "+dateEnd);
+    }
+
+    if(dateStart.getTime() > dateEnd.getTime()) {
+      logger.log(Level.WARNING, "Invalid dates");
+      return null;
+    }
+    
+    List<Double> list = new ArrayList<Double>();
+
+    try {
+
+      userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), uid);
+      
+      Iterator<Date> i = new DateIterator(dateStart, dateEnd);
+      while(i.hasNext())
+      {
+        final Date date = i.next();
+        NutritionDayModel model = NutritionUtils.calculateEnergyFromTimes(getTimes(user, date, uid));
+        
+        list.add(model.getEnergy());        
+      } 
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading times", e);
+      throw new ConnectionException("getTimes", e);
+    }
+    
+    return list;
+    
   }
 
 }
