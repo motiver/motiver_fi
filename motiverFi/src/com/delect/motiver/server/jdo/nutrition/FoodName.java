@@ -25,9 +25,6 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
 import com.delect.motiver.server.jdo.MicroNutrient;
-import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.training.Exercise;
-import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.FoodNameModel;
 import com.delect.motiver.shared.MicroNutrientModel;
 

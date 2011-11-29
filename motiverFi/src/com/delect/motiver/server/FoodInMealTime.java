@@ -12,13 +12,12 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo.nutrition;
+package com.delect.motiver.server;
 
 import java.io.Serializable;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -26,22 +25,24 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.nutrition.FoodName;
+import com.delect.motiver.server.jdo.nutrition.MealInTime;
 import com.delect.motiver.shared.FoodModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Food implements Serializable, Cloneable {
+public class FoodInMealTime implements Serializable, Cloneable {
 	
-  /**
+	/**
    * 
    */
-  private static final long serialVersionUID = 2160638022282889720L;
+  private static final long serialVersionUID = -4623015725075236871L;
 
   /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model
 	 */
-	public static FoodModel getClientModel(Food model) {
+	public static FoodModel getClientModel(FoodInMealTime model) {
 		if(model == null) {
 			return null;
     }
@@ -49,26 +50,24 @@ public class Food implements Serializable, Cloneable {
 		FoodModel modelClient = new FoodModel();
 		modelClient.setId(model.getId().longValue());
 		modelClient.setAmount(model.getAmount());
-		modelClient.setUid(model.getUid());
-		modelClient.setName(FoodName.getClientModel(model.getName()));
-		
+    modelClient.setName(FoodName.getClientModel(model.getName()));
+    
 		return modelClient;
 	}
-  
+	
 	/**
 	 * Converts client object to server side object
 	 * @param model : client side model
 	 * @return Server side model
 	 */
-	public static Food getServerModel(FoodModel model) {
+	public static FoodInMealTime getServerModel(FoodModel model) {
 		if(model == null) {
 			return null;
     }
 
-		Food modelServer = new Food();
+		FoodInMealTime modelServer = new FoodInMealTime();
 		if(model.getName() != null) {
 			modelServer.setNameId(model.getName().getId());
-			modelServer.setName(FoodName.getServerModel(model.getName()));
     }
 		else {
 			modelServer.setNameId(0L);
@@ -79,62 +78,15 @@ public class Food implements Serializable, Cloneable {
 		return modelServer;
 	}
   
-	@Override
-  public Object clone() throws CloneNotSupportedException {
+  protected Object clone() throws CloneNotSupportedException {
     
-    Food clone = new Food();
+    FoodInMealTime clone = new FoodInMealTime();
     clone.setAmount(getAmount());
     clone.setNameId(getNameId());
     
     return clone;
   }
-
-  public static FoodInMealTime getFoodInMealTimeModel(Food model) {
-
-    FoodInMealTime modelServer = new FoodInMealTime();
-    modelServer.setId(model.getId());
-    modelServer.setAmount(model.getAmount());
-    modelServer.setNameId(model.getNameId());
-    
-    return modelServer;
-  }
-
-  public static FoodInMeal getFoodInMealModel(Food model) {
-
-    FoodInMeal modelServer = new FoodInMeal();
-    modelServer.setId(model.getId());
-    modelServer.setAmount(model.getAmount());
-    modelServer.setNameId(model.getNameId());
-    
-    return modelServer;
-  }
-
-  public static FoodInTime getFoodInTimeModel(Food model) {
-
-    FoodInTime modelServer = new FoodInTime();
-    modelServer.setId(model.getId());
-    modelServer.setAmount(model.getAmount());
-    modelServer.setNameId(model.getNameId());
-    
-    return modelServer;
-  }
-  
-  @Override
-  public boolean equals(Object obj) {
-    if(obj instanceof Food) {
-      return ((Food)obj).getId() == getId();
-    }
-    else {
-      return false;
-    }
-  }
-
-  @Persistent
-  private Long uid;
-  
-  @Persistent
-  private String openId;
-
+	
 	@Persistent
 	private Double amount;
 
@@ -142,21 +94,17 @@ public class Food implements Serializable, Cloneable {
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY) 
 	private Key id = null;
 
-//	@Persistent
-//	private Meal meal;
-
 	@Persistent
 	private Long name = 0L;
 
-//	@Persistent
-//	private Time time;
+	@Persistent
+	private MealInTime parent;
 
-	@NotPersistent
-	private FoodName n;
-	
-	public Food() {
-    
-  }
+  private FoodName n;
+
+	public FoodInMealTime() {
+	  
+	}
 	
 	public Double getAmount() {
 		if(amount != null) {
@@ -189,15 +137,6 @@ public class Food implements Serializable, Cloneable {
     }
   }
 
-	public String getUid() {
-		if(openId != null) {
-			return openId;
-    }
-		else {
-			return "";
-    }
-  }
-
 	public void setAmount(Double amount) {
 		this.amount = amount;
   }
@@ -206,52 +145,21 @@ public class Food implements Serializable, Cloneable {
 		
 		Key k = null;
 		if(id != null && id != 0) {
-      k = KeyFactory.createKey(Food.class.getSimpleName(), id);
+      k = KeyFactory.createKey(FoodInMealTime.class.getSimpleName(), id);
     }
 		
-		if(k != null) {
-			this.id = k;
-    }
-		else {
-			this.id = null;
-    }
+		this.id = k;
 	}
-
+	
 	public void setNameId(Long name) {
 		this.name = name;
   }
-	
-	public void setUid(String openId) {
-		this.openId = openId;
-	} 
 
-  public Long getUidOld() {
-    return uid;
-  } 
-  
   public void setName(FoodName n) {
     this.n = n;
   }
-
+  
   public FoodName getName() {
     return n;
-  }
-
-  /**
-   * Updates food from given model
-   * @param model
-   */
-  public void update(Food model, boolean includeId) {
-    if(includeId) {
-      setId(model.getId());
-    }
-    setAmount(model.getAmount());
-    setNameId(model.getNameId());
-    setUid(model.getUid());
-  }
-  
-  @Override
-  public String toString() {
-    return "Food: [id: "+getId()+", name: '"+((getName() != null)? getName().getName() : "")+"', "+getAmount()+"]";
   }
 }

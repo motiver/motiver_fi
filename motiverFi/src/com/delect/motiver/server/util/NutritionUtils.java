@@ -4,13 +4,10 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
-import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
-import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
-import com.delect.motiver.server.manager.NutritionManager;
 import com.delect.motiver.shared.NutritionDayModel;
 
 public class NutritionUtils {
@@ -47,7 +44,7 @@ public class NutritionUtils {
         for(MealJDO m : tClient.getMealsNew()) {
           
             if(m.getFoods() != null) {
-              for(Food food : m.getFoods()) {
+              for(FoodJDO food : m.getFoods()) {
 
                 final double amount = food.getAmount();
                 final FoodName name = food.getName();
@@ -63,7 +60,7 @@ public class NutritionUtils {
         }
 
         if(tClient.getFoods() != null) {
-          for(Food food : tClient.getFoods()) {
+          for(FoodJDO food : tClient.getFoods()) {
 
             final double amount = food.getAmount();
             final FoodName name = food.getName();

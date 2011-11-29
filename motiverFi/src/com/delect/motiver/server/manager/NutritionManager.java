@@ -12,11 +12,10 @@ import com.delect.motiver.server.cache.NutritionCache;
 import com.delect.motiver.server.dao.NutritionDAO;
 import com.delect.motiver.server.dao.helper.MealSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
-import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.server.util.NutritionUtils;
 import com.delect.motiver.shared.Constants;
@@ -83,7 +82,7 @@ public class NutritionManager {
             time.setFoods(dao.getFoods(keys));
             
             //find names for each food
-            for(Food f : time.getFoods()) {
+            for(FoodJDO f : time.getFoods()) {
               if(f.getNameId().longValue() > 0) {
                 f.setName(_getFoodName(f.getNameId()));
               }
@@ -131,7 +130,7 @@ public class NutritionManager {
    * @param uID
    * @return
    */
-  public void addFood(UserOpenid user, Food model, long timeId, long mealId) throws ConnectionException {
+  public void addFood(UserOpenid user, FoodJDO model, long timeId, long mealId) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Adding/updating food ("+timeId+", "+mealId+"): "+model);
@@ -194,7 +193,7 @@ public class NutritionManager {
    * @param uID
    * @return
    */
-  public boolean removeFood(UserOpenid user, Food model, long timeId, long mealId) throws ConnectionException {
+  public boolean removeFood(UserOpenid user, FoodJDO model, long timeId, long mealId) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Removing food ("+timeId+", "+mealId+"): "+model);
@@ -363,7 +362,7 @@ public class NutritionManager {
         jdo.setFoods(dao.getFoods(keys));
         
         //find names for each food
-        for(Food f : jdo.getFoods()) {
+        for(FoodJDO f : jdo.getFoods()) {
           if(f.getNameId().longValue() > 0) {
             f.setName(_getFoodName(f.getNameId()));
           }
@@ -528,8 +527,8 @@ public class NutritionManager {
         if(meal.getId() == 0) {
           
           //add two foods
-          Food food1 = new Food();
-          Food food2 = new Food();
+          FoodJDO food1 = new FoodJDO();
+          FoodJDO food2 = new FoodJDO();
           dao.addFood(food1);
           dao.addFood(food2);
           
@@ -562,9 +561,9 @@ public class NutritionManager {
           
           //add copy of each food
           List<Key> keysNew = new ArrayList<Key>();
-          List<Food> foodsOld = dao.getFoods(jdo.getFoodsKeys());
-          for(Food f : foodsOld) {
-            Food fNew = (Food)f.clone();
+          List<FoodJDO> foodsOld = dao.getFoods(jdo.getFoodsKeys());
+          for(FoodJDO f : foodsOld) {
+            FoodJDO fNew = (FoodJDO)f.clone();
             dao.addFood(fNew);
             keysNew.add(fNew.getKey());
           }
@@ -592,7 +591,7 @@ public class NutritionManager {
           t.setMealsNew(meals);
           
           //find names for each food
-          for(Food f : t.getFoods()) {
+          for(FoodJDO f : t.getFoods()) {
             if(f.getNameId().longValue() > 0) {
               f.setName(_getFoodName(f.getNameId()));
             }

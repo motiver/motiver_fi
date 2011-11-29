@@ -57,8 +57,8 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
     //foods
     List<FoodModel> foods = new ArrayList<FoodModel>();
     if(model.getFoods() != null) {
-      for(Food m : model.getFoods()) {
-        foods.add(Food.getClientModel(m));
+      for(FoodJDO m : model.getFoods()) {
+        foods.add(FoodJDO.getClientModel(m));
       }
     }
     modelClient.setFoods(foods);
@@ -112,7 +112,7 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
 	private Integer copyCount = 0;
 
 	@NotPersistent
-  private List<Food> foods = new ArrayList<Food>();
+  private List<FoodJDO> foods = new ArrayList<FoodJDO>();
 
   @Persistent
   private List<Key> foodsKeys = new ArrayList<Key>();
@@ -149,7 +149,7 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
 		return getName().toLowerCase().compareTo(compare.getName().toLowerCase());
 	}
 
-	public List<Food> getFoods() {
+	public List<FoodJDO> getFoods() {
 		return foods;
 	}
 
@@ -194,7 +194,7 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
 		copyCount++;
 	}
 
-	public void setFoods(List<Food> foods) {
+	public void setFoods(List<FoodJDO> foods) {
 		this.foods = foods;
 	}
 

@@ -3,9 +3,9 @@ package com.delect.motiver.server.util;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.delect.motiver.server.jdo.nutrition.Food;
-import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
-import com.delect.motiver.server.jdo.nutrition.Meal;
+import com.delect.motiver.server.FoodInMeal;
+import com.delect.motiver.server.FoodInMealTime;
+import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.jdo.nutrition.MealInTime;
 
 public class ObjectConverter {
@@ -20,7 +20,7 @@ public class ObjectConverter {
     //foods
     if(model.getFoods() != null) {
       List<FoodInMealTime> foods = new ArrayList<FoodInMealTime>();
-      for(Food m : meal.getFoods()) {
+      for(FoodInMeal m : meal.getFoods()) {
         foods.add(getFoodInMealTime(m));
       }
       model.setFoods(foods);
@@ -29,7 +29,7 @@ public class ObjectConverter {
     return model;
   }
 
-  public static FoodInMealTime getFoodInMealTime(Food food) {
+  public static FoodInMealTime getFoodInMealTime(FoodInMeal food) {
     
     FoodInMealTime model = new FoodInMealTime();
     model.setId(food.getId());

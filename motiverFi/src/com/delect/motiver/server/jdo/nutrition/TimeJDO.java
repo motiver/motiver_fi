@@ -68,8 +68,8 @@ public class TimeJDO implements Serializable, Comparable<TimeJDO> {
     //foods
     if(model.getFoods() != null) {
       List<FoodModel> foods = new ArrayList<FoodModel>();
-      for(Food m : model.getFoods()) {
-        foods.add(Food.getClientModel(m));
+      for(FoodJDO m : model.getFoods()) {
+        foods.add(FoodJDO.getClientModel(m));
       }
       modelClient.setFoods(foods);
     }
@@ -105,7 +105,7 @@ public class TimeJDO implements Serializable, Comparable<TimeJDO> {
   private Date date;
 
 	@NotPersistent
-  private List<Food> foods = new ArrayList<Food>();
+  private List<FoodJDO> foods = new ArrayList<FoodJDO>();
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
@@ -144,7 +144,7 @@ public class TimeJDO implements Serializable, Comparable<TimeJDO> {
 		return date;
   }
 
-	public List<Food> getFoods() {
+	public List<FoodJDO> getFoods() {
 		return foods;
 	}
 
@@ -199,7 +199,7 @@ public class TimeJDO implements Serializable, Comparable<TimeJDO> {
     this.date = date;
   }
 
-	public void setFoods(List<Food> foods) {
+	public void setFoods(List<FoodJDO> foods) {
 		this.foods = foods;
 	}
 

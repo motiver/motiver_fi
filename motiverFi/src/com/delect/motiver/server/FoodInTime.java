@@ -12,7 +12,7 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo.nutrition;
+package com.delect.motiver.server;
 
 import java.io.Serializable;
 
@@ -25,22 +25,23 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.shared.FoodModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class FoodInMealTime implements Serializable, Cloneable {
+public class FoodInTime implements Serializable, Cloneable {
 	
-	/**
+  /**
    * 
    */
-  private static final long serialVersionUID = -4623015725075236871L;
+  private static final long serialVersionUID = -1531049017464384688L;
 
   /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model
 	 */
-	public static FoodModel getClientModel(FoodInMealTime model) {
+	public static FoodModel getClientModel(FoodInTime model) {
 		if(model == null) {
 			return null;
     }
@@ -52,18 +53,18 @@ public class FoodInMealTime implements Serializable, Cloneable {
     
 		return modelClient;
 	}
-	
+  
 	/**
 	 * Converts client object to server side object
 	 * @param model : client side model
 	 * @return Server side model
 	 */
-	public static FoodInMealTime getServerModel(FoodModel model) {
+	public static FoodInTime getServerModel(FoodModel model) {
 		if(model == null) {
 			return null;
     }
 
-		FoodInMealTime modelServer = new FoodInMealTime();
+		FoodInTime modelServer = new FoodInTime();
 		if(model.getName() != null) {
 			modelServer.setNameId(model.getName().getId());
     }
@@ -78,7 +79,7 @@ public class FoodInMealTime implements Serializable, Cloneable {
   
   protected Object clone() throws CloneNotSupportedException {
     
-    FoodInMealTime clone = new FoodInMealTime();
+    FoodInTime clone = new FoodInTime();
     clone.setAmount(getAmount());
     clone.setNameId(getNameId());
     
@@ -96,13 +97,13 @@ public class FoodInMealTime implements Serializable, Cloneable {
 	private Long name = 0L;
 
 	@Persistent
-	private MealInTime parent;
+	private Time parent;
 
   private FoodName n;
 
-	public FoodInMealTime() {
-	  
-	}
+	public FoodInTime() {
+    
+  }
 	
 	public Double getAmount() {
 		if(amount != null) {
@@ -143,10 +144,15 @@ public class FoodInMealTime implements Serializable, Cloneable {
 		
 		Key k = null;
 		if(id != null && id != 0) {
-      k = KeyFactory.createKey(FoodInMealTime.class.getSimpleName(), id);
+      k = KeyFactory.createKey(FoodInTime.class.getSimpleName(), id);
     }
 		
-		this.id = k;
+		if(k != null) {
+			this.id = k;
+    }
+		else {
+			this.id = null;
+    }
 	}
 	
 	public void setNameId(Long name) {

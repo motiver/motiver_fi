@@ -14,7 +14,7 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.dao.helper.MealSearchParams;
 import com.delect.motiver.server.jdo.FoodNameCount;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.Food;
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
@@ -340,7 +340,7 @@ public class NutritionDAO {
       //get detached copy
       t = pm.detachCopy(jdo);
       t.setMealsKeys(jdo.getMealsKeys());
-      t.setFoods(new ArrayList<Food>(pm.detachCopyAll(jdo.getFoods())));
+      t.setFoods(new ArrayList<FoodJDO>(pm.detachCopyAll(jdo.getFoods())));
       
     } catch (Exception e) {
       throw e;
@@ -432,7 +432,7 @@ public class NutritionDAO {
     return ok;
   }
 
-  public boolean removeFood(Food model) throws Exception {
+  public boolean removeFood(FoodJDO model) throws Exception {
     
     boolean ok = false;
 
@@ -448,7 +448,7 @@ public class NutritionDAO {
         
         try {
           
-          Food t = pm.getObjectById(Food.class, model.getId());
+          FoodJDO t = pm.getObjectById(FoodJDO.class, model.getId());
           
           if(t != null) {
             
@@ -500,7 +500,7 @@ public class NutritionDAO {
       
       if(jdo != null) {
         meal = pm.detachCopy(jdo);
-        meal.setFoods(new ArrayList<Food>(pm.detachCopyAll(jdo.getFoods())));
+        meal.setFoods(new ArrayList<FoodJDO>(pm.detachCopyAll(jdo.getFoods())));
       }
       
     } catch (Exception e) {
@@ -735,20 +735,20 @@ public class NutritionDAO {
    * @param keys
    * @return
    */
-  public List<Food> getFoods(List<Key> keys) {
+  public List<FoodJDO> getFoods(List<Key> keys) {
     
     if(keys.size() == 0) {
       return null;
     }
     
-    List<Food> list = null;
+    List<FoodJDO> list = null;
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     try {
       
-      Query q = pm.newQuery("select from " + Food.class.getName() + " where id == :keys");
-      list = new ArrayList<Food>(pm.detachCopyAll((List<Food>)q.execute(keys)));
+      Query q = pm.newQuery("select from " + FoodJDO.class.getName() + " where id == :keys");
+      list = new ArrayList<FoodJDO>(pm.detachCopyAll((List<FoodJDO>)q.execute(keys)));
        
       
     } catch (Exception e) {
@@ -763,7 +763,7 @@ public class NutritionDAO {
     return list;
   }
 
-  public void addFood(Food model) {
+  public void addFood(FoodJDO model) {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     

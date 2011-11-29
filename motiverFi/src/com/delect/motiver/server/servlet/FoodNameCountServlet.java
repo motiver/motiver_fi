@@ -31,12 +31,12 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import com.delect.motiver.server.PMF;
+import com.delect.motiver.server.jdo.nutrition.MealJDO;
+import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.cache.WeekCache;
 import com.delect.motiver.server.jdo.FoodNameCount;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.Food;
-import com.delect.motiver.server.jdo.nutrition.Meal;
-import com.delect.motiver.server.jdo.nutrition.Time;
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.google.appengine.api.datastore.Key;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -74,11 +74,11 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
           //get times (in chunks)
           int countTimes = 0;
           while(true) {
-            Query qT = pm.newQuery(Time.class);
+            Query qT = pm.newQuery(TimeJDO.class);
             qT.setFilter("openId == openIdParam");
             qT.declareParameters("java.lang.String openIdParam");
             qT.setRange(countTimes, countTimes+100);
-            List<Time> times = (List<Time>) qT.execute(user.getUid());
+            List<TimeJDO> times = (List<TimeJDO>) qT.execute(user.getUid());
 
             int s = times.size();
 //            response.getWriter().write("Times found: "+s+" ("+countTimes+")<br>");
@@ -90,8 +90,8 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             countTimes += s;
             
             //go through each workouts
-            for(Time t : times) {
-              for(Food f : t.getFoods()) {
+            for(TimeJDO t : times) {
+              for(FoodJDO f : t.getFoods()) {
                 final long nameId = f.getNameId();
                 
                 //if name found
@@ -109,13 +109,13 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
               //get foods
               List<Object> ids = new ArrayList<Object>();
               for (Key key : t.getMealsKeys()) {
-                 ids.add(pm.newObjectIdInstance(Meal.class, key));
+                 ids.add(pm.newObjectIdInstance(MealJDO.class, key));
               }
-              List<Meal> meals = (List<Meal>) pm.getObjectsById(ids);
+              List<MealJDO> meals = (List<MealJDO>) pm.getObjectsById(ids);
               
-              for(Meal m : meals) {
+              for(MealJDO m : meals) {
 
-                for(Food f : m.getFoods()) {
+                for(FoodJDO f : m.getFoods()) {
                   final long nameId = f.getNameId();
                   
                   //if name found

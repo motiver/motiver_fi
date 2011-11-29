@@ -12,7 +12,7 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo.nutrition;
+package com.delect.motiver.server;
 
 import java.io.Serializable;
 
@@ -25,22 +25,23 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.shared.FoodModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class FoodInTime implements Serializable, Cloneable {
-	
+public class FoodInMeal implements Serializable, Cloneable {
+
   /**
    * 
    */
-  private static final long serialVersionUID = -1531049017464384688L;
+  private static final long serialVersionUID = -1640515791525637467L;
 
   /**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model
 	 */
-	public static FoodModel getClientModel(FoodInTime model) {
+	public static FoodModel getClientModel(FoodInMeal model) {
 		if(model == null) {
 			return null;
     }
@@ -48,8 +49,8 @@ public class FoodInTime implements Serializable, Cloneable {
 		FoodModel modelClient = new FoodModel();
 		modelClient.setId(model.getId().longValue());
 		modelClient.setAmount(model.getAmount());
-    modelClient.setName(FoodName.getClientModel(model.getName()));
-    
+		modelClient.setName(FoodName.getClientModel(model.getName()));
+		
 		return modelClient;
 	}
   
@@ -58,12 +59,12 @@ public class FoodInTime implements Serializable, Cloneable {
 	 * @param model : client side model
 	 * @return Server side model
 	 */
-	public static FoodInTime getServerModel(FoodModel model) {
+	public static FoodInMeal getServerModel(FoodModel model) {
 		if(model == null) {
 			return null;
     }
 
-		FoodInTime modelServer = new FoodInTime();
+		FoodInMeal modelServer = new FoodInMeal();
 		if(model.getName() != null) {
 			modelServer.setNameId(model.getName().getId());
     }
@@ -78,7 +79,7 @@ public class FoodInTime implements Serializable, Cloneable {
   
   protected Object clone() throws CloneNotSupportedException {
     
-    FoodInTime clone = new FoodInTime();
+    FoodInMeal clone = new FoodInMeal();
     clone.setAmount(getAmount());
     clone.setNameId(getNameId());
     
@@ -95,12 +96,13 @@ public class FoodInTime implements Serializable, Cloneable {
 	@Persistent
 	private Long name = 0L;
 
+	@SuppressWarnings("unused")
 	@Persistent
-	private Time parent;
+	private Meal parent;
 
   private FoodName n;
 
-	public FoodInTime() {
+	public FoodInMeal() {
     
   }
 	
@@ -143,7 +145,7 @@ public class FoodInTime implements Serializable, Cloneable {
 		
 		Key k = null;
 		if(id != null && id != 0) {
-      k = KeyFactory.createKey(FoodInTime.class.getSimpleName(), id);
+      k = KeyFactory.createKey(FoodInMeal.class.getSimpleName(), id);
     }
 		
 		if(k != null) {

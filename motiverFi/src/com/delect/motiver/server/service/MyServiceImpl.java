@@ -48,7 +48,11 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import com.delect.motiver.client.service.MyService;
+import com.delect.motiver.server.FoodInMeal;
+import com.delect.motiver.server.FoodInMealTime;
+import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.PMF;
+import com.delect.motiver.server.Time;
 import com.delect.motiver.server.jdo.Cardio;
 import com.delect.motiver.server.jdo.CardioValue;
 import com.delect.motiver.server.jdo.Circle;
@@ -64,15 +68,11 @@ import com.delect.motiver.server.jdo.MonthlySummaryExercise;
 import com.delect.motiver.server.jdo.Run;
 import com.delect.motiver.server.jdo.RunValue;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.Food;
-import com.delect.motiver.server.jdo.nutrition.FoodInMeal;
-import com.delect.motiver.server.jdo.nutrition.FoodInMealTime;
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.GuideValue;
-import com.delect.motiver.server.jdo.nutrition.Meal;
 import com.delect.motiver.server.jdo.nutrition.MealInTime;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
-import com.delect.motiver.server.jdo.nutrition.Time;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
@@ -167,7 +167,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         for(MealJDO m : tClient.getMealsNew()) {
           
             if(m.getFoods() != null) {
-              for(Food food : m.getFoods()) {
+              for(FoodJDO food : m.getFoods()) {
 
                 final double amount = food.getAmount();
                 final FoodName name = food.getName();
@@ -183,7 +183,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         }
 
         if(tClient.getFoods() != null) {
-          for(Food food : tClient.getFoods()) {
+          for(FoodJDO food : tClient.getFoods()) {
 
             final double amount = food.getAmount();
             final FoodName name = food.getName();
@@ -829,9 +829,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
     try {
       NutritionManager nutritionManager = NutritionManager.getInstance();
-      Food jdo = Food.getServerModel(food);
+      FoodJDO jdo = FoodJDO.getServerModel(food);
       nutritionManager.addFood(user, jdo, food.getTimeId(), food.getMealId());
-      m = Food.getClientModel(jdo);
+      m = FoodJDO.getClientModel(jdo);
 
     }
     catch (Exception e) {
@@ -1531,13 +1531,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         FoodName name = pm.getObjectById(FoodName.class, ids[i]);
         
         if(name != null) {
-          Query q = pm.newQuery(Food.class);
+          Query q = pm.newQuery(FoodJDO.class);
           q.setFilter("name == nameParam");
           q.declareParameters("java.lang.Long nameParam");
-          List<Food> foods = (List<Food>) q.execute(ids[i]);
+          List<FoodJDO> foods = (List<FoodJDO>) q.execute(ids[i]);
 
           //update other IDs
-          for(Food f : foods)
+          for(FoodJDO f : foods)
             f.setNameId(firstId);
           
           //delete name
@@ -1729,11 +1729,11 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       if(removeNutrition) {
         //foods
         if(count < MAX_COUNT) {
-          q = pm.newQuery(Food.class); 
+          q = pm.newQuery(FoodJDO.class); 
           q.setFilter("openId == openIdParam");
           q.declareParameters("java.lang.String openIdParam");
           q.setRange(0, MAX_COUNT - count);
-          List<Food> l = (List<Food>)q.execute(UID);
+          List<FoodJDO> l = (List<FoodJDO>)q.execute(UID);
           //if something found -> delete it
           if(l.size() > 0) {
             count += l.size();
@@ -2025,14 +2025,14 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       for(MealModel meal : meals) {
 
         //add meal
-        final Meal mMealAdded = Meal.getServerModel(meal);
+        final MealJDO mMealAdded = MealJDO.getServerModel(meal);
         mMealAdded.setUid(UID);
         
         //foods
-        List<Food> list = new ArrayList<Food>();
+        List<FoodJDO> list = new ArrayList<FoodJDO>();
         for(FoodModel food : meal.getFoods()) {
           //add food
-          Food foodServer = Food.getServerModel(food);
+          FoodJDO foodServer = FoodJDO.getServerModel(food);
           
           //if no food name -> search for it
           if(food.getName() != null && food.getName().getId() != 0) {
@@ -2328,10 +2328,10 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
           mTimeAdded.setMeals(listMeals);
           
           //foods
-          List<Food> list = new ArrayList<Food>();
+          List<FoodJDO> list = new ArrayList<FoodJDO>();
           for(FoodModel food : mTime.getFoods()) {
             //add food
-            Food foodServer = Food.getServerModel(food);
+            FoodJDO foodServer = FoodJDO.getServerModel(food);
             
             //if no food name -> search for it
             if(food.getName() != null && food.getName().getId() != 0) {
@@ -3672,7 +3672,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         }
 
         if(t.getFoods() != null) {
-          for(Food food : t.getFoods()) {
+          for(FoodJDO food : t.getFoods()) {
             try {
               //get name
               if(food.getNameId() != 0) {
@@ -4794,7 +4794,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       NutritionManager nutritionManager = NutritionManager.getInstance();
       
       for(FoodModel food : foods) {
-        Food jdo = Food.getServerModel(food);
+        FoodJDO jdo = FoodJDO.getServerModel(food);
         boolean res = nutritionManager.removeFood(user, jdo, food.getTimeId(), food.getMealId());
         
         if(!res) {
@@ -5726,9 +5726,9 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
     try {
       NutritionManager nutritionManager = NutritionManager.getInstance();
-      Food jdo = Food.getServerModel(food);
+      FoodJDO jdo = FoodJDO.getServerModel(food);
       nutritionManager.addFood(user, jdo, food.getTimeId(), food.getMealId());
-      m = Food.getClientModel(jdo);
+      m = FoodJDO.getClientModel(jdo);
 
     }
     catch (Exception e) {
@@ -6025,8 +6025,8 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
               timeSimilar.setMeals(listMeals);
               
               //foods
-              List<Food> listFoods = timeSimilar.getFoods();
-              for(Food food : m.getFoods()) {
+              List<FoodJDO> listFoods = timeSimilar.getFoods();
+              for(FoodJDO food : m.getFoods()) {
                 listFoods.add(food);
               }
               timeSimilar.setFoods(listFoods);
