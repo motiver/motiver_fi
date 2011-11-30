@@ -6,7 +6,7 @@ import java.util.List;
 import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.Meal;
-import com.delect.motiver.server.jdo.nutrition.MealInTime;
+import com.delect.motiver.server.MealInTime;
 
 public class ObjectConverter {
 

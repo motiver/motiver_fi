@@ -17,6 +17,7 @@
  */
 package com.delect.motiver.server.servlet;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -30,6 +31,12 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.delect.motiver.server.Food;
+import com.delect.motiver.server.FoodInMeal;
+import com.delect.motiver.server.FoodInMealTime;
+import com.delect.motiver.server.FoodInTime;
+import com.delect.motiver.server.Meal;
+import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.Time;
 import com.delect.motiver.server.cache.WeekCache;
@@ -58,12 +65,12 @@ public class NutritionDumpServlet extends RemoteServiceServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    WeekCache cache = new WeekCache();
     
     response.setContentType("text/html");
     
     try {
+      
+      PrintWriter writer = response.getWriter();
       
       //get users
       Query q = pm.newQuery(UserOpenid.class);
@@ -72,8 +79,7 @@ public class NutritionDumpServlet extends RemoteServiceServlet {
       for(UserOpenid user : users) {
         try {
           
-//        response.getWriter().write(user.getEmail()+"<br>");  
-        Hashtable<Long, Integer> tableFoods = new Hashtable<Long, Integer>();
+        response.getWriter().write(user.getEmail()+"<br>"); 
       
         //get times (in chunks)
         int countTimes = 0;
@@ -94,75 +100,54 @@ public class NutritionDumpServlet extends RemoteServiceServlet {
           
           //go through each workouts
           for(Time t : times) {
-            response.getWriter().write("Time: "+t);
+            response.getWriter().write("Time: "+t+"<br>");
             
             TimeJDO tNew = new TimeJDO();
             tNew.setDate(t.getDate());
             tNew.setTime(tNew.getTime());
-            tNew.setUid(t.getUid());            
+            tNew.setUid(t.getUid());  
+            pm.makePersistent(tNew);          
             
-            for(FoodJDO f : t.getFoods()) {
-              final long nameId = f.getNameId();
-              
-              //if name found
-              if(nameId > 0) {
-                //if id found -> add one to count
-                int count = 0;
-                if(tableFoods.containsKey(nameId)) {
-                  count = tableFoods.get(nameId);
-                }
-                count++;
-                tableFoods.put(nameId, count);
-              }
+            List<Key> keys = new ArrayList<Key>();
+            for(FoodInTime f : t.getFoods()) {
+              FoodJDO fNew = addFood(writer, f, t.getUid());              
+              keys.add(fNew.getKey());
             }
-            
-            //get foods
-            List<Object> ids = new ArrayList<Object>();
-            for (Key key : t.getMealsKeys()) {
-               ids.add(pm.newObjectIdInstance(MealJDO.class, key));
-            }
-            List<MealJDO> meals = (List<MealJDO>) pm.getObjectsById(ids);
-            
-            for(MealJDO m : meals) {
+            tNew.setFoodsKeys(keys);
 
-              for(FoodJDO f : m.getFoods()) {
-                final long nameId = f.getNameId();
-                
-                //if name found
-                if(nameId > 0) {
-                  //if id found -> add one to count
-                  int count = 0;
-                  if(tableFoods.containsKey(nameId)) {
-                    count = tableFoods.get(nameId);
-                  }
-                  count++;
-                  tableFoods.put(nameId, count);
-                }
-              }
+            List<Key> keysMeals = new ArrayList<Key>();
+            for(MealInTime m : t.getMeals()) {              
+              MealJDO mNew = addMeal(writer, m, tNew.getId(), t.getUid());
+              keysMeals.add(mNew.getKey());
             }
+            tNew.setMealsKeys(keysMeals);
+            pm.flush();
           }
         }
         
-        //save each count to datastore
-        List<FoodNameCount> counts = new ArrayList<FoodNameCount>();
-        
-        Set<Long> set = tableFoods.keySet();
-        Iterator<Long> itr = set.iterator();
-        for(int i = 0; i < tableFoods.size(); i++) {
-          Long nameId = itr.next();
-//          response.getWriter().write("      "+nameId + ": " + tableFoods.get(nameId)+"<br>");
-          
-          //Create model
-          int count = tableFoods.get(nameId);
-          FoodNameCount model = new FoodNameCount(nameId, count, user.getUid());
-          counts.add(model);
 
-          //update cache
-          cache.addExerciseNameCount(nameId, user.getUid(), count);
+        //get meals (in chunks)
+        int countMeals = 0;
+        while(true) {
+          Query qT = pm.newQuery(Meal.class);
+          qT.setFilter("openId == openIdParam && time == null");
+          qT.declareParameters("java.lang.String openIdParam");
+          qT.setRange(countMeals, countMeals+100);
+          List<Meal> meals = (List<Meal>) qT.execute(user.getUid());
+
+          int s = meals.size();
+          
+          if(s == 0) {
+            break;
+          }
+          
+          countMeals += s;
+          
+          //go through each workouts
+          for(Meal t : meals) {
+            MealJDO mNew = addMeal(writer, t);
+          }
         }
-        
-        pm.makePersistentAll(counts);
-        pm.flush();
         
       } catch (Exception e) {
         logger.log(Level.SEVERE, "Error loading data from user: "+user.getUid(), e);
@@ -177,5 +162,112 @@ public class NutritionDumpServlet extends RemoteServiceServlet {
         pm.close();
       } 
     }
+  }
+
+  private MealJDO addMeal(PrintWriter writer, MealInTime m, long timeId, String uid) {
+    writer.write("Meal: "+m+"<br>");
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    MealJDO mNew = new MealJDO();
+    mNew.setName(m.getName());
+    mNew.setTime(timeId);
+    mNew.setUid(uid);  
+
+    ArrayList<Key> keys = new ArrayList<Key>();
+    for(FoodInMealTime f : m.getFoods()) {      
+      FoodJDO fNew = addFood(writer, f, uid);                
+      keys.add(fNew.getKey());
+    }
+    mNew.setFoodsKeys(keys);
+    pm.makePersistent(mNew);
+    
+    return mNew;
+  }
+
+  private MealJDO addMeal(PrintWriter writer, Meal m) {
+    writer.write("Meal: "+m+"<br>");
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    MealJDO tNew = new MealJDO();
+    tNew.setName(m.getName());
+    tNew.setUid(m.getUid());  
+    pm.makePersistent(tNew);          
+    
+    List<Key> keys = new ArrayList<Key>();
+    for(FoodInMeal f : m.getFoods()) {         
+      FoodJDO fNew = addFood(writer, f, m.getUid());                
+      keys.add(fNew.getKey());
+    }
+    tNew.setFoodsKeys(keys);
+    
+    pm.makePersistent(tNew);
+
+    if (!pm.isClosed()) {
+      pm.close();
+    } 
+    
+    return tNew;
+  }
+
+  private FoodJDO addFood(PrintWriter writer, FoodInMeal f, String id) {
+    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;Food: "+f+"<br>");
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    FoodJDO fNew = new FoodJDO();
+    fNew.setAmount(f.getAmount());
+    fNew.setNameId(f.getNameId());
+    fNew.setUid(id);
+    
+    pm.makePersistent(fNew);
+
+    if (!pm.isClosed()) {
+      pm.close();
+    } 
+    
+    
+    return fNew;
+  }
+
+  private FoodJDO addFood(PrintWriter writer, FoodInTime f, String id) {
+    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;Food: "+f+"<br>");
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    FoodJDO fNew = new FoodJDO();
+    fNew.setAmount(f.getAmount());
+    fNew.setNameId(f.getNameId());
+    fNew.setUid(id);
+    
+    pm.makePersistent(fNew);
+
+    if (!pm.isClosed()) {
+      pm.close();
+    } 
+    
+    
+    return fNew;
+  }
+
+  private FoodJDO addFood(PrintWriter writer, FoodInMealTime f, String id) {
+    writer.write("&nbsp;&nbsp;&nbsp;&nbsp;Food: "+f+"<br>");
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    FoodJDO fNew = new FoodJDO();
+    fNew.setAmount(f.getAmount());
+    fNew.setNameId(f.getNameId());
+    fNew.setUid(id);
+    
+    pm.makePersistent(fNew);
+
+    if (!pm.isClosed()) {
+      pm.close();
+    } 
+    
+    
+    return fNew;
   }
 }

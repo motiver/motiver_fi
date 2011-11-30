@@ -21,7 +21,6 @@ import java.util.List;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
-import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -29,11 +28,6 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.FoodJDO;
-import com.delect.motiver.server.jdo.nutrition.MealInTime;
-import com.delect.motiver.shared.FoodModel;
-import com.delect.motiver.shared.MealModel;
 import com.delect.motiver.shared.TimeModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -56,25 +50,6 @@ public class Time implements Serializable, Comparable<Time> {
 		
 		TimeModel modelClient = new TimeModel(model.getDate(), (int) model.getTime());
 		modelClient.setId(model.getId());
-		modelClient.setUser(UserOpenid.getClientModel(model.getUser()));
-		
-		//meals
-		if(model.getMealsNew() != null) {
-		  List<MealModel> meals = new ArrayList<MealModel>();
-		  for(Meal m : model.getMealsNew()) {
-		    meals.add(Meal.getClientModel(m));
-		  }
-		  modelClient.setMeals(meals);
-		}
-		
-    //foods
-    if(model.getFoods() != null) {
-      List<FoodModel> foods = new ArrayList<FoodModel>();
-      for(FoodJDO m : model.getFoods()) {
-        foods.add(FoodJDO.getClientModel(m));
-      }
-      modelClient.setFoods(foods);
-    }
 		
 		return modelClient;
 	}
@@ -91,42 +66,31 @@ public class Time implements Serializable, Comparable<Time> {
 		
 		Time modelServer = new Time(model.getDate(), (long) model.getTime());
 		modelServer.setId(model.getId());
-    if(model.getUser() != null)
-      modelServer.setUid(model.getUser().getUid());
 		
 		return modelServer;
 	}
 	
 	@Persistent
-	private Long uid;
+	public Long uid;
   
   @Persistent
-  private String openId;
+  public String openId;
 
 	@Persistent
   private Date date;
 
-	@NotPersistent
-  private List<FoodJDO> foods = new ArrayList<FoodJDO>();
+	@Persistent(mappedBy = "parent")
+  private List<FoodInTime> foods = new ArrayList<FoodInTime>();
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 
-  @Persistent
-  private List<Key> mealsKeys = new ArrayList<Key>();
+	@Persistent(mappedBy = "parentTime")
+	private List<MealInTime> meals = new ArrayList<MealInTime>();
 
-  @Persistent
-  private List<Key> foodsKeys = new ArrayList<Key>();
-  
 	@Persistent
 	private Long time = 0L;	//in seconds from midnight
-
-  @NotPersistent
-  private List<Meal> meals = new ArrayList<Meal>();
-
-  @NotPersistent
-  private UserOpenid user;
 
 	public Time() {
 		
@@ -146,7 +110,7 @@ public class Time implements Serializable, Comparable<Time> {
 		return date;
   }
 
-	public List<FoodJDO> getFoods() {
+	public List<FoodInTime> getFoods() {
 		return foods;
 	}
 
@@ -163,21 +127,9 @@ public class Time implements Serializable, Comparable<Time> {
 		return id;
 	}
 
-  public List<MealInTime> getMeals() {
-    return null;
-  }
-
-	public List<Meal> getMealsNew() {
+	public List<MealInTime> getMeals() {
 	  return meals;
 	}
-  
-  public List<Key> getFoodsKeys() {
-    return foodsKeys;
-  }
-	
-  public List<Key> getMealsKeys() {
-    return mealsKeys;
-  }
 
 	public long getTime() {
 		if(time != null) {
@@ -201,7 +153,7 @@ public class Time implements Serializable, Comparable<Time> {
     this.date = date;
   }
 
-	public void setFoods(List<FoodJDO> foods) {
+	public void setFoods(List<FoodInTime> foods) {
 		this.foods = foods;
 	}
 
@@ -215,19 +167,8 @@ public class Time implements Serializable, Comparable<Time> {
 	}
 
 	public void setMeals(List<MealInTime> meals) {
+		this.meals = meals;
 	}
-
-  public void setMealsNew(List<Meal> meals) {
-    this.meals = meals;
-  }
-
-  public void setFoodsKeys(List<Key> foodsKeys) {
-    this.foodsKeys = foodsKeys;
-  }
-
-  public void setMealsKeys(List<Key> mealsKeys) {
-    this.mealsKeys = mealsKeys;
-  }
 	
 	public void setTime(Long time) {
     this.time = time;
@@ -240,52 +181,4 @@ public class Time implements Serializable, Comparable<Time> {
   public Long getUidOld() {
     return uid;
   } 
-
-  public UserOpenid getUser() {
-    return user;
-  }
-
-  public void setUser(UserOpenid user) {
-    this.user = user;
-  }
-
-  /**
-   * Updates time from given model
-   * @param model
-   */
-  public void update(Time model, boolean includeId) {
-    if(includeId) {
-      setId(model.getId());
-    }
-    setDate(model.getDate());
-    setMealsNew(model.getMealsNew());
-    setMealsKeys(model.getMealsKeys());
-    setTime(model.getTime());
-    setUid(model.getUid());
-
-    //if foods removed -> check which was removed
-    if(getFoodsKeys().size() > model.getFoodsKeys().size()) {
-      for(Key f : getFoodsKeys()) {
-        if(!model.getFoodsKeys().contains(f)) {
-          getFoodsKeys().remove(f);
-        }
-      }
-    }
-    //new food added
-    else {
-      for(Key f : model.getFoodsKeys()) {
-          int i = getFoodsKeys().indexOf(f);
-          if(i == -1) {
-            getFoodsKeys().add(f);
-          }
-        }
-    }
-  }
-  
-  @Override
-  public String toString() {
-    return "Time: [id: "+getId()+", '"+getTime()+"', meals: "+getMealsNew().size()+", meals (keys): "+getMealsKeys().size()+", foods: "+getFoods().size()+"" +
-        ", '"+getUid()+"']";
-  }
-  
 }

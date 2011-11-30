@@ -12,7 +12,7 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo.nutrition;
+package com.delect.motiver.server;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,8 +27,6 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.server.FoodInMealTime;
-import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.MealModel;
 
 @PersistenceCapable(identityType = IdentityType.DATASTORE)
@@ -51,16 +49,7 @@ public class MealInTime implements Serializable, Comparable<MealInTime> {
 		
 		MealModel modelClient = new MealModel(model.getName());
 		modelClient.setId(model.getId());
-
-    //foods
-    if(model.getFoods() != null) {
-      List<FoodModel> foods = new ArrayList<FoodModel>();
-      for(FoodInMealTime m : model.getFoods()) {
-        foods.add(FoodInMealTime.getClientModel(m));
-      }
-      modelClient.setFoods(foods);
-    }
-    
+		
 		return modelClient;
 	}
 
@@ -96,8 +85,8 @@ public class MealInTime implements Serializable, Comparable<MealInTime> {
 	@Persistent
 	private String name = "";
 
-//	@Persistent
-//	private Time parentTime;
+	@Persistent
+	private Time parentTime;
 
 	public MealInTime() {
 		

@@ -51,8 +51,8 @@ import com.delect.motiver.client.service.MyService;
 import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.Meal;
+import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.Time;
 import com.delect.motiver.server.jdo.Cardio;
 import com.delect.motiver.server.jdo.CardioValue;
 import com.delect.motiver.server.jdo.Circle;
@@ -71,7 +71,6 @@ import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.GuideValue;
-import com.delect.motiver.server.jdo.nutrition.MealInTime;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.jdo.training.Exercise;
@@ -288,151 +287,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       throw new ConnectionException("duplicateMeal", e.getMessage());
     }
   }
-
-  /**
-   * Duplicates time model
-   * @param time
-   * @return duplicated time
-   */
-  private static Time duplicateTime(Time t) throws ConnectionException {
-
-    logger.log(Level.FINE, "duplicateTime()");
-    
-    try {
-      Time tNew = new Time(t.getDate(), t.getTime());
-      return tNew;
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "duplicateTime", e);
-      throw new ConnectionException("duplicateTime", e.getMessage());
-    }
-  }
-
-  /**
-   * Duplicates workout model (including exercises)
-   * @param workout
-   * @return duplicated workout
-   * @throws ConnectionException 
-   */
-  private static Workout duplicateWorkout(Workout w) throws ConnectionException {
-
-    logger.log(Level.FINE, "duplicateWorkout()");
-
-    try {
-      Workout wNew = new Workout(w.getName());
-      wNew.setDate(w.getDate());
-      wNew.setDayInRoutine(w.getDayInRoutine());
-      wNew.setRoutineId(w.getRoutineId());
-      //exercises
-      List<Exercise> eNew = new ArrayList<Exercise>();
-      for(Exercise e : w.getExercises())
-        eNew.add(duplicateExercise(e));
-      wNew.setExercises(eNew);
-      
-      return wNew;
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "duplicateWorkout", e);
-      throw new ConnectionException("duplicateWorkout", e.getMessage());
-    }
-  }
-//
-//  /**
-//   * Gets openId string
-//   * @return null if no user found
-//   */
-//  private String getUid() {
-//
-//    String coachModeUid = null;
-//    
-//    try {
-//      String s = this.perThreadRequest.get().getHeader("coach_mode_uid");
-//      if(s != null && s.length() > 1) {
-//        coachModeUid = s;
-//      }
-//    } catch (Exception e) {
-//      logger.log(Level.SEVERE, "Error checkin coach mode", e);
-//      coachModeUid = null;
-//    }
-//    
-//    return _getUid(coachModeUid);
-//  }
-//  @SuppressWarnings("unchecked")
-//  static String _getUid(String coachModeUid) {
-//
-//    logger.log(Level.FINE, "getUid()");
-//
-//    String openId = null;
-//
-//    UserService userService = UserServiceFactory.getUserService();
-//    User userCurrent = userService.getCurrentUser();
-//    
-//    if(userCurrent != null) {
-//      openId = userCurrent.getUserId();
-//    }
-//  
-//    //if coach mode -> return trainee's uid
-//    if(coachModeUid != null) {
-//      if(logger.isLoggable(Level.FINE)) {
-//        logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
-//      }
-//
-//      PersistenceManager pm =  PMF.get().getPersistenceManager();
-//      
-//      try {
-//        Query q = pm.newQuery(Circle.class);
-//        q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
-//        q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
-//        q.setRange(0,1);
-//        List<Circle> list = (List<Circle>)q.execute(coachModeUid, openId, Permission.COACH);
-//        
-//        if(list.size() > 0) {
-//          logger.log(Level.FINE, "Is coach!");
-//          openId = list.get(0).getUid();
-//        }
-//      } catch (Exception e) {
-//        logger.log(Level.SEVERE, "Error checkin coach", e);
-//      }
-//      finally {
-//        if(!pm.isClosed()) {
-//          pm.close();
-//        }
-//      }
-//    }
-//    
-//    return openId;
-//  }
-//
-//  /**
-//   * Gets user's facebook id (uid) based on auth token
-//   * @param object array: uid (long), locale (string)
-//   */
-//  private Object[] getUidAndLocale() {
-//
-//    logger.log(Level.FINE, "getUidAndLocale()");
-//
-//    String uid = getUid();
-//    String locale = "";
-//    
-//    PersistenceManager pm =  PMF.get().getPersistenceManager();
-//    
-//    try {
-//      
-//      //get our uid
-//      UserModel u = UserManagerOld.getUserModel(pm, uid);
-//      if(u != null) {
-//        locale = u.getLocale();
-//      }
-//      
-//    } catch (Exception e) {
-//      logger.log(Level.SEVERE, "Error fetching locale", e);
-//    }
-//    finally {
-//      if (!pm.isClosed()) {
-//        pm.close();
-//      } 
-//    }
-//    
-//    return new Object[] {uid, locale};
-//  }
 
   /**
    * Checks if user has permission to given target
@@ -1773,11 +1627,11 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
         
         //times
         if(count < MAX_COUNT) {
-          q = pm.newQuery(Time.class); 
+          q = pm.newQuery(TimeJDO.class); 
           q.setFilter("openId == openIdParam");
           q.declareParameters("java.lang.String openIdParam");
           q.setRange(0, MAX_COUNT - count);
-          List<Time> l = (List<Time>)q.execute(UID);
+          List<TimeJDO> l = (List<TimeJDO>)q.execute(UID);
           //if something found -> delete it
           if(l.size() > 0) {
             count += l.size();
@@ -2299,7 +2153,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       //each food
       for(TimeModel mTime : times) {
 
-        Time mTimeAdded = Time.getServerModel(mTime);
+        TimeJDO mTimeAdded = TimeJDO.getServerModel(mTime);
         mTimeAdded.setUid(UID);
         
         if(mTimeAdded.getId() != 0)  {
@@ -3612,13 +3466,13 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       final Date dEnd = stripTime(date, false);
       
       //get times
-      Query q = pm.newQuery(Time.class);
+      Query q = pm.newQuery(TimeJDO.class);
       q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
       q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
+      List<TimeJDO> times = (List<TimeJDO>) q.execute(uid, dStart, dEnd);
 
       //each time
-      for(Time t : times) {
+      for(TimeJDO t : times) {
 
         //each meal
         List<MealInTime> meals = t.getMeals();
@@ -4280,16 +4134,16 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
       final Date dStart = stripTime(dateStart, true);
       final Date dEnd = stripTime(dateEnd, false);
 
-      Query q = pm.newQuery(Time.class);
+      Query q = pm.newQuery(TimeJDO.class);
       q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
       q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
+      List<TimeJDO> times = (List<TimeJDO>) q.execute(UID, dStart, dEnd);
       
       List<MyListItem> listIds = new ArrayList<MyListItem>();
       
       //go through each workouts' exercises and calculate count for each nameId
       //TODO huge server load??
-      for(Time t : times) {
+      for(TimeJDO t : times) {
         try {
           //get meals
           List<MealInTime> meals = t.getMeals();
@@ -5993,21 +5847,21 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
       try {
         
-        Time m = pm.getObjectById(Time.class, model.getId());
+        TimeJDO m = pm.getObjectById(TimeJDO.class, model.getId());
         if(m != null) {
           //check if correct user
           if(m.getUid().equals(UID)) {
             
             //check if same time already exists -> remove this one and add its foods/meals to previous
-            Time timeSimilar = null;
+            TimeJDO timeSimilar = null;
             final Date dStart = stripTime(model.getDate(), true);
             final Date dEnd = stripTime(model.getDate(), false);
               
-            Query q = pm.newQuery(Time.class);
+            Query q = pm.newQuery(TimeJDO.class);
             q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
             q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-            List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
-            for(Time t : times) {
+            List<TimeJDO> times = (List<TimeJDO>) q.execute(UID, dStart, dEnd);
+            for(TimeJDO t : times) {
               if(t.getTime() == model.getTime() && t.getId() != model.getId()) {
                 timeSimilar = t;
                 break;
@@ -6034,7 +5888,7 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
               //remove given time
               pm.deletePersistent(m);
             }
-            //update Time
+            //update TimeJDO
             else {
               m.setTime((long) model.getTime());
             }
@@ -6355,12 +6209,12 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
             
       //if found
       boolean found = false;
-      //update Time
+      //update TimeJDO
       if(arr != null && arr.size() > 0) {
           found = true;
       }
 
-      //update Time
+      //update TimeJDO
       if(found) {
         id = arr.get(0).getId();
       }

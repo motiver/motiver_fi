@@ -25,11 +25,10 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.shared.FoodModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class FoodInMeal implements Serializable, Cloneable {
+public class FoodInMeal implements Serializable {
 
   /**
    * 
@@ -49,8 +48,6 @@ public class FoodInMeal implements Serializable, Cloneable {
 		FoodModel modelClient = new FoodModel();
 		modelClient.setId(model.getId().longValue());
 		modelClient.setAmount(model.getAmount());
-		modelClient.setName(FoodName.getClientModel(model.getName()));
-		
 		return modelClient;
 	}
   
@@ -76,15 +73,6 @@ public class FoodInMeal implements Serializable, Cloneable {
 		
 		return modelServer;
 	}
-  
-  protected Object clone() throws CloneNotSupportedException {
-    
-    FoodInMeal clone = new FoodInMeal();
-    clone.setAmount(getAmount());
-    clone.setNameId(getNameId());
-    
-    return clone;
-  }
 	
 	@Persistent
 	private Double amount;
@@ -99,8 +87,6 @@ public class FoodInMeal implements Serializable, Cloneable {
 	@SuppressWarnings("unused")
 	@Persistent
 	private Meal parent;
-
-  private FoodName n;
 
 	public FoodInMeal() {
     
@@ -158,13 +144,5 @@ public class FoodInMeal implements Serializable, Cloneable {
 	
 	public void setNameId(Long name) {
 		this.name = name;
-  }
-
-  public void setName(FoodName n) {
-    this.n = n;
-  }
-  
-  public FoodName getName() {
-    return n;
   }
 }
