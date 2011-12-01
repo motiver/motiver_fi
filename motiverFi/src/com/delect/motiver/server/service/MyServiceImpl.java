@@ -111,7 +111,7 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
-@Deprecated public class MyServiceImpl extends RemoteServiceServlet implements MyService {
+public class MyServiceImpl extends RemoteServiceServlet implements MyService {
 
   /**
    * 
@@ -5821,112 +5821,18 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
    * @return update successful
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public Boolean updateTime(TimeModel model) throws ConnectionException {
-
-    logger.log(Level.FINE, "updateTime()");
-
-    boolean ok = false;
+  public Boolean updateTime(TimeModel model) throws ConnectionException {
     
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    //try to update X times
-    int retries = Constants.LIMIT_UPDATE_RETRIES;
-    while (true) {
-      
-      Transaction tx = pm.currentTransaction();
-      tx.begin();
-
-      try {
-        
-        TimeJDO m = pm.getObjectById(TimeJDO.class, model.getId());
-        if(m != null) {
-          //check if correct user
-          if(m.getUid().equals(UID)) {
-            
-            //check if same time already exists -> remove this one and add its foods/meals to previous
-            TimeJDO timeSimilar = null;
-            final Date dStart = stripTime(model.getDate(), true);
-            final Date dEnd = stripTime(model.getDate(), false);
-              
-            Query q = pm.newQuery(TimeJDO.class);
-            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-            List<TimeJDO> times = (List<TimeJDO>) q.execute(UID, dStart, dEnd);
-            for(TimeJDO t : times) {
-              if(t.getTime() == model.getTime() && t.getId() != model.getId()) {
-                timeSimilar = t;
-                break;
-              }
-            }
-            
-            //if similar time found -> add meals/foods from old time to similar times
-            if(timeSimilar != null) {
-              
-              //meals
-              List<MealInTime> listMeals = timeSimilar.getMeals();
-              for(MealInTime meal : m.getMeals()) {
-                listMeals.add(meal);
-              }
-              timeSimilar.setMeals(listMeals);
-              
-              //foods
-              List<FoodJDO> listFoods = timeSimilar.getFoods();
-              for(FoodJDO food : m.getFoods()) {
-                listFoods.add(food);
-              }
-              timeSimilar.setFoods(listFoods);
-              
-              //remove given time
-              pm.deletePersistent(m);
-            }
-            //update TimeJDO
-            else {
-              m.setTime((long) model.getTime());
-            }
-            
-            ok = true;
-          }
-        }
-        
-        pm.flush();
-        tx.commit();
-        
-        break;
-  
-      }
-      catch (Exception e) {
-        logger.log(Level.SEVERE, "updateTime", e);
-        
-        //retries used
-        if (retries == 0) {
-          if (!pm.isClosed()) {
-            pm.close();
-          }
-          throw new ConnectionException("updateTime", e.getMessage());
-        }
-        
-        --retries;
-      }
-      finally {
-        if (tx.isActive()) {
-          tx.rollback();
-        }
-      }
-    }
-    if (!pm.isClosed()) {
-      pm.close();
-    } 
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    TimeJDO jdo = TimeJDO.getServerModel(model);
     
-    return ok;
+    nutritionManager.updateTime(user, jdo);
+
+    return true;
   }
   
   /**

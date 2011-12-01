@@ -2,6 +2,7 @@ package com.delect.motiver.server.manager;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +12,7 @@ import com.delect.motiver.server.cache.UserCache;
 import com.delect.motiver.server.dao.UserDAO;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
@@ -60,10 +62,10 @@ public class UserManager {
       coachModeUid = null;
     }
     
-    return _getUid(coachModeUid);
+    return _getUid(request, coachModeUid);
   }
   
-  private UserOpenid _getUid(String coachModeUid) throws ConnectionException {
+  private UserOpenid _getUid(ThreadLocal<HttpServletRequest> request, String coachModeUid) throws ConnectionException {
     
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading user: "+coachModeUid);
@@ -100,7 +102,14 @@ public class UserManager {
         
         //if not found -> create
         if(user == null) {
-          user = createUser(userCurrent);
+          //get locale
+          String locale = Constants.LOCALE_DEFAULT;
+          Locale loc = request.get().getLocale();
+          if(loc != null) {
+            locale = loc.getLanguage()+"_"+loc.getCountry();
+          }
+          
+          user = createUser(userCurrent, locale);
         }
       }
       
@@ -436,7 +445,7 @@ public class UserManager {
    * @param userAppengine
    * @throws ConnectionException
    */
-  public UserOpenid createUser(User userAppengine) throws ConnectionException {
+  public UserOpenid createUser(User userAppengine, String locale) throws ConnectionException {
     
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Creating new user ("+userAppengine+")");
@@ -447,6 +456,7 @@ public class UserManager {
     try {
       
       user.update(userAppengine);
+      user.setLocale(locale);
       
       dao.updateUser(user);
         

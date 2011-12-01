@@ -798,7 +798,7 @@ public abstract class Functions {
 	 * @param time : seconds
 	 * @return
 	 */
-	public static String getTimeToString(int time) {
+	public static String getTimeToString(long time) {
 		try {
 
 			final DateTimeFormat fmt = DateTimeFormat.getFormat(StringConstants.TIMEFORMATS[AppController.User.getTimeFormat()]);

@@ -289,5 +289,7 @@ public interface Constants {
    */
   public static final String DRAG_GROUP_USER = "user";
   public static final String DRAG_GROUP_WORKOUT = "wp";   // + workout's ID
+  
+  public static final String LOCALE_DEFAULT = "en_US";
 	  
 }

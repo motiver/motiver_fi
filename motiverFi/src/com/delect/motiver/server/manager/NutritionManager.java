@@ -911,6 +911,34 @@ public class NutritionManager {
   
   }
 
+  public void updateTime(UserOpenid user, TimeJDO model) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating time: "+model);
+    }
+    
+    try {
+      
+      TimeJDO time = dao.getTime(model.getId());
+      
+      userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
+      
+      time.update(model, false);
+      dao.updateTime(time);
+
+      //update time given as parameter
+      model.update(time, true);
+      
+      //clear cache
+      cache.setTimes(time.getUid(), time.getDate(), null);  //clear day's cache
+    
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error updating time", e);
+      throw new ConnectionException("Error updating time", e);
+    }
+  
+  }
+
   public void incrementMealCount(long mealId) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {

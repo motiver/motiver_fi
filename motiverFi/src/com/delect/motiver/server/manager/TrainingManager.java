@@ -628,12 +628,11 @@ public class TrainingManager {
         clone.setRoutineId(workout.getRoutineId());
         clone.setDayInRoutine(workout.getDayInRoutine());
         modelsCopy.add(clone);
-      }
-      
-      //remove cache
-      //assume that all workouts have same date
-      if(models.get(0).getDate() != null) {
-        cache.setWorkouts(user.getUid(), models.get(0).getDate(), null);
+        
+        //remove cache
+        if(clone.getDate() != null) {
+          cache.setWorkouts(user.getUid(), clone.getDate(), null);
+        }
       }
 
       dao.addWorkouts(modelsCopy);
