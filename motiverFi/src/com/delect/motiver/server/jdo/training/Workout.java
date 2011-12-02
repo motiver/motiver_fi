@@ -101,6 +101,15 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
 		modelServer.setInfo(model.getInfo());
 		if(model.getUser() != null)
 		  modelServer.setUid(model.getUser().getUid());
+    
+    //exercises
+    List<Exercise> exercises = new ArrayList<Exercise>();
+    if(model.getExercises() != null) {
+      for(ExerciseModel m : model.getExercises()) {
+        exercises.add(Exercise.getServerModel(m));
+      }
+    }
+    modelServer.setExercises(exercises);
 		
 		return modelServer;
 	}
@@ -388,25 +397,28 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
     setCount(model.getCount());
 
     //if exercises removed -> check which was removed
-    if(getExercises().size() > model.getExercises().size()) {
-      for(Exercise f : getExercises()) {
-        if(!model.getExercises().contains(f)) {
-          getExercises().remove(f);
+    if(getExercises() != null && model.getExercises() != null) {
+      if(getExercises().size() > model.getExercises().size()) {
+        for(Exercise f : getExercises()) {
+          if(!model.getExercises().contains(f)) {
+            getExercises().remove(f);
+            break;
+          }
         }
       }
-    }
-    //new exercise added
-    else {
-      for(Exercise f : model.getExercises()) {
-          int i = getExercises().indexOf(f);
-          if(i != -1) {
-            Exercise fOld = getExercises().get(i);
-            fOld.update(f, includeId);
+      //new exercise added
+      else {
+        for(Exercise f : model.getExercises()) {
+            int i = getExercises().indexOf(f);
+            if(i != -1) {
+              Exercise fOld = getExercises().get(i);
+              fOld.update(f, includeId);
+            }
+            else {
+              getExercises().add(f);
+            }
           }
-          else {
-            getExercises().add(f);
-          }
-        }
+      }
     }
   }
   

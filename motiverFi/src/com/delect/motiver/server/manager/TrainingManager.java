@@ -1031,7 +1031,7 @@ public class TrainingManager {
     
     try {
       
-      Workout workout = dao.getWorkout(model.getId());
+      Workout workout = _getWorkout(model.getId());
       
       userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), workout.getUid());
 
