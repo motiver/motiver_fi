@@ -18,7 +18,6 @@ import com.google.gwt.http.client.Header;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.http.client.RequestCallback;
 import com.google.gwt.http.client.Response;
-import com.google.gwt.user.client.rpc.AsyncCallback;
 
 public class OfflineRequestCallback implements RequestCallback {
 

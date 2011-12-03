@@ -81,12 +81,12 @@ public class ProfilePresenter extends Presenter {
           }
           @Override
           public void onFailure(Throwable throwable) {
-            if(throwable instanceof AliasTakenException) {
-              display.showAliasTaken(true);
-            }
-            else {
+//            if(throwable instanceof AliasTakenException) {
+//              display.showAliasTaken(true);
+//            }
+//            else {
               super.onFailure(throwable);
-            }
+//            }
           }
 				});
 				addRequest(req);

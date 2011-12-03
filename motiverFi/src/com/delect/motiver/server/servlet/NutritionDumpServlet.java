@@ -19,10 +19,7 @@ package com.delect.motiver.server.servlet;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Hashtable;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -31,7 +28,6 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.delect.motiver.server.Food;
 import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.FoodInTime;
@@ -39,15 +35,10 @@ import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.Time;
-import com.delect.motiver.server.cache.WeekCache;
-import com.delect.motiver.server.jdo.FoodNameCount;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
-import com.delect.motiver.server.jdo.training.Exercise;
-import com.delect.motiver.server.jdo.training.ExerciseNameCount;
-import com.delect.motiver.server.jdo.training.Workout;
 import com.google.appengine.api.datastore.Key;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 

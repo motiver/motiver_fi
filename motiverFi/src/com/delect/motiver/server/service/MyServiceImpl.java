@@ -40,7 +40,6 @@ import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
-import javax.jdo.Transaction;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
