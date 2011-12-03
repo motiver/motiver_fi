@@ -15,6 +15,8 @@
 package com.delect.motiver.client.view.profile;
 
 import java.util.Date;
+import java.util.Map.Entry;
+
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
@@ -84,8 +86,17 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 		public void handleEvent(BaseEvent be) {
 						
 			try {
-			  String locale = (comboLocale.getValue() != null && comboLocale.isValid())? comboLocale.getValue().getValue() : "en_US";
-        int df = comboDateformat.getSelectedIndex();
+			  //get locale
+			  String s = (comboLocale.getValue() != null && comboLocale.isValid())? comboLocale.getValue().getValue() : StringConstants.LOCALE_DEFAULT;
+			  String locale = StringConstants.LOCALE_DEFAULT;
+		    for(Entry<String, String> entry : StringConstants.LOCALES.entrySet()) {
+		      if(entry.getValue().equals(s)) {
+		        locale = entry.getKey();
+		        break;
+		      }
+		    }
+		    
+			  int df = comboDateformat.getSelectedIndex();
 				int tf = comboTimeformat.getSelectedIndex();
 				int meas = comboMeas.getSelectedIndex();
 				String alias = tfAlias.getValue();
@@ -163,12 +174,20 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
     comboLocale.setForceSelection(true);
     comboLocale.setEditable(false);
     comboLocale.setTriggerAction(TriggerAction.ALL);
-    comboLocale.add("fi_FI");
-    comboLocale.add("en_US");
+    int i = 0;
+    int sel = 0;
+    for(Entry<String, String> entry : StringConstants.LOCALES.entrySet()) {
+      comboLocale.add(entry.getValue());
+      
+      if(entry.getValue().equals(user.getLocale())) {
+        sel = i;
+      }
+      i++;
+    }
     comboLocale.addPlugin(plugin);
     comboLocale.setData("text", AppController.Lang.LanguageDesc());
-    fieldSet.add(comboDateformat, formData);
-    comboLocale.setRawValue( user.getLocale() );
+    fieldSet.add(comboLocale, formData);
+    comboLocale.setValue( comboLocale.getStore().getAt( sel ));
 		
 		//dateformat
 		comboDateformat.setFieldLabel(AppController.Lang.DateFormat()); 
