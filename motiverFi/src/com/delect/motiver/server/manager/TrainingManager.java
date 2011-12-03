@@ -33,6 +33,8 @@ public class TrainingManager {
    */
   private static final Logger logger = Logger.getLogger(TrainingManager.class.getName());
 
+  private static final Pattern PATTERN_EXERCISE_TARGET = Pattern.compile("--([0-9])--");
+  
   UserManager userManager = UserManager.getInstance();
   TrainingCache cache = TrainingCache.getInstance();
   TrainingDAO dao = TrainingDAO.getInstance();
@@ -781,11 +783,14 @@ public class TrainingManager {
         String[] arr = query.split(" ");
         
         //save
-        Pattern pattern = Pattern.compile("--([0-9])--");
-        Matcher matcher = pattern.matcher(query);
         Set<Integer> targets = new HashSet<Integer>();
-        while(matcher.find()) {
-          targets.add(Integer.parseInt(matcher.group(1)));
+        try {
+          Matcher matcher = PATTERN_EXERCISE_TARGET.matcher(query);
+          while(matcher.find()) {
+            targets.add(Integer.parseInt(matcher.group(1)));
+          }
+        } catch (Exception e1) {
+          logger.log(Level.WARNING, "Error parsing targets", e1);
         }
         
         //search
