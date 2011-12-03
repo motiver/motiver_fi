@@ -20,6 +20,7 @@ import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.UserModel;
+import com.delect.motiver.shared.exception.AliasTakenException;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
 
@@ -75,7 +76,16 @@ public class ProfilePresenter extends Presenter {
           public void onSuccess(UserModel result) {
             if(result != null && alias != null) {
               //if alias not changed -> already in use/invalid
-              display.showAliasTaken( !alias.equals(result.getAlias()) );
+              display.showAliasTaken(false);
+            }
+          }
+          @Override
+          public void onFailure(Throwable throwable) {
+            if(throwable instanceof AliasTakenException) {
+              display.showAliasTaken(true);
+            }
+            else {
+              super.onFailure(throwable);
             }
           }
 				});

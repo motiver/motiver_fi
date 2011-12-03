@@ -41,7 +41,7 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 public class Motiver implements EntryPoint {
 	
 	public static boolean offlineMode = false;
-  SimpleEventBus eventBus = new SimpleEventBus();
+  static SimpleEventBus eventBus = new SimpleEventBus();
   /**
    * If next RPC call is cacheable
    */
@@ -95,13 +95,10 @@ public class Motiver implements EntryPoint {
 						return null;
 					}
 					@Override
-					public void onErrorReceived(String requestData) {
+					public void onErrorReceived(String requestData, Throwable throwable) {
 						
 						//cancel loading event
 						eventBus.fireEvent(new LoadingEvent(null));
-						
-						//show error message
-						eventBus.fireEvent(new InfoMessageEvent(MessageColor.COLOR_RED, AppController.Lang.NetworkError()));
 						
 					}
 					@Override
@@ -159,8 +156,11 @@ public class Motiver implements EntryPoint {
 	 * Shows exception
 	 * @param exception
 	 */
-	public static void showException(Exception exception) {
+	public static void showException(Throwable exception) {
 	  exception.printStackTrace();
+	  
+	  //show error message
+	  eventBus.fireEvent(new InfoMessageEvent(MessageColor.COLOR_RED, AppController.Lang.NetworkError()));
 	}
 
   

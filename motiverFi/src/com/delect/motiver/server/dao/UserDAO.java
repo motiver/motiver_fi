@@ -13,6 +13,7 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.exception.AliasTakenException;
 
 public class UserDAO {
 
@@ -214,7 +215,7 @@ public class UserDAO {
       int i = 0;
       while(true){
         Query q = pm.newQuery(UserOpenid.class);
-        q.setOrdering("firstName ASC");
+        q.setOrdering("name ASC");
         q.setRange(i, i+100);
         List<UserOpenid> u = (List<UserOpenid>) q.execute();
         n.addAll(u);
@@ -237,6 +238,11 @@ public class UserDAO {
     return n;
   }
 
+  /**
+   * Updates user. Throws AliasTakenException if alias is taken/restricted
+   * @param user
+   * @throws Exception
+   */
   @SuppressWarnings("unchecked")
   public void updateUser(UserOpenid user) throws Exception {
     
@@ -294,7 +300,7 @@ public class UserDAO {
           }
           
           if(resetAlias) {
-            u.setAlias(aliasOld);
+            throw new AliasTakenException(alias);
           }
         }
       }

@@ -30,7 +30,7 @@ public abstract class MyAsyncCallback<T> implements AsyncCallback<T> {
   
 	@Override
 	public void onFailure(Throwable caught) {
-	  //useless because we have our own request builder which handles all errors
+	  Motiver.showException(caught);
 	}
 
   @Override

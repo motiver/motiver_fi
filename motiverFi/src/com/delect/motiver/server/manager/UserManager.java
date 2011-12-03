@@ -14,6 +14,7 @@ import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
+import com.delect.motiver.shared.exception.AliasTakenException;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
 import com.google.appengine.api.users.User;
@@ -433,6 +434,9 @@ public class UserManager {
       //update cache
       cache.setUser(updatedModel);
         
+    } catch (AliasTakenException e) {
+      logger.log(Level.SEVERE, "Error saving user", e);
+      throw e;
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error saving user", e);
       throw new ConnectionException("Error saving user", e);
