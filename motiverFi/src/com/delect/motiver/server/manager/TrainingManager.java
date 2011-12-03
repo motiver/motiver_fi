@@ -790,7 +790,7 @@ public class TrainingManager {
             targets.add(Integer.parseInt(matcher.group(1)));
           }
         } catch (Exception e1) {
-          logger.log(Level.WARNING, "Error parsing targets", e1);
+          logger.log(Level.WARNING, "Error parsing target", e1);
         }
         
         //search
