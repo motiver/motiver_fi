@@ -24,7 +24,7 @@ import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class TrainingCache {
 
-  private final static boolean CACHE_ON = false;
+  private final static boolean CACHE_ON = true;
 
   private final static String PREFIX_WORKOUTS = "t_ws";
   private final static String PREFIX_WORKOUT = "t_w";

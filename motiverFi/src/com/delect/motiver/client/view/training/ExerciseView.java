@@ -413,16 +413,8 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
       @Override
       protected void load(Object loadConfig, AsyncCallback<List<ExerciseNameModel>> callback) {
         BasePagingLoadConfig config = (BasePagingLoadConfig)loadConfig;
-	       		
-        //parse query name (transfer equipment's name to index)
+
         String query = config.get("query").toString();
-        for(int i=0; i < AppController.LangConstants.Targets().length; i++) {
-          query = query.replaceAll(AppController.LangConstants.Targets()[i], "--" + i + "--");
-        }
-	       		
-        //trim
-        query = query.trim();
-	       		
         handler.query(query, callback);
       }
     };

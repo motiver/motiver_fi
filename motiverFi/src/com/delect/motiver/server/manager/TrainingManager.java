@@ -3,10 +3,14 @@ package com.delect.motiver.server.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
@@ -776,6 +780,14 @@ public class TrainingManager {
         query = query.toLowerCase();
         String[] arr = query.split(" ");
         
+        //save
+        Pattern pattern = Pattern.compile("--([0-9])--");
+        Matcher matcher = pattern.matcher(query);
+        Set<Integer> targets = new HashSet<Integer>();
+        while(matcher.find()) {
+          targets.add(Integer.parseInt(matcher.group(1)));
+        }
+        
         //search
         List<ExerciseName> result = new ArrayList<ExerciseName>();
         
@@ -783,6 +795,7 @@ public class TrainingManager {
           ExerciseName n = listAll.get(i);
   
           String name = n.getName();
+          int target = n.getTarget();
           
           //strip special characters
           name = name.replace("(", "");
@@ -803,6 +816,11 @@ public class TrainingManager {
                 count++;
               }
             }
+          }
+          
+          //if targets matches
+          if(targets.contains(target)) {
+            count += 3;
           }
 
           //if found

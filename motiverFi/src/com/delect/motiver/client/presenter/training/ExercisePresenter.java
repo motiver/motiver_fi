@@ -24,6 +24,7 @@ import com.google.gwt.http.client.Request;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
+import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.MyAsyncCallback;
 import com.delect.motiver.client.event.ExerciseCreatedEvent;
@@ -185,16 +186,28 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 				}
 
 				@Override
-				public void query(final String query, final AsyncCallback<List<ExerciseNameModel>> callback) {
-					//save query
-					lastQuery  = query;
+				public void query(String query, final AsyncCallback<List<ExerciseNameModel>> callback) {
+          
+          //parse query name (transfer equipment's name to index)
+          for(int i=0; i < AppController.LangConstants.Targets().length; i++) {
+            String t = AppController.LangConstants.Targets()[i];
+            query = query.replaceAll(t, "--" + i + "--");
+            query = query.replaceAll(t.toLowerCase(), "--" + i + "--");
+          }
+              
+          //trim
+          final String queryTrimmed = query.trim();
+      
+          //save query
+          lastQuery  = queryTrimmed;
+      
 
           Motiver.setNextCallCacheable(true);
-					final Request req = rpcService.searchExerciseNames(query, Constants.LIMIT_SEARCH_NAMES, new MyAsyncCallback<List<ExerciseNameModel>>() {
+					final Request req = rpcService.searchExerciseNames(queryTrimmed, Constants.LIMIT_SEARCH_NAMES, new MyAsyncCallback<List<ExerciseNameModel>>() {
 						@Override
 						public void onSuccess(List<ExerciseNameModel> result) {
 							//only if last query
-							if(query.equals(lastQuery)) {
+							if(queryTrimmed.equals(lastQuery)) {
 								callback.onSuccess(result);
 				      }
 						}
