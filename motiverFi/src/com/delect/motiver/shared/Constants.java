@@ -136,7 +136,7 @@ public interface Constants {
 	/**
 	 * When page is reloaded after inactivity (milliseconds)
 	 */
-	public static final int DELAY_PAGE_RELOAD = 4 * 60 * 60 * 1000;	//4 hours
+	public static final int DELAY_PAGE_RELOAD = 24 * 60 * 60 * 1000;	//24 hours
 	/**
 	 * How long we wait when search is started (after user stopped typing)
 	 * <br>milliseconds
