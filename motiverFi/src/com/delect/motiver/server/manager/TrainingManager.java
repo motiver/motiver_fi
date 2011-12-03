@@ -781,7 +781,7 @@ public class TrainingManager {
         query = query.replace(",", "");
         query = query.toLowerCase();
         String[] arr = query.split(" ");
-        
+         
         //save
         Set<Integer> targets = new HashSet<Integer>();
         try {
