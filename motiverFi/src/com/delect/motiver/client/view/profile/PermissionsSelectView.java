@@ -25,6 +25,7 @@ import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.form.TextField;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.TableLayout;
@@ -51,6 +52,10 @@ public class PermissionsSelectView extends PermissionsSelectPresenter.Permission
 	@Override
 	public Widget asWidget() {
 
+	  Text textDesc = new Text(AppController.Lang.PermissionsDesc());
+	  textDesc.setStyleName("label-form-desc");
+    this.add(textDesc, new RowData(-1, -1, new Margins(10, 10, 0, 10)));
+	  
 	  //search widget
 	  final TextField<String> tfSearch = new TextField<String>();
 	  tfSearch.setAllowBlank(true);

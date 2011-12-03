@@ -397,6 +397,8 @@ public interface Lang extends Messages {
 	String PermissionDescTraining();
 	@DefaultMessage("Permissions")
 	String Permissions();
+  @DefaultMessage("Here you can select which users can see your data. You can search for users and allow them access by dragging them to one of the boxes.")
+  String PermissionsDesc();
 	@DefaultMessage("Personal information")
 	String PersonalInformation();
 	@DefaultMessage("Please wait")
