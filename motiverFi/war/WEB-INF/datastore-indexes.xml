@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<datastore-indexes autoGenerate="false">
+
+    <!-- Used 22 times in query history -->
+    <datastore-index kind="Workout" ancestor="false" source="auto">
+        <property name="date" direction="asc"/>
+        <property name="openId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 7 times in query history -->
+    <datastore-index kind="Exercise" ancestor="true" source="auto">
+        <property name="exercises_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 9 times in query history -->
+    <datastore-index kind="CardioValue" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 9 times in query history -->
+    <datastore-index kind="RunValue" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="Routine" ancestor="false" source="auto">
+        <property name="date" direction="asc"/>
+        <property name="openId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="Routine" ancestor="false" source="auto">
+        <property name="date" direction="asc"/>
+        <property name="copyCount" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 3 times in query history -->
+    <datastore-index kind="Workout" ancestor="false" source="auto">
+        <property name="date" direction="asc"/>
+        <property name="routineId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 3 times in query history -->
+    <datastore-index kind="Workout" ancestor="false" source="auto">
+        <property name="date" direction="asc"/>
+        <property name="openId" direction="asc"/>
+        <property name="routineId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 3 times in query history -->
+    <datastore-index kind="Workout" ancestor="false" source="auto">
+        <property name="date" direction="asc"/>
+        <property name="routineId" direction="asc"/>
+        <property name="copyCount" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 26 times in query history -->
+    <datastore-index kind="TimeJDO" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="GuideValue" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="dateStart" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="MealJDO" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="timeId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="MicroNutrient" ancestor="true" source="auto">
+        <property name="micronutrients_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="MealJDO" ancestor="false" source="auto">
+        <property name="timeId" direction="asc"/>
+        <property name="copyCount" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="MealJDO" ancestor="false" source="auto">
+        <property name="timeId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="Cardio" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="Run" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="CardioValue" ancestor="true" source="auto">
+        <property name="values_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="RunValue" ancestor="true" source="auto">
+        <property name="values_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 3 times in query history -->
+    <datastore-index kind="Workout" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="Workout" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="MonthlySummary" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="Measurement" ancestor="false" source="auto">
+        <property name="openId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+
+</datastore-indexes>
