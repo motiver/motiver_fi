@@ -2741,6 +2741,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     TrainingManager trainingManager = TrainingManager.getInstance();
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     
     try {
        
@@ -2825,27 +2826,21 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               //routine
               else if(xid.matches("r[0-9]*")) {
                 final long id = Long.parseLong(xid.replace("r", ""));
-                Routine r = pm.getObjectById(Routine.class, id);
+                Routine jdo = trainingManager.getRoutine(user, id);
+                RoutineModel r = Routine.getClientModel(jdo);
                 if(r != null) {
-                  //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, user.getUid(), r.getUid());
-                  if(hasPermission) {
-                    found = true;
-                    c.setRoutine( Routine.getClientModel(r) );
-                  }
+                  found = true;
+                  c.setRoutine( r );
                 }
               }
               //meal
               else if(xid.matches("m[0-9]*")) {
                 final long id = Long.parseLong(xid.replace("m", ""));
-                Meal m = pm.getObjectById(Meal.class, id);
-                if(m != null) {
-                  //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, user.getUid(), m.getUid());
-                  if(hasPermission) {
-                    found = true;
-                    c.setMeal( Meal.getClientModel(m) );
-                  }
+                MealJDO jdo = nutritionManager.getMeal(user, id);
+                MealModel r = MealJDO.getClientModel(jdo);
+                if(r != null) {
+                  found = true;
+                  c.setMeal( r );
                 }
               }
               //measurement
