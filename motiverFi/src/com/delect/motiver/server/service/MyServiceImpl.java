@@ -3512,25 +3512,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
   @Deprecated public MonthlySummaryModel getMonthlySummary(Long id) throws ConnectionException {
-
-    logger.log(Level.FINE, "getMonthlySummary()");
     
     MonthlySummaryModel model = null;
     
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return null;
-    }
-    
+    UserOpenid user = userManager.getUser(perThreadRequest);    
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
     try {
       //get summaries from given month
       MonthlySummary modelServer = pm.getObjectById(MonthlySummary.class, id);
       //if found and our summary
-      if(modelServer != null && modelServer.getUid().equals(UID)) {
+      if(modelServer != null && modelServer.getUid().equals(user.getUid())) {
         model = MonthlySummary.getClientModel(modelServer);
         
         //exercises
@@ -3539,12 +3532,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           MonthlySummaryExerciseModel exerciseClient = MonthlySummaryExercise.getClientModel(exercise);
           
           //get exercise name
-          ExerciseName exerciseName = pm.getObjectById(ExerciseName.class, exercise.getNameId());
-          if(exerciseName != null) {
-            exerciseClient.setExerciseName(ExerciseName.getClientModel(exerciseName));
+          ExerciseName jdo = trainingManager.getExerciseName(user, exercise.getNameId());
+          if(jdo != null) {
+            exerciseClient.setExerciseName(ExerciseName.getClientModel(jdo));
+            listExercises.add(exerciseClient);
           }
-          
-          listExercises.add(exerciseClient);
         }
 
         model.setExercises(listExercises);

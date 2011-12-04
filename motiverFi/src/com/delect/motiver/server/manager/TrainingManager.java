@@ -1205,6 +1205,25 @@ public class TrainingManager {
     return workout;
   }
 
+  public ExerciseName getExerciseName(UserOpenid user, long id) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading single exercise name: "+id);
+    }
+
+    ExerciseName name = null;
+    
+    try {
+      name = _getExerciseName(id);
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading name", e);
+      throw new ConnectionException("getExerciseName", e);
+    }
+    
+    return name;
+  }
+
   public Routine getRoutine(UserOpenid user, long id) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
