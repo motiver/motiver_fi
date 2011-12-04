@@ -33,6 +33,7 @@ import com.delect.motiver.client.presenter.ShowMorePresenter;
 import com.delect.motiver.client.presenter.ShowMorePresenter.ShowMoreDisplay;
 import com.delect.motiver.client.presenter.ShowMorePresenter.ShowMoreHandler;
 import com.delect.motiver.client.presenter.profile.MeasurementPresenter.MeasurementDisplay;
+import com.delect.motiver.client.presenter.profile.MeasurementPresenter.MeasurementHandler;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
@@ -55,14 +56,11 @@ public class MeasurementsListPresenter extends Presenter {
 	* Abstract class for view to extend
 	*/
 	public abstract static class MeasurementsListDisplay extends Display {
+    public abstract void setHandler(MeasurementsListHandler measurementHandler);
 	}
-	//new measurement handler
-	public Listener<BaseEvent> NewMeasurementListener = new Listener<BaseEvent>() {
-		@Override
-		public void handleEvent(BaseEvent be) {
-			addNewMeasurement();
-		}
-	};
+  public interface MeasurementsListHandler {
+    void newMeasurement();
+  }
 
 	private MeasurementsListDisplay display;
 	private EmptyPresenter emptyPresenter;
@@ -92,6 +90,13 @@ public class MeasurementsListPresenter extends Presenter {
 
 	@Override
 	public void onBind() {
+	  
+	  display.setHandler(new MeasurementsListHandler() {
+      @Override
+      public void newMeasurement() {
+        addNewMeasurement();
+      }
+	  });
 
 		//EVENT: measurement removed -> refresh view
 		addEventHandler(MeasurementRemovedEvent.TYPE, new MeasurementRemovedEventHandler() {
