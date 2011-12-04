@@ -20,7 +20,6 @@ import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.UserModel;
-import com.delect.motiver.shared.exception.AliasTakenException;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
 

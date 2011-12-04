@@ -148,5 +148,11 @@
         <property name="openId" direction="asc"/>
         <property name="name" direction="asc"/>
     </datastore-index>
+    
+    <datastore-index kind="MeasurementValue" ancestor="false" source="manual">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+    
 
 </datastore-indexes>

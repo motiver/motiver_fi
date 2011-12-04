@@ -28,8 +28,8 @@ import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.cardio.RunPresenter;
 import com.delect.motiver.client.presenter.cardio.RunPresenter.RunHandler;
 import com.delect.motiver.client.res.MyResources;
-import com.delect.motiver.client.view.EnterNamePanel;
-import com.delect.motiver.client.view.EnterNamePanel.EnterNamePanelHandler;
+import com.delect.motiver.client.view.widget.NameInputWidget;
+import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
 import com.delect.motiver.client.view.MySpinnerField;
 import com.delect.motiver.client.view.SmallNotePanel;
 import com.delect.motiver.client.view.SmallNotePanelDisplay;
@@ -121,7 +121,7 @@ public class RunView extends RunPresenter.RunDisplay {
 			if(run.getId() == 0) {
 				
 				//add panel where user can type name
-				EnterNamePanel panelNameInput = new EnterNamePanel(new EnterNamePanelHandler() {
+				NameInputWidget panelNameInput = new NameInputWidget(new EnterNamePanelHandler() {
 					@Override
 					public void newName(String name) {
 						//if cancelled

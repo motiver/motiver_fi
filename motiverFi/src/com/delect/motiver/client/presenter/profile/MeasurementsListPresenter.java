@@ -33,7 +33,6 @@ import com.delect.motiver.client.presenter.ShowMorePresenter;
 import com.delect.motiver.client.presenter.ShowMorePresenter.ShowMoreDisplay;
 import com.delect.motiver.client.presenter.ShowMorePresenter.ShowMoreHandler;
 import com.delect.motiver.client.presenter.profile.MeasurementPresenter.MeasurementDisplay;
-import com.delect.motiver.client.presenter.profile.MeasurementPresenter.MeasurementHandler;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
@@ -41,9 +40,6 @@ import com.delect.motiver.client.view.ShowMoreView;
 import com.delect.motiver.client.view.profile.MeasurementView;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.MeasurementModel;
-
-import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.Listener;
 
 /**
  * Shows measurements in list
