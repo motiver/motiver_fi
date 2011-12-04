@@ -696,6 +696,10 @@ public class TrainingManager {
           }
           
           clone = routine;
+          clone.setUid(user.getUid());
+          clone.setUser(user);
+          clone.setDate(routine.getDate());
+          dao.addRoutine(clone);
         }
         else {
           //check cache
@@ -746,9 +750,22 @@ public class TrainingManager {
       }
 
       //cache
-      for(Routine routine : modelsCopy) {
-        cache.addRoutine(routine);
+      for(Routine jdo : modelsCopy) {
+
+        jdo.setUser(userManager.getUser(jdo.getUid()));
+        
+        //get workouts
+        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(jdo.getId()));
+        ArrayList<Workout> list = new ArrayList<Workout>();
+        for(Long key : keys) {
+          list.add(_getWorkout(key));
+        }
+        jdo.setWorkouts(list);
+        
+        cache.addRoutine(jdo);
       }
+
+      
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding routines", e);
