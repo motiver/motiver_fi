@@ -14,6 +14,7 @@
  ******************************************************************************/
 package com.delect.motiver.server.jdo.training;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,7 +34,7 @@ import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.WorkoutModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Routine implements Comparable<Routine> {
+public class Routine implements Serializable, Comparable<Routine> {
 		
 	/**
 	 * Converts server object to client side object
