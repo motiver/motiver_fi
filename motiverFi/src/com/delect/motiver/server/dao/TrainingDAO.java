@@ -389,6 +389,36 @@ public class TrainingDAO {
     }
   }
 
+  public void updateExerciseName(ExerciseName name) throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    
+    try {
+      
+      ExerciseName t = pm.getObjectById(ExerciseName.class, name.getId());
+      
+      if(t != null) {
+        t.update(name, false);
+      }
+      
+      tx.commit();
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+  }
+
   @SuppressWarnings("unchecked")
   public List<Long> getWorkouts(WorkoutSearchParams params) throws Exception {
 

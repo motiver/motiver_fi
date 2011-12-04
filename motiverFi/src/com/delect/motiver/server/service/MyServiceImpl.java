@@ -5420,17 +5420,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     
     //get user
     final UserOpenid user = userManager.getUser(this.perThreadRequest);
-
-    try {
-      TrainingManager trainingManager = TrainingManager.getInstance();
-      Exercise jdo = Exercise.getServerModel(exercise);
-      trainingManager.addExercise(user, jdo, exercise.getWorkoutId());
-      m = Exercise.getClientModel(jdo);
-
-    }
-    catch (Exception e) {
-      throw new ConnectionException("addExercise", e.getMessage());
-    }
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    
+    Exercise jdo = Exercise.getServerModel(exercise);
+    trainingManager.addExercise(user, jdo, exercise.getWorkoutId());
+    m = Exercise.getClientModel(jdo);
     
     return m;
   }
@@ -5440,76 +5434,20 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param exercise : model to be updated
    * @return updated exercise name (null if add not successful)
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public Boolean updateExerciseName(ExerciseNameModel model) throws ConnectionException {
+  public Boolean updateExerciseName(ExerciseNameModel model) throws ConnectionException {
+    
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
 
-    logger.log(Level.FINE, "updateExerciseName()");
+    ExerciseName jdo = ExerciseName.getServerModel(model);
+    List<ExerciseName> names = new ArrayList<ExerciseName>();
+    names.add(jdo);
     
-    boolean ok = false;
-    
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return ok;
-    }
+    names = trainingManager.addExerciseName(user, names);
+    ExerciseNameModel m = ExerciseName.getClientModel(jdo);
 
-    //if not admin
-    if( !isAdmin(UID) ) {
-      return false;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      ExerciseName m = pm.getObjectById(ExerciseName.class, model.getId());
-      if(m != null) {
-
-        //remove search indexes which has this name as query
-        final String strName = m.getName();
-        //if name or locale changed
-        if(!strName.equals(model.getName()) || !m.getLocale().equals(model.getLocale())) {
-          Query q1 = pm.newQuery(ExerciseSearchIndex.class);
-          List<ExerciseSearchIndex> arrQuery = (List<ExerciseSearchIndex>) q1.execute();
-          for(ExerciseSearchIndex index : arrQuery) {
-            //check if query words that match added name
-            int count = 0;
-            for(String s : index.getQuery().split(" ")) {
-              //if word long enough and match
-              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD && strName.toLowerCase().contains( s.toLowerCase() )) {
-                  count++;
-              }
-            }
-            
-            //if found -> remove index
-            if(count > 0) {
-              pm.deletePersistent(index);
-            }
-          }
-        }
-        
-        //update name
-        m.setName(model.getName());
-        m.setTarget(model.getTarget());
-        m.setVideo(model.getVideo());
-        m.setLocale(model.getLocale());
-        
-        ok = true;
-      }
-
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "updateExerciseName", e);
-      throw new ConnectionException("updateExerciseName", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    return (m != null);
   }
 
   /**

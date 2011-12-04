@@ -85,15 +85,12 @@ public class TrainingManager {
         model.update(f, true);
       }
       
-      //clear cache
-      if(workout != null) {        
-        //in date
+      //update cache
+      if(workout != null) {
         if(workout.getDate() != null) {
           cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
         }
-        else {
-          cache.addWorkout(workout);
-        }
+        cache.addWorkout(workout);
       }
       
     } catch (Exception e) {
@@ -131,10 +128,13 @@ public class TrainingManager {
         workout.getExercises().remove(model);
         dao.updateWorkout(workout);
       }
-      
-      //clear cache
-      if(workout != null && workout.getDate() != null) {
-        cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+
+      //update cache
+      if(workout != null) {
+        if(workout.getDate() != null) {
+          cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+        }
+        cache.addWorkout(workout);
       }
       
       ok = true;
@@ -550,9 +550,7 @@ public class TrainingManager {
         if(w.getDate() != null) {
           cache.setWorkouts(w.getUid(), w.getDate(), null);
         }
-        else {
-          cache.removeWorkout(w.getId());
-        }
+        cache.removeWorkout(w.getId());
 
         keys[i] = w.getId();
         
@@ -961,14 +959,24 @@ public class TrainingManager {
       
       for(ExerciseName name : names) {
         
+        int i = listAll.indexOf(name);
+        
         //add if not found
-        if(!listAll.contains(name)) {
+        if(i == -1) {
           name.setUid(user.getUid());
           
           dao.addExerciseName(name);
           
           //update "cache" array
           listAll.add(name);
+        }
+        //otherwise update
+        else {
+          ExerciseName nameOld = listAll.get(i);
+          if(nameOld != null) {
+            nameOld.update(name, false);
+            dao.updateExerciseName(nameOld);
+          }
         }
         
         list.add(name);

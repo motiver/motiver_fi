@@ -236,6 +236,21 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
   public Long getUidOld() {
     return uid;
   } 
+
+  /**
+   * Updates food from given model
+   * @param model
+   */
+  public void update(ExerciseName model, boolean includeId) {
+    if(includeId) {
+      setId(model.getId());
+    }
+    setLocale(model.getLocale());
+    setName(model.getName());
+    setTarget(model.getTarget());
+    setUid(model.getUid());
+    setVideo(model.getVideo());
+  }
   
   @Override
   public String toString() {
