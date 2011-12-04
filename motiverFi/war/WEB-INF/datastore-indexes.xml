@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <datastore-indexes autoGenerate="false">
 
+    <!-- Used 14 times in query history -->
+    <datastore-index kind="Comment" ancestor="false" source="auto">
+        <property name="idTarget" direction="asc"/>
+        <property name="target" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+
     <!-- Used 22 times in query history -->
     <datastore-index kind="Workout" ancestor="false" source="auto">
         <property name="date" direction="asc"/>
