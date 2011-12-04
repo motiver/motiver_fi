@@ -617,6 +617,70 @@ public class TrainingDAO {
     return ok;
   }
 
+  public boolean removeRoutines(Long[] keys) throws Exception {
+    
+    boolean ok = false;
+
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    try {
+      
+      for (Long key : keys) {
+        
+      //try to update X routines
+      int retries = Constants.LIMIT_UPDATE_RETRIES;
+      while (true) {
+
+          
+          Transaction tx = pm.currentTransaction();
+          tx.begin();
+          
+          try {
+            
+            Routine t = pm.getObjectById(Routine.class, key);
+            
+            if(t != null) {
+              
+              pm.deletePersistent(t);
+              tx.commit();
+    
+              ok = true;
+              break;
+            }
+            
+          }
+          catch (Exception e) {
+            if (tx.isActive()) {
+              tx.rollback();
+            }
+            logger.log(Level.WARNING, "Error deleting routine", e);
+            
+            //retries used
+            if (retries == 0) {          
+              throw e;
+            }
+            logger.log(Level.WARNING, " Retries left: "+retries);
+            
+            --retries;
+          }
+      
+        }
+      
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error removing routines", e);
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    
+    return ok;
+  }
+
   public void incrementWorkoutCount(Workout workout) throws Exception {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();

@@ -524,7 +524,6 @@ public class TrainingManager {
     cache.addWorkout(workout);
   }
 
-
   public boolean removeWorkouts(UserOpenid user, List<Workout> models) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
@@ -566,6 +565,54 @@ public class TrainingManager {
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing workouts", e);
       throw new ConnectionException("Error removing workouts", e);
+    }
+    
+    return ok;
+    
+  }
+
+  public boolean removeRoutines(UserOpenid user, List<Routine> models) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing routines: "+models.size());
+    }
+    
+    if(models.size() == 0) {
+      return false;
+    }
+    
+    boolean ok = false;
+    
+    try {
+      Long[] keys = new Long[models.size()];
+      
+      //check permission for each routine
+      int i = 0;
+      for(Routine routine : models) {
+        Routine w = _getRoutine(routine.getId());
+        
+        userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), w.getUid());
+        
+        //remove workouts
+        //TODO doesn't remove from cache
+        List<Long> keysW = dao.getWorkouts(new WorkoutSearchParams(w.getId()));
+        Long[] keysW2 = keysW.toArray(new Long[0]);
+        dao.removeWorkouts(keysW2);
+        
+        //remove from cache
+        cache.removeRoutine(w.getId());
+
+        keys[i] = w.getId();
+        
+        i++;
+      }
+      
+      //remove all at once
+      ok = dao.removeRoutines(keys);
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error removing routines", e);
+      throw new ConnectionException("Error removing routines", e);
     }
     
     return ok;

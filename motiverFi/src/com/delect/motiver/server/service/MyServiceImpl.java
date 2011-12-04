@@ -4855,47 +4855,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param model to remove
    * @return remove successful
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public Boolean removeRoutine(RoutineModel model) throws ConnectionException {
+  public Boolean removeRoutine(RoutineModel model) throws ConnectionException {
 
-    logger.log(Level.FINE, "removeRoutine()");
-    
-    boolean ok = false;
-    
-    //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
     TrainingManager trainingManager = TrainingManager.getInstance();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Routine r = pm.getObjectById(Routine.class, model.getId());
-      if(r != null) {
-        if(!hasPermission(pm, Permission.WRITE_TRAINING, user.getUid(), r.getUid())) {
-          throw new NoPermissionException(Permission.WRITE_TRAINING, user.getUid(), r.getUid());
-        }
-        
-        pm.deletePersistent(r);
-        
-        //remove also workouts which belongs to this routine
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && routineId == routineIdParam");
-        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineIdParam");
-        List<Workout> workouts = (List<Workout>) q.execute(user.getUid(), r.getId());
-
-        ok = trainingManager.removeWorkouts(user, workouts);
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "removeRoutine", e);
-      throw new ConnectionException("removeRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    List<Routine> list = new ArrayList<Routine>();
+    list.add(Routine.getServerModel(model));
+    Boolean ok = trainingManager.removeRoutines(user, list);
     
     return ok;
   }
