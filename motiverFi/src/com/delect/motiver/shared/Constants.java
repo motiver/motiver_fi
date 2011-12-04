@@ -247,6 +247,10 @@ public interface Constants {
    * Max number of users shown
    */
   public static int LIMIT_USERS = 5;
+  /**
+   * How many days from past we search exercises
+   */
+  public static final int LIMIT_EXERCISE_HISTORY_BACK = 365*2;
 
   //error codes
   public static final int JSONP_GET_ALL = 77;

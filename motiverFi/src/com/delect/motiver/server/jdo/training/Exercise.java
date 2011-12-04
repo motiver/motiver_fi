@@ -15,6 +15,7 @@
 package com.delect.motiver.server.jdo.training;
 
 import java.io.Serializable;
+import java.util.Date;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;

@@ -2937,89 +2937,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param limit : -1 if no limit
    * @return exercises
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<ExerciseModel> getExercisesFromName(Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
-
-    logger.log(Level.FINE, "getExercisesFromName()");
-        
-    List<ExerciseModel> list = new ArrayList<ExerciseModel>();
-    
-    if(dateStart == null && dateEnd == null) {
-      return list;
-    }
+  public List<ExerciseModel> getExercisesFromName(Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
     
     //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    TrainingManager trainingManager = TrainingManager.getInstance();
 
-    try {
-      
-      List<Workout> workouts = null;
-      
-      //if only end date -> get all exercises before that
-      if(dateStart == null) {
-        Date d1 = stripTime(dateEnd, true);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date != null && date <= dateParam");
-        q.setOrdering("date DESC");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateParam");
-        workouts = (List<Workout>) q.execute(UID, d1);
-      }
-      //if only start date -> get all exercises after that
-      else if(dateEnd == null) {
-        Date d1 = stripTime(dateEnd, false);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date != null && date >= dateParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateParam");
-        workouts = (List<Workout>) q.execute(UID, d1);
-      }
-      //both dates
-      else {
-        Date d1 = stripTime(dateStart, false);
-        Date d2 = stripTime(dateEnd, true);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date != null && date >= d1Param && date <= d2Param");
-        q.setOrdering("date DESC");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date d1Param, java.util.Date d2Param");
-        workouts = (List<Workout>) q.execute(UID, d1, d2);
-        
-      }
-      
-      for(Workout w : workouts) {
-        //check if correct exercise name found
-        for(Exercise e : w.getExercises()) {
-          if(e.getNameId().longValue() == nameId.longValue()) {
-            //save to list (including date, workoutId)
-            ExerciseModel m = Exercise.getClientModel(e);
-            m.setWorkoutId(e.getWorkout().getId());
-            m.setDate(e.getWorkout().getDate());
-            list.add(m);
-          }
+    List<ExerciseModel> list = new ArrayList<ExerciseModel>();
           
-          if(limit != -1 && list.size() >= limit) {
-            break;
-          }
-        }
-        if(limit != -1 && list.size() >= limit) {
-          break;
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getExercisesFromName", e);
-      throw new ConnectionException("getExercises", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
+    List<Exercise> jdos = trainingManager.getExercises(user, nameId, dateStart, dateEnd, limit);
+    if(jdos != null) {
+      for(Exercise e : jdos) {
+        ExerciseModel dto = Exercise.getClientModel(e);
+        Workout w = e.getWorkout();
+        dto.setWorkoutId(e.getWorkout().getId());
+        dto.setDate(w.getDate());
+        
+        list.add(dto);
       } 
     }
     

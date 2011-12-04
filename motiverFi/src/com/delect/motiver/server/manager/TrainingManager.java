@@ -12,6 +12,8 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.jdo.Query;
+
 import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
@@ -23,6 +25,7 @@ import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 
@@ -1308,6 +1311,65 @@ public class TrainingManager {
       throw new ConnectionException("Error updating routine", e);
     }
   
+  }
+
+  /**
+   * Returns exercises which have given nameId from given time period
+   * @param nameId
+   * @param dateStart
+   * @param dateEnd
+   * @param limit
+   * @return exercises : sorted by date desc
+   * @throws ConnectionException 
+   */
+  public List<Exercise> getExercises(UserOpenid user, Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading exercises for name "+nameId+", "+dateStart+" - "+dateEnd);
+    }
+    
+    if(dateStart == null && dateEnd == null) {
+      return null;
+    }
+    
+    List<Exercise> list = new ArrayList<Exercise>();
+    
+    try {
+
+      //if only end date -> get all exercises before that
+      if(dateStart == null) {
+        dateStart = new Date( (dateEnd.getTime()/1000 - 3600*24*Constants.LIMIT_EXERCISE_HISTORY_BACK)*1000 );
+      }
+      //if only start date -> get all exercises after that
+      else if(dateEnd == null) {
+        dateEnd = new Date();
+      }
+      
+      //get workouts
+      List<Workout> workouts = getWorkouts(user, dateStart, dateEnd, user.getUid());
+      
+      for(Workout w : workouts) {
+        //check if correct exercise name found
+        for(Exercise e : w.getExercises()) {
+          if(e.getNameId().longValue() == nameId.longValue()) {
+            list.add(e);
+          }
+          
+          if(limit != -1 && list.size() >= limit) {
+            break;
+          }
+        }
+        if(limit != -1 && list.size() >= limit) {
+          break;
+        }
+      }        
+
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading exercises", e);
+      throw new ConnectionException("getExercises", e);
+    }
+    
+    return list;
   }
   
 }
