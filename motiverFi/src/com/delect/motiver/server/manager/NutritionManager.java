@@ -16,6 +16,7 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.server.util.NutritionUtils;
 import com.delect.motiver.shared.Constants;
@@ -793,15 +794,25 @@ public class NutritionManager {
       }
       
       for(FoodName name : names) {
+
+        int i = listAll.indexOf(name);
         
         //add if not found
-        if(!listAll.contains(name)) {
+        if(i == -1) {
           name.setUid(user.getUid());
           
           dao.addFoodName(name);
           
           //update "cache" array
           listAll.add(name);
+        }
+        //otherwise update
+        else {
+          FoodName nameOld = listAll.get(i);
+          if(nameOld != null) {
+            nameOld.update(name, false);
+            dao.updateFoodName(nameOld);
+          }
         }
         
         list.add(name);

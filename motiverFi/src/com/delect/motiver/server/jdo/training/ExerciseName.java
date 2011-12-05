@@ -48,6 +48,7 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
 		ExerciseNameModel modelClient = new ExerciseNameModel(model.getId(), model.getName(), model.getTarget());
 		modelClient.setVideo(model.getVideo());
 		modelClient.setLocale(model.getLocale());
+		modelClient.setUid(model.getUid());
 		
 		return modelClient;
 	}
@@ -66,6 +67,7 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
 		modelServer.setId(model.getId());
 		modelServer.setVideo(model.getVideo());
 		modelServer.setLocale(model.getLocale());
+    modelServer.setUid(model.getUid());
 		
 		return modelServer;
 	}
@@ -238,7 +240,7 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
   } 
 
   /**
-   * Updates food from given model
+   * Updates name from given model
    * @param model
    */
   public void update(ExerciseName model, boolean includeId) {

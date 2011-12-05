@@ -18,6 +18,7 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 import com.google.appengine.api.datastore.Key;
@@ -786,6 +787,36 @@ public class NutritionDAO {
         pm.close();
       } 
     }    
+  }
+
+  public void updateFoodName(FoodName name) throws Exception {
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    Transaction tx = pm.currentTransaction();
+    tx.begin();
+    
+    try {
+      
+      FoodName t = pm.getObjectById(FoodName.class, name.getId());
+      
+      if(t != null) {
+        t.update(name, false);
+      }
+      
+      tx.commit();
+      
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if(tx.isActive()) {
+        tx.rollback();
+      }
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
   }
 
 //  /**

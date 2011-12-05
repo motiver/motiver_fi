@@ -87,6 +87,7 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 		modelServer.setPortion(model.getPortion());
 		modelServer.setLocale(model.getLocale());
 		modelServer.setTrusted(model.getTrusted());
+    modelServer.setUid(model.getUid());
     
     //micronutrients
     List<MicroNutrient> micronutrients = new ArrayList<MicroNutrient>();
@@ -104,6 +105,9 @@ public class FoodName implements Serializable, Comparable<FoodName> {
   public boolean equals(Object obj) {
     if(obj instanceof FoodName) {
       FoodName name = (FoodName)obj;
+      
+      if(getId().longValue() == name.getId().longValue())
+        return true;
       
       return  name.getEnergy().equals(getEnergy())
           && name.getName().equals(getName())
@@ -393,6 +397,51 @@ public class FoodName implements Serializable, Comparable<FoodName> {
   public Long getUidOld() {
     return uid;
   } 
+
+  /**
+   * Updates name from given model
+   * @param model
+   */
+  public void update(FoodName model, boolean includeId) {
+    if(includeId) {
+      setId(model.getId());
+    }
+    //update name
+    setName(model.getName());
+    setEnergy(model.getEnergy());
+    setProtein(model.getProtein());
+    setCarb(model.getCarb());
+    setFet(model.getFet());
+    setPortion(model.getPortion());
+    setLocale(model.getLocale());
+    setTrusted(model.getTrusted());
+    setUid(model.getUid());
+
+    //if micronutrients removed -> check which was removed
+    if(getMicroNutrients() != null && model.getMicroNutrients() != null) {
+      if(getMicroNutrients().size() > model.getMicroNutrients().size()) {
+        for(MicroNutrient f : getMicroNutrients()) {
+          if(!model.getMicroNutrients().contains(f)) {
+            getMicroNutrients().remove(f);
+            break;
+          }
+        }
+      }
+      //new micronutrient added
+      else {
+        for(MicroNutrient f : model.getMicroNutrients()) {
+            int i = getMicroNutrients().indexOf(f);
+            if(i != -1) {
+              MicroNutrient fOld = getMicroNutrients().get(i);
+              fOld.update(f, includeId);
+            }
+            else {
+              getMicroNutrients().add(f);
+            }
+          }
+      }
+    }
+  }
   
   @Override
   public String toString() {

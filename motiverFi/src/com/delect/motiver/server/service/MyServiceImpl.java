@@ -5420,89 +5420,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   }
   
   /**
-   * Updates exercise name
-   * @param exercise : model to be updated
-   * @return updated exercise name (null if add not successful)
+   * Updates food name
+   * @param food : model to be updated
+   * @return updated food name (null if add not successful)
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public Boolean updateFoodName(FoodNameModel model) throws ConnectionException {
+  public Boolean updateFoodName(FoodNameModel model) throws ConnectionException {
+    
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
 
-    logger.log(Level.FINE, "updateFoodName()");
+    FoodName jdo = FoodName.getServerModel(model);
+    List<FoodName> names = new ArrayList<FoodName>();
+    names.add(jdo);
     
-    boolean ok = false;
-    
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    names = nutritionManager.addFoodName(user, names);
+    FoodNameModel m = FoodName.getClientModel(jdo);
 
-    FoodName m;
-    try {
-      m = pm.getObjectById(FoodName.class, model.getId());
-      
-      //admin or our food
-      if(m != null && (isAdmin(UID) || m.getUid().equals(UID))) {
-        
-        //remove search indexes which has this name as query
-        final String strName = m.getName();
-        //if name or locale changed
-        if(!strName.equals(model.getName()) || m.getTrusted() != model.getTrusted() || !m.getLocale().equals(model.getLocale())) {
-          Query q1 = pm.newQuery(FoodSearchIndex.class);
-          List<FoodSearchIndex> arrQuery = (List<FoodSearchIndex>) q1.execute();
-          for(FoodSearchIndex index : arrQuery) {
-            //check if query words that match added name
-            int count = 0;
-            for(String s : index.getQuery().split(" ")) {
-              //if word long enough and match
-              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD && strName.toLowerCase().contains( s.toLowerCase() )) {
-                  count++;
-              }
-            }
-            
-            //if found -> remove index
-            if(count > 0) {
-              pm.deletePersistent(index);
-            }
-          }
-        }
-        
-        //update name
-        m.setName(model.getName());
-        m.setEnergy(model.getEnergy());
-        m.setProtein(model.getProtein());
-        m.setCarb(model.getCarb());
-        m.setFet(model.getFet());
-        m.setPortion(model.getPortion());
-        m.setLocale(model.getLocale());
-        m.setTrusted(model.getTrusted());
-        m.setUid(model.getUid());
-        //update micronutrients
-        List<MicroNutrient> arr = new ArrayList<MicroNutrient>();
-        for(MicroNutrientModel mn : model.getMicroNutrients()) {
-          arr.add(MicroNutrient.getServerModel(mn));
-        }
-        m.setMicronutrients(arr);
-        pm.makePersistent(m);
-        ok = true;
-      }
-
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "updateFoodName", e);
-      throw new ConnectionException("updateFoodName", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    return (m != null);
   }
 
   /**

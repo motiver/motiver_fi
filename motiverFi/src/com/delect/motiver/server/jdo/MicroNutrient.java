@@ -26,6 +26,7 @@ import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
 import com.delect.motiver.server.jdo.nutrition.FoodName;
+import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.shared.MicroNutrientModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -67,9 +68,20 @@ public class MicroNutrient implements Serializable {
 		MicroNutrient modelServer = new MicroNutrient(model.getNameId());
 		modelServer.setId(model.getId());
 		modelServer.setValue(model.getValue());
+    modelServer.setUid(model.getUid());
 		
 		return modelServer;
 	}
+  
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof MicroNutrient) {
+      return ((MicroNutrient)obj).getId() == getId();
+    }
+    else {
+      return false;
+    }
+  }
 	
 	@Persistent
 	public Long uid;
@@ -158,6 +170,20 @@ public class MicroNutrient implements Serializable {
   public Long getUidOld() {
     return uid;
   } 
+
+  /**
+   * Updates micronutrient from given model
+   * @param model
+   */
+  public void update(MicroNutrient model, boolean includeId) {
+    if(includeId) {
+      setId(model.getId());
+    }
+    //update name
+    setName(model.getNameId());
+    setUid(model.getUid());
+    setValue(model.getValue());    
+  }
   
   @Override
   public String toString() {

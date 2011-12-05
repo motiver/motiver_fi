@@ -75,6 +75,14 @@ public class ExerciseNameModel extends BaseModelData implements IsSerializable {
 			return "";
     }
   }
+  public String getUid() {
+    if(get("uid") != null) {
+      return get("uid");
+    }
+    else {
+      return "";
+    }
+  }
 	
 	public void setLocale(String locale) {
     set("l", locale);
@@ -88,6 +96,9 @@ public class ExerciseNameModel extends BaseModelData implements IsSerializable {
 	public void setVideo(String video) {
 		set("v", video);
 	}
+  public void setUid(String uid) {
+    set("uid", uid);
+  }
   
   @Override
   public String toString() {

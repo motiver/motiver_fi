@@ -157,7 +157,6 @@ public class Motiver implements EntryPoint {
 	 * @param exception
 	 */
 	public static void showException(Throwable exception) {
-	  exception.printStackTrace();
 	  
 	  //show error message
 	  eventBus.fireEvent(new InfoMessageEvent(MessageColor.COLOR_RED, AppController.Lang.NetworkError()));
