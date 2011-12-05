@@ -472,9 +472,7 @@ public class WorkoutPresenter extends Presenter {
 				
 				//show user if not our workout
 				if(!workout.getUser().equals(AppController.User)) {
-					UserModel user = new UserModel();
-					user.setUid(workout.getUser().getUid());
-					userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), user, false);
+					userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), workout.getUser(), false);
 					userPresenter.run(display.getUserContainer());
 				}
 			}

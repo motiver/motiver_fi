@@ -413,7 +413,7 @@ public class MealPresenter extends Presenter {
         }
 				
 				//show user if not our workout
-				if(!meal.getUser().getUid().equals(AppController.User.getUid())) {
+				if(!meal.getUser().equals(AppController.User)) {
 					userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), meal.getUser(), false);
 					userPresenter.run(display.getUserContainer());
 				}

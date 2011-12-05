@@ -226,7 +226,7 @@ public class CommentsBoxPresenter extends Presenter {
 		else if(routine != null) {
 			title = routine.getName();
 			target = "r" + routine.getId();
-			uid = routine.getUid();
+			uid = routine.getUser().getUid();
 		}
 		//meal
 		else if(meal != null) {

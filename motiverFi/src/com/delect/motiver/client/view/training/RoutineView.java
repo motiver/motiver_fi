@@ -222,7 +222,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 		
 		panelLinks.removeAll();		
 
-		if(routine.getUid().equals(AppController.User.getUid())) {
+		if(routine.getUser().equals(AppController.User)) {
 		    
 			//add/remove days links
 			MyButton btnAdd = new MyButton();
@@ -278,7 +278,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 			//buttons
 			if(routine.getId() != 0) {
 
-				if(routine.getUid().equals(AppController.User.getUid())) {
+				if(routine.getUser().equals(AppController.User)) {
 			        
 					//spacer
 					HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 10, 0, 10));

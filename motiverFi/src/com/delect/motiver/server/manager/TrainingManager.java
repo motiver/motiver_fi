@@ -782,6 +782,9 @@ public class TrainingManager {
               dateNew.setMinutes(0);
               dateNew.setSeconds(0);
               wClone.setDate(dateNew);
+              
+              //clear cache
+              cache.setWorkouts(user.getUid(), dateNew, null);
             }
             
             wClone.setUid(user.getUid());

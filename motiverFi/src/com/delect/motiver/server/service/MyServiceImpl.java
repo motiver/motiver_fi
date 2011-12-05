@@ -5127,80 +5127,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return routines' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<RoutineModel> searchRoutines(int index, String query) throws ConnectionException {
+  public List<RoutineModel> searchRoutines(int index, String query) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchRoutines()");
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    TrainingManager trainingManager = TrainingManager.getInstance();    
+    List<Routine> jdoList = trainingManager.searchRoutines(user, query, index);
+    
+    //convert to client side models
     List<RoutineModel> list = new ArrayList<RoutineModel>();
-    
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Routine.class);
-      q.setFilter("date == null");
-      q.setOrdering("name ASC");
-      q.setRange(index, index + Constants.LIMIT_ROUTINES + 1);
-      List<Routine> routines = (List<Routine>) q.execute();
-      
-      //split query string
-      String[] arr = query.split(" ");
-
-      int i = 0;
-      for(Routine r : routines) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_ROUTINES) {
-          list.add(null);
-          break;
-        }
-
-        final String name = r.getName();
-        
-        //filter by query
-        boolean ok = false;
-        for(String s : arr) {
-          ok = name.toLowerCase().contains( s.toLowerCase() );
-          if(ok) {
-            break;
-          }
-        }
-
-        //if name matched -> check permission
-        if(ok) {
-          
-          boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
-          
-          if(hasPermission) {
-            RoutineModel m = Routine.getClientModel(r);
-            list.add(m);
-            
-            i++;
-          }
-          
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchRoutines", e);
-      throw new ConnectionException("searchRoutines", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(Routine n : jdoList) {
+      list.add(Routine.getClientModel(n));
     }
     
     return list;

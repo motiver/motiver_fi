@@ -424,7 +424,7 @@ public class RoutinesListPresenter extends Presenter {
 				}
 				else {
 					//copy to our routines
-					if(!m.getUid().equals(AppController.User.getUid())) {
+					if(!m.getUser().equals(AppController.User)) {
 						display.setCopyButtonVisible(true);
 					}
 				}

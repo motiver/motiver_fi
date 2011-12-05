@@ -322,10 +322,8 @@ public class RoutinePresenter extends Presenter {
     }
 		
 		//show user if not our workout
-		if(!routine.getUid().equals(AppController.User.getUid()) && index == 0) {
-			UserModel user = new UserModel();
-			user.setUid(routine.getUid());
-			userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), user, false);
+		if(!routine.getUser().equals(AppController.User) && index == 0) {
+			userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), routine.getUser(), false);
 			userPresenter.run(display.getUserContainer());
 		}
 				
