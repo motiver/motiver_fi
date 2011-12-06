@@ -489,6 +489,7 @@ public class NutritionManager {
   
         //save user
         t.setUid(user.getUid());
+        t.setUser(userManager.getUser(t.getUid()));
         
       }
       

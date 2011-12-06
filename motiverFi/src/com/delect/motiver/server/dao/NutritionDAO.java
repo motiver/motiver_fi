@@ -284,14 +284,14 @@ public class NutritionDAO {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     Transaction tx = pm.currentTransaction();
-    tx.begin();
     
     try {
       
       for(TimeJDO time : models) {
+        tx.begin();
         pm.makePersistent(time);
+        tx.commit();
       }
-      tx.commit();
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding times", e);

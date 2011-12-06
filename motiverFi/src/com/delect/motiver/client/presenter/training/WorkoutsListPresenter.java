@@ -355,7 +355,7 @@ public class WorkoutsListPresenter extends Presenter {
 			}
 			
 			//add workout
-			rpcService.addWorkouts(workouts, new MyAsyncCallback<List<WorkoutModel>>() {
+			final Request req = rpcService.addWorkouts(workouts, new MyAsyncCallback<List<WorkoutModel>>() {
 				@Override
 				public void onSuccess(List<WorkoutModel> result) {
 					display.setContentEnabled(true);
@@ -373,6 +373,7 @@ public class WorkoutsListPresenter extends Presenter {
 					}
 				}
 			});
+			addRequest(req);
 			
 		} catch (Exception e) {
       Motiver.showException(e);

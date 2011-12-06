@@ -157,7 +157,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 					foodCopy.setTimeId(time.getId());
 					foodCopy.setName(food.getName());
 					foodCopy.setAmount(food.getAmount());
-					rpcService.addFood(foodCopy, new MyAsyncCallback<FoodModel>() {
+					final Request req = rpcService.addFood(foodCopy, new MyAsyncCallback<FoodModel>() {
 						@Override
 						public void onSuccess(FoodModel result) {
 							display.setContentEnabled(true);
@@ -173,6 +173,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 							fireEvent(new FoodCreatedEvent(result));
 						}
 					});
+					addRequest(req);
 				}
 				//show selection
 				else {

@@ -973,7 +973,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
     
-    List<RoutineModel> list;
+    List<RoutineModel> list = null;
     
     try {
       List<Routine> jdos = new ArrayList<Routine>();
@@ -983,10 +983,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
       TrainingManager trainingManager = TrainingManager.getInstance();
       List<Routine> jdosCopy = trainingManager.addRoutines(user, jdos);
-
-      list = new ArrayList<RoutineModel>();
-      for(Routine t : jdosCopy) {
-        list.add(Routine.getClientModel(t));
+      if(jdosCopy != null) {
+        list = new ArrayList<RoutineModel>();
+        for(Routine t : jdosCopy) {
+          list.add(Routine.getClientModel(t));
+        }
       }
       
     } catch (Exception e) {
@@ -1239,7 +1240,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     //get uid
     UserOpenid user = userManager.getUser(perThreadRequest);
     
-    List<WorkoutModel> list;
+    List<WorkoutModel> list = null;
     
     try {
       List<Workout> jdos = new ArrayList<Workout>();
@@ -1249,10 +1250,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       
       TrainingManager trainingManager = TrainingManager.getInstance();
       List<Workout> jdosCopy = trainingManager.addWorkouts(user, jdos);
-
-      list = new ArrayList<WorkoutModel>();
-      for(Workout t : jdosCopy) {
-        list.add(Workout.getClientModel(t));
+      if(jdosCopy != null) {
+        list = new ArrayList<WorkoutModel>();
+        for(Workout t : jdosCopy) {
+          list.add(Workout.getClientModel(t));
+        }
       }
       
     } catch (Exception e) {
