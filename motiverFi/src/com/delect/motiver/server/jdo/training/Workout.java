@@ -379,8 +379,9 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
   /**
    * Updates time from given model
    * @param model
+   * @throws CloneNotSupportedException 
    */
-  public void update(Workout model, boolean includeId) {
+  public void update(Workout model, boolean includeId) throws CloneNotSupportedException {
     if(includeId) {
       setId(model.getId());
     }

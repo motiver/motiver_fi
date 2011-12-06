@@ -67,8 +67,8 @@ public class TrainingManager {
     try {
 
       Workout workout = _getWorkout(workoutId);
-      
-      if(workoutId != 0) {        
+
+      if(workout != null) {
         userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), workout.getUid());
         
         //update if found, otherwise add
@@ -86,10 +86,18 @@ public class TrainingManager {
         
         //return updated model
         model.update(f, true);
-      }
+        
+        //find names for each exercise
+        for(Exercise e : workout.getExercises()) {
+          if(e.getNameId().longValue() > 0) {
+            e.setName(_getExerciseName(e.getNameId()));
+          }
+        }
+        if(model.getNameId().longValue() > 0) {
+          model.setName(_getExerciseName(model.getNameId()));
+        }
       
-      //update cache
-      if(workout != null) {
+        //update cache
         if(workout.getDate() != null) {
           cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
         }
@@ -120,20 +128,15 @@ public class TrainingManager {
           
     try {
 
-      Workout workout = null;
-      if(workoutId != 0) {
-        workout = dao.getWorkout(workoutId);
-      }
+      Workout workout = _getWorkout(workoutId);
       
-      if(workoutId != 0) {        
+      if(workout != null) {        
         userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), workout.getUid());
 
         workout.getExercises().remove(model);
         dao.updateWorkout(workout);
-      }
 
-      //update cache
-      if(workout != null) {
+        //update cache
         if(workout.getDate() != null) {
           cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
         }
@@ -691,21 +694,18 @@ public class TrainingManager {
 
       dao.addWorkouts(modelsCopy);
 
-      //get exercises
-      for(Workout workout : modelsCopy) {
-        for(Exercise f : workout.getExercises()) {
-          if(f.getNameId().longValue() > 0) {
-            f.setName(_getExerciseName(f.getNameId()));
-          }
-        }
-
-        //cache
-//        cache.addWorkout(workout);
+      //get workouts
+      for(int i = 0; i < modelsCopy.size(); i++) {
+        Workout workout = modelsCopy.get(i);
         
         //clear routine cache
         if(workout.getRoutineId() != null) {
           cache.removeRoutine(workout.getRoutineId());
         }
+        
+        //get correct workout
+        //TODO we need to do this because exercise are doubled when adding to db
+        modelsCopy.set(i, _getWorkout(workout.getId()));
       }
       
     } catch (Exception e) {
@@ -1141,6 +1141,13 @@ public class TrainingManager {
       
       workout.update(model, false);
       dao.updateWorkout(workout);
+      
+      //find names for each exercise
+      for(Exercise e : workout.getExercises()) {
+        if(e.getNameId().longValue() > 0) {
+          e.setName(_getExerciseName(e.getNameId()));
+        }
+      }
 
       //update workout given as parameter
       model.update(workout, true);

@@ -336,13 +336,6 @@ public class TrainingDAO {
       }
       
       tx.commit();
-
-      //update names
-      for(Exercise f : workout.getExercises()) {
-        if(f.getNameId().longValue() > 0) {
-          f.setName(pm.getObjectById(ExerciseName.class, f.getNameId()));
-        }
-      }
       
     } catch (Exception e) {
       throw e;
@@ -370,6 +363,8 @@ public class TrainingDAO {
       
       if(t != null) {
         t.update(routine, false);
+        
+        pm.flush();
       }
       
       tx.commit();

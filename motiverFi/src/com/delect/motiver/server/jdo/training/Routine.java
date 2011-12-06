@@ -34,7 +34,7 @@ import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.WorkoutModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Routine implements Serializable, Comparable<Routine> {
+public class Routine implements Serializable, Cloneable, Comparable<Routine> {
 		
 	/**
 	 * Converts server object to client side object

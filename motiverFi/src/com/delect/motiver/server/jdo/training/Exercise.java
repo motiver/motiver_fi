@@ -15,7 +15,6 @@
 package com.delect.motiver.server.jdo.training;
 
 import java.io.Serializable;
-import java.util.Date;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
@@ -93,7 +92,7 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
   @Override
   public boolean equals(Object obj) {
     if(obj instanceof Exercise) {
-      return ((Exercise)obj).getId() == getId();
+      return ((Exercise)obj).getId().equals(getId());
     }
     else {
       return false;
@@ -119,7 +118,7 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String info;
 
 	@Persistent
@@ -131,19 +130,19 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
 	@Persistent
 	private String reps;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String rest;
 
 	@Persistent
 	private Integer sets;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String tempo;
 
 	@Persistent
 	private String weights;
 
-	@Persistent(defaultFetchGroup="true")
+	@Persistent
 	private Workout workout;
 
   @NotPersistent
