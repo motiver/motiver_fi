@@ -831,9 +831,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     
     NutritionManager nutritionManager = NutritionManager.getInstance();
     List<MealJDO> jdosCopy = nutritionManager.addMeals(user, jdos, timeId);
-
-    for(MealJDO m : jdosCopy) {
-      list.add(MealJDO.getClientModel(m));
+    if(jdosCopy != null) {
+      for(MealJDO m : jdosCopy) {
+        list.add(MealJDO.getClientModel(m));
+      }
     }
     
     return list;

@@ -311,7 +311,7 @@ public class MealsListPresenter extends Presenter {
 			display.setContentEnabled(false);
 			
 			for(MealModel model : meals)
-      model.setTimeId(time.getId());
+			  model.setTimeId(time.getId());
 			
 			//add meal
 			final Request req = rpcService.addMeals(meals, time.getId(), new MyAsyncCallback<List<MealModel>>() {
