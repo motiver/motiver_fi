@@ -102,7 +102,7 @@ public interface Constants {
 	/**
 	 * How often comments are refreshed in comment box (milliseconds)
 	 */
-	public static final int DELAY_COMMENTS_REFRESH = 1000 * 60 * 5;	//5 min
+	public static final int DELAY_COMMENTS_REFRESH = 1000 * 60 * 10;	//10 min
 	
 	/**
 	 * How long we wait after validating text field (after user stops entering value)
@@ -218,7 +218,7 @@ public interface Constants {
 	/**
 	 * Max length for name
 	 */
-	public static final int LIMIT_NAME_MAX = 30;
+	public static final int LIMIT_NAME_MAX = 40;
 	/**
 	 * Min length for name
 	 */

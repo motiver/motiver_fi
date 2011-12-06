@@ -154,7 +154,7 @@ public class RoutineDayPresenter extends Presenter {
 						if(emptyPresenter != null) {
 							emptyPresenter.stop();
 			      }
-						emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), AppController.Lang.NoWorkouts());
+						emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), AppController.Lang.NoWorkouts(), EmptyPresenter.EMPTY_LOADING_SMALL);
 						emptyPresenter.run(display.getBodyContainer());						
 					}
 				}
@@ -170,7 +170,7 @@ public class RoutineDayPresenter extends Presenter {
 					if(emptyPresenter != null) {
 						emptyPresenter.stop();
 		      }
-					emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), AppController.Lang.NoWorkouts());
+					emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), AppController.Lang.NoWorkouts(), EmptyPresenter.EMPTY_LOADING_SMALL);
 					emptyPresenter.run(display.getBodyContainer());						
 				}
 			}
@@ -216,7 +216,7 @@ public class RoutineDayPresenter extends Presenter {
 			if(emptyPresenter != null) {
 				emptyPresenter.stop();
       }
-			emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), AppController.Lang.NoWorkouts());
+			emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), AppController.Lang.NoWorkouts(), EmptyPresenter.EMPTY_LOADING_SMALL);
 			emptyPresenter.run(display.getBodyContainer());
 		}
 		else {

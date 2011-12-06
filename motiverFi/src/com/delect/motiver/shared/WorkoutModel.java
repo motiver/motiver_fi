@@ -168,6 +168,6 @@ public class WorkoutModel extends BaseModelData implements Serializable {
   
   @Override
   public String toString() {
-    return "Workout: ['"+getName()+"', exercises: "+getExercises().size()+"]";
+    return "Workout: ['"+getName()+"', exercises: "+getExercises().size()+", user:"+getUser()+"]";
   }
 }

@@ -700,7 +700,7 @@ public class TrainingManager {
         }
 
         //cache
-        cache.addWorkout(workout);
+//        cache.addWorkout(workout);
         
         //clear routine cache
         if(workout.getRoutineId() != null) {
@@ -1146,9 +1146,11 @@ public class TrainingManager {
       model.update(workout, true);
 
       //remove from cache (also old date if moved)
-      cache.setWorkouts(workout.getUid(), workout.getDate(), null);
-      if(!dOld.equals(workout.getDate())) {
-        cache.setWorkouts(workout.getUid(), dOld, null);
+      if(workout.getDate() != null) {
+        cache.setWorkouts(workout.getUid(), workout.getDate(), null);
+        if(!dOld.equals(workout.getDate())) {
+          cache.setWorkouts(workout.getUid(), dOld, null);
+        }
       }
       cache.removeWorkout(workout.getId());
     

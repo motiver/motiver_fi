@@ -281,7 +281,7 @@ public class RoutinePresenter extends Presenter {
 	  }
 	  
 		//add empty presenter
-		emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING);
+		emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING_SMALL);
 		emptyPresenter.run(display.getBodyContainer());
 		
 		//fetch workouts

@@ -36,6 +36,7 @@ import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.Style.HideMode;
 import com.extjs.gxt.ui.client.core.El;
@@ -134,6 +135,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 		
 		try {
 			
+		  WorkoutModel w = exercise.getWorkout();
 		  //if our exercise
 			if(exercise.getWorkout().getUser().equals(AppController.User)) {
 

@@ -499,6 +499,7 @@ public class WorkoutPresenter extends Presenter {
 					//set date & id & order
 					m.setWorkoutId(workout.getId());
 					m.setDate(workout.getDate());
+					m.setWorkout(workout);
 					
 					//init new exercisePresenter
 					final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), m, workout);
