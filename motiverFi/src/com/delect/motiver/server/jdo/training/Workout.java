@@ -393,7 +393,6 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
     setRoutineId(model.getRoutineId());
     setTimeEnd(model.getTimeEnd());
     setTimeStart(model.getTimeStart());
-    setUid(model.getUid());
     setCount(model.getCount());
 
     //if exercises removed -> check which was removed

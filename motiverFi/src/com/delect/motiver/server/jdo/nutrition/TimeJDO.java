@@ -260,7 +260,6 @@ public class TimeJDO implements Serializable, Comparable<TimeJDO> {
     setMealsNew(model.getMealsNew());
     setMealsKeys(model.getMealsKeys());
     setTime(model.getTime());
-    setUid(model.getUid());
 
     //if foods removed -> check which was removed
     if(getFoodsKeys().size() > model.getFoodsKeys().size()) {

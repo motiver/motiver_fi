@@ -238,7 +238,6 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
     }
     setName(model.getName());
     setTime(model.getTime());
-    setUid(model.getUid());
     setCount(model.getCount());
 
     //if foods removed -> check which was removed

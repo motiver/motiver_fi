@@ -84,6 +84,8 @@ public class Routine implements Serializable, Comparable<Routine> {
 		modelServer.setDate(model.getDate());
 		modelServer.setDays(model.getDays());
 		modelServer.setInfo(model.getInfo());
+    if(model.getUser() != null)
+      modelServer.setUid(model.getUser().getUid());
 		
 		return modelServer;
 	}
@@ -282,7 +284,6 @@ public class Routine implements Serializable, Comparable<Routine> {
     setDays(model.getDays());
     setInfo(model.getInfo());
     setName(model.getName());
-    setUid(model.getUid());
     setCount(model.getCount());
 
 //    if(getWorkouts() != null && model.getWorkouts() != null) {
