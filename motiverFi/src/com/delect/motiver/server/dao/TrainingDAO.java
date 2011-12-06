@@ -38,6 +38,10 @@ public class TrainingDAO {
 
 
   public void addWorkouts(List<Workout> models) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding workouts: "+models);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -59,6 +63,10 @@ public class TrainingDAO {
 
 
   public void addRoutines(List<Routine> models) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding routines: "+models);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -79,6 +87,10 @@ public class TrainingDAO {
   }
 
   public boolean removeWorkout(Workout model) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing workout: "+model);
+    }
     
     boolean ok = false;
 
@@ -138,6 +150,10 @@ public class TrainingDAO {
 
   @SuppressWarnings("unchecked")
   public List<ExerciseName> getExerciseNames() throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading exercise names");
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
@@ -173,6 +189,10 @@ public class TrainingDAO {
   @SuppressWarnings("unchecked")
   public int getExerciseNameCount(UserOpenid user, Long id) throws Exception {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading exercise name ("+id+") count for "+user);
+    }
+
     int count = -1;
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
@@ -205,6 +225,10 @@ public class TrainingDAO {
   }
 
   public void addExerciseName(ExerciseName name) {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding exercise name: "+name);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -236,6 +260,10 @@ public class TrainingDAO {
    */
   @SuppressWarnings("unchecked")
   public List<Routine> getRoutines() throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading ALL routines");
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
@@ -271,6 +299,10 @@ public class TrainingDAO {
 
   public Workout getWorkout(long workoutId) throws Exception {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workout: "+workoutId);
+    }
+
     Workout workout = null;
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -298,6 +330,10 @@ public class TrainingDAO {
 
   public Routine getRoutine(long routineId) throws Exception {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading routine: "+routineId);
+    }
+
     Routine routine = null;
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -321,6 +357,10 @@ public class TrainingDAO {
   }
 
   public void updateWorkout(Workout workout) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating workout: "+workout);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -351,6 +391,10 @@ public class TrainingDAO {
   }
 
   public void updateRoutine(Routine routine) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating routine: "+routine);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -385,6 +429,10 @@ public class TrainingDAO {
   }
 
   public void updateExerciseName(ExerciseName name) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating exercise name: "+name);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -416,6 +464,10 @@ public class TrainingDAO {
 
   @SuppressWarnings("unchecked")
   public List<Long> getWorkouts(WorkoutSearchParams params) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts: "+params);
+    }
 
     List<Long> list = new ArrayList<Long>();
     
@@ -502,6 +554,10 @@ public class TrainingDAO {
   @SuppressWarnings("unchecked")
   public List<Long> getRoutines(RoutineSearchParams params) throws Exception {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading routines: "+params);
+    }
+
     List<Long> list = new ArrayList<Long>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
@@ -579,6 +635,10 @@ public class TrainingDAO {
   }
 
   public boolean removeWorkouts(Long[] keys) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing workouts: "+keys);
+    }
     
     boolean ok = false;
 
@@ -643,6 +703,10 @@ public class TrainingDAO {
   }
 
   public boolean removeRoutines(Long[] keys) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing routines: "+keys);
+    }
     
     boolean ok = false;
 
@@ -707,6 +771,10 @@ public class TrainingDAO {
   }
 
   public void incrementWorkoutCount(Workout workout) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Incrementing count for: "+workout);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -739,6 +807,10 @@ public class TrainingDAO {
   }
 
   public void incrementRoutineCount(Routine routine) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Incrementing count for: "+routine);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -773,12 +845,15 @@ public class TrainingDAO {
 
   public void addRoutine(Routine routine) throws Exception {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding routine: "+routine);
+    }
+
     List<Routine> list = new ArrayList<Routine>();
     list.add(routine);
     addRoutines(list);
     
     //get new routine
-
     if(list.size() > 0) {
       routine = list.get(0);
     }

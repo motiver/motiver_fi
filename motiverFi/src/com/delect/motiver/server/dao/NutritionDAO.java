@@ -41,6 +41,10 @@ public class NutritionDAO {
 
   @SuppressWarnings("unchecked")
   public List<TimeJDO> getTimes(Date date, String uid) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading times ("+uid+", "+date+")");
+    }
     
     List<TimeJDO> list = new ArrayList<TimeJDO>();
     
@@ -77,6 +81,10 @@ public class NutritionDAO {
 
   @SuppressWarnings("unchecked")
   public List<Long> getMeals(MealSearchParams params) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading meals: "+params);
+    }
 
     List<Long> list = new ArrayList<Long>();
     
@@ -153,69 +161,12 @@ public class NutritionDAO {
     
     return list;
   }
-//
-//  @SuppressWarnings("unchecked")
-//  public List<Long> getMeals(int offset, int limit, String uid, Integer timeId, int minCopyCount) throws Exception {
-//
-//    List<Long> list = new ArrayList<Long>();
-//    
-//    PersistenceManager pm =  PMF.get().getPersistenceManager();
-//    
-//    try {
-//      Query q = pm.newQuery(MealJDO.class);
-//      StringBuilder builder = new StringBuilder();
-//      if(uid != null) {
-//        builder.append("openId == openIdParam && ");
-//      }
-//      if(timeId != null) {
-//        builder.append("timeId == timeParam");
-//      }
-//      else {
-//        builder.append("timeId == null");
-//      }
-//      builder.append(" && copyCount >= copyCountParam");
-//      q.setFilter(builder.toString());
-//      q.declareParameters("java.lang.String openIdParam, java.lang.Integer timeParam, java.lang.Integer copyCountParam");
-//      q.setRange(offset, offset + limit + 1);
-//      List<MealJDO> meals = (List<MealJDO>) q.execute(uid, timeId, minCopyCount);
-//            
-//      //get meals
-//      if(meals != null) {        
-//        int i = 0;
-//        for(MealJDO m : meals) {
-//          
-//          //if limit reached -> add null value
-//          if(i == limit) {
-//            list.add(null);
-//            break;
-//          }
-//          
-//          //find names for each exercise
-//          for(Food f : m.getFoods()) {
-//            if(f.getNameId().longValue() > 0) {
-//              f.setName(pm.getObjectById(FoodName.class, f.getNameId()));
-//            }
-//          }
-//          
-//          list.add(m.getId());
-//          
-//          i++;
-//        }
-//        
-//      }
-//    } catch (Exception e) {
-//      throw e;
-//    }
-//    finally {
-//      if (!pm.isClosed()) {
-//        pm.close();
-//      } 
-//    }
-//    
-//    return list;
-//  }
 
   public boolean removeTimes(Long[] keys, String uid) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing times: "+uid);
+    }
     
     boolean ok = false;
 
@@ -280,6 +231,10 @@ public class NutritionDAO {
   }
 
   public void addTimes(List<TimeJDO> models) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding times: "+models);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -307,6 +262,10 @@ public class NutritionDAO {
   }
 
   public TimeJDO addMeals(Long timeId, List<MealJDO> models) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding meals to time: "+models);
+    }
     
     TimeJDO t = null;
     
@@ -356,6 +315,10 @@ public class NutritionDAO {
   }
 
   public void addMeals(List<MealJDO> models) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding meals: "+models);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -376,6 +339,10 @@ public class NutritionDAO {
   }
 
   public boolean removeMeal(MealJDO model) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing meal: "+model);
+    }
     
     boolean ok = false;
 
@@ -434,6 +401,10 @@ public class NutritionDAO {
   }
 
   public boolean removeFood(FoodJDO model) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing food: "+model);
+    }
     
     boolean ok = false;
 
@@ -493,6 +464,10 @@ public class NutritionDAO {
 
   public MealJDO getMeal(long mealId) throws Exception {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading meal for ID: "+mealId);
+    }
+
     MealJDO meal = null;
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -517,6 +492,10 @@ public class NutritionDAO {
   }
 
   public TimeJDO getTime(long timeId) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading time for ID: "+timeId);
+    }
     
     TimeJDO t = null;
     
@@ -537,6 +516,10 @@ public class NutritionDAO {
   }
 
   public void updateTime(TimeJDO time) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating time: "+time);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -569,6 +552,10 @@ public class NutritionDAO {
   }
 
   public void updateMeal(MealJDO meal) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating meal: "+meal);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -607,6 +594,10 @@ public class NutritionDAO {
   }
 
   public void incrementMealCount(MealJDO meal) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Incrementing count for: "+meal);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -640,6 +631,10 @@ public class NutritionDAO {
 
   @SuppressWarnings("unchecked")
   public List<FoodName> getFoodNames() throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading food names");
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
@@ -675,6 +670,10 @@ public class NutritionDAO {
   @SuppressWarnings("unchecked")
   public int getFoodNameCount(UserOpenid user, Long id) throws Exception {
 
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading food name ("+id+") count for "+user);
+    }
+
     int count = -1;
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
@@ -707,6 +706,10 @@ public class NutritionDAO {
   }
 
   public void addFoodName(FoodName name) {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding food name: "+name);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -737,6 +740,10 @@ public class NutritionDAO {
    * @return
    */
   public List<FoodJDO> getFoods(List<Key> keys) {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading foods: "+keys);
+    }
     
     if(keys.size() == 0) {
       return null;
@@ -765,6 +772,10 @@ public class NutritionDAO {
   }
 
   public void addFood(FoodJDO model) {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Adding/updating food: "+model);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -790,6 +801,10 @@ public class NutritionDAO {
   }
 
   public void updateFoodName(FoodName name) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Updating foodname: "+name);
+    }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -818,47 +833,5 @@ public class NutritionDAO {
       } 
     }
   }
-
-//  /**
-//   * Return single meals
-//   * @return
-//   * @throws Exception
-//   */
-//  @SuppressWarnings("unchecked")
-//  public List<MealJDO> getMeals() throws Exception {
-//    
-//    PersistenceManager pm =  PMF.get().getPersistenceManager();
-//
-//    List<MealJDO> n = new ArrayList<MealJDO>();
-//    
-//    try {
-//      
-//      int i = 0;
-//      while(true){
-//        Query q = pm.newQuery(MealJDO.class);
-//        q.setFilter("timeId == null");
-//        q.setOrdering("name ASC");
-//        q.setRange(i, i+100);
-//        List<MealJDO> u = (List<MealJDO>) q.execute();
-//        n.addAll(u);
-//        
-//        if(u.size() < 100) {
-//          break;
-//        }
-//        i += 100;
-//      }
-//      
-//    } catch (Exception e) {
-//      throw e;
-//    }
-//    finally {
-//      if (!pm.isClosed()) {
-//        pm.close();
-//      } 
-//    }
-//    
-//    return n;
-//  }
-
 
 }
