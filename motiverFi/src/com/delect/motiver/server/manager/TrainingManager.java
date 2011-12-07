@@ -836,7 +836,7 @@ public class TrainingManager {
     List<ExerciseName> list = new ArrayList<ExerciseName>();    
 
     try {
-
+      
       //load from cache
       List<ExerciseName> listAll = _getExerciseNames();
       
@@ -863,58 +863,62 @@ public class TrainingManager {
         
         //search
         List<ExerciseName> result = new ArrayList<ExerciseName>();
-        
+
+        String locale = user.getLocale();
         for(int i=0; i < listAll.size(); i++) {
           ExerciseName n = listAll.get(i);
   
-          String name = n.getName();
-          int target = n.getTarget();
-          
-          //strip special characters
-          name = name.replace("(", "");
-          name = name.replace(")", "");
-          name = name.replace(",", "");
-          
-          //filter by query (add count variable)
-          int count = 0;
-          for(String s : arr) {
-            //if word long enough
-            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-              //exact match
-              if(name.toLowerCase().equals( s )) {
-                count += 3;
+          //if correct locale
+          if(n.getLocale().equals(locale)) {
+            String name = n.getName();
+            int target = n.getTarget();
+            
+            //strip special characters
+            name = name.replace("(", "");
+            name = name.replace(")", "");
+            name = name.replace(",", "");
+            
+            //filter by query (add count variable)
+            int count = 0;
+            for(String s : arr) {
+              //if word long enough
+              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
+                //exact match
+                if(name.toLowerCase().equals( s )) {
+                  count += 3;
+                }
+                //partial match
+                else if(name.toLowerCase().contains( s )) {
+                  count++;
+                }
               }
-              //partial match
-              else if(name.toLowerCase().contains( s )) {
-                count++;
-              }
-            }
-          }
-          
-          //if targets matches
-          if(targets.contains(target)) {
-            count += 3;
-          }
-
-          //if found
-          if(count > 0) {
-  
-            int countUse = 0;
-            try {
-              countUse = cache.getExerciseNameCount(user, n.getId());
-              
-              if(countUse == -1) {
-                countUse = dao.getExerciseNameCount(user, n.getId());
-                
-                cache.setExerciseNameCount(user, n.getId(), countUse);
-              }
-              
-            } catch (Exception e) {
-              logger.log(Level.SEVERE, "Error fetching exercise name count", e);
             }
             
-            n.setCount(count, countUse);
-            result.add(n);
+            //if targets matches
+            if(targets.contains(target)) {
+              count += 3;
+            }
+
+            //if found
+            if(count > 0) {
+    
+              int countUse = 0;
+              try {
+                countUse = cache.getExerciseNameCount(user, n.getId());
+                
+                if(countUse == -1) {
+                  countUse = dao.getExerciseNameCount(user, n.getId());
+                  
+                  cache.setExerciseNameCount(user, n.getId(), countUse);
+                }
+                
+              } catch (Exception e) {
+                logger.log(Level.SEVERE, "Error fetching exercise name count", e);
+              }
+              
+              n.setCount(count, countUse);
+              result.add(n);
+            }
           }
         }
         
@@ -965,7 +969,7 @@ public class TrainingManager {
       
       for(ExerciseName name : names) {
         
-        int i = listAll.indexOf(name);
+        int i = listAll.indexOf(name);        
         
         //add if not found
         if(i == -1) {

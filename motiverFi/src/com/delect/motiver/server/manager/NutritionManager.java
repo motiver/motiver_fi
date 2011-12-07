@@ -329,12 +329,12 @@ public class NutritionManager {
           }
         }
         
-        //if no workouts found -> stop
+        //if no meals found -> stop
         if(keys.size() == 0) {
           break;
         }
         
-        i += Constants.LIMIT_WORKOUTS * 2;
+        i += Constants.LIMIT_MEALS * 2;
       }
       
     } catch (Exception e) {
@@ -689,62 +689,67 @@ public class NutritionManager {
         
         //search
         List<FoodName> result = new ArrayList<FoodName>();
-        
+
+        String locale = user.getLocale();
         for(int i=0; i < listAll.size(); i++) {
           FoodName n = listAll.get(i);
   
-          String name = n.getName();
-          
-          //strip special characters
-          name = name.replace("(", "");
-          name = name.replace(")", "");
-          name = name.replace(",", "");
-          
-          //filter by query (add count variable)
-          int count = 0;
-          for(String s : arr) {
-            //if word long enough
-            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-              //exact match
-              if(name.toLowerCase().equals( s )) {
-                count += 3;
+          //if correct locale
+          if(n.getLocale().equals(locale)) {
+            
+            String name = n.getName();
+            
+            //strip special characters
+            name = name.replace("(", "");
+            name = name.replace(")", "");
+            name = name.replace(",", "");
+            
+            //filter by query (add count variable)
+            int count = 0;
+            for(String s : arr) {
+              //if word long enough
+              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
+                //exact match
+                if(name.toLowerCase().equals( s )) {
+                  count += 3;
+                }
+                //partial match
+                else if(name.toLowerCase().contains( s )) {
+                  count++;
+                }
               }
-              //partial match
-              else if(name.toLowerCase().contains( s )) {
+            }
+            //if motiver's food -> add count
+            if(count > 0) {
+              if(n.getTrusted() == 100) {
+                count += 2;
+              }
+              //if verified
+              else if(n.getTrusted() == 1) {
                 count++;
               }
             }
-          }
-          //if motiver's food -> add count
-          if(count > 0) {
-            if(n.getTrusted() == 100) {
-              count += 2;
-            }
-            //if verified
-            else if(n.getTrusted() == 1) {
-              count++;
-            }
-          }
 
-          //if found
-          if(count > 0) {
-  
-            int countUse = 0;
-            try {
-              countUse = cache.getFoodNameCount(user, n.getId());
-              
-              if(countUse == -1) {
-                countUse = dao.getFoodNameCount(user, n.getId());
+            //if found
+            if(count > 0) {
+    
+              int countUse = 0;
+              try {
+                countUse = cache.getFoodNameCount(user, n.getId());
                 
-                cache.setFoodNameCount(user, n.getId(), countUse);
+                if(countUse == -1) {
+                  countUse = dao.getFoodNameCount(user, n.getId());
+                  
+                  cache.setFoodNameCount(user, n.getId(), countUse);
+                }
+                
+              } catch (Exception e) {
+                logger.log(Level.SEVERE, "Error fetching food name count", e);
               }
               
-            } catch (Exception e) {
-              logger.log(Level.SEVERE, "Error fetching food name count", e);
+              n.setCount(count, countUse);
+              result.add(n);
             }
-            
-            n.setCount(count, countUse);
-            result.add(n);
           }
         }
         

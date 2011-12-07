@@ -102,11 +102,12 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 				String alias = tfAlias.getValue();
 
 				//if data has changed
-				if(!user.getLocale().equals(locale)
+				if(!locale.equals(user.getLocale())
 				    || user.getDateFormat() != df
 				    || user.getTimeFormat() != tf
 				    || user.getMeasurementSystem() != meas
-				    || !user.getAlias().equals(alias)) {
+				    || (alias == null && user.getAlias() != null)
+				    || (alias != null && !alias.equals(user.getAlias()))) {
 				  
 	        user.setLocale(locale);
 	        user.setDateFormat(df);
@@ -179,7 +180,7 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
     for(Entry<String, String> entry : StringConstants.LOCALES.entrySet()) {
       comboLocale.add(entry.getValue());
       
-      if(entry.getValue().equals(user.getLocale())) {
+      if(entry.getKey().equals(user.getLocale())) {
         sel = i;
       }
       i++;

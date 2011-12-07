@@ -5046,10 +5046,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public UserModel saveUserData(UserModel u) throws ConnectionException {
 
-
     final UserOpenid user = userManager.getUser(this.perThreadRequest);
-    
-    
     
     UserOpenid jdo = UserOpenid.getServerModel(u);
     userManager.saveUser(user, jdo);
