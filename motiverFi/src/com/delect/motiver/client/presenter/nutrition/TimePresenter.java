@@ -530,7 +530,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 				
 				//highlight if new meal created
 				if(target == 0) {
-					display.highlight();
+					highlight();
 		    }
 			}
 		}
@@ -586,7 +586,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 
 				//highlight if new meal created
 				if(target == 0) {
-					display.highlight();
+					highlight();
 		    }
 			}	
 		}

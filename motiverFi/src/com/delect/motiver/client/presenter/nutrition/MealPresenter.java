@@ -390,7 +390,7 @@ public class MealPresenter extends Presenter {
 				
 				//highlight
 				if(target == 0) {
-          display.highlight();
+          highlight();
 		    }
 			}
 		}

@@ -236,6 +236,14 @@ public class MealsListPresenter extends Presenter {
       display.setCancelButtonVisible(true);
     }
 	}
+  
+  @Override
+  public void onRefresh() {
+    super.onRefresh();
+    
+    //highlight and scroll
+    highlight();
+  }
 
 	@Override
 	public void onRun() {
@@ -255,7 +263,7 @@ public class MealsListPresenter extends Presenter {
     }
 	    
     //highlight and scroll
-    display.highlight();
+    highlight();
   }
 	
 	@Override
