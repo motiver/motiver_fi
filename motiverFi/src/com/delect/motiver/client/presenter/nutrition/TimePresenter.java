@@ -322,7 +322,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 	
 	@Override
 	public void onRun() {
-		show();
+		showContent();
 	    
 		//new time
 		if(time.getId() == 0) {
@@ -660,7 +660,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 	/**
 	 * shows meals and foods from time model
 	 */
-	void show() {
+	void showContent() {
 
 		display.setContentEnabled(false);
 		

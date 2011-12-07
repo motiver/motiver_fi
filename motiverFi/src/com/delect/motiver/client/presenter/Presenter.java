@@ -43,6 +43,7 @@ public abstract class Presenter {
 	
 	protected SimpleEventBus eventBus;
 	protected MyServiceAsync rpcService;
+  private Presenter parent = null;
 	
 	/**
 	 * Constructor for Presenter.
@@ -135,6 +136,13 @@ public abstract class Presenter {
 	 * Called when presenter is stopped. Presenter's container is removed after this
 	 */
 	public void onStop() {
+	  
+	}
+	
+	/**
+	 * Shows content of panel. Only necessary if panel can be closed, etc...
+	 */
+	public void show() {
 	  
 	}
 	
@@ -300,4 +308,12 @@ public abstract class Presenter {
 	public final void addRequest(Request request) {
 		rpcRequests.add(request);
 	}
+	
+  public void setParent(Presenter parent) {
+    this.parent = parent;
+  }
+  
+  public Presenter getParent() {
+    return parent;
+  }
 }

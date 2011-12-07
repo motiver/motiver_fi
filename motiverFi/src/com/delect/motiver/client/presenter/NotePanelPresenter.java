@@ -97,6 +97,7 @@ public class NotePanelPresenter extends Presenter {
 	 * @param presenter
 	 */
 	public void addNewPresenter(Presenter presenter) {
+	  presenter.setParent(this);
 		presenters.add(presenter);
 	}
 	@Override
@@ -118,18 +119,22 @@ public class NotePanelPresenter extends Presenter {
 			}
 			@Override
 			public void contentVisible() {
-				//show all presenters
-				for(Presenter p : presenters) {
-					if(p != null) {
-            p.run(display.getBodyContainer());
-			    }
-				}
+			  //show all presenters
+		    for(Presenter p : presenters) {
+		      if(p != null) {
+		        p.run(display.getBodyContainer());
+		      }
+		    }
 			}
 		});
 	}
 
-
 	@Override
+	public void show() {
+	  display.showContent();
+  }
+
+  @Override
 	public void onRefresh() {
 		//refresh all presenters
 		for(Presenter p : presenters) {

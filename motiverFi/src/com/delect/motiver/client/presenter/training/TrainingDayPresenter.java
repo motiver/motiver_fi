@@ -167,6 +167,12 @@ public class TrainingDayPresenter extends Presenter {
 		addEventHandler(DateChangedEvent.TYPE, new DateChangedEventHandler() {
 			@Override
 			public void onDateChanged(DateChangedEvent event) {
+			  
+			  //open parent panel
+			  if(getParent() != null) {
+			    getParent().show();
+			  }
+			  
 			  if(event.getDate() != null) {
 			    date = event.getDate();
 			  }

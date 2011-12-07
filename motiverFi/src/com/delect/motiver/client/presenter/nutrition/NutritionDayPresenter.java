@@ -248,6 +248,12 @@ public class NutritionDayPresenter extends Presenter {
 		addEventHandler(DateChangedEvent.TYPE, new DateChangedEventHandler() {
 			@Override
 			public void onDateChanged(DateChangedEvent event) {
+        
+        //open parent panel
+        if(getParent() != null) {
+          getParent().show();
+        }
+        
 				date = event.getDate();
 
 				if(commentsPresenter != null) {
