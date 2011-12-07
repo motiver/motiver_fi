@@ -3369,141 +3369,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param date
    * @return energies in each days
    */
-  @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<MicroNutrientModel> getMicroNutrientsInCalendar(String uid, Date date) throws ConnectionException {
+  public List<MicroNutrientModel> getMicroNutrientsInCalendar(String uid, Date date) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMicroNutrientsInCalendar()");
-    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading times for "+date);
+    }
+
     List<MicroNutrientModel> list = new ArrayList<MicroNutrientModel>();
     
-    //get uid
+    //get user
     UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
       
-      //check permission
-      if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid)) {
-        throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, UID, uid);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    List<MicroNutrient> jdos = nutritionManager.getMicroNutrients(user, date, uid);
+    if(jdos != null) {
+      for(MicroNutrient m : jdos) {
+        list.add(MicroNutrient.getClientModel(m));
       }
-    
-      //strip time
-      final Date dStart = stripTime(date, true);
-      final Date dEnd = stripTime(date, false);
-      
-      //get times
-      Query q = pm.newQuery(TimeJDO.class);
-      q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-      q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<TimeJDO> times = (List<TimeJDO>) q.execute(uid, dStart, dEnd);
-
-      //each time
-      for(TimeJDO t : times) {
-
-        //each meal
-        List<MealInTime> meals = t.getMeals();
-        if(meals != null) {
-          for(MealInTime m : meals) {
-            
-            try {
-
-              if(m.getFoods() != null) {
-                for(FoodInMealTime food : m.getFoods()) {
-                  try {
-                    //get name
-                    if(food.getNameId() != 0) {
-                      FoodName name = pm.getObjectById(FoodName.class, food.getNameId());
-                      if(name != null) {
-                        for(MicroNutrient mn : name.getMicroNutrients()) {
-                          //check if already found in array
-                          int i=0;
-                          double val = -1;
-                          for(MicroNutrientModel model : list) {
-                            if(model.getNameId() == mn.getNameId()) {
-                              val = model.getValue();
-                              break;
-                            }
-                            i++;
-                          }
-                          //found -> update value
-                          if(val != -1) {
-                            list.get(i).setValue(val + mn.getValue() * (food.getAmount() / 100));
-                          }
-                          //not found
-                          else {
-                            MicroNutrientModel mn2 = MicroNutrient.getClientModel(mn);
-                            mn2.setValue(mn.getValue() * (food.getAmount() / 100));
-                            list.add(mn2);
-                          }
-                        }
-                      }
-                    }
-                  } catch (Exception e1) {
-                    logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
-                  }
-                }
-              }
-            } catch (Exception e1) {
-              logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
-            }
-            
-          }
-
-        }
-
-        if(t.getFoods() != null) {
-          for(FoodJDO food : t.getFoods()) {
-            try {
-              //get name
-              if(food.getNameId() != 0) {
-                FoodName name = pm.getObjectById(FoodName.class, food.getNameId());
-                if(name != null) {
-                  for(MicroNutrient mn : name.getMicroNutrients()) {
-                    //check if already found in array
-                    int i=0;
-                    double val = -1;
-                    for(MicroNutrientModel model : list) {
-                      if(model.getNameId() == mn.getNameId()) {
-                        val = model.getValue();
-                        break;
-                      }
-                      i++;
-                    }
-                    //found -> update value
-                    if(val != -1) {
-                      list.get(i).setValue(val + mn.getValue() * (food.getAmount() / 100));
-                    }
-                    //not found
-                    else {
-                      MicroNutrientModel mn2 = MicroNutrient.getClientModel(mn);
-                      mn2.setValue(mn.getValue() * (food.getAmount() / 100));
-                      list.add(mn2);
-                    }
-                  }
-                }
-              }
-            } catch (Exception e1) {
-              logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
-              //TODO antaa v�lill� virheilmoitusta???
-            }
-          }
-        }
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e);
-      throw new ConnectionException("getMicroNutrientsInCalendar", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
 
     return list;

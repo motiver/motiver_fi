@@ -8,9 +8,12 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import com.delect.motiver.server.FoodInMealTime;
+import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.cache.NutritionCache;
 import com.delect.motiver.server.dao.NutritionDAO;
 import com.delect.motiver.server.dao.helper.MealSearchParams;
+import com.delect.motiver.server.jdo.MicroNutrient;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
@@ -20,6 +23,7 @@ import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.server.util.NutritionUtils;
 import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.MicroNutrientModel;
 import com.delect.motiver.shared.NutritionDayModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
@@ -1053,6 +1057,99 @@ public class NutritionManager {
     
     return list;
     
+  }
+
+
+  public List<MicroNutrient> getMicroNutrients(UserOpenid user, Date date, String uid) throws ConnectionException {
+
+    List<MicroNutrient> list = new ArrayList<MicroNutrient>();
+    
+    try {
+      
+      List<TimeJDO> times = this.getTimes(user, date, uid);
+      if(times != null) {
+        for(TimeJDO t : times) {
+  
+          //each meal
+          List<MealJDO> meals = t.getMealsNew();
+          if(meals != null) {
+            for(MealJDO m : meals) {
+              
+              //each food
+              if(m.getFoods() != null) {
+                for(FoodJDO food : m.getFoods()) {
+                  //if has name
+                  if(food.getName() != null) {
+                    for(MicroNutrient mn : food.getName().getMicroNutrients()) {
+                      //check if already found in array
+                      int i=0;
+                      double val = -1;
+                      for(MicroNutrient model : list) {
+                        if(model.getNameId().equals(mn.getNameId())) {
+                          val = model.getValue();
+                          break;
+                        }
+                        i++;
+                      }
+                      //found -> update value
+                      if(val != -1) {
+                        list.get(i).setValue(val + mn.getValue() * (food.getAmount() / 100));
+                      }
+                      //not found
+                      else {
+                        MicroNutrient mn2 = (MicroNutrient)mn.clone();
+                        mn2.setValue(mn.getValue() * (food.getAmount() / 100));
+                        list.add(mn2);
+                      }
+                    }
+                  }
+                }
+              }
+            }
+  
+
+            //each food
+            if(t.getFoods() != null) {
+              for(FoodJDO food : t.getFoods()) {
+                //if has name
+                if(food.getName() != null) {
+                  for(MicroNutrient mn : food.getName().getMicroNutrients()) {
+                    //check if already found in array
+                    int i=0;
+                    double val = -1;
+                    for(MicroNutrient model : list) {
+                      if(model.getNameId().equals(mn.getNameId())) {
+                        val = model.getValue();
+                        break;
+                      }
+                      i++;
+                    }
+                    //found -> update value
+                    if(val != -1) {
+                      list.get(i).setValue(val + mn.getValue() * (food.getAmount() / 100));
+                    }
+                    //not found
+                    else {
+                      MicroNutrient mn2 = (MicroNutrient)mn.clone();
+                      mn2.setValue(mn.getValue() * (food.getAmount() / 100));
+                      list.add(mn2);
+                    }
+                  }
+                }
+              }
+            }
+            
+          }
+        }
+      }
+  
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading micronutrients", e);
+      throw new ConnectionException("getMicroNutrients", e);
+    }
+    
+    
+    return list;
   }
 
 }

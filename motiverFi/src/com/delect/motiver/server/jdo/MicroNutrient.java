@@ -25,12 +25,13 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.shared.MicroNutrientModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class MicroNutrient implements Serializable {
+public class MicroNutrient implements Serializable, Cloneable {
 	
 	/**
    * 
@@ -72,6 +73,16 @@ public class MicroNutrient implements Serializable {
 		
 		return modelServer;
 	}
+  
+  @Override
+  public Object clone() throws CloneNotSupportedException {
+    
+    MicroNutrient clone = new MicroNutrient(getNameId());
+    clone.setUid(getUid());
+    clone.setValue(getValue());
+    
+    return clone;
+  }
   
   @Override
   public boolean equals(Object obj) {
