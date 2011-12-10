@@ -867,7 +867,7 @@ public class TrainingManager {
         String locale = user.getLocale();
         for(int i=0; i < listAll.size(); i++) {
           ExerciseName n = listAll.get(i);
-  
+          
           //if correct locale
           if(n.getLocale().equals(locale)) {
             String name = n.getName();
@@ -898,6 +898,8 @@ public class TrainingManager {
             if(targets.contains(target)) {
               count += 3;
             }
+            
+            logger.info(" count: "+count);
 
             //if found
             if(count > 0) {
@@ -980,10 +982,10 @@ public class TrainingManager {
           //update "cache" array
           listAll.add(name);
         }
-        //otherwise update
+        //otherwise update (if name we have added)
         else {
           ExerciseName nameOld = listAll.get(i);
-          if(nameOld != null) {
+          if(nameOld != null && user.getUid().equals(nameOld.getUid())) {
             nameOld.update(name, false);
             dao.updateExerciseName(nameOld);
           }

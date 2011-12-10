@@ -26,11 +26,11 @@ public class TrainingCache {
 
   private final static boolean CACHE_ON = true;
 
-  private final static String PREFIX_WORKOUTS = "t_ws";
-  private final static String PREFIX_WORKOUT = "t_w";
-  private final static String PREFIX_ROUTINE = "t_r";
-  private final static String PREFIX_EXERCISE_NAMES = "t_en";
-  private final static String PREFIX_EXERCISE_NAME_COUNT = "t_en_c";
+  private final static String PREFIX_WORKOUTS = "tc_ws";
+  private final static String PREFIX_WORKOUT = "tc_w";
+  private final static String PREFIX_ROUTINE = "tc_r";
+  private final static String PREFIX_EXERCISE_NAMES = "tc_en";
+  private final static String PREFIX_EXERCISE_NAME_COUNT = "tc_en_c";
   
   private final static int CACHE_EXPIRE_SECONDS = 604800;
   

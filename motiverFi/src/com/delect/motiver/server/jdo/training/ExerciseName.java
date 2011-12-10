@@ -24,7 +24,6 @@ import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-
 import com.delect.motiver.shared.ExerciseNameModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -71,21 +70,37 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
 		
 		return modelServer;
 	}
+  
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof ExerciseName) {
+      ExerciseName name = (ExerciseName)obj;
+      
+      if(getId().longValue() == name.getId().longValue())
+        return true;
+      
+      return  getName().equals(name.getName())
+                && getTarget().equals(name.getTarget());
+    }
+    else {
+      return false;
+    }
+  }
 	
 	public Integer countQuery;
   public Integer countUse;
 	
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	public Long uid;
   
-  @Persistent(defaultFetchGroup="false")
+  @Persistent
   public String openId;
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 
-	@Persistent(defaultFetchGroup="false")
+	@Persistent
 	private String locale;
 
 	@Persistent
@@ -94,8 +109,7 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
 	@Persistent
 	private Integer target = 0;
 
-	@Persistent(defaultFetchGroup="false")
-	
+	@Persistent	
 	private String video;
 
 	public ExerciseName(String name, Integer target) {

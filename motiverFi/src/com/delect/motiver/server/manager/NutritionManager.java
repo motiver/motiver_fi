@@ -816,10 +816,10 @@ public class NutritionManager {
           //update "cache" array
           listAll.add(name);
         }
-        //otherwise update
+        //otherwise update (if name we have added)
         else {
           FoodName nameOld = listAll.get(i);
-          if(nameOld != null) {
+          if(nameOld != null && user.getUid().equals(nameOld.getUid())) {
             nameOld.update(name, false);
             dao.updateFoodName(nameOld);
           }

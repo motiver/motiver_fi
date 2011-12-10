@@ -26,11 +26,11 @@ public class NutritionCache {
 
   private final static boolean CACHE_ON = true;
   
-  private final static String PREFIX_FOOD_NAMES = "fnames";
-  private final static String PREFIX_FOOD_NAME_COUNT = "fn_c";
-  private final static String PREFIX_TIMES = "fn_t";
-  private final static String PREFIX_TIME = "t";
-  private final static String PREFIX_MEAL = "m";
+  private final static String PREFIX_FOOD_NAMES = "nc_fnames";
+  private final static String PREFIX_FOOD_NAME_COUNT = "nc_fn_c";
+  private final static String PREFIX_TIMES = "nc_fn_t";
+  private final static String PREFIX_TIME = "nc_t";
+  private final static String PREFIX_MEAL = "nc_m";
   
   private final static int CACHE_EXPIRE_SECONDS = 604800;
   
