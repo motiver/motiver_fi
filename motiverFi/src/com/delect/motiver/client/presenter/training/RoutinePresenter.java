@@ -47,7 +47,6 @@ import com.delect.motiver.client.view.UserView;
 import com.delect.motiver.client.view.training.RoutineDayView;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.RoutineModel;
-import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;

@@ -52,7 +52,6 @@ import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;

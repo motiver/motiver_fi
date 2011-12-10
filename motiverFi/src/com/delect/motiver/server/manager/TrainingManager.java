@@ -12,8 +12,6 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.jdo.Query;
-
 import com.delect.motiver.server.cache.TrainingCache;
 import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
@@ -25,7 +23,6 @@ import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 

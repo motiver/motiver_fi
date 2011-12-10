@@ -25,9 +25,7 @@ import javax.jdo.annotations.PrimaryKey;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
-import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.shared.MicroNutrientModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)

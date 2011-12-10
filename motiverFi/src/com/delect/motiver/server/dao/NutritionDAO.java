@@ -18,7 +18,6 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
-import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 import com.google.appengine.api.datastore.Key;
