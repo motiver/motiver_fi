@@ -28,6 +28,11 @@ import com.google.appengine.api.datastore.Key;
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class Circle implements Serializable {
 
+  /**
+   * 
+   */
+  private static final long serialVersionUID = 8955990794342496796L;
+
   @PrimaryKey
   @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
   private Key id;
@@ -98,5 +103,9 @@ public class Circle implements Serializable {
 
   public Object getTarget() {
     return target;
+  }
+  
+  public String toString() {
+    return "Circle: ["+getTarget()+", "+getFriendId()+", "+getUid()+"]";
   }
 }

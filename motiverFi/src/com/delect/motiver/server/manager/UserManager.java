@@ -279,9 +279,9 @@ public class UserManager {
 
       Circle circle = dao.getCircle(target, user.getUid(), uid);
       if(circle != null) {
-        dao.removeCircle(circle);
-      
         cache.removeCircle(circle);
+        
+        dao.removeCircle(circle);
       }
       
     } catch (Exception e) {

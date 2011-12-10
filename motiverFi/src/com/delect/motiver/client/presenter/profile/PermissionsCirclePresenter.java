@@ -183,7 +183,6 @@ public class PermissionsCirclePresenter extends Presenter {
     emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING);
     emptyPresenter.run(display.getBodyContainer());
     
-    Motiver.setNextCallCacheable(true);
     final Request req = rpcService.getUsersFromCircle(target, new MyAsyncCallback<List<UserModel>>() {
       @Override
       public void onSuccess(List<UserModel> result) {
