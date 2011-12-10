@@ -215,7 +215,7 @@ public class UserDAO {
       int i = 0;
       while(true){
         Query q = pm.newQuery(UserOpenid.class);
-        q.setOrdering("name ASC");
+        q.setOrdering("firstName ASC");
         q.setRange(i, i+100);
         List<UserOpenid> u = (List<UserOpenid>) q.execute();
         n.addAll(u);
