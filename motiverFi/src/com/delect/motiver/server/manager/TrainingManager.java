@@ -1043,12 +1043,8 @@ public class TrainingManager {
               }
             }
             
-            if(match) {
-  
-              //get "whole" workout (which has also exercises, etc..)
-              Workout workout = _getWorkout(m.getId());
-              
-              list.add(workout);
+            if(match) {              
+              list.add(m);
             }
           }
           
@@ -1083,13 +1079,15 @@ public class TrainingManager {
       String[] arr = query.split(" ");
 
       //load from cache
-      List<Routine> listAll = dao.getRoutines();
+      List<Long> keysAll = dao.getRoutines(RoutineSearchParams.all());
 
       int i = 0;
-      for(Routine m : listAll) {
+      for(Long key : keysAll) {
+
+        Routine m = _getRoutine(key);
         
         if(!m.getUid().equals(user.getUid()) 
-            && userManager.hasPermission(Permission.READ_NUTRITION, user.getUid(), m.getUid()))  {
+            && userManager.hasPermission(Permission.READ_TRAINING, user.getUid(), m.getUid()))  {
 
           if(i >= index) {
             
@@ -1104,12 +1102,8 @@ public class TrainingManager {
               }
             }
             
-            if(match) {
-  
-              //get "whole" routine (which has also workouts, exercises, etc..)
-              Routine routine = _getRoutine(m.getId());
-              
-              list.add(routine);
+            if(match) {              
+              list.add(m);
             }
           }
           
