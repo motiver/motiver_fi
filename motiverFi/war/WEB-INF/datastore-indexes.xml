@@ -100,4 +100,14 @@
         <property name="micronutrients_INTEGER_IDX" direction="asc"/>
     </datastore-index>
     
+    <datastore-index kind="Comment" ancestor="false" source="manual">
+        <property name="idTarget" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+    
+    <datastore-index kind="MeasurementValue" ancestor="false" source="manual">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="desc"/>
+    </datastore-index>
+    
 </datastore-indexes>

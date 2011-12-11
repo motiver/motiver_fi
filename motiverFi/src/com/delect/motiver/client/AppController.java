@@ -110,6 +110,7 @@ public class AppController extends Presenter {
     } catch (Exception e1) {
       BLOG_UID = null;
     }
+  BLOG_UID = null;
 
 		final String agent = GXT.getUserAgent();
     IsIE9 = !GXT.isOpera && (agent.indexOf("msie 9") != -1);

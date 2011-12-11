@@ -1,6 +1,7 @@
 package com.delect.motiver.server.dao;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -18,6 +19,7 @@ import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.ExerciseNameCount;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
+import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 
 public class TrainingDAO {
@@ -484,8 +486,11 @@ public class TrainingDAO {
         }
         limit++;
         
+        Date dStart = null;
+        Date dEnd = null;
+        
         Query q = pm.newQuery(Workout.class);
-        q.setOrdering("name ASC");
+//        q.setOrdering("name ASC");
         StringBuilder builder = new StringBuilder();
         if(params.uid != null) {
           builder.append("openId == openIdParam && ");
@@ -497,7 +502,9 @@ public class TrainingDAO {
           builder.append("routineId == 0 && ");
         }
         if(params.date != null) {
-          builder.append("date == dateParam");
+          dStart = DateUtils.stripTime(params.date, true);
+          dEnd = DateUtils.stripTime(params.date, false);
+          builder.append("date >= dateStartParam && date <= dateEndParam");
         }
         else {
           builder.append("date == null");
@@ -508,9 +515,9 @@ public class TrainingDAO {
         }
 
         q.setFilter(builder.toString());
-        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineParam, java.lang.Integer copyCountParam, java.util.Date dateParam");
+        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineParam, java.lang.Integer copyCountParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
         q.setRange(offset, limit);
-        List<Workout> workouts = (List<Workout>) q.executeWithArray(params.uid, params.routineId, params.minCopyCount, params.date);
+        List<Workout> workouts = (List<Workout>) q.executeWithArray(params.uid, params.routineId, params.minCopyCount, dStart, dEnd);
               
         //get workouts
         if(workouts != null) {

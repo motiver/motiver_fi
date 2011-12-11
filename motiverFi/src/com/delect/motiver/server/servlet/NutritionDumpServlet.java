@@ -35,6 +35,7 @@ import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.Time;
+import com.delect.motiver.server.jdo.Cardio;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
@@ -60,6 +61,35 @@ public class NutritionDumpServlet extends RemoteServiceServlet {
     response.setContentType("text/html");
     
     try {
+
+      //remove all
+      while(true) {
+        Query q = pm.newQuery(TimeJDO.class);
+        q.setRange(0, 500);
+        List<TimeJDO> l = (List<TimeJDO>)q.execute();
+        if(l.size() == 0)
+          break;
+        pm.deletePersistentAll(l);
+        pm.flush();
+      }
+      while(true) {
+        Query q = pm.newQuery(MealJDO.class);
+        q.setRange(0, 500);
+        List<MealJDO> l = (List<MealJDO>)q.execute();
+        if(l.size() == 0)
+          break;
+        pm.deletePersistentAll(l);
+        pm.flush();
+      }
+      while(true) {
+        Query q = pm.newQuery(FoodJDO.class);
+        q.setRange(0, 500);
+        List<FoodJDO> l = (List<FoodJDO>)q.execute();
+        if(l.size() == 0)
+          break;
+        pm.deletePersistentAll(l);
+        pm.flush();
+      }
       
       PrintWriter writer = response.getWriter();
       
@@ -140,6 +170,8 @@ public class NutritionDumpServlet extends RemoteServiceServlet {
           }
         }
         
+        pm.flush();
+        
       } catch (Exception e) {
         logger.log(Level.SEVERE, "Error loading data from user: "+user.getUid(), e);
       }
@@ -172,6 +204,10 @@ public class NutritionDumpServlet extends RemoteServiceServlet {
     }
     mNew.setFoodsKeys(keys);
     pm.makePersistent(mNew);
+
+    if (!pm.isClosed()) {
+      pm.close();
+    } 
     
     return mNew;
   }
