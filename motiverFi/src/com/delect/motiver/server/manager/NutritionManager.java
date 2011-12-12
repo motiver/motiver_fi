@@ -352,6 +352,10 @@ public class NutritionManager {
       logger.log(Level.FINER, "_getMeal ("+key+")");
     }
     
+    if(key == null) {
+      return null;
+    }
+    
     MealJDO jdo = cache.getMeal(key);
     
     if(jdo == null) {

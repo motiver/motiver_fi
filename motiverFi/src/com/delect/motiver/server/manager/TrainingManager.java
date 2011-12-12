@@ -261,7 +261,7 @@ public class TrainingManager {
     try {
       RoutineSearchParams params = new RoutineSearchParams();
       params.offset = offset;
-      params.limit = Constants.LIMIT_WORKOUTS;
+      params.limit = Constants.LIMIT_ROUTINES;
       params.uid = uid;
       List<Long> keys = dao.getRoutines(params);
       
@@ -428,6 +428,10 @@ public class TrainingManager {
       logger.log(Level.FINER, "_getWorkout ("+key+")");
     }
     
+    if(key == null) {
+      return null;
+    }
+    
     Workout jdo = cache.getWorkout(key);
     
     if(jdo == null) {      
@@ -458,10 +462,15 @@ public class TrainingManager {
       logger.log(Level.FINER, "_getRoutine ("+routineId+")");
     }
     
+    if(routineId == null) {
+      return null;
+    }
+    
     Routine jdo = cache.getRoutine(routineId);
     
     if(jdo == null) {
       jdo = dao.getRoutine(routineId);
+      
       jdo.setUser(userManager.getUser(jdo.getUid()));
       
       //get workouts
