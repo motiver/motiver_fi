@@ -166,14 +166,14 @@ public class TrainingDAO {
       int i = 0;
       while(true){
         Query q = pm.newQuery(ExerciseName.class);
-        q.setRange(i, i+100);
+        q.setRange(i, i+700);
         List<ExerciseName> u = (List<ExerciseName>) q.execute();
         n.addAll(u);
         
-        if(u.size() < 100) {
+        if(u.size() < 700) {
           break;
         }
-        i += 100;
+        i += 700;
       }
       
     } catch (Exception e) {
