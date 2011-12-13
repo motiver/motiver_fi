@@ -273,13 +273,13 @@ public class NutritionManager {
         
         MealJDO jdo = _getMeal(key);
         
+        //can be null if results are cutted
         if(jdo != null) {
-          
           //check permission
           userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), jdo.getUid());
-          
-          list.add(jdo);
         }
+        
+        list.add(jdo);
       }
       
     } catch (Exception e) {

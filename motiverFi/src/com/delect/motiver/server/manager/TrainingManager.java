@@ -230,13 +230,14 @@ public class TrainingManager {
       for(Long key : keys) {
         
         Workout jdo = _getWorkout(key);
+        
+        //can be null if results are cutted
         if(jdo != null) {
-          
           //check permission
           userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), jdo.getUid());
-          
-          list.add(jdo);
         }
+        
+        list.add(jdo);
       }
       
     } catch (Exception e) {
@@ -268,13 +269,14 @@ public class TrainingManager {
       for(Long key : keys) {
         
         Routine jdo = _getRoutine(key);
+        
+        //can be null if results are cutted
         if(jdo != null) {
-          
           //check permission
           userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), jdo.getUid());
-          
-          list.add(jdo);
         }
+        
+        list.add(jdo);
       }
       
     } catch (Exception e) {
