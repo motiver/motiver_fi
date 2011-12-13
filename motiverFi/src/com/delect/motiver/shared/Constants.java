@@ -27,8 +27,8 @@ public interface Constants {
 //    public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR ONLINE TESTING (change also API_KEY in index.html & blog.html!!!)
-  public static final String URL_APP = "http://v2-0.motiver-app.appspot.com";
-  public static final String URL_APP_STATIC = "http://v2-0.motiver-app.appspot.com";
+  public static final String URL_APP = "http://v2-0.motiver-app.appspot.com/";
+  public static final String URL_APP_STATIC = "http://v2-0.motiver-app.appspot.com/";
   public static final String URL_APP_CURR = "v2-0.motiver-app.appspot.com";
 
   //FOR RELEASE (change also API_KEY in index.html & blog.html!!!)
