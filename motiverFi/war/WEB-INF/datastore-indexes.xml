@@ -110,4 +110,10 @@
         <property name="date" direction="desc"/>
     </datastore-index>
     
+    <datastore-index kind="Workout" ancestor="false" source="manual">
+        <property name="date" direction="asc"/>
+        <property name="routineId" direction="asc"/>
+        <property name="copyCount" direction="desc"/>
+    </datastore-index>
+    
 </datastore-indexes>
