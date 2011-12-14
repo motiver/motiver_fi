@@ -2,7 +2,9 @@ package com.delect.motiver.server.dao;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -10,10 +12,13 @@ import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
 
+import org.datanucleus.store.appengine.query.JDOCursorHelper;
+
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.ExerciseNameCount;
@@ -21,6 +26,7 @@ import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
+import com.google.appengine.api.datastore.Cursor;
 
 public class TrainingDAO {
 
@@ -163,17 +169,25 @@ public class TrainingDAO {
     
     try {
       
-      int i = 0;
+      Cursor cursor = null;
+      Map<String, Object> extensionMap = new HashMap<String, Object>();
+      
+      //get using cursors
       while(true){
         Query q = pm.newQuery(ExerciseName.class);
-        q.setRange(i, i+700);
-        List<ExerciseName> u = (List<ExerciseName>) q.execute();
+        q.setRange(0, 700);
+        if(cursor != null) {
+          extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
+          q.setExtensions(extensionMap);
+        }
+        List<ExerciseName> u = (List<ExerciseName>) q.execute();        
+        cursor = JDOCursorHelper.getCursor(u);
+
         n.addAll(u);
         
-        if(u.size() < 700) {
+        if(u.size() == 0) {
           break;
         }
-        i += 700;
       }
       
     } catch (Exception e) {

@@ -2,13 +2,17 @@ package com.delect.motiver.server.dao;
 
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
 import javax.jdo.Transaction;
+
+import org.datanucleus.store.appengine.query.JDOCursorHelper;
 
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.dao.helper.MealSearchParams;
@@ -20,6 +24,7 @@ import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
+import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Key;
 
 public class NutritionDAO {
@@ -637,21 +642,29 @@ public class NutritionDAO {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
-    List<FoodName> n = new ArrayList<FoodName>();
+    List<FoodName> n = new ArrayList<FoodName>(1000);
     
     try {
       
-      int i = 0;
+      Cursor cursor = null;
+      Map<String, Object> extensionMap = new HashMap<String, Object>();
+      
+      //get using cursors
       while(true){
         Query q = pm.newQuery(FoodName.class);
-        q.setRange(i, i+700);
-        List<FoodName> u = (List<FoodName>) q.execute();
+        q.setRange(0, 700);
+        if(cursor != null) {
+          extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
+          q.setExtensions(extensionMap);
+        }
+        List<FoodName> u = (List<FoodName>) q.execute();        
+        cursor = JDOCursorHelper.getCursor(u);
+
         n.addAll(u);
         
-        if(u.size() < 700) {
+        if(u.size() == 0) {
           break;
         }
-        i += 700;
       }
       
     } catch (Exception e) {
