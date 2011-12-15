@@ -20,6 +20,7 @@ import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.service.MyServiceImpl;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class NutritionCache {
@@ -69,7 +70,7 @@ public class NutritionCache {
       return null;
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_TIMES);
     builder.append("_");
     builder.append(uid);
@@ -117,7 +118,7 @@ public class NutritionCache {
       }
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_TIMES);
     builder.append("_");
     builder.append(uid);
@@ -136,7 +137,7 @@ public class NutritionCache {
     }
     
     //time
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_TIME);
     builder.append(timeId);
     Object obj = cache.get(builder.toString());
@@ -160,7 +161,7 @@ public class NutritionCache {
     } 
     
     //meal
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_MEAL);
     builder.append(mealId);
     Object obj = cache.get(builder.toString());
@@ -188,7 +189,7 @@ public class NutritionCache {
     }
     
     //meal
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_MEAL);
     builder.append(meal.getId());
     cache.put(builder.toString(), meal);
@@ -205,7 +206,7 @@ public class NutritionCache {
       logger.log(Level.FINE, "Removing single meal: "+mealId);
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_MEAL);
     builder.append(mealId);
 
@@ -219,7 +220,7 @@ public class NutritionCache {
       return null;
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_FOOD_NAMES);
     Object obj = cache.get(builder.toString());
 
@@ -260,7 +261,7 @@ public class NutritionCache {
       map.put(name.getId(), name);
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_FOOD_NAMES);
     
     cache.put(builder.toString(), map);
@@ -274,7 +275,7 @@ public class NutritionCache {
       return -1;
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_FOOD_NAME_COUNT);
     builder.append(id);
     builder.append("_");
@@ -300,7 +301,7 @@ public class NutritionCache {
       logger.log(Level.FINE, "Saving food name count ("+user.getUid()+", "+id+", "+count+")");
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_FOOD_NAME_COUNT);
     builder.append(id);
     builder.append("_");

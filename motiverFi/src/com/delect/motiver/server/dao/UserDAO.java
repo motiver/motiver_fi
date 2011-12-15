@@ -12,6 +12,7 @@ import javax.jdo.Transaction;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.exception.AliasTakenException;
 
@@ -46,7 +47,7 @@ public class UserDAO {
     PersistenceManager pm =  PMF.getUser().getPersistenceManager();
     
     try {      
-      StringBuilder builder = new StringBuilder();
+      StringBuilder builder = MyServiceImpl.getStringBuilder();
       builder.append("openId == openIdParam && ");
       builder.append("(friendId == friendIdParam || friendId == '-1')");
       builder.append(" && target == targetParam");

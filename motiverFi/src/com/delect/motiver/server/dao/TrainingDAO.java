@@ -18,12 +18,12 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.ExerciseNameCount;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
+import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 import com.google.appengine.api.datastore.Cursor;
@@ -505,7 +505,7 @@ public class TrainingDAO {
         
         Query q = pm.newQuery(Workout.class);
 //        q.setOrdering("name ASC");
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = MyServiceImpl.getStringBuilder();
         if(params.uid != null) {
           builder.append("openId == openIdParam && ");
         }
@@ -596,7 +596,7 @@ public class TrainingDAO {
         
         Query q = pm.newQuery(Routine.class);
         q.setOrdering("name ASC");
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = MyServiceImpl.getStringBuilder();
         if(params.uid != null) {
           builder.append("openId == openIdParam && ");
         }

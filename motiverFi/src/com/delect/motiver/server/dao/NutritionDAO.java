@@ -22,6 +22,7 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 import com.google.appengine.api.datastore.Cursor;
@@ -107,7 +108,7 @@ public class NutritionDAO {
         
         Query q = pm.newQuery(MealJDO.class);
         q.setOrdering("name ASC");
-        StringBuilder builder = new StringBuilder();
+        StringBuilder builder = MyServiceImpl.getStringBuilder();
         if(params.uid != null) {
           builder.append("openId == openIdParam && ");
         }

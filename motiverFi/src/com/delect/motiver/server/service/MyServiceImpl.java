@@ -111,6 +111,24 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class MyServiceImpl extends RemoteServiceServlet implements MyService {
+  
+  private static ThreadLocal<StringBuilder> threadLocalBuilder = new ThreadLocal<StringBuilder>() {
+    @Override
+    protected StringBuilder initialValue() {
+      return new StringBuilder(150);
+    }
+
+    @Override
+    public StringBuilder get() {
+        StringBuilder b = super.get();
+        b.setLength(0);
+        return b;
+    }
+  };
+  
+  public static StringBuilder getStringBuilder() {
+    return threadLocalBuilder.get();
+  }
 
   /**
    * 

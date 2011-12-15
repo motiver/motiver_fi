@@ -12,6 +12,7 @@ import net.sf.jsr107cache.CacheManager;
 
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.service.MyServiceImpl;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class UserCache {
@@ -59,7 +60,7 @@ public class UserCache {
       logger.log(Level.FINE, "Saving permission circle: "+circle);
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_CIRCLE);
     builder.append("_");
     builder.append(circle.getTarget());
@@ -82,7 +83,7 @@ public class UserCache {
       logger.log(Level.FINE, "Removing permission circle: "+circle);
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_CIRCLE);
     builder.append("_");
     builder.append(circle.getTarget());
@@ -101,7 +102,7 @@ public class UserCache {
       return null;
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_CIRCLE);
     builder.append("_");
     builder.append(target);
@@ -133,7 +134,7 @@ public class UserCache {
       logger.log(Level.FINE, "Loading user ("+uid+")");
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_USER);
     builder.append(uid);
     Object obj = cache.get(builder.toString());
@@ -160,7 +161,7 @@ public class UserCache {
       logger.log(Level.FINE, "Saving user: "+user);
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_USER);
     builder.append(user.getUid());
     cache.put(builder.toString(), user);

@@ -20,6 +20,7 @@ import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
+import com.delect.motiver.server.service.MyServiceImpl;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 public class TrainingCache {
@@ -70,7 +71,7 @@ public class TrainingCache {
       return null;
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_WORKOUTS);
     builder.append("_");
     builder.append(uid);
@@ -114,7 +115,7 @@ public class TrainingCache {
       }
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_WORKOUTS);
     builder.append("_");
     builder.append(uid);
@@ -132,7 +133,7 @@ public class TrainingCache {
     }
     
     //workout
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_WORKOUT);
     builder.append(workoutId);
     Object obj = cache.get(builder.toString());
@@ -160,7 +161,7 @@ public class TrainingCache {
     }
     
     //workout
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_WORKOUT);
     builder.append(workout.getId());
     cache.put(builder.toString(), workout);
@@ -177,7 +178,7 @@ public class TrainingCache {
       logger.log(Level.FINE, "Removing single workout: "+workoutId);
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_WORKOUT);
     builder.append(workoutId);
 
@@ -194,7 +195,7 @@ public class TrainingCache {
       logger.log(Level.FINE, "Removing single routine: "+routineId);
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_ROUTINE);
     builder.append(routineId);
 
@@ -208,7 +209,7 @@ public class TrainingCache {
       return null;
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAMES);
     Object obj = cache.get(builder.toString());
 
@@ -249,7 +250,7 @@ public class TrainingCache {
       map.put(name.getId(), name);
     }
 
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAMES);
     
     cache.put(builder.toString(), map);
@@ -263,7 +264,7 @@ public class TrainingCache {
       return -1;
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAME_COUNT);
     builder.append(id);
     builder.append("_");
@@ -289,7 +290,7 @@ public class TrainingCache {
       logger.log(Level.FINE, "Saving exercise name count ("+user.getUid()+", "+id+", "+count+")");
     }
     
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAME_COUNT);
     builder.append(id);
     builder.append("_");
@@ -305,7 +306,7 @@ public class TrainingCache {
     }
     
     //routine
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_ROUTINE);
     builder.append(routineId);
     Object obj = cache.get(builder.toString());
@@ -333,7 +334,7 @@ public class TrainingCache {
     }
     
     //routine
-    StringBuilder builder = new StringBuilder();
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_ROUTINE);
     builder.append(routine.getId());
     cache.put(builder.toString(), routine);
