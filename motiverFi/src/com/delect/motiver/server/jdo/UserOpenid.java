@@ -143,6 +143,7 @@ public class UserOpenid implements Serializable {
   @Persistent
 	@PrimaryKey
   private String id; //open id
+  private String fedId;
 	
 	public UserOpenid() {
 		createDate = new Date();
@@ -315,6 +316,15 @@ public class UserOpenid implements Serializable {
 			return "";
     }
 	}
+  
+  public String getFedId() {
+    if(fedId != null) {
+      return fedId;
+    }
+    else {
+      return "";
+    }
+  }
 
 	/**
 	 * If user has administrator priviledges
@@ -470,6 +480,10 @@ public class UserOpenid implements Serializable {
 	public void setUid(String id) {
 	  this.id = id;
 	}
+  
+  public void setFedId(String fedId) {
+    this.fedId = fedId;
+  }
 	
 	public String toString() {
 	  return "User [uid: '"+getUid()+"']";
@@ -485,6 +499,7 @@ public class UserOpenid implements Serializable {
     setNickName(model.getNickName());
     setTimeFormat(model.getTimeFormat());
     setTimezone(model.getTimezone());
+    setFedId(model.getFedId());
   }
 
   public void update(User model) {
@@ -493,5 +508,6 @@ public class UserOpenid implements Serializable {
     setNickName(model.getNickname());
     setEmail(model.getEmail());
     setUid(model.getUserId());
+    setFedId(model.getFederatedIdentity());
   }
 }
