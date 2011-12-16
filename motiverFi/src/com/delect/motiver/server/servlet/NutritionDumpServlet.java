@@ -35,7 +35,6 @@ import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.Time;
-import com.delect.motiver.server.jdo.Cardio;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
