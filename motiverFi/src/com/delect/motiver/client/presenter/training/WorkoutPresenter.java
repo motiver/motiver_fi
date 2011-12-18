@@ -140,12 +140,15 @@ public class WorkoutPresenter extends Presenter {
       @Override
 			public void dragged(long id, int newPos) {
 				try {
+				  
+				  //minus one, because orders start at zero
+					newPos--;
 					
 					boolean found = false;
 					//update order fields
 					List<ExerciseModel> arr = new ArrayList<ExerciseModel>();
-					for(int i=1; i <= exercisePresenters.size(); i++) {
-						Presenter presenter = exercisePresenters.get(i - 1);
+					for(int i=0; i < exercisePresenters.size(); i++) {
+						Presenter presenter = exercisePresenters.get(i);
 						if(presenter != null) {
 							final ExerciseModel ex = ((ExercisePresenter)presenter).exercise;
 							//if dragged exercise
@@ -174,6 +177,9 @@ public class WorkoutPresenter extends Presenter {
 					      }
 							}
 							arr.add(ex);
+							
+							//update exercise
+							((ExercisePresenter)presenter).setModel(ex);
 						}
 						
 					}
@@ -390,7 +396,7 @@ public class WorkoutPresenter extends Presenter {
 		dummy.setWorkoutId(workout.getId());
 		//init new foodpresenter
     final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), dummy, workout);
-    addNewPresenter(fp);
+    addNewPresenter(fp, true);
 	}
 
 
@@ -398,7 +404,7 @@ public class WorkoutPresenter extends Presenter {
 	 * Adds new presenter to view
 	 * @param presenter
 	 */
-	protected void addNewPresenter(ExercisePresenter presenter) {
+	protected void addNewPresenter(ExercisePresenter presenter, boolean setOrder) {
 		
 		//remove emptypresenter if present
 		if(emptyPresenter != null) {
@@ -407,7 +413,9 @@ public class WorkoutPresenter extends Presenter {
 		}
 		
 		//set order (last exercises order plus one)
-		presenter.exercise.setOrder( (exercisePresenters.size() == 0)? 0 : (exercisePresenters.get(exercisePresenters.size() - 1).exercise.getOrder() + 100) );
+		if(setOrder) {
+		  presenter.exercise.setOrder( (exercisePresenters.size() == 0)? 0 : (exercisePresenters.get(exercisePresenters.size() - 1).exercise.getOrder() + 100) );
+		}
 		
 		exercisePresenters.add(presenter);
 		presenter.run(display.getBodyContainer());
@@ -502,7 +510,7 @@ public class WorkoutPresenter extends Presenter {
 					
 					//init new exercisePresenter
 					final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), m, workout);
-					addNewPresenter(fp);
+					addNewPresenter(fp, false);
 				}
 			}
 

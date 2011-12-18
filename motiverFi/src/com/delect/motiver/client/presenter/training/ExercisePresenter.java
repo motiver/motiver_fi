@@ -348,4 +348,9 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 		eventBus.fireEvent(new ExerciseUpdatedEvent(exercise));
 	}
 
+  public void setModel(ExerciseModel ex) {
+    exercise = ex;
+    display.setModel(exercise);
+  }
+
 }
