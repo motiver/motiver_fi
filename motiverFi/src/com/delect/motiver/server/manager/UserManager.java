@@ -112,9 +112,6 @@ public class UserManager {
           
           user = createUser(userCurrent, locale);
         }
-        else {
-          saveUser(user, user);
-        }
           
       }
       
