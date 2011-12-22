@@ -41,6 +41,7 @@ import com.delect.motiver.client.view.training.SingleExerciseHistoryView;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
+import com.delect.motiver.shared.WorkoutModel;
 
 /**
  * Shows single exercise
@@ -76,10 +77,11 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 	private SingleExerciseHistoryPresenter lastWeightsPresenter;
 	protected ExerciseModel exercise;
 
-	public ExercisePresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, ExerciseDisplay display, ExerciseModel exercise) {
+	public ExercisePresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, ExerciseDisplay display, ExerciseModel exercise, WorkoutModel workout) {
 		super(rpcService, eventBus);
 		this.display = display;
 	    
+		exercise.setWorkout(workout);
     this.exercise = exercise;
 
 	}
@@ -98,10 +100,10 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 	@Override
 	public void onBind() {
 		
-		//if new exercise -> set uid to our
-		if(exercise.getId() == 0) {
-			exercise.setUid(AppController.User.getUid());
-    }
+//		//if new exercise -> set uid to our
+//		if(exercise.getId() == 0) {
+//			exercise.setUid(AppController.User.getUid());
+//    }
 
 		display.setModel(exercise);
 		if(exercise.getId() != 0) {
@@ -116,7 +118,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 					
 					List<ExerciseModel> list = new ArrayList<ExerciseModel>();
 					list.add(exercise);
-					rpcService.removeExercises(list, new MyAsyncCallback<Boolean>() {
+					final Request req = rpcService.removeExercises(list, new MyAsyncCallback<Boolean>() {
 						@Override
 						public void onSuccess(Boolean ok) {
 							
@@ -128,6 +130,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 							}
 						}
 					});
+					addRequest(req);
 				}
 
 				@Override
@@ -183,20 +186,33 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 				}
 
 				@Override
-				public void query(final String query, final AsyncCallback<List<ExerciseNameModel>> callback) {
-					//save query
-					lastQuery  = query;
+				public void query(String query, final AsyncCallback<List<ExerciseNameModel>> callback) {
+          
+          //parse query name (transfer equipment's name to index)
+          for(int i=0; i < AppController.LangConstants.Targets().length; i++) {
+            String t = AppController.LangConstants.Targets()[i];
+            query = query.replaceAll(t, "--" + i + "--");
+            query = query.replaceAll(t.toLowerCase(), "--" + i + "--");
+          }
+              
+          //trim
+          final String queryTrimmed = query.trim();
+      
+          //save query
+          lastQuery  = queryTrimmed;
+      
 
           Motiver.setNextCallCacheable(true);
-					rpcService.searchExerciseNames(query, Constants.LIMIT_SEARCH_NAMES, new MyAsyncCallback<List<ExerciseNameModel>>() {
+					final Request req = rpcService.searchExerciseNames(queryTrimmed, Constants.LIMIT_SEARCH_NAMES, new MyAsyncCallback<List<ExerciseNameModel>>() {
 						@Override
 						public void onSuccess(List<ExerciseNameModel> result) {
 							//only if last query
-							if(query.equals(lastQuery)) {
+							if(queryTrimmed.equals(lastQuery)) {
 								callback.onSuccess(result);
 				      }
 						}
 					});
+					addRequest(req);
 				}
 
 				@Override
@@ -242,7 +258,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
     if(exercise.getId() == 0) {
 			
       display.setContentEnabled(false);
-			rpcService.addExercise(exercise, new MyAsyncCallback<ExerciseModel>() {
+			final Request req = rpcService.addExercise(exercise, new MyAsyncCallback<ExerciseModel>() {
 				@Override
 				public void onSuccess(ExerciseModel result) {
 					
@@ -251,7 +267,6 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 				    	
 						//set data
 						exercise.setId(result.getId());
-						exercise.setUid(result.getUid());
 						
 						//fire event
 						eventBus.fireEvent(new ExerciseCreatedEvent(exercise));
@@ -262,6 +277,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 					}
 				}
 			});
+      addRequest(req);
     }
   }
 
@@ -331,5 +347,10 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 		
 		eventBus.fireEvent(new ExerciseUpdatedEvent(exercise));
 	}
+
+  public void setModel(ExerciseModel ex) {
+    exercise = ex;
+    display.setModel(exercise);
+  }
 
 }

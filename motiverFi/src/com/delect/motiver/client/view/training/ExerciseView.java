@@ -36,6 +36,7 @@ import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.Style.HideMode;
 import com.extjs.gxt.ui.client.core.El;
@@ -77,20 +78,19 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 	//template for combobox
 	private static XTemplate nameTemplate = XTemplate.create(Templates.getExerciseNameTemplate());
 	
-	private MessageBox box = null;
-	private ImageButton btnVideo;
-	private ComboBox<ExerciseNameModel> comboName = null;
-	private LayoutContainer containerName = new LayoutContainer();
-	private ExerciseModel exercise;
+	protected MessageBox box = null;
+	protected ImageButton btnVideo;
+	protected ComboBox<ExerciseNameModel> comboName = null;
+	protected LayoutContainer containerName = new LayoutContainer();
+	protected ExerciseModel exercise;
 
 	private final HBoxLayoutData flexSets = new HBoxLayoutData(new Margins(0, 0, 0, 10));
 	private final HBoxLayoutData flexX = new HBoxLayoutData(new Margins(4, 0, 0, 10));
-	private ExerciseHandler handler;
-	private LayoutContainer panelButtons = new LayoutContainer();
-	private LayoutContainer panelVideo = new LayoutContainer();
-	private SpinnerField spinSets = new SpinnerField();
+	protected ExerciseHandler handler;
+	protected LayoutContainer panelButtons = new LayoutContainer();
+	protected LayoutContainer panelVideo = new LayoutContainer();
 
-	private ListStore<ExerciseNameModel> store;
+	protected ListStore<ExerciseNameModel> store;
 	private LayoutContainer thisContent = new LayoutContainer();
 	
 	/**
@@ -135,35 +135,13 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 		
 		try {
 			
+		  WorkoutModel w = exercise.getWorkout();
 		  //if our exercise
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUser().equals(AppController.User)) {
 
 	      //change order "link" (=drag source)
-				ImageButton btnDrag = new ImageButton(AppController.Lang.ChangeExerciseOrder(), MyResources.INSTANCE.iconBtnDrag());
-				btnDrag.setTabIndex(-1);
-				btnDrag.setData("view", this);
-				HBoxLayoutData flexDrag = new HBoxLayoutData(new Margins(0, 5, 0, 0));
-				//drag source
-				DragSource source = new DragSource(btnDrag) {  
-          @Override  
-          protected void onDragStart(DNDEvent event) { 
-            try {
-              super.onDragStart(event);
-    							
-              final ExerciseView view = (ExerciseView)event.getComponent().getData("view");
-    							
-              //set exercise name as label and ExerciseView as data
-              HTML html = new HTML();
-              html.setHTML(AppController.Lang.MoveTarget(Functions.getExerciseName(view.exercise.getName())));
-              event.setData(view);  
-              event.getStatus().update(El.fly(html.getElement()).cloneNode(true));
-            } catch (Exception e) {
-              Motiver.showException(e);
-            }  
-          }  
-				};
-				source.setGroup(Constants.DRAG_GROUP_WORKOUT + exercise.getWorkoutId());
-				thisContent.add(btnDrag, flexDrag);		
+        HBoxLayoutData flexDrag = new HBoxLayoutData(new Margins(0, 5, 0, 0));
+				thisContent.add(getDragButton(), flexDrag);		
 
 	      //name combo
 	      comboName = addExerciseCombo();
@@ -175,35 +153,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 	      thisContent.add(panelVideo, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 	      
 	      //sets
-        spinSets  = new SpinnerField();
-        //save value when valid
-        spinSets.addListener(Events.Change, new Listener<BaseEvent>() {
-          @Override
-          public void handleEvent(BaseEvent be) {
-            if(spinSets.getValue() != null) {
-              exercise.setSets(spinSets.getValue().intValue());
-              handler.saveData(exercise, false);
-            }
-          }
-        });
-        spinSets.addStyleName("field-amount");
-        spinSets.addListener(Events.OnClick, CustomListener.fieldOnClicked);
-        spinSets.setAllowNegative(false);
-        spinSets.setWidth(50);
-        spinSets.setIncrement(1);
-        spinSets.setMinValue(0);
-        spinSets.setMaxValue(30);
-        spinSets.setEditable(true);
-        spinSets.setMessageTarget("none");
-        spinSets.setPropertyEditorType(Integer.class);
-        spinSets.setFormat(NumberFormat.getFormat("0"));
-        if(AppController.IsSupportedBrowser) {
-          spinSets.setEmptyText(AppController.Lang.Sets());
-        }
-        if(exercise.getSets() != 0) {
-          spinSets.setValue(exercise.getSets());
-        }
-        thisContent.add(spinSets, flexSets);
+        thisContent.add(getSpinnerField(), flexSets);
 
         HtmlContainer labelX1 = new HtmlContainer("x");
         labelX1.setStyleName("label-x");
@@ -216,9 +166,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfReps.addStyleName("field-amount");
         tfReps.addListener(Events.OnClick, CustomListener.fieldOnClicked);
         tfReps.setValue(exercise.getReps());
-        if(AppController.IsSupportedBrowser) {
-          tfReps.setEmptyText(AppController.Lang.Reps());
-        }
+        tfReps.setEmptyText(AppController.Lang.Reps());
         tfReps.setWidth(100);
         tfReps.addListener(Events.Change, new Listener<BaseEvent>() {
           @Override
@@ -227,6 +175,8 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
             handler.saveData(exercise, false);
           }
         });
+        tfReps.setMaxLength(100);
+        Functions.setWarningMessages(tfReps);
         thisContent.add(tfReps, flexReps);
 
         HtmlContainer labelX2 = new HtmlContainer("x");
@@ -238,9 +188,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfWeights.addStyleName("field-amount");
         tfWeights.addListener(Events.OnClick, CustomListener.fieldOnClicked);
         tfWeights.setValue(exercise.getWeights());
-        if(AppController.IsSupportedBrowser) {
-          tfWeights.setEmptyText(AppController.Lang.Weights());
-        }
+        tfWeights.setEmptyText(AppController.Lang.Weights());
         tfWeights.addListener(Events.Change, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {
@@ -249,45 +197,12 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
           }
         });
         tfWeights.setWidth(100);
+        tfWeights.setMaxLength(100);
+        Functions.setWarningMessages(tfWeights);
         thisContent.add(tfWeights, flexReps);
             
-        //buttons layout
-        HBoxLayout layoutButtons = new HBoxLayout();
-        layoutButtons.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);
-        layoutButtons.setPack(BoxLayoutPack.END);
-        panelButtons.setLayout(layoutButtons);
-        panelButtons.setHeight(16);
-        panelButtons.setWidth(50);
-        panelButtons.setHideMode(HideMode.VISIBILITY);
-
-        //last weights
-        ImageButton btnLastWeights = new ImageButton(AppController.Lang.LastWeightsForThisExercise(), MyResources.INSTANCE.iconLastWeights());
-        btnLastWeights.addListener(Events.OnClick, new Listener<BaseEvent>() {
-          @Override
-          public void handleEvent(BaseEvent be) {
-            handler.showLastWeights();
-          }
-        });
-        panelButtons.add(btnLastWeights, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
-
-        //remove exercise link
-        ImageButton btnRemove = new ImageButton(AppController.Lang.RemoveTarget(AppController.Lang.ThisExercise().toLowerCase()), MyResources.INSTANCE.iconRemove());
-        btnRemove.addListener(Events.OnClick, new Listener<BaseEvent>() {
-          @Override
-          public void handleEvent(BaseEvent be) {
-            //ask for confirm
-            box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisExercise().toLowerCase()), new MessageBoxHandler() {
-              @Override
-              public void okPressed(String text) {
-                handler.exerciseRemoved();
-              }
-            });
-            box.show();
-          }
-        });
-        panelButtons.add(btnRemove);
-        
-        thisContent.add(panelButtons, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+        //buttons layout        
+        thisContent.add(getPanelButtons(), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 			}
       //not our exercise
       else {        
@@ -306,7 +221,108 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 		return this;
 	}
 
-	@Override
+	protected LayoutContainer getPanelButtons() {
+
+    HBoxLayout layoutButtons = new HBoxLayout();
+    layoutButtons.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);
+    layoutButtons.setPack(BoxLayoutPack.END);
+    panelButtons.setLayout(layoutButtons);
+    panelButtons.setHeight(16);
+    panelButtons.setWidth(50);
+    panelButtons.setHideMode(HideMode.VISIBILITY);
+
+    //last weights
+    ImageButton btnLastWeights = new ImageButton(AppController.Lang.LastWeightsForThisExercise(), MyResources.INSTANCE.iconLastWeights());
+    btnLastWeights.addListener(Events.OnClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        handler.showLastWeights();
+      }
+    });
+    panelButtons.add(btnLastWeights, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
+
+    //remove exercise link
+    ImageButton btnRemove = new ImageButton(AppController.Lang.RemoveTarget(AppController.Lang.ThisExercise().toLowerCase()), MyResources.INSTANCE.iconRemove());
+    btnRemove.addListener(Events.OnClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        //ask for confirm
+        box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisExercise().toLowerCase()), new MessageBoxHandler() {
+          @Override
+          public void okPressed(String text) {
+            handler.exerciseRemoved();
+          }
+        });
+        box.show();
+      }
+    });
+    panelButtons.add(btnRemove);
+    
+    return panelButtons;
+  }
+
+  protected SpinnerField getSpinnerField() {
+
+    final SpinnerField spinSets = new SpinnerField();
+    //save value when valid
+    spinSets.addListener(Events.Change, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        if(spinSets.getValue() != null) {
+          exercise.setSets(spinSets.getValue().intValue());
+          handler.saveData(exercise, false);
+        }
+      }
+    });
+    spinSets.addStyleName("field-amount");
+    spinSets.addListener(Events.OnClick, CustomListener.fieldOnClicked);
+    spinSets.setAllowNegative(false);
+    spinSets.setWidth(50);
+    spinSets.setIncrement(1);
+    spinSets.setMinValue(0);
+    spinSets.setMaxValue(30);
+    Functions.setWarningMessages(spinSets);
+    spinSets.setEditable(true);
+    spinSets.setPropertyEditorType(Integer.class);
+    spinSets.setFormat(NumberFormat.getFormat("0"));
+    spinSets.setEmptyText(AppController.Lang.Sets());
+    if(exercise.getSets() != 0) {
+      spinSets.setValue(exercise.getSets());
+    }
+    
+    return spinSets;
+  }
+
+  protected ImageButton getDragButton() {
+
+    ImageButton btnDrag = new ImageButton(AppController.Lang.ChangeExerciseOrder(), MyResources.INSTANCE.iconBtnDrag());
+    btnDrag.setTabIndex(-1);
+    btnDrag.setData("view", this);
+    //drag source
+    DragSource source = new DragSource(btnDrag) {  
+      @Override  
+      protected void onDragStart(DNDEvent event) { 
+        try {
+          super.onDragStart(event);
+              
+          final ExerciseView view = (ExerciseView)event.getComponent().getData("view");
+              
+          //set exercise name as label and ExerciseView as data
+          HTML html = new HTML();
+          html.setHTML(AppController.Lang.MoveTarget(Functions.getExerciseName(view.exercise.getName())));
+          event.setData(view);  
+          event.getStatus().update(El.fly(html.getElement()).cloneNode(true));
+        } catch (Exception e) {
+          Motiver.showException(e);
+        }  
+      }  
+    };
+    source.setGroup(Constants.DRAG_GROUP_WORKOUT + exercise.getWorkoutId());
+    
+    return btnDrag;
+  }
+
+  @Override
 	public ExerciseModel getExercise() {
 		return exercise;
 	}
@@ -399,16 +415,8 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
       @Override
       protected void load(Object loadConfig, AsyncCallback<List<ExerciseNameModel>> callback) {
         BasePagingLoadConfig config = (BasePagingLoadConfig)loadConfig;
-	       		
-        //parse query name (transfer equipment's name to index)
+
         String query = config.get("query").toString();
-        for(int i=0; i < AppController.LangConstants.Targets().length; i++) {
-          query = query.replaceAll(AppController.LangConstants.Targets()[i], "--" + i + "--");
-        }
-	       		
-        //trim
-        query = query.trim();
-	       		
         handler.query(query, callback);
       }
     };
@@ -451,9 +459,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
     combo.setMinChars(Constants.LIMIT_MIN_QUERY_WORD);
     combo.setTemplate(nameTemplate);  
     combo.setStore(store);
-    if(AppController.IsSupportedBrowser) {
-			combo.setEmptyText(AppController.Lang.EnterKeywordToSearchForExercises());
-    }
+		combo.setEmptyText(AppController.Lang.EnterKeywordToSearchForExercises());
 		combo.setLoadingText(AppController.Lang.Loading());
     combo.setHideTrigger(true);
     combo.setTriggerAction(TriggerAction.ALL);

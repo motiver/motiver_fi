@@ -397,6 +397,8 @@ public interface Lang extends Messages {
 	String PermissionDescTraining();
 	@DefaultMessage("Permissions")
 	String Permissions();
+  @DefaultMessage("Here you can select which users can see your data. You can search for users and allow them access by dragging them to one of the boxes.")
+  String PermissionsDesc();
 	@DefaultMessage("Personal information")
 	String PersonalInformation();
 	@DefaultMessage("Please wait")
@@ -654,4 +656,25 @@ public interface Lang extends Messages {
   String IncludeAllUsers();
   @DefaultMessage("Only letters allowed!")
   String OnlyLettersAllowed();
+
+  @DefaultMessage("This field is required")
+  String FieldBlankText();
+  @DefaultMessage("The value in this field is invalid")
+  String FieldInvalidText();
+  @DefaultMessage("The maximum length for this field is {0}")
+  String FieldMaxLengthText(int max);
+  @DefaultMessage("Enter at least {0} characters")
+  String FieldMinLengthText(int min);
+  @DefaultMessage("The time must be in HH:MM format")
+  String FieldTimeFormat();
+  @DefaultMessage("The url is not in correct format")
+  String FieldUrlFormat();
+  @DefaultMessage("The maximum value is {0}")
+  String FieldMaxText(int max);
+  @DefaultMessage("The minimum value is {0}")
+  String FieldMinText(int min);
+  @DefaultMessage("Value is not a valid number")
+  String FieldNanText();
+  @DefaultMessage("The value must be greater or equal to 0")
+  String FieldNegativeText();
  }

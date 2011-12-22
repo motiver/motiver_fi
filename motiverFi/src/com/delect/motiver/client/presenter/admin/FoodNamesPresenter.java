@@ -302,7 +302,7 @@ public class FoodNamesPresenter extends Presenter {
 		
 		//send to server
 		if(list.size() > 0) {
-			final Request req = rpcService.addFoodnames(list, new MyAsyncCallback<List<FoodNameModel>>() {
+			final Request req = rpcService.addFoodname(list, new MyAsyncCallback<List<FoodNameModel>>() {
 				@Override
 				public void onSuccess(List<FoodNameModel> result) {
 					display.clearQuickAdd();

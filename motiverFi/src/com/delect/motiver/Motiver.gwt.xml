@@ -123,23 +123,23 @@
 <!-- 	</replace-with> -->
 
 	<!-- CSS3 classes -->
-	<replace-with class="com.delect.motiver.client.view.css3.SmallNotePanel">
-		<when-type-is class="com.delect.motiver.client.view.SmallNotePanel" />
-		<when-property-is name="css3" value="true" />
+<!-- 	<replace-with class="com.delect.motiver.client.view.css3.SmallNotePanel"> -->
+<!-- 		<when-type-is class="com.delect.motiver.client.view.SmallNotePanel" /> -->
+<!-- 		<when-property-is name="css3" value="true" /> -->
 <!-- 		Smallnote panel (CSS3) don't work in firefox -->
-		<none>
-  			<when-property-is name="user.agent" value="gecko" />
-  			<when-property-is name="user.agent" value="gecko1_8" />
-  		</none>
-	</replace-with>
-	<replace-with class="com.delect.motiver.client.view.css3.training.ExerciseView">
-		<when-type-is class="com.delect.motiver.client.view.training.ExerciseView" />
-		<when-property-is name="css3" value="true" />
-	</replace-with>
-	<replace-with class="com.delect.motiver.client.view.css3.nutrition.FoodView">
-		<when-type-is class="com.delect.motiver.client.view.nutrition.FoodView" />
-		<when-property-is name="css3" value="true" />
-	</replace-with>
+<!-- 		<none> -->
+<!--   			<when-property-is name="user.agent" value="gecko" /> -->
+<!--   			<when-property-is name="user.agent" value="gecko1_8" /> -->
+<!--   		</none> -->
+<!-- 	</replace-with> -->
+<!-- 	<replace-with class="com.delect.motiver.client.view.css3.training.ExerciseView"> -->
+<!-- 		<when-type-is class="com.delect.motiver.client.view.training.ExerciseView" /> -->
+<!-- 		<when-property-is name="css3" value="true" /> -->
+<!-- 	</replace-with> -->
+<!-- 	<replace-with class="com.delect.motiver.client.view.css3.nutrition.FoodView"> -->
+<!-- 		<when-type-is class="com.delect.motiver.client.view.nutrition.FoodView" /> -->
+<!-- 		<when-property-is name="css3" value="true" /> -->
+<!-- 	</replace-with> -->
 
 <!-- 	Print view classes -->
 <!-- 	<replace-with class="com.delect.motiver.client.view.print.NotePanelView"> -->

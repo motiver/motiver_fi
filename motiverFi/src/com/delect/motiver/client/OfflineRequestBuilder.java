@@ -27,7 +27,7 @@ public class OfflineRequestBuilder extends RequestBuilder {
 	
 	public interface OfflineRequestBuilderHandler {
 		String loadFromStorage(String requestData);
-		void onErrorReceived(String requestData);
+		void onErrorReceived(String requestData, Throwable throwable);
 		void onResponseReceived(String requestData, String responseData);
 	}
 
@@ -55,9 +55,12 @@ public class OfflineRequestBuilder extends RequestBuilder {
 				return null;
 			}
 			@Override
-			public void onErrorReceived() {
+			public void onErrorReceived(Request request, Throwable throwable) {
 				//call handler
-				handler.onErrorReceived(requestData);
+				handler.onErrorReceived(requestData, throwable);
+
+				//calls onFailure method from AsyncCallback
+        getCallback().onError(request, throwable);
 			}
 			@Override
 			public boolean onResponseReceived(String responseData) {

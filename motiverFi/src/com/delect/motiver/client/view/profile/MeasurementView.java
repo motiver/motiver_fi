@@ -30,12 +30,12 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.profile.MeasurementPresenter;
 import com.delect.motiver.client.presenter.profile.MeasurementPresenter.MeasurementHandler;
 import com.delect.motiver.client.res.MyResources;
-import com.delect.motiver.client.view.EnterNamePanel;
-import com.delect.motiver.client.view.EnterNamePanel.EnterNamePanelHandler;
 import com.delect.motiver.client.view.MySpinnerField;
 import com.delect.motiver.client.view.SmallNotePanel;
 import com.delect.motiver.client.view.SmallNotePanelDisplay;
+import com.delect.motiver.client.view.widget.NameInputWidget;
 import com.delect.motiver.client.view.widget.MyButton;
+import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.Functions.MessageBoxHandler;
@@ -149,7 +149,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 			if(measurement.getId() == 0) {
 				
 				//add panel where user can type name
-				EnterNamePanel panelNameInput = new EnterNamePanel(new EnterNamePanelHandler() {
+				NameInputWidget panelNameInput = new NameInputWidget(new EnterNamePanelHandler() {
 					@Override
 					public void newName(String name) {
 						//if cancelled
@@ -449,6 +449,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 		tfUnit.setStyleAttribute("margin-left", "10px");
 		tfUnit.setMaxLength(5);
 		tfUnit.setAutoValidate(true);
+    Functions.setWarningMessages(tfUnit);
 		tfUnit.addListener(Events.Valid, new Listener<BaseEvent>() {
 			@Override
 			public void handleEvent(BaseEvent be) {

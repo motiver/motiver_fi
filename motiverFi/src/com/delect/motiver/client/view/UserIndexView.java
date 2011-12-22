@@ -22,6 +22,7 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.UserIndexPresenter;
 import com.delect.motiver.client.presenter.UserIndexPresenter.UserIndexHandler;
 import com.delect.motiver.client.view.widget.MyButton;
+import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.TicketModel;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
@@ -213,7 +214,7 @@ public class UserIndexView extends UserIndexPresenter.UserIndexDisplay {
 		textArea.setMinLength(10);
 		textArea.setWidth(400);
 		textArea.setHeight(200);
-		textArea.setMessageTarget("none");
+    Functions.setWarningMessages(textArea);
 		textArea.setEmptyText(AppController.Lang.Description());  
 		popup.add(textArea, new RowData(-1, -1, new Margins(0, 0, 10, 0)));
 

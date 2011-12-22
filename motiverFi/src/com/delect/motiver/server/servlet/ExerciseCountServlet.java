@@ -17,7 +17,6 @@
  */
 package com.delect.motiver.server.servlet;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -31,13 +30,12 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.delect.motiver.server.Exercise;
-import com.delect.motiver.server.ExerciseNameCount;
-import com.delect.motiver.server.FoodNameCount;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.UserOpenid;
-import com.delect.motiver.server.Workout;
-import com.delect.motiver.server.datastore.StoreNutrition;
+import com.delect.motiver.server.cache.WeekCache;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.training.Exercise;
+import com.delect.motiver.server.jdo.training.ExerciseNameCount;
+import com.delect.motiver.server.jdo.training.Workout;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class ExerciseCountServlet extends RemoteServiceServlet {
@@ -54,6 +52,8 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    WeekCache cache = new WeekCache();
     
     response.setContentType("text/html");
     
@@ -107,6 +107,8 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
             }
           }
           
+          //save each count to datastore
+          List<ExerciseNameCount> counts = new ArrayList<ExerciseNameCount>();
           
           Set<Long> set = tableExercises.keySet();
           Iterator<Long> itr = set.iterator();
@@ -114,25 +116,17 @@ public class ExerciseCountServlet extends RemoteServiceServlet {
             Long nameId = itr.next();
 //            response.getWriter().write("      "+nameId + ": " + tableExercises.get(nameId)+"<br>");
             
-            Integer count = tableExercises.get(nameId);
-            
-            //check if found
-            q = pm.newQuery(ExerciseNameCount.class);
-            q.setFilter("nameId == nameIdParam && openId == openIdParam");
-            q.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
-            q.setRange(0, 1);
-            List<ExerciseNameCount> valueCount = (List<ExerciseNameCount>) q.execute(nameId, user.getUid());
-            if(valueCount.size() > 0) {
-              ExerciseNameCount model = valueCount.get(0);
-              model.setCount(count);
-            }
-            //not found
-            else {
-              ExerciseNameCount model = new ExerciseNameCount(nameId, count, user.getUid());
-              pm.makePersistent(model);
-            }            
-            pm.flush();
+            //Create model
+            int count = tableExercises.get(nameId);
+            ExerciseNameCount model = new ExerciseNameCount(nameId, count, user.getUid());
+            counts.add(model);
+
+            //update cache
+            cache.addExerciseNameCount(nameId, user.getUid(), count);
           }
+          
+          pm.makePersistentAll(counts);
+          pm.flush();
           
         } catch (Exception e) {
           logger.log(Level.SEVERE, "Error loading data from user: "+user.getUid(), e);

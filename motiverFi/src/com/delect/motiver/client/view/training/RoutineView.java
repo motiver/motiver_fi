@@ -21,10 +21,10 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.training.RoutinePresenter;
 import com.delect.motiver.client.presenter.training.RoutinePresenter.RoutineHandler;
 import com.delect.motiver.client.res.MyResources;
-import com.delect.motiver.client.view.EnterNamePanel;
-import com.delect.motiver.client.view.EnterNamePanel.EnterNamePanelHandler;
+import com.delect.motiver.client.view.widget.NameInputWidget;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.client.view.widget.MyButton;
+import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.Functions.MessageBoxHandler;
 import com.delect.motiver.shared.RoutineModel;
@@ -130,7 +130,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 			if(routine.getId() == 0) {
 				
 				//add panel where user can type name
-				EnterNamePanel panelNameInput = new EnterNamePanel(new EnterNamePanelHandler() {
+				NameInputWidget panelNameInput = new NameInputWidget(new EnterNamePanelHandler() {
 					@Override
 					public void newName(String name) {
 						//if cancelled
@@ -222,7 +222,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 		
 		panelLinks.removeAll();		
 
-		if(routine.getUid().equals(AppController.User.getUid())) {
+		if(routine.getUser().equals(AppController.User)) {
 		    
 			//add/remove days links
 			MyButton btnAdd = new MyButton();
@@ -278,7 +278,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 			//buttons
 			if(routine.getId() != 0) {
 
-				if(routine.getUid().equals(AppController.User.getUid())) {
+				if(routine.getUser().equals(AppController.User)) {
 			        
 					//spacer
 					HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 10, 0, 10));

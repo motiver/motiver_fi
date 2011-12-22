@@ -21,6 +21,7 @@ import java.util.List;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.http.client.Request;
 import com.google.gwt.user.client.Window;
 
 import com.delect.motiver.client.AppController;
@@ -271,25 +272,34 @@ public class WorkoutsListPresenter extends Presenter {
       display.setCancelButtonVisible(true);
     }
 	}
+  
+  @Override
+  public void onRefresh() {
+    super.onRefresh();
+    
+    //highlight and scroll
+    highlight();
+  }
 
 	@Override
 	public void onRun() {
 	    
     //show single workout
     if(workoutId != 0) {
-			rpcService.getWorkout(workoutId, new MyAsyncCallback<WorkoutModel>() {
+			final Request req = rpcService.getWorkout(workoutId, new MyAsyncCallback<WorkoutModel>() {
 				@Override
 				public void onSuccess(WorkoutModel result) {
           showSingleWorkout(result);
         }
 			});
+			addRequest(req);
     }	    	
     else {
       showMainView();
     }
 	    
     //highlight and scroll
-    display.highlight();
+    highlight();
   }
 	
 	@Override
@@ -353,7 +363,7 @@ public class WorkoutsListPresenter extends Presenter {
 			}
 			
 			//add workout
-			rpcService.addWorkouts(workouts, new MyAsyncCallback<List<WorkoutModel>>() {
+			final Request req = rpcService.addWorkouts(workouts, new MyAsyncCallback<List<WorkoutModel>>() {
 				@Override
 				public void onSuccess(List<WorkoutModel> result) {
 					display.setContentEnabled(true);
@@ -371,6 +381,7 @@ public class WorkoutsListPresenter extends Presenter {
 					}
 				}
 			});
+			addRequest(req);
 			
 		} catch (Exception e) {
       Motiver.showException(e);
@@ -447,7 +458,6 @@ public class WorkoutsListPresenter extends Presenter {
       }
 			
 			//show single workout (clear exercises)
-			m.setExercises(null);
 			singleWorkoutPresenter = new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), m);
 			singleWorkoutPresenter.run(display.getDataContainer());
 			
@@ -470,7 +480,7 @@ public class WorkoutsListPresenter extends Presenter {
 				}
 				else {
 					//copy to our workouts
-					if(!m.getUid().equals(AppController.User.getUid())) {
+					if(!m.getUser().equals(AppController.User)) {
 						display.setCopyButtonVisible(true);
 					}
 				}

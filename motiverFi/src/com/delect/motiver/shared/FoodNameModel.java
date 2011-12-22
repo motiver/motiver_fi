@@ -178,4 +178,9 @@ public class FoodNameModel extends BaseModelData implements IsSerializable {
 	public void setUid(String uid) {
     set("uid", uid);
   }
+  
+  @Override
+  public String toString() {
+    return "FoodName: ['"+getName()+"', energy: '"+getEnergy()+"', "+getProtein()+" / "+getCarb()+" / "+getFet()+"]";
+  }
 }

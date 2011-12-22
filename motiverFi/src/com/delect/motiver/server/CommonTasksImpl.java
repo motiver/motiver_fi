@@ -29,9 +29,10 @@ import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.gwt.user.server.rpc.RemoteServiceServlet;
-
+import com.delect.motiver.server.jdo.ExerciseSearchIndex;
+import com.delect.motiver.server.jdo.FoodSearchIndex;
 import com.delect.motiver.shared.Constants;
+import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 
 public class CommonTasksImpl extends RemoteServiceServlet {

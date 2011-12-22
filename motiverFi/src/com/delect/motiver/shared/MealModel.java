@@ -92,14 +92,17 @@ public class MealModel extends BaseModelData implements IsSerializable {
 			return 0L;
     }
   }
-	public String getUid() {
-		if(get("uid") != null) {
-			return get("uid");
+  public int getCount() {
+    if(get("cc") != null) {
+      return get("cc");
     }
-		else {
-			return "";
+    else {
+      return 0;
     }
   }
+  public UserModel getUser() {
+    return get("u");
+  } 
 	
 
 	public void setCarb(double carb) {
@@ -133,7 +136,15 @@ public class MealModel extends BaseModelData implements IsSerializable {
 	public void setTimeId(long id) {
 		set("tid", id);
 	}
-	public void setUid(String uid) {
-		set("uid", uid);
-	}	
+  public void setCount(int cc) {
+    set("cc", cc);
+  }
+  public void setUser(UserModel u) {
+    set("u", u);
+  }	
+  
+  @Override
+  public String toString() {
+    return "Meal: ['"+getName()+"', foods: "+getFoods().size()+"]";
+  }
 }

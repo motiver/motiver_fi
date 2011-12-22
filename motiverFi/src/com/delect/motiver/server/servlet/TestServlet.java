@@ -25,9 +25,9 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.delect.motiver.server.Comment;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.UserOpenid;
+import com.delect.motiver.server.jdo.Comment;
+import com.delect.motiver.server.jdo.UserOpenid;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**

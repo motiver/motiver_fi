@@ -236,6 +236,14 @@ public class MealsListPresenter extends Presenter {
       display.setCancelButtonVisible(true);
     }
 	}
+  
+  @Override
+  public void onRefresh() {
+    super.onRefresh();
+    
+    //highlight and scroll
+    highlight();
+  }
 
 	@Override
 	public void onRun() {
@@ -255,7 +263,7 @@ public class MealsListPresenter extends Presenter {
     }
 	    
     //highlight and scroll
-    display.highlight();
+    highlight();
   }
 	
 	@Override
@@ -288,7 +296,7 @@ public class MealsListPresenter extends Presenter {
 			model.setDate(null);
 			
 			//add meal
-			final Request req = rpcService.addMeal(model, new MyAsyncCallback<MealModel>() {
+			final Request req = rpcService.addMeal(model, 0L, new MyAsyncCallback<MealModel>() {
 				@Override
 				public void onSuccess(MealModel result) {
 					display.setContentEnabled(true);
@@ -311,10 +319,10 @@ public class MealsListPresenter extends Presenter {
 			display.setContentEnabled(false);
 			
 			for(MealModel model : meals)
-      model.setTimeId(time.getId());
+			  model.setTimeId(time.getId());
 			
 			//add meal
-			final Request req = rpcService.addMeals(meals, new MyAsyncCallback<List<MealModel>>() {
+			final Request req = rpcService.addMeals(meals, time.getId(), new MyAsyncCallback<List<MealModel>>() {
 				@Override
 				public void onSuccess(List<MealModel> result) {
 					display.setContentEnabled(true);
@@ -403,8 +411,7 @@ public class MealsListPresenter extends Presenter {
 				mealsListSearchPresenter.hide();
 	    }
 			
-			//show single meal (clear foods)
-			m.setFoods(null);
+			//show single meal
 			singleMealPresenter = new MealPresenter(rpcService, eventBus, (MealDisplay)GWT.create(MealView.class), m);
 			singleMealPresenter.run(display.getDataContainer());
 			
@@ -422,7 +429,7 @@ public class MealsListPresenter extends Presenter {
 				}
 				else {
 					//copy to our meals
-					if(!m.getUid().equals(AppController.User.getUid())) {
+					if(!m.getUser().getUid().equals(AppController.User.getUid())) {
 						display.setCopyButtonVisible(true);
 					}
 				}

@@ -39,6 +39,14 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
 		return getEmail().compareTo(compare.getEmail());
 	}
 	
+	@Override
+	public boolean equals(Object object) {
+	  if(object instanceof UserModel) {
+	    return ((UserModel)object).getUid().equals(getUid());
+	  }
+	  return false;
+	}
+	
 	public String getAlias() {
 	  return get("a");
 	}
@@ -115,88 +123,88 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
     }
 	}
 	
-	/**
-	 * Target to share cardio with
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareCardio() {
-		if(get("shc") != null && ((String)get("shc")).length() > 0) {
-      return get("shc");
-    }
-		
-		return "0";
-  }
-	/**
-	 * Target to coach
-	 * <br>-1 : share with nobody
-	 * <br>>0 : facebook user id
-	 */
-	public String getShareCoach() {
-		if(get("shco") != null) {
-			return get("shco");
-    }
-		
-		return "";
-  }
-	/**
-	 * Target to share measurements with
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareMeasurement() {
-		if(get("shm") != null && ((String)get("shm")).length() > 0) {
-      return get("shm");
-    }
-		
-		return "0";
-  }
-	/**
-	 * Target to share nutrition with (only calories)
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareNutrition() {
-		if(get("shn") != null && ((String)get("shn")).length() > 0) {
-      return get("shn");
-    }
-		
-		return "0";
-  }
-	/**
-	 * Target to share foods with
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareNutritionFoods() {
-		if(get("shnf") != null && ((String)get("shnf")).length() > 0) {
-      return get("shnf");
-    }
-		
-		return "0";
-  }
-	/**
-	 * Target to share training with
-	 * <br>-2 : share with everybody
-	 * <br>-1 : share with nobody
-	 * <br>0 : share with all facebook friends (DEFAULT)
-	 * <br>>0 : facebook group id
-	 */
-	public String getShareTraining() {
-		if(get("sht") != null && ((String)get("sht")).length() > 0) {
-      return get("sht");
-    }
-		
-		return "0";
-  }
+//	/**
+//	 * Target to share cardio with
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareCardio() {
+//		if(get("shc") != null && ((String)get("shc")).length() > 0) {
+//      return get("shc");
+//    }
+//		
+//		return "0";
+//  }
+//	/**
+//	 * Target to coach
+//	 * <br>-1 : share with nobody
+//	 * <br>>0 : facebook user id
+//	 */
+//	public String getShareCoach() {
+//		if(get("shco") != null) {
+//			return get("shco");
+//    }
+//		
+//		return "";
+//  }
+//	/**
+//	 * Target to share measurements with
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareMeasurement() {
+//		if(get("shm") != null && ((String)get("shm")).length() > 0) {
+//      return get("shm");
+//    }
+//		
+//		return "0";
+//  }
+//	/**
+//	 * Target to share nutrition with (only calories)
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareNutrition() {
+//		if(get("shn") != null && ((String)get("shn")).length() > 0) {
+//      return get("shn");
+//    }
+//		
+//		return "0";
+//  }
+//	/**
+//	 * Target to share foods with
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareNutritionFoods() {
+//		if(get("shnf") != null && ((String)get("shnf")).length() > 0) {
+//      return get("shnf");
+//    }
+//		
+//		return "0";
+//  }
+//	/**
+//	 * Target to share training with
+//	 * <br>-2 : share with everybody
+//	 * <br>-1 : share with nobody
+//	 * <br>0 : share with all facebook friends (DEFAULT)
+//	 * <br>>0 : facebook group id
+//	 */
+//	public String getShareTraining() {
+//		if(get("sht") != null && ((String)get("sht")).length() > 0) {
+//      return get("sht");
+//    }
+//		
+//		return "0";
+//  }
 	/**
 	 * 0 = HH:mm, 1 = KK:mm aa
 	 */
@@ -216,9 +224,9 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
 			return 0;
     }
 	}
-  public String getId() {
-    return get("id");
-  }
+//  public String getId() {
+//    return get("id");
+//  }
 	public String getUid() {
 		if(get("uid") != null) {
 			return get("uid");
@@ -301,53 +309,53 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
 	public void setMeasurementSystem(int measurementSystem) {
 		set("ms", measurementSystem);
 	}
-	/**
-	 * facebook group id
-	 * "-1" : share with nobody
-	 * "0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareCardio(String shareCardio) {
-		set("shc", shareCardio);
-	}
-	/**
-	 * facebook group id
-	 * "-1" : share with nobody (DEFAULT)
-	 */
-	public void setShareCoach(String shareCoach) {
-		set("shco", shareCoach);
-	}
-	/**
-	 * facebook group id
-	 * "-1" : share with nobody
-	 * "0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareMeasurement(String shareMeasurement) {
-		set("shm", shareMeasurement);
-	}
-	/**
-	 * facebook group id
-	 * "-1" : share with nobody
-	 * "0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareNutrition(String shareNutrition) {
-		set("shn", shareNutrition);
-	}
-	/**
-	 * facebook group id
-	 * "-1" : share with nobody
-	 * "0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareNutritionFoods(String shareNutritionFoods) {
-		set("shnf", shareNutritionFoods);
-	}
-	/**
-	 * facebook group id
-	 * "-1" : share with nobody
-	 * "0" : share with all facebook friends (DEFAULT)
-	 */
-	public void setShareTraining(String shareTraining) {
-		set("sht", shareTraining);
-	}
+//	/**
+//	 * facebook group id
+//	 * "-1" : share with nobody
+//	 * "0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareCardio(String shareCardio) {
+//		set("shc", shareCardio);
+//	}
+//	/**
+//	 * facebook group id
+//	 * "-1" : share with nobody (DEFAULT)
+//	 */
+//	public void setShareCoach(String shareCoach) {
+//		set("shco", shareCoach);
+//	}
+//	/**
+//	 * facebook group id
+//	 * "-1" : share with nobody
+//	 * "0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareMeasurement(String shareMeasurement) {
+//		set("shm", shareMeasurement);
+//	}
+//	/**
+//	 * facebook group id
+//	 * "-1" : share with nobody
+//	 * "0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareNutrition(String shareNutrition) {
+//		set("shn", shareNutrition);
+//	}
+//	/**
+//	 * facebook group id
+//	 * "-1" : share with nobody
+//	 * "0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareNutritionFoods(String shareNutritionFoods) {
+//		set("shnf", shareNutritionFoods);
+//	}
+//	/**
+//	 * facebook group id
+//	 * "-1" : share with nobody
+//	 * "0" : share with all facebook friends (DEFAULT)
+//	 */
+//	public void setShareTraining(String shareTraining) {
+//		set("sht", shareTraining);
+//	}
 	/**
 	 * 0 = HH:mm, 1 = KK:mm aa
 	 */
@@ -358,9 +366,9 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
 		set("tz", timezone);
 	}
 
-	public void setId(String id) {
-		set("id", id);
-	}
+//	public void setId(String id) {
+//		set("id", id);
+//	}
 
   public void setUid(String uid) {
     set("uid", uid);
@@ -368,5 +376,9 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
   
   public void setLogoutUrl(String url) {
     set("u", url);
+  }
+  
+  public String toString() {
+    return "User [uid: '"+getUid()+"']";
   }
 }

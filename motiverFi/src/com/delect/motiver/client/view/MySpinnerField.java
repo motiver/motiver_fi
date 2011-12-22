@@ -14,6 +14,7 @@
  ******************************************************************************/
 package com.delect.motiver.client.view;
 
+import com.delect.motiver.shared.Functions;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -24,6 +25,7 @@ public class MySpinnerField extends SpinnerField {
 	public MySpinnerField() {		
 		this.setAutoValidate(true);
 		this.setValidationDelay(2000);
+    Functions.setWarningMessages(this);
     this.addListener(Events.Invalid, new Listener<BaseEvent>() {
 			@Override
 			public void handleEvent(BaseEvent be) {
@@ -44,4 +46,17 @@ public class MySpinnerField extends SpinnerField {
 			}
 		});
 	}
+	
+	@Override public void setMaxValue(Number maxValue) {
+	  super.setMaxValue(maxValue);
+	  
+    Functions.setWarningMessages(this);
+	}
+  
+  @Override public void setMinValue(Number minValue) {
+    super.setMinValue(minValue);
+    
+    Functions.setWarningMessages(this);
+  }
+	
 }

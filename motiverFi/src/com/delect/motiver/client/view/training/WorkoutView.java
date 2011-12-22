@@ -32,16 +32,16 @@ import com.delect.motiver.client.presenter.training.ExercisePresenter.ExerciseDi
 import com.delect.motiver.client.presenter.training.WorkoutPresenter;
 import com.delect.motiver.client.presenter.training.WorkoutPresenter.WorkoutHandler;
 import com.delect.motiver.client.res.MyResources;
-import com.delect.motiver.client.view.EnterNamePanel;
-import com.delect.motiver.client.view.EnterNamePanel.EnterNamePanelHandler;
 import com.delect.motiver.client.view.RatingPanel;
 import com.delect.motiver.client.view.RatingPanel.RatingPanelHandler;
 import com.delect.motiver.client.view.SmallNotePanel;
 import com.delect.motiver.client.view.SmallNotePanelDisplay;
 import com.delect.motiver.client.view.TimeSelectFieldView;
 import com.delect.motiver.client.view.TimeSelectFieldView.TimeSelectFieldHandler;
+import com.delect.motiver.client.view.widget.NameInputWidget;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.client.view.widget.MyButton;
+import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.Functions.MessageBoxHandler;
 import com.delect.motiver.shared.WorkoutModel;
@@ -151,7 +151,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 			if(workout.getId() == 0) {
 				
 				//add panel where user can type name
-				EnterNamePanel panelNameInput = new EnterNamePanel(new EnterNamePanelHandler() {
+				NameInputWidget panelNameInput = new NameInputWidget(new EnterNamePanelHandler() {
 					@Override
 					public void newName(String name) {
 						//if cancelled
@@ -341,7 +341,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 			//buttons
 			if(workout.getId() != 0) {
 				
-				if(workout.getUid().equals(AppController.User.getUid())) {
+				if(workout.getUser().equals(AppController.User)) {
 					
 					//add food
 					panelBase.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Exercise().toLowerCase()), 
@@ -477,7 +477,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 					//times
 					panelWorkoutInfo.add(new Text(AppController.Lang.Time() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 					
-					if(workout.getUid().equals(AppController.User.getUid())) {
+					if(workout.getUser().equals(AppController.User)) {
 						TimeSelectFieldView tfStart = new TimeSelectFieldView((int) workout.getTimeStart(), new TimeSelectFieldHandler() {
 							@Override
 							public void timeChanged(int time) {
@@ -488,6 +488,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 								handler.saveData(workout);
 							}
 						});
+						tfStart.setAllowBlank(true);
             panelWorkoutInfo.add(tfStart, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
             panelWorkoutInfo.add(new Text("-"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 						TimeSelectFieldView tfEnd = new TimeSelectFieldView((int) workout.getTimeEnd(), new TimeSelectFieldHandler() {
@@ -500,6 +501,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 								handler.saveData(workout);
 							}
 						});
+						tfEnd.setAllowBlank(true);
             panelWorkoutInfo.add(tfEnd, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 					}
 					//show just text
@@ -528,14 +530,14 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 							handler.saveData(workout);
 						}
 					});
-          panelRating.setEnabled(workout.getUid().equals(AppController.User.getUid()));
+          panelRating.setEnabled(workout.getUser().equals(AppController.User));
           panelWorkoutInfo.add(panelRating, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
 					
           //done
 					imgDone.setVisible(workout.getDone());
 					imgDoneNot.setVisible(!workout.getDone());
 					LayoutContainer lcDone = new LayoutContainer();
-					if(workout.getUid().equals(AppController.User.getUid())) {
+					if(workout.getUser().equals(AppController.User)) {
 						//tooltip and click listener
 						imgDoneNot.setTitle(AppController.Lang.MarkAsDone());
 						final ClickHandler handlerClick = new ClickHandler() {

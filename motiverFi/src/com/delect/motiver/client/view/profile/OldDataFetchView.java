@@ -21,6 +21,7 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.profile.OldDataFetchPresenter;
 import com.delect.motiver.client.presenter.profile.OldDataFetchPresenter.OldDataFetchHandler;
 import com.delect.motiver.client.view.widget.MyButton;
+import com.delect.motiver.shared.Functions;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -55,7 +56,6 @@ public class OldDataFetchView extends OldDataFetchPresenter.OldDataFetchDisplay 
   MessageBox box = null;
   final Dialog simple = new Dialog();  
   final TextField<String> tfName = new TextField<String>();
-    
 	final TextField<String> tfPass = new TextField<String>();  
 	public OldDataFetchView() {
 
@@ -83,7 +83,7 @@ public class OldDataFetchView extends OldDataFetchPresenter.OldDataFetchDisplay 
     tfName.setMaxLength(40); 
     tfName.setValue("");
     tfName.setAllowBlank(false);
-    tfName.setMessageTarget("none");
+    Functions.setWarningMessages(tfName);
     form.add(tfName, formData); 
 	    
     //pass
@@ -93,7 +93,7 @@ public class OldDataFetchView extends OldDataFetchPresenter.OldDataFetchDisplay 
     tfPass.setPassword(true);
     tfPass.setMaxLength(40); 
     tfPass.setAllowBlank(false);
-    tfPass.setMessageTarget("none");
+    Functions.setWarningMessages(tfPass);
     form.add(tfPass, formData); 
 	    
     Text textDesc = new Text(AppController.Lang.FetchSelectDesc());

@@ -32,8 +32,18 @@ import com.delect.motiver.client.presenter.InfoMessagePresenter.MessageColor;
 import com.delect.motiver.client.service.MyService;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.AppView;
+import com.delect.motiver.shared.TicketModel;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
+import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.http.client.Request;
+import com.google.gwt.http.client.RequestBuilder;
+import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.rpc.RpcRequestBuilder;
+import com.google.gwt.user.client.rpc.ServiceDefTarget;
+import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -41,13 +51,13 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 public class Motiver implements EntryPoint {
 	
 	public static boolean offlineMode = false;
-  SimpleEventBus eventBus = new SimpleEventBus();
+  static SimpleEventBus eventBus = new SimpleEventBus();
   /**
    * If next RPC call is cacheable
    */
   private static boolean isCacheable = false; 
   
-  MyServiceAsync rpcService;
+  static MyServiceAsync rpcService;
 	
 	/**
 	 * This is the entry point method.
@@ -95,7 +105,7 @@ public class Motiver implements EntryPoint {
 						return null;
 					}
 					@Override
-					public void onErrorReceived(String requestData) {
+					public void onErrorReceived(String requestData, Throwable throwable) {
 						
 						//cancel loading event
 						eventBus.fireEvent(new LoadingEvent(null));
@@ -159,8 +169,31 @@ public class Motiver implements EntryPoint {
 	 * Shows exception
 	 * @param exception
 	 */
-	public static void showException(Exception exception) {
-	  exception.printStackTrace();
+	public static void showException(Throwable exception) {
+	  
+	  if(exception != null) {
+	    exception.printStackTrace();
+	    
+	    final StringBuilder result = new StringBuilder();
+	    result.append(exception.toString());
+	    result.append("\n");
+
+	    //add each element of the stack trace
+	    for (StackTraceElement element : exception.getStackTrace() ){
+	      result.append( element );
+	      result.append( "\n" );
+	    }
+	    
+	    TicketModel ticket = new TicketModel();
+      ticket.setPriority(1);
+      ticket.setDesc(result.toString());
+      ticket.setTitle("Exception thrown at #" + History.getToken());
+      ticket.setUid(AppController.User.getUid());
+	    final Request req = rpcService.addTicket(ticket, MyAsyncCallback.EmptyCallback);
+	  }
+	  
+	  //show error message
+	  eventBus.fireEvent(new InfoMessageEvent(MessageColor.COLOR_RED, AppController.Lang.NetworkError()));
 	}
 
   

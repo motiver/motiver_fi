@@ -18,11 +18,14 @@ import javax.jdo.JDOHelper;
 import javax.jdo.PersistenceManagerFactory;
 
 public final class PMF {
-  private static final PersistenceManagerFactory pmfInstance =
-  JDOHelper.getPersistenceManagerFactory("transactions-optional");
+  private static final PersistenceManagerFactory pmfInstance = JDOHelper.getPersistenceManagerFactory("transactions-optional");
+  private static final PersistenceManagerFactory pmfUserInstance = JDOHelper.getPersistenceManagerFactory("user-manager");
 
   public static PersistenceManagerFactory get() {
     return pmfInstance;
+  }
+  public static PersistenceManagerFactory getUser() {
+    return pmfUserInstance;
   }
 
   private PMF() {}

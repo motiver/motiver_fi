@@ -78,14 +78,14 @@ public class RoutinesListView extends RoutinesListPresenter.RoutinesListDisplay 
     panelSearchSub.setLayout(layout);
     panelSearchSub.setHeight(28);
 		tfSearch.setEmptyText(AppController.Lang.EnterKeywordToSearchForRoutines());
-		tfSearch.setMinLength(3);
-		tfSearch.setMessageTarget("none");
+		tfSearch.setMinLength(Constants.LIMIT_MIN_QUERY_WORD);
+		Functions.setWarningMessages(tfSearch);
 		tfSearch.setAutoValidate(true);
 		tfSearch.setValidationDelay(Constants.DELAY_SEARCH);
 		tfSearch.addListener(Events.Valid, new Listener<BaseEvent>() {
 			@Override
 			public void handleEvent(BaseEvent be) {
-				if(handler != null && !lastQuery.equals(tfSearch.getValue())) {
+				if(handler != null && tfSearch.getValue() != null && !lastQuery.equals(tfSearch.getValue())) {
 					lastQuery = tfSearch.getValue();
 					handler.search(tfSearch.getValue());
 				}

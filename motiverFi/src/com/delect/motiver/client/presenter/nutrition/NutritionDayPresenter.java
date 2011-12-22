@@ -248,6 +248,12 @@ public class NutritionDayPresenter extends Presenter {
 		addEventHandler(DateChangedEvent.TYPE, new DateChangedEventHandler() {
 			@Override
 			public void onDateChanged(DateChangedEvent event) {
+        
+        //open parent panel
+        if(getParent() != null) {
+          getParent().show();
+        }
+        
 				date = event.getDate();
 
 				if(commentsPresenter != null) {
@@ -526,7 +532,7 @@ public class NutritionDayPresenter extends Presenter {
 			
 			//add new presenter
 			TimeModel time = new TimeModel(Functions.trimDateToDatabase(date, true), timeDbl);
-			time.setUid(AppController.User.getUid());
+			time.setUser(AppController.User);
 			final TimePresenter tp = new TimePresenter(rpcService, eventBus, (TimeDisplay)GWT.create(TimeView.class), time);
 			addNewPresenter(tp, true);
 			

@@ -145,7 +145,7 @@ public class PermissionsCircleView extends PermissionsCirclePresenter.Permission
     }
     
     //enable all (not coach)
-    if(target != 5) {
+    if(target != 9) {
       cbAllUsers.setBoxLabel(AppController.Lang.IncludeAllUsers());
       cbAllUsers.addListener(Events.OnChange, new Listener<BaseEvent>() {
         @Override
@@ -153,6 +153,7 @@ public class PermissionsCircleView extends PermissionsCirclePresenter.Permission
           handler.setEnableAll(cbAllUsers.getValue());
           
           panelBody.setEnabled(!cbAllUsers.getValue());
+          panelBody.layout();
         }
       });
       this.add(cbAllUsers, new RowData(-1, -1, new Margins(5,5,10,5)));
@@ -181,8 +182,11 @@ public class PermissionsCircleView extends PermissionsCirclePresenter.Permission
   
   @Override
   public void setAllUsersEnabled(boolean enabled) {
+    cbAllUsers.disableEvents(true);
     cbAllUsers.setValue(enabled);
+    cbAllUsers.enableEvents(true);
     
     panelBody.setEnabled(!cbAllUsers.getValue());
+    panelBody.layout();
   }
 }

@@ -1,1 +1,4 @@
 /appengine-generated
+/classes
+/classes/*
+/deploy

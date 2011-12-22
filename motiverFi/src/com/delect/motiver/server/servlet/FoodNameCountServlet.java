@@ -17,7 +17,6 @@
  */
 package com.delect.motiver.server.servlet;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -31,18 +30,14 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.delect.motiver.server.Exercise;
-import com.delect.motiver.server.ExerciseNameCount;
-import com.delect.motiver.server.FoodInMealTime;
-import com.delect.motiver.server.FoodInTime;
-import com.delect.motiver.server.FoodNameCount;
-import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.Time;
-import com.delect.motiver.server.UserOpenid;
-import com.delect.motiver.server.Workout;
-import com.delect.motiver.server.datastore.StoreNutrition;
-import com.extjs.gxt.ui.client.data.Model;
+import com.delect.motiver.server.jdo.nutrition.MealJDO;
+import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.cache.WeekCache;
+import com.delect.motiver.server.jdo.FoodNameCount;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
+import com.google.appengine.api.datastore.Key;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class FoodNameCountServlet extends RemoteServiceServlet {
@@ -50,7 +45,7 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
   /**
    * Logger for this class
    */
-  private static final Logger logger = Logger.getLogger(StoreNutrition.class.getName()); 
+  private static final Logger logger = Logger.getLogger(FoodNameCountServlet.class.getName()); 
 
   private static final long serialVersionUID = 5384098111620397L;
 
@@ -59,6 +54,8 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    WeekCache cache = new WeekCache();
     
     response.setContentType("text/html");
     
@@ -77,11 +74,11 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
           //get times (in chunks)
           int countTimes = 0;
           while(true) {
-            Query qT = pm.newQuery(Time.class);
+            Query qT = pm.newQuery(TimeJDO.class);
             qT.setFilter("openId == openIdParam");
             qT.declareParameters("java.lang.String openIdParam");
             qT.setRange(countTimes, countTimes+100);
-            List<Time> times = (List<Time>) qT.execute(user.getUid());
+            List<TimeJDO> times = (List<TimeJDO>) qT.execute(user.getUid());
 
             int s = times.size();
 //            response.getWriter().write("Times found: "+s+" ("+countTimes+")<br>");
@@ -93,8 +90,8 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             countTimes += s;
             
             //go through each workouts
-            for(Time t : times) {
-              for(FoodInTime f : t.getFoods()) {
+            for(TimeJDO t : times) {
+              for(FoodJDO f : t.getFoods()) {
                 final long nameId = f.getNameId();
                 
                 //if name found
@@ -108,9 +105,17 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
                   tableFoods.put(nameId, count);
                 }
               }
-              for(MealInTime m : t.getMeals()) {
+              
+              //get foods
+              List<Object> ids = new ArrayList<Object>();
+              for (Key key : t.getMealsKeys()) {
+                 ids.add(pm.newObjectIdInstance(MealJDO.class, key));
+              }
+              List<MealJDO> meals = (List<MealJDO>) pm.getObjectsById(ids);
+              
+              for(MealJDO m : meals) {
 
-                for(FoodInMealTime f : m.getFoods()) {
+                for(FoodJDO f : m.getFoods()) {
                   final long nameId = f.getNameId();
                   
                   //if name found
@@ -128,31 +133,26 @@ public class FoodNameCountServlet extends RemoteServiceServlet {
             }
           }
           
+          //save each count to datastore
+          List<FoodNameCount> counts = new ArrayList<FoodNameCount>();
+          
           Set<Long> set = tableFoods.keySet();
           Iterator<Long> itr = set.iterator();
           for(int i = 0; i < tableFoods.size(); i++) {
             Long nameId = itr.next();
 //            response.getWriter().write("      "+nameId + ": " + tableFoods.get(nameId)+"<br>");
             
-            Integer count = tableFoods.get(nameId);
-            
-            //check if found
-            q = pm.newQuery(FoodNameCount.class);
-            q.setFilter("nameId == nameIdParam && openId == openIdParam");
-            q.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
-            q.setRange(0, 1);
-            List<FoodNameCount> valueCount = (List<FoodNameCount>) q.execute(nameId, user.getUid());
-            if(valueCount.size() > 0) {
-              FoodNameCount model = valueCount.get(0);
-              model.setCount(count);
-            }
-            //not found
-            else {
-              FoodNameCount model = new FoodNameCount(nameId, count, user.getUid());
-              pm.makePersistent(model);
-            }            
-            pm.flush();
+            //Create model
+            int count = tableFoods.get(nameId);
+            FoodNameCount model = new FoodNameCount(nameId, count, user.getUid());
+            counts.add(model);
+
+            //update cache
+            cache.addExerciseNameCount(nameId, user.getUid(), count);
           }
+          
+          pm.makePersistentAll(counts);
+          pm.flush();
           
         } catch (Exception e) {
           logger.log(Level.SEVERE, "Error loading data from user: "+user.getUid(), e);

@@ -21,6 +21,7 @@ import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.UserModel;
 import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.http.client.Request;
 
 /**
  * 
@@ -69,15 +70,25 @@ public class ProfilePresenter extends Presenter {
 				AppController.User = user;
 				//save alias
 				final String alias = user.getAlias();
-				rpcService.saveUserData(user, new MyAsyncCallback<UserModel>() {
+				final Request req = rpcService.saveUserData(user, new MyAsyncCallback<UserModel>() {
           @Override
           public void onSuccess(UserModel result) {
             if(result != null && alias != null) {
               //if alias not changed -> already in use/invalid
-              display.showAliasTaken( !alias.equals(result.getAlias()) );
+              display.showAliasTaken(false);
             }
           }
+          @Override
+          public void onFailure(Throwable throwable) {
+//            if(throwable instanceof AliasTakenException) {
+//              display.showAliasTaken(true);
+//            }
+//            else {
+              super.onFailure(throwable);
+//            }
+          }
 				});
+				addRequest(req);
 			}
 		});
 		

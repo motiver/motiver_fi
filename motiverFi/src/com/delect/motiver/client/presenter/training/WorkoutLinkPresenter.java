@@ -15,6 +15,7 @@
 package com.delect.motiver.client.presenter.training;
 
 import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.http.client.Request;
 
 import com.delect.motiver.client.MyAsyncCallback;
 import com.delect.motiver.client.event.WorkoutRemovedEvent;
@@ -81,6 +82,7 @@ public class WorkoutLinkPresenter extends Presenter {
 			}
 			@Override
 			public void selected() {
+			  System.out.println(workout.getName());
 				//fire event
 				fireEvent(new WorkoutShowEvent(workout));
 			}
@@ -89,7 +91,7 @@ public class WorkoutLinkPresenter extends Presenter {
 				display.setContentEnabled(false);
 				
 				//remove workout and stop itself
-				rpcService.removeWorkout(workout, new MyAsyncCallback<Boolean>() {
+				Request req = rpcService.removeWorkout(workout, new MyAsyncCallback<Boolean>() {
 					@Override
 					public void onSuccess(Boolean result) {
 						stop();
@@ -97,6 +99,7 @@ public class WorkoutLinkPresenter extends Presenter {
 						eventBus.fireEvent(new WorkoutRemovedEvent(workout));
 					}
 				});
+				addRequest(req);
 			}
 		});
 	}

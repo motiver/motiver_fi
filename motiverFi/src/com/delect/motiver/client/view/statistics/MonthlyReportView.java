@@ -77,7 +77,6 @@ public class MonthlyReportView extends MonthlyReportPresenter.MonthlyReportDispl
 	    ex.setPersonalBest(exercise.isPersonalBest());
 	    ex.setReps(exercise.getReps());
 	    ex.setSets(exercise.getSets());
-	    ex.setUid(model.getUid());
 	    ex.setWeights(exercise.getWeights());
 	    
 	    HorizontalPanel p = Widgets.getReadOnlyExercise(ex);

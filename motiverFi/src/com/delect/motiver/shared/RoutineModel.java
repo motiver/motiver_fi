@@ -61,14 +61,18 @@ public class RoutineModel extends BaseModelData implements IsSerializable {
 	public String getName() {
     return get("name");
   }
-	public String getUid() {
-		if(get("uid") != null) {
-			return get("uid");
+  public UserModel getUser() {
+    return get("u");
+  }
+  public int getCount() {
+    if(get("cc") != null) {
+      return get("cc");
     }
-		else {
-			return "";
+    else {
+      return 0;
     }
   }
+  
 	public List<WorkoutModel> getWorkouts() {
 		return get("w");
 	}
@@ -88,10 +92,19 @@ public class RoutineModel extends BaseModelData implements IsSerializable {
 	public void setName(String name) {
 		set("name", name);
 	}
-	public void setUid(String uid) {
-		set("uid", uid);
-	}
+  public void setUser(UserModel u) {
+    set("u", u);
+  } 
 	public void setWorkouts(List<WorkoutModel> w) {
 		set("w", w);
 	}
+  public void setCount(int cc) {
+    set("cc", cc);
+  }
+  
+  @Override
+  public String toString() {
+    return "Routine: [id: "+getId()+", '"+getName()+"', workouts: "+((getWorkouts() != null)? getWorkouts().size() : "")+"" +
+        ", '"+getUser()+"']";
+  }
 }

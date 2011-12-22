@@ -16,17 +16,46 @@ package com.delect.motiver.client.view.profile;
 
 import com.google.gwt.user.client.ui.Widget;
 
+import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.profile.MeasurementsListPresenter;
+import com.delect.motiver.client.presenter.profile.MeasurementsListPresenter.MeasurementsListHandler;
+import com.delect.motiver.client.view.widget.MyButton;
+import com.extjs.gxt.ui.client.Style.ButtonScale;
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.util.Margins;
+import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
 public class MeasurementsListView extends MeasurementsListPresenter.MeasurementsListDisplay {
 	
-	public MeasurementsListView() {
+	private MeasurementsListHandler handler;
+
+  public MeasurementsListView() {
 	  setLayout(new RowLayout());
 	}
 	
 	@Override
 	public Widget asWidget() {
+    
+    //add panel where user can type name
+    MyButton btnCreate = new MyButton();
+    btnCreate.setScale(ButtonScale.MEDIUM);
+    btnCreate.setText(AppController.Lang.CreateTarget(AppController.Lang.Measurement().toLowerCase()));
+    btnCreate.addListener(Events.OnClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        handler.newMeasurement();
+      }
+    });
+    this.add(btnCreate, new RowData(-1, -1, new Margins(0,0,10,0)));
+    
 		return this;
 	}
+
+  @Override
+  public void setHandler(MeasurementsListHandler handler) {
+    this.handler = handler;
+  }
 }

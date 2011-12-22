@@ -15,7 +15,9 @@
 package com.delect.motiver.client.presenter;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.google.gwt.event.shared.EventHandler;
 import com.google.gwt.event.shared.GwtEvent;
@@ -36,11 +38,12 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
 public abstract class Presenter {
 	
 	private List<HandlerRegistration> listHandlers = new ArrayList<HandlerRegistration>();
-	private List<Request> rpcRequests = new ArrayList<Request>();
+	private Set<Request> rpcRequests = new HashSet<Request>();
 	protected LayoutContainer container = null;
 	
 	protected SimpleEventBus eventBus;
 	protected MyServiceAsync rpcService;
+  private Presenter parent = null;
 	
 	/**
 	 * Constructor for Presenter.
@@ -133,6 +136,13 @@ public abstract class Presenter {
 	 * Called when presenter is stopped. Presenter's container is removed after this
 	 */
 	public void onStop() {
+	  
+	}
+	
+	/**
+	 * Shows content of panel. Only necessary if panel can be closed, etc...
+	 */
+	public void show() {
 	  
 	}
 	
@@ -283,7 +293,7 @@ public abstract class Presenter {
 	 * @param visible boolean
 	 */
 	private void setVisible(boolean visible) {
-		if(container != null && container.isVisible() != visible) {
+		if(container != null && container.isVisible(false) != visible) {
 			container.setVisible(visible);
       if(container.isVisible()) {
         container.layout(true);
@@ -298,4 +308,12 @@ public abstract class Presenter {
 	public final void addRequest(Request request) {
 		rpcRequests.add(request);
 	}
+	
+  public void setParent(Presenter parent) {
+    this.parent = parent;
+  }
+  
+  public Presenter getParent() {
+    return parent;
+  }
 }

@@ -18,10 +18,15 @@ import com.google.gwt.event.shared.SimpleEventBus;
 
 import com.delect.motiver.client.event.RoutineSelectedEvent;
 import com.delect.motiver.client.event.RoutineShowEvent;
+import com.delect.motiver.client.event.WorkoutCreatedEvent;
+import com.delect.motiver.client.event.WorkoutRemovedEvent;
+import com.delect.motiver.client.event.handler.WorkoutCreatedEventHandler;
+import com.delect.motiver.client.event.handler.WorkoutRemovedEventHandler;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.RoutineModel;
+import com.delect.motiver.shared.WorkoutModel;
 
 /**
  * Shows single routine name as "link"
@@ -82,6 +87,38 @@ public class RoutineLinkPresenter extends Presenter {
 				fireEvent(new RoutineShowEvent(routine));
 			}
 		});
+    
+    //EVENT: new workout created. If added to this routine -> refresh
+    addEventHandler(WorkoutCreatedEvent.TYPE, new WorkoutCreatedEventHandler() {
+      @Override
+      public void onWorkoutCreated(WorkoutCreatedEvent event) {
+        //if correct day add new presenter
+        WorkoutModel w = event.getWorkout();
+        if(w != null 
+            && w.getRoutineId() == routine.getId()
+            && !routine.getWorkouts().contains(w)) {
+          routine.getWorkouts().add(w);
+        }
+      }
+    });
+    
+    //EVENT: workout removed
+    addEventHandler(WorkoutRemovedEvent.TYPE, new WorkoutRemovedEventHandler() {
+      @Override
+      public void onWorkoutRemoved(WorkoutRemovedEvent event) {
+        //if belongs to this routine -> remove it also from here
+        WorkoutModel w = event.getWorkout();
+        if(w != null 
+            && w.getRoutineId() == routine.getId()) {
+          for(WorkoutModel wRoutine : routine.getWorkouts()) {
+            if(wRoutine.getId() == w.getId()) {
+              routine.getWorkouts().remove(wRoutine);
+              break;
+            }
+          }
+        }
+      }
+    });
 	}
 
 }

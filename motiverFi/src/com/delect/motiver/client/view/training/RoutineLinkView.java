@@ -101,12 +101,12 @@ public class RoutineLinkView extends RoutineLinkPresenter.RoutineLinkDisplay {
       this.add(new Text(), flex);  
 	        
       //username
-      if(!routine.getUid().equals(AppController.User.getUid())) {
+      if(!routine.getUser().equals(AppController.User)) {
         LayoutContainer panelUsername = new LayoutContainer();
         panelUsername.setWidth(100);
         panelUsername.setHeight(15);
         panelUsername.setStyleName("label-title-username");
-        panelUsername.addText("<fb:name uid=\"" + routine.getUid() + "\" useyou=false linked=false></fb:name>");
+        panelUsername.addText(routine.getUser().getNickName());
         this.add(panelUsername, new HBoxLayoutData(new Margins(0)));
       }
 						

@@ -21,6 +21,7 @@ import java.util.Date;
 
 import com.google.gwt.user.client.Event;
 
+import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.shared.Functions;
 
@@ -71,9 +72,13 @@ public class TimeSelectFieldView extends TextField<String> {
 	public TimeSelectFieldView(int time, TimeSelectFieldHandler h) {
 
 		this.handler = h;
-
+		
+		this.setMaxLength(5);
 		this.setWidth(65);
+		this.setAllowBlank(false);
 		this.setRegex("(0?[0-9]|1[0-9]|2[0-3]):([0-5][0-9])");
+		Functions.setWarningMessages(this);
+		this.getMessages().setRegexText(AppController.Lang.FieldTimeFormat());
 		this.addListener(Events.OnKeyUp, new Listener<BaseEvent>() {
       @Override
       public void handleEvent(BaseEvent event) {
@@ -97,7 +102,6 @@ public class TimeSelectFieldView extends TextField<String> {
       }
 		});
 		this.setValue(Functions.getTimeToString(time));
-		this.setMessageTarget("none");
 		
 		origValue = time;
 		

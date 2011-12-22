@@ -52,7 +52,6 @@ import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -141,12 +140,15 @@ public class WorkoutPresenter extends Presenter {
       @Override
 			public void dragged(long id, int newPos) {
 				try {
+				  
+				  //minus one, because orders start at zero
+					newPos--;
 					
 					boolean found = false;
 					//update order fields
 					List<ExerciseModel> arr = new ArrayList<ExerciseModel>();
-					for(int i=1; i <= exercisePresenters.size(); i++) {
-						Presenter presenter = exercisePresenters.get(i - 1);
+					for(int i=0; i < exercisePresenters.size(); i++) {
+						Presenter presenter = exercisePresenters.get(i);
 						if(presenter != null) {
 							final ExerciseModel ex = ((ExercisePresenter)presenter).exercise;
 							//if dragged exercise
@@ -175,6 +177,9 @@ public class WorkoutPresenter extends Presenter {
 					      }
 							}
 							arr.add(ex);
+							
+							//update exercise
+							((ExercisePresenter)presenter).setModel(ex);
 						}
 						
 					}
@@ -213,7 +218,7 @@ public class WorkoutPresenter extends Presenter {
 			}
 			@Override
 			public void exercisesVisible() {
-				loadExercises();
+				showExercises();
 			}
 			@Override
 			public void newExercise() {
@@ -312,12 +317,7 @@ public class WorkoutPresenter extends Presenter {
 	public void onRun() {
 
     if(workout.getId() != 0) {
-      if(workout.getExercises() == null) {
-        loadExercises();
-      }
-      else {
-        showExercises(workout.getExercises());
-      }
+      showExercises();
     }
     //no model -> hightlight
     else {
@@ -356,7 +356,7 @@ public class WorkoutPresenter extends Presenter {
 
 		//if no exercises -> show empty presenter
 		if(exercisePresenters.size() == 0) {
-			if(workout.getUid().equals(AppController.User.getUid())) {
+			if(workout.getUser().equals(AppController.User)) {
 				emptyPresenter = new EmptyWorkoutPresenter(rpcService, eventBus, (EmptyWorkoutDisplay)GWT.create(EmptyWorkoutView.class));
       }
 			else {
@@ -395,8 +395,8 @@ public class WorkoutPresenter extends Presenter {
 		final ExerciseModel dummy = new ExerciseModel(new ExerciseNameModel(0L, "", 0));
 		dummy.setWorkoutId(workout.getId());
 		//init new foodpresenter
-    final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), dummy);
-    addNewPresenter(fp);
+    final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), dummy, workout);
+    addNewPresenter(fp, true);
 	}
 
 
@@ -404,7 +404,7 @@ public class WorkoutPresenter extends Presenter {
 	 * Adds new presenter to view
 	 * @param presenter
 	 */
-	protected void addNewPresenter(ExercisePresenter presenter) {
+	protected void addNewPresenter(ExercisePresenter presenter, boolean setOrder) {
 		
 		//remove emptypresenter if present
 		if(emptyPresenter != null) {
@@ -413,13 +413,15 @@ public class WorkoutPresenter extends Presenter {
 		}
 		
 		//set order (last exercises order plus one)
-		presenter.exercise.setOrder( (exercisePresenters.size() == 0)? 0 : (exercisePresenters.get(exercisePresenters.size() - 1).exercise.getOrder() + 100) );
+		if(setOrder) {
+		  presenter.exercise.setOrder( (exercisePresenters.size() == 0)? 0 : (exercisePresenters.get(exercisePresenters.size() - 1).exercise.getOrder() + 100) );
+		}
 		
 		exercisePresenters.add(presenter);
 		presenter.run(display.getBodyContainer());
 		
 		//show add button
-		display.setAddButtonVisible( workout.getUid().equals(AppController.User.getUid()) );
+		display.setAddButtonVisible( workout.getUser().equals(AppController.User) );
 	}
 
 
@@ -454,29 +456,7 @@ public class WorkoutPresenter extends Presenter {
 		}
 	}
 
-	/**
-	 * Loads exercises and names
-	 */
-	protected void loadExercises() {
-		
-		//add empty presenter
-		emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING);
-		emptyPresenter.run(display.getBodyContainer());
-
-		//hide add button
-		display.setAddButtonVisible(false);
-		
-		//fetch exercises
-		rpcService.getExercises(workout, new MyAsyncCallback<List<ExerciseModel>>() {
-			@Override
-			public void onSuccess(List<ExerciseModel> result) {
-				showExercises(result);
-      }
-		});
-		
-	}
-
-	protected void showExercises(List<ExerciseModel> result) {
+	protected void showExercises() {
 
 		display.setContentEnabled(false);
 		
@@ -498,17 +478,15 @@ public class WorkoutPresenter extends Presenter {
 	      }
 				
 				//show user if not our workout
-				if(!workout.getUid().equals(AppController.User.getUid())) {
-					UserModel user = new UserModel();
-					user.setUid(workout.getUid());
-					userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), user, false);
+				if(!workout.getUser().equals(AppController.User)) {
+					userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), workout.getUser(), false);
 					userPresenter.run(display.getUserContainer());
 				}
 			}
 			
 			//if no workouts
-			if(result.size() == 0) {
-				if(workout.getUid().equals(AppController.User.getUid())) {
+			if(workout.getExercises().size() == 0) {
+				if(workout.getUser().equals(AppController.User)) {
 					emptyPresenter = new EmptyWorkoutPresenter(rpcService, eventBus, (EmptyWorkoutDisplay)GWT.create(EmptyWorkoutView.class));
 	      }
 				else {
@@ -521,17 +499,18 @@ public class WorkoutPresenter extends Presenter {
 			}
 			else {
 				//sort
-				Collections.sort(result);
+				Collections.sort(workout.getExercises());
 				
-				for(ExerciseModel m : result) {
+				for(ExerciseModel m : workout.getExercises()) {
 						
 					//set date & id & order
 					m.setWorkoutId(workout.getId());
 					m.setDate(workout.getDate());
+					m.setWorkout(workout);
 					
 					//init new exercisePresenter
-					final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), m);
-					addNewPresenter(fp);
+					final ExercisePresenter fp = new ExercisePresenter(rpcService, eventBus, (ExerciseDisplay)GWT.create(ExerciseView.class), m, workout);
+					addNewPresenter(fp, false);
 				}
 			}
 

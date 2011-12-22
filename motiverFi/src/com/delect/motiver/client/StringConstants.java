@@ -14,8 +14,18 @@
  ******************************************************************************/
 package com.delect.motiver.client;
 
+import java.util.HashMap;
+import java.util.Map;
 
-public interface StringConstants {
+
+public class StringConstants {
+
+  public static Map<String, String> LOCALES = new HashMap<String, String>();
+  static {
+    LOCALES.put("en_US", "English");
+    LOCALES.put("fi_FI", "Suomi");
+  }
+  public static String LOCALE_DEFAULT = "en_US";
   
 	public static final String[] DATEFORMATS = new String[] {
 		"dd.MM.yyyy",	//metric
@@ -28,13 +38,13 @@ public interface StringConstants {
 	public static final int LIMIT_CAL_DAYS_MAX = 90;		//how many days are shown in main calendar view
 	public static final int LIMIT_MEAS_GRAPH = 100;		//how is max in measurement graph
 	public static final String[] MEAS_METRIC = new String[] {
-		"Âµg",
+		"µg",
 		"mg",
 		"g"
 	};
 	
 	public static final String[] MEAS_US = new String[] {
-		"Âµg",
+		"µg",
 		"mg",
 		"g"
 	};

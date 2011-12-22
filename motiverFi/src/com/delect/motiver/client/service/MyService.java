@@ -21,7 +21,6 @@ import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
 import com.delect.motiver.shared.CommentModel;
-import com.delect.motiver.shared.ConnectionException;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.FoodModel;
@@ -40,6 +39,7 @@ import com.delect.motiver.shared.TicketModel;
 import com.delect.motiver.shared.TimeModel;
 import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.exception.ConnectionException;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
@@ -96,6 +96,15 @@ public interface MyService extends RemoteService {
   public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException;
   
   /**
+   * Creates / updates exercisename (updates if already found).
+   *
+   * @param name the name
+   * @return added exercise (null if add not successful)
+   * @throws ConnectionException the connection exception
+   */
+  public List<ExerciseNameModel> addExercisename(List<ExerciseNameModel> names) throws ConnectionException;
+  
+  /**
    * Adds food to (meal).
    *
    * @param food : model to be added
@@ -120,7 +129,7 @@ public interface MyService extends RemoteService {
    * @return added names (null if add not successful)
    * @throws ConnectionException the connection exception
    */
-  public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException;
+  public List<FoodNameModel> addFoodname(List<FoodNameModel> names) throws ConnectionException;
   
   /**
    * Adds guide value.
@@ -138,7 +147,7 @@ public interface MyService extends RemoteService {
    * @return added meal (null if add not successful)
    * @throws ConnectionException the connection exception
    */
-  public MealModel addMeal(MealModel meal) throws ConnectionException;
+  public MealModel addMeal(MealModel meal, long timeId) throws ConnectionException;
   
   /**
    * Adds meals to db.
@@ -147,7 +156,7 @@ public interface MyService extends RemoteService {
    * @return added meal (null if add not successful)
    * @throws ConnectionException the connection exception
    */
-  public List<MealModel> addMeals(List<MealModel> meals) throws ConnectionException;
+  public List<MealModel> addMeals(List<MealModel> meals, long timeId) throws ConnectionException;
   
   
   /**
@@ -469,16 +478,6 @@ public interface MyService extends RemoteService {
 
   
   /**
-   * Returns all exercises from single workout.
-   *
-   * @param workout the workout
-   * @return exercises
-   * @throws ConnectionException the connection exception
-   */
-  public List<ExerciseModel> getExercises(WorkoutModel workout) throws ConnectionException;
-
-  
-  /**
    * Returns all exercises from given "name". Used for fetching last weights
    *
    * @param nameId the name id
@@ -507,7 +506,7 @@ public interface MyService extends RemoteService {
    * @return foods
    * @throws ConnectionException the connection exception
    */
-  public List<FoodModel> getFoods(MealModel meal) throws ConnectionException;
+  //public List<FoodModel> getFoods(MealModel meal) throws ConnectionException;
   
   /**
    * Returns user all facebook friends that have logged to xlgain.

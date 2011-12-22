@@ -436,22 +436,19 @@ font-size: 11px;
 	
 /* error panel on top of screen */
 .panel-infomessage {
-	-moz-border-radius: 0 10px 10px 0;
-	-webkit-border-radius: 0 10px 10px 0;
-	border-radius: 0 10px 10px 0;
 	margin-bottom: 10px;
 	max-width: 200px;
 	cursor: pointer;
-	background-color: #990;
+	color: #555;
 }
 .panel-infomessage table {
-	color: #fff;
+	color: #555;
 }
-.panel-infomessage-red {
-	background-color: #aa0000;
+.panel-infomessage-red table {
+	color: #f00;
 }
-.panel-infomessage-blue {
-	background-color: #8bf;
+.panel-infomessage-blue table {
+	color: #00f;
 }
 /* loading panel on top of screen */
 .panel-loading {

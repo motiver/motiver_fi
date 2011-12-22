@@ -236,6 +236,14 @@ public class RoutinesListPresenter extends Presenter {
       display.setCancelButtonVisible(true);
     }
 	}
+	
+	@Override
+	public void onRefresh() {
+	  super.onRefresh();
+    
+    //highlight and scroll
+    highlight();
+	}
 
 	@Override
 	public void onRun() {
@@ -252,9 +260,9 @@ public class RoutinesListPresenter extends Presenter {
     else {
       showMainView();
     }
-	    
+    
     //highlight and scroll
-    display.highlight();
+    highlight();
   }
 	
 	@Override
@@ -424,7 +432,7 @@ public class RoutinesListPresenter extends Presenter {
 				}
 				else {
 					//copy to our routines
-					if(!m.getUid().equals(AppController.User.getUid())) {
+					if(!m.getUser().equals(AppController.User)) {
 						display.setCopyButtonVisible(true);
 					}
 				}

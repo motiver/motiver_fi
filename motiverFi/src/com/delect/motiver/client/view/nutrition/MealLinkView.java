@@ -97,15 +97,15 @@ public class MealLinkView extends MealLinkPresenter.MealLinkDisplay {
 			//spacer
 			HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 0, 0, 10));
       flex.setFlex(1);  
-      this.add(new Text(), flex);  
+      this.add(new Text(), flex);
 	        
       //username
-      if(!meal.getUid().equals(AppController.User.getUid())) {
+      if(!meal.getUser().getUid().equals(AppController.User.getUid())) {
         LayoutContainer panelUsername = new LayoutContainer();
         panelUsername.setWidth(100);
         panelUsername.setHeight(15);
         panelUsername.setStyleName("label-title-username");
-        panelUsername.addText("<fb:name uid=\"" + meal.getUid() + "\" useyou=false linked=false></fb:name>");
+        panelUsername.addText(meal.getUser().getNickName());
         this.add(panelUsername, new HBoxLayoutData(new Margins(0)));
       }
 						

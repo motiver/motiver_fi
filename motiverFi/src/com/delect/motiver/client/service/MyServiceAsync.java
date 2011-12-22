@@ -21,7 +21,6 @@ import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
 import com.delect.motiver.shared.CommentModel;
-import com.delect.motiver.shared.ConnectionException;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.FoodModel;
@@ -40,6 +39,7 @@ import com.delect.motiver.shared.TicketModel;
 import com.delect.motiver.shared.TimeModel;
 import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.exception.ConnectionException;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -50,6 +50,7 @@ public interface MyServiceAsync {
   
   /**
    * Adds cardio to db.
+   * 
    *
    * @param cardio : model to be added
    * @param callback the callback
@@ -95,6 +96,15 @@ public interface MyServiceAsync {
   public Request addExercisename(ExerciseNameModel name, AsyncCallback<ExerciseNameModel> callback);
   
   /**
+   * Creates / updates exercisename (updates if already found).
+   *
+   * @param name the name
+   * @param callback the callback
+   * @return added exercise (null if add not successful)
+   */
+  public Request addExercisename(List<ExerciseNameModel> names, AsyncCallback<List<ExerciseNameModel>> callback);
+  
+  /**
    * Adds food to (meal).
    *
    * @param food : model to be added
@@ -119,7 +129,7 @@ public interface MyServiceAsync {
    * @param callback the callback
    * @return added names (null if add not successful)
    */
-  public Request addFoodnames(List<FoodNameModel> names, AsyncCallback<List<FoodNameModel>> callback);
+  public Request addFoodname(List<FoodNameModel> names, AsyncCallback<List<FoodNameModel>> callback);
   
   /**
    * Adds guide value.
@@ -137,7 +147,7 @@ public interface MyServiceAsync {
    * @param callback the callback
    * @return added meal (null if add not successful)
    */
-  public Request addMeal(MealModel meal, AsyncCallback<MealModel> callback);
+  public Request addMeal(MealModel meal, long timeId, AsyncCallback<MealModel> callback);
   
   /**
    * Adds meals to db.
@@ -146,7 +156,7 @@ public interface MyServiceAsync {
    * @param callback the callback
    * @return added meal (null if add not successful)
    */
-  public Request addMeals(List<MealModel> meals, AsyncCallback<List<MealModel>> callback);
+  public Request addMeals(List<MealModel> meals, long timeId, AsyncCallback<List<MealModel>> callback);
   
   /**
    * Adds measurement to db.
@@ -462,16 +472,6 @@ public interface MyServiceAsync {
 
   
   /**
-   * Returns all exercises from single workout.
-   *
-   * @param workout the workout
-   * @param callback the callback
-   * @return exercises
-   */
-  public Request getExercises(WorkoutModel workout, AsyncCallback<List<ExerciseModel>> callback);
-
-  
-  /**
    * Returns all exercises from given "name". Used for fetching last weights
    *
    * @param nameId the name id
@@ -500,7 +500,7 @@ public interface MyServiceAsync {
    * @param callback the callback
    * @return foods
    */
-  public Request getFoods(MealModel meal, AsyncCallback<List<FoodModel>> callback);
+  //public Request getFoods(MealModel meal, AsyncCallback<List<FoodModel>> callback);
   
   /**
    * Returns user all facebook friends that have logged to xlgain.

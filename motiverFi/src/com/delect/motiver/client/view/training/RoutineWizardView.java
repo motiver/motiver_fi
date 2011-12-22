@@ -21,6 +21,7 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.training.RoutineWizardPresenter;
 import com.delect.motiver.client.presenter.training.RoutineWizardPresenter.RoutineWizardHandler;
+import com.delect.motiver.shared.Functions;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -394,6 +395,7 @@ public class RoutineWizardView extends RoutineWizardPresenter.RoutineWizardDispl
     textSquat.setMaxValue(1000);
     textSquat.setIncrement(5);
     textSquat.setAllowBlank(false);
+    Functions.setWarningMessages(textSquat);
     textSquat.setFieldLabel(RoutineWizardPresenter.Lang.Squat());
     fieldSet3.add(textSquat, formData);
 	    
@@ -405,6 +407,7 @@ public class RoutineWizardView extends RoutineWizardPresenter.RoutineWizardDispl
     textDeadlift.setMaxValue(1000);
     textDeadlift.setIncrement(5);
     textDeadlift.setAllowBlank(false);
+    Functions.setWarningMessages(textDeadlift);
     textDeadlift.setFieldLabel(RoutineWizardPresenter.Lang.Deadlift());
     fieldSet3.add(textDeadlift, formData);
 	    
@@ -416,6 +419,7 @@ public class RoutineWizardView extends RoutineWizardPresenter.RoutineWizardDispl
     textBench.setMaxValue(1000);
     textBench.setIncrement(5);
     textBench.setAllowBlank(false);
+    Functions.setWarningMessages(textBench);
     textBench.setFieldLabel(RoutineWizardPresenter.Lang.Bench());
     fieldSet3.add(textBench, formData);
 	    
@@ -427,6 +431,7 @@ public class RoutineWizardView extends RoutineWizardPresenter.RoutineWizardDispl
     textMilitary.setMaxValue(1000);
     textMilitary.setIncrement(5);
     textMilitary.setAllowBlank(false);
+    Functions.setWarningMessages(textMilitary);
     textMilitary.setFieldLabel(RoutineWizardPresenter.Lang.Military());
     fieldSet3.add(textMilitary, formData);
 

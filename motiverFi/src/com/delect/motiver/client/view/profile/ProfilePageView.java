@@ -48,12 +48,12 @@ public class ProfilePageView extends ProfilePagePresenter.ProfilePageDisplay {
         handler.onMenuClicked(2);
       }
     });
-    addMenuItem(AppController.Lang.FetchData(), false, new Listener<BaseEvent>() {
-      @Override
-      public void handleEvent(BaseEvent be) {
-        handler.onMenuClicked(3);
-      }
-    });
+//    addMenuItem(AppController.Lang.FetchData(), false, new Listener<BaseEvent>() {
+//      @Override
+//      public void handleEvent(BaseEvent be) {
+//        handler.onMenuClicked(3);
+//      }
+//    });
 	}
 	
 	@Override

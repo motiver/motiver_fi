@@ -41,9 +41,6 @@ import com.delect.motiver.client.view.profile.MeasurementView;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.MeasurementModel;
 
-import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.Listener;
-
 /**
  * Shows measurements in list
  * @author Antti
@@ -55,14 +52,11 @@ public class MeasurementsListPresenter extends Presenter {
 	* Abstract class for view to extend
 	*/
 	public abstract static class MeasurementsListDisplay extends Display {
+    public abstract void setHandler(MeasurementsListHandler measurementHandler);
 	}
-	//new measurement handler
-	public Listener<BaseEvent> NewMeasurementListener = new Listener<BaseEvent>() {
-		@Override
-		public void handleEvent(BaseEvent be) {
-			addNewMeasurement();
-		}
-	};
+  public interface MeasurementsListHandler {
+    void newMeasurement();
+  }
 
 	private MeasurementsListDisplay display;
 	private EmptyPresenter emptyPresenter;
@@ -92,6 +86,13 @@ public class MeasurementsListPresenter extends Presenter {
 
 	@Override
 	public void onBind() {
+	  
+	  display.setHandler(new MeasurementsListHandler() {
+      @Override
+      public void newMeasurement() {
+        addNewMeasurement();
+      }
+	  });
 
 		//EVENT: measurement removed -> refresh view
 		addEventHandler(MeasurementRemovedEvent.TYPE, new MeasurementRemovedEventHandler() {

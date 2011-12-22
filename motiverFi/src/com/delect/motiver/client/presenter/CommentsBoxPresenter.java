@@ -220,19 +220,19 @@ public class CommentsBoxPresenter extends Presenter {
 		if(workout != null) {
 			title = workout.getName();
 			target = "w" + workout.getId();
-			uid = workout.getUid();
+			uid = workout.getUser().getUid();
 		}
 		//routine
 		else if(routine != null) {
 			title = routine.getName();
 			target = "r" + routine.getId();
-			uid = routine.getUid();
+			uid = routine.getUser().getUid();
 		}
 		//meal
 		else if(meal != null) {
 			title = meal.getName();
 			target = "m" + meal.getId();
-			uid = meal.getUid();
+			uid = meal.getUser().getUid();
 		}
 		//measurement
 		else if(measurement != null) {

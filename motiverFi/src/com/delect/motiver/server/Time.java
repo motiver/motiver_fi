@@ -50,7 +50,6 @@ public class Time implements Serializable, Comparable<Time> {
 		
 		TimeModel modelClient = new TimeModel(model.getDate(), (int) model.getTime());
 		modelClient.setId(model.getId());
-		modelClient.setUid(model.getUid());
 		
 		return modelClient;
 	}

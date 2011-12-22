@@ -75,39 +75,7 @@ public class EmptyPresenter extends Presenter {
 	/**
 	 * Shows empty presenter
 	 * @param display
-	 * @param text :  
-	 * <ul>
-	 * <li>-1 = loading (small)</li>
-	 * <li>0 = loading</li>
-	 * <li>1 = workouts</li>
-	 * <li>2 = workouts in cal</li>
-	 * <li>3 = workouts in routine</li>
-	 * <li>4 = routines</li>
-	 * <li>5 = meals</li>
-	 * <li>6 = foods in meal</li>
-	 * <li>7 = foods in time</li>
-	 * <li>8 = measurements</li>
-	 * <li>9 = measurements' values</li>
-	 * <li>10 = foods in cal</li>
-	 * <li>11 = workouts search</li>
-	 * <li>12 = routines search</li>
-	 * <li>13 = meals search</li>
-	 * <li>14 = no data</li>
-	 * <li>15 = cardio</li>
-	 * <li>16 = cardio's values</li>
-	 * <li>17 = runs</li>
-	 * <li>18 = runs' values</li>
-	 * <li>19 = friends</li>
-	 * <li>20 = exercises</li>
-	 * <li>21 = blog day</li>
-	 * <li>22 = last weights</li>
-	 * <li>23 = no permission for blog</li>
-	 * <li>24 = friends</li>
-	 * <li>25 = guide values</li>
-	 * <li>26 = recent comments</li>
-	 * <li>27 = stats</li>
-	 * <li>28 = empty blog</li>
-	 * <li>29 = recent activities</li>
+	 * @param text
 	 * @param rpcService MyServiceAsync
 	 * @param eventBus SimpleEventBus
 	 */
@@ -117,6 +85,24 @@ public class EmptyPresenter extends Presenter {
 	    
     this.text  = text;
 	}
+	
+  /**
+   * Shows empty presenter
+   * @param display
+   * @param text
+   * @param rpcService MyServiceAsync
+   * @param eventBus SimpleEventBus
+   */
+  public EmptyPresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, EmptyDisplay display, String text, boolean smallLoading) { 
+    super(rpcService, eventBus);
+    this.display = display;
+      
+    this.text  = text;
+    
+    if(smallLoading) {
+      display.setHeight(50);
+    }
+  }
 	
 	/**
 	 * Different panel

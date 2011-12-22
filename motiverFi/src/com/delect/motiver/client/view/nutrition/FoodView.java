@@ -69,13 +69,13 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 
 	private MessageBox box = null;
 	private ImageButton btnEdit = new ImageButton(AppController.Lang.EditTarget(AppController.Lang.ThisFood().toLowerCase()), MyResources.INSTANCE.iconBtnRename());
-	private ComboBox<FoodNameModel> comboName;
+	protected ComboBox<FoodNameModel> comboName;
 	
-	private LayoutContainer containerName = new LayoutContainer();
-	private FoodModel food;
+	protected LayoutContainer containerName = new LayoutContainer();
+	protected FoodModel food;
 	private FoodHandler handler;
-	private Text labelPortions = new Text();
-	private LayoutContainer panelButtons = new LayoutContainer();
+	protected Text labelPortions = new Text();
+	public LayoutContainer panelButtons = new LayoutContainer();
 	//widgets
 	private MySpinnerField spinAmount = new MySpinnerField();
 	
@@ -85,8 +85,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 	//panels
 	private LayoutContainer thisContent = new LayoutContainer();
 	
-	private Timer timerUpdate;
-	
+	private Timer timerUpdate;	
 	
 	/**
 	 * Food view
@@ -143,88 +142,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 			}
 
 			//amount
-			//if "portion" set -> only increment 'even' values
-			if(food.getUid().equals(AppController.User.getUid())) {
-				spinAmount  = new MySpinnerField() {
-					@Override
-					protected void doSpin(boolean up) {
-						
-						try {
-							final double minValue = this.getMinValue().doubleValue();
-							final double maxValue = this.getMaxValue().doubleValue();
-							double increment = (food.getName() != null)? food.getName().getPortion() / 2 : 100D;
-							if(Double.compare(increment, 0) == 0) {
-                increment = 100D;
-		          }
-							
-							if (!readOnly) {
-								Number value = this.getValue();
-														
-								double newValue = 0;
-								double d = (value == null) ? 0d : getValue().doubleValue();
-								if (up) {
-									newValue = (Math.max(minValue, Math.min(d + increment, maxValue)));
-								} else {
-									newValue = (Math.max(minValue, Math.min(this.getAllowNegative() ? d - increment : Math.max(0, d - increment), maxValue)));
-								}
-								
-								if(increment > 0) {
-									double dRes = (int)(newValue / increment + 0.01);
-									newValue = dRes * increment;
-								}
-								this.setValue(newValue);
-								
-								//update portions column
-								updatePortions(this.getValue().doubleValue());
-							}
-						} catch (Exception e) {
-				      Motiver.showException(e);
-						}
-					}
-				};
-				
-				//save value when valid
-				spinAmount.addListener(Events.Change, new Listener<BaseEvent>() {
-					@Override
-					public void handleEvent(BaseEvent be) {
-						if(handler != null && spinAmount.getValue() != null && spinAmount.isValid() && Double.compare(spinAmount.getValue().doubleValue(), food.getAmount()) != 0) {
-							food.setAmount(spinAmount.getValue().doubleValue());
-							saveData();
-							
-							//update portions text
-							updatePortions(spinAmount.getValue().doubleValue());
-						}
-					}
-				});
-				spinAmount.addListener(Events.Invalid, new Listener<BaseEvent>() {
-					@Override
-					public void handleEvent(BaseEvent be) {
-						if(spinAmount.getRawValue().contains(",")) {
-							spinAmount.setValue( Double.parseDouble(spinAmount.getRawValue().replace(",", ".")) );
-	          }
-					}
-				});
-				spinAmount.addStyleName("field-amount");
-				spinAmount.addListener(Events.OnClick, CustomListener.fieldOnClicked);
-				spinAmount.setAllowNegative(false);
-				spinAmount.setIncrement(100);
-				spinAmount.setMinValue(0);
-				spinAmount.setMaxValue(5000D);
-				spinAmount.setEditable(true);
-				spinAmount.setMessageTarget("none");
-				spinAmount.setPropertyEditorType(Double.class);
-				spinAmount.setFormat(NumberFormat.getFormat(NumberFormat.getDecimalFormat().getPattern() + " g")); 
-		    spinAmount.setValue(food.getAmount());
-		    spinAmount.setFireChangeEventOnSetValue(true);
-		    thisContent.add(spinAmount, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
-			}
-			else {
-				final Text textValue = new Text();
-				textValue.setText( NumberFormat.getFormat(NumberFormat.getDecimalFormat().getPattern() + " g").format(food.getAmount()) );
-				textValue.addStyleName("field-readonly");
-				textValue.setWidth(125);
-				thisContent.add(textValue, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
-			}
+      thisContent.add(getSpinAmount(), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 
 			//portion
 			labelPortions.setText("-");
@@ -233,66 +151,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 			updatePortions(food.getAmount());
 	        
 			if(food.getUid().equals(AppController.User.getUid())) {
-
-				//spacer
-				HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 0, 0, 5));
-        flex.setFlex(1);  
-        thisContent.add(new Text(), flex);  
-
-				//buttons layout
-				HBoxLayout layoutButtons = new HBoxLayout();
-				layoutButtons.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);
-				layoutButtons.setPack(BoxLayoutPack.END);
-        panelButtons.setLayout(layoutButtons);
-        panelButtons.setHeight(16);
-        panelButtons.setWidth(70);
-
-        //edit food link
-				btnEdit.addListener(Events.OnClick, new Listener<BaseEvent>() {
-					@Override
-					public void handleEvent(BaseEvent be) {
-						handler.foodEdited();
-					}
-				});
-				panelButtons.add(btnEdit, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
-				btnEdit.setVisible(AppController.User.isAdmin() || (food.getName() != null && food.getName().getUid().equals(AppController.User.getUid())));
-
-				//drag food
-				ImageButton btnDrag = new ImageButton(AppController.Lang.DragToCopy(), MyResources.INSTANCE.iconBtnDrag());
-				DragSource source = new DragSource(btnDrag) {  
-	        @Override  
-	        protected void onDragStart(DNDEvent event) {
-						super.onDragStart(event);
-
-						event.setData(food);
-						
-						//set drag panel
-						String name = (food.getName() != null)? food.getName().getName() : "";
-						String html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
-						event.getStatus().update(html);    
-	        }
-				};
-				source.setGroup("mealfood");
-				panelButtons.add(btnDrag, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
-				
-        //remove food link
-				ImageButton btnRemove = new ImageButton(AppController.Lang.RemoveTarget(AppController.Lang.ThisFood().toLowerCase()), MyResources.INSTANCE.iconRemove());
-				btnRemove.addListener(Events.OnClick, new Listener<BaseEvent>() {
-					@Override
-					public void handleEvent(BaseEvent be) {
-						//ask for confirm
-						box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisFood().toLowerCase()), new MessageBoxHandler() {
-							@Override
-							public void okPressed(String text) {
-								handler.foodRemoved();
-							}
-						});
-						box.show();
-					}
-				});
-				panelButtons.add(btnRemove, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
-				
-				thisContent.add(panelButtons);
+				thisContent.add(getPanelButtons());
 			}
 						
 		} catch (Exception e) {
@@ -304,7 +163,156 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 		return this;
 	}
 	
-	@Override
+	protected LayoutContainer getPanelButtons() {
+
+    //spacer
+    HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 0, 0, 5));
+    flex.setFlex(1);  
+    thisContent.add(new Text(), flex);  
+
+    //buttons layout
+    HBoxLayout layoutButtons = new HBoxLayout();
+    layoutButtons.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);
+    layoutButtons.setPack(BoxLayoutPack.END);
+    panelButtons.setLayout(layoutButtons);
+    panelButtons.setHeight(16);
+    panelButtons.setWidth(70);
+
+    //edit food link
+    btnEdit.addListener(Events.OnClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        handler.foodEdited();
+      }
+    });
+    panelButtons.add(btnEdit, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+    btnEdit.setVisible(AppController.User.isAdmin() || (food.getName() != null && food.getName().getUid().equals(AppController.User.getUid())));
+
+    //drag food
+    ImageButton btnDrag = new ImageButton(AppController.Lang.DragToCopy(), MyResources.INSTANCE.iconBtnDrag());
+    DragSource source = new DragSource(btnDrag) {  
+      @Override  
+      protected void onDragStart(DNDEvent event) {
+        super.onDragStart(event);
+
+        event.setData(food);
+        
+        //set drag panel
+        String name = (food.getName() != null)? food.getName().getName() : "";
+        String html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
+        event.getStatus().update(html);    
+      }
+    };
+    source.setGroup("mealfood");
+    panelButtons.add(btnDrag, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+    
+    //remove food link
+    ImageButton btnRemove = new ImageButton(AppController.Lang.RemoveTarget(AppController.Lang.ThisFood().toLowerCase()), MyResources.INSTANCE.iconRemove());
+    btnRemove.addListener(Events.OnClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        //ask for confirm
+        box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisFood().toLowerCase()), new MessageBoxHandler() {
+          @Override
+          public void okPressed(String text) {
+            handler.foodRemoved();
+          }
+        });
+        box.show();
+      }
+    });
+    panelButtons.add(btnRemove, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+    
+    return panelButtons;
+  }
+
+  protected Widget getSpinAmount() {
+
+    //if "portion" set -> only increment 'even' values
+    if(food.getUid().equals(AppController.User.getUid())) {
+      spinAmount  = new MySpinnerField() {
+        @Override
+        protected void doSpin(boolean up) {
+          
+          try {
+            final double minValue = this.getMinValue().doubleValue();
+            final double maxValue = this.getMaxValue().doubleValue();
+            double increment = (food.getName() != null)? food.getName().getPortion() / 2 : 100D;
+            if(Double.compare(increment, 0) == 0) {
+              increment = 100D;
+            }
+            
+            if (!readOnly) {
+              Number value = this.getValue();
+                          
+              double newValue = 0;
+              double d = (value == null) ? 0d : getValue().doubleValue();
+              if (up) {
+                newValue = (Math.max(minValue, Math.min(d + increment, maxValue)));
+              } else {
+                newValue = (Math.max(minValue, Math.min(this.getAllowNegative() ? d - increment : Math.max(0, d - increment), maxValue)));
+              }
+              
+              if(increment > 0) {
+                double dRes = (int)(newValue / increment + 0.01);
+                newValue = dRes * increment;
+              }
+              this.setValue(newValue);
+              
+              //update portions column
+              updatePortions(this.getValue().doubleValue());
+            }
+          } catch (Exception e) {
+            Motiver.showException(e);
+          }
+        }
+      };
+      
+      //save value when valid
+      spinAmount.addListener(Events.Change, new Listener<BaseEvent>() {
+        @Override
+        public void handleEvent(BaseEvent be) {
+          if(handler != null && spinAmount.getValue() != null && spinAmount.isValid() && Double.compare(spinAmount.getValue().doubleValue(), food.getAmount()) != 0) {
+            food.setAmount(spinAmount.getValue().doubleValue());
+            saveData();
+            
+            //update portions text
+            updatePortions(spinAmount.getValue().doubleValue());
+          }
+        }
+      });
+      spinAmount.addListener(Events.Invalid, new Listener<BaseEvent>() {
+        @Override
+        public void handleEvent(BaseEvent be) {
+          if(spinAmount.getRawValue().contains(",")) {
+            spinAmount.setValue( Double.parseDouble(spinAmount.getRawValue().replace(",", ".")) );
+          }
+        }
+      });
+      spinAmount.addStyleName("field-amount");
+      spinAmount.addListener(Events.OnClick, CustomListener.fieldOnClicked);
+      spinAmount.setAllowNegative(false);
+      spinAmount.setIncrement(100);
+      spinAmount.setMinValue(0);
+      spinAmount.setMaxValue(5000D);
+      spinAmount.setEditable(true);
+      spinAmount.setPropertyEditorType(Double.class);
+      spinAmount.setFormat(NumberFormat.getFormat(NumberFormat.getDecimalFormat().getPattern() + " g")); 
+      spinAmount.setValue(food.getAmount());
+      spinAmount.setFireChangeEventOnSetValue(true);
+      return spinAmount;
+    }
+    else {
+      final Text textValue = new Text();
+      textValue.setText( NumberFormat.getFormat(NumberFormat.getDecimalFormat().getPattern() + " g").format(food.getAmount()) );
+      textValue.addStyleName("field-readonly");
+      textValue.setWidth(125);
+      return textValue;
+    }
+    
+  }
+
+  @Override
 	public void onStop() {
 		if(timerUpdate != null) {
 			timerUpdate.cancel();
@@ -405,9 +413,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
     combo.setMinChars(Constants.LIMIT_MIN_QUERY_WORD);
     combo.setTemplate(template );  
     combo.setStore(store);
-    if(AppController.IsSupportedBrowser) {
-      combo.setEmptyText(AppController.Lang.EnterKeywordToSearchForFoods());
-    }
+    combo.setEmptyText(AppController.Lang.EnterKeywordToSearchForFoods());
     combo.setHideTrigger(true);
     combo.setTriggerAction(TriggerAction.ALL);
     combo.setValidateOnBlur(false);

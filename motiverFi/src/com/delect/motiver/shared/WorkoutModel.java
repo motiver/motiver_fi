@@ -103,13 +103,24 @@ public class WorkoutModel extends BaseModelData implements Serializable {
 			return 0;
     }
   }
-	public String getUid() {
-		if(get("uid") != null) {
-			return get("uid");
+//	public String getUid() {
+//		if(get("uid") != null) {
+//			return get("uid");
+//    }
+//		else {
+//			return "";
+//		}
+//  }
+  public UserModel getUser() {
+    return get("u");
+  }
+  public int getCount() {
+    if(get("cc") != null) {
+      return get("cc");
     }
-		else {
-			return "";
-		}
+    else {
+      return 0;
+    }
   }
 
 	public void setDate(Date date) {
@@ -145,7 +156,18 @@ public class WorkoutModel extends BaseModelData implements Serializable {
 	public void setTimeStart(int timeStart) {
     set("t1", timeStart);
   }
-	public void setUid(String uid) {
-		set("uid", uid);
-	}
+//	public void setUid(String uid) {
+//		set("uid", uid);
+//	}
+  public void setUser(UserModel u) {
+    set("u", u);
+  } 
+  public void setCount(int cc) {
+    set("cc", cc);
+  }
+  
+  @Override
+  public String toString() {
+    return "Workout: ['"+getName()+"', exercises: "+getExercises().size()+", user:"+getUser()+"]";
+  }
 }

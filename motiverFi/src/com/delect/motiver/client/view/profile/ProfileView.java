@@ -15,6 +15,8 @@
 package com.delect.motiver.client.view.profile;
 
 import java.util.Date;
+import java.util.Map.Entry;
+
 import com.google.gwt.i18n.client.DateTimeFormat;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Widget;
@@ -24,6 +26,7 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.profile.ProfilePresenter;
 import com.delect.motiver.client.presenter.profile.ProfilePresenter.ProfileHandler;
+import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.UserModel;
 
 import com.extjs.gxt.ui.client.core.El;
@@ -75,28 +78,45 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 	final SimpleComboBox<String> comboTimeformat = new SimpleComboBox<String>();  
   TextField<String> tfAlias = new TextField<String>(); 
 	
+  boolean clearInvalid = false;
+  
 	//listener for comboboxes
 	final Listener<BaseEvent> listener = new Listener<BaseEvent>() {
 		@Override
 		public void handleEvent(BaseEvent be) {
 						
 			try {
-			  String locale = (comboLocale.getValue() != null && comboLocale.isValid())? comboLocale.getValue().getValue() : "en_US";
-        int df = comboDateformat.getSelectedIndex();
+			  //get locale
+			  String s = (comboLocale.getValue() != null && comboLocale.isValid())? comboLocale.getValue().getValue() : StringConstants.LOCALE_DEFAULT;
+			  String locale = StringConstants.LOCALE_DEFAULT;
+		    for(Entry<String, String> entry : StringConstants.LOCALES.entrySet()) {
+		      if(entry.getValue().equals(s)) {
+		        locale = entry.getKey();
+		        break;
+		      }
+		    }
+		    
+			  int df = comboDateformat.getSelectedIndex();
 				int tf = comboTimeformat.getSelectedIndex();
 				int meas = comboMeas.getSelectedIndex();
-				String alias = (tfAlias.getValue() != null && tfAlias.isValid())? tfAlias.getValue() : "";
-				if(alias.length() == 0) {
-				  alias = null;
-				}
+				String alias = tfAlias.getValue();
 
-				user.setLocale(locale);
-				user.setDateFormat(df);
-				user.setTimeFormat(tf);
-				user.setMeasurementSystem(meas);
-				user.setAlias(alias);
-				
-				handler.saveData(user);
+				//if data has changed
+				if(!locale.equals(user.getLocale())
+				    || user.getDateFormat() != df
+				    || user.getTimeFormat() != tf
+				    || user.getMeasurementSystem() != meas
+				    || (alias == null && user.getAlias() != null)
+				    || (alias != null && !alias.equals(user.getAlias()))) {
+				  
+	        user.setLocale(locale);
+	        user.setDateFormat(df);
+	        user.setTimeFormat(tf);
+	        user.setMeasurementSystem(meas);
+	        user.setAlias(alias);
+	        
+	        handler.saveData(user);
+				}
 				
 			} catch (Exception e) {
 	      Motiver.showException(e);
@@ -155,12 +175,20 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
     comboLocale.setForceSelection(true);
     comboLocale.setEditable(false);
     comboLocale.setTriggerAction(TriggerAction.ALL);
-    comboLocale.add("fi_FI");
-    comboLocale.add("en_US");
+    int i = 0;
+    int sel = 0;
+    for(Entry<String, String> entry : StringConstants.LOCALES.entrySet()) {
+      comboLocale.add(entry.getValue());
+      
+      if(entry.getKey().equals(user.getLocale())) {
+        sel = i;
+      }
+      i++;
+    }
     comboLocale.addPlugin(plugin);
     comboLocale.setData("text", AppController.Lang.LanguageDesc());
-    fieldSet.add(comboDateformat, formData);
-    comboLocale.setRawValue( user.getLocale() );
+    fieldSet.add(comboLocale, formData);
+    comboLocale.setValue( comboLocale.getStore().getAt( sel ));
 		
 		//dateformat
 		comboDateformat.setFieldLabel(AppController.Lang.DateFormat()); 
@@ -204,6 +232,7 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 		tfAlias.setMinLength(4);
 		tfAlias.setAllowBlank(true);
 		tfAlias.setRegex("[a-zA-Z]*");
+		Functions.setWarningMessages(tfAlias);
 		tfAlias.getMessages().setRegexText(AppController.Lang.OnlyLettersAllowed());
 		if(user.getAlias() != null) {
 		  tfAlias.setValue(user.getAlias());
@@ -219,7 +248,16 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 		comboTimeformat.addListener(Events.Change, listener);
 		comboMeas.addListener(Events.Change, listener);
 		comboLocale.addListener(Events.Change, listener);
-		tfAlias.addListener(Events.Change, listener);
+		tfAlias.addListener(Events.Valid, listener);
+    tfAlias.addListener(Events.KeyPress, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        if(clearInvalid) {
+          tfAlias.clearInvalid();
+          clearInvalid = false;
+        }
+      }
+    });
 
 		HBoxLayoutData flex2 = new HBoxLayoutData(new Margins(0, 5, 0, 0));  
     flex2.setFlex(7);  
@@ -242,12 +280,16 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 
   @Override
   public void showAliasTaken(boolean taken) {
+    tfAlias.disableEvents(true);
     if(taken) {
       tfAlias.forceInvalid(AppController.Lang.AliasTaken());
+      clearInvalid = true;
     }
     else {
       tfAlias.clearInvalid();
+      clearInvalid = false;
     }
+    tfAlias.enableEvents(true);
   }
 
 }

@@ -111,6 +111,7 @@ public class AppController extends Presenter {
       BLOG_UID = null;
     }
 
+
 		final String agent = GXT.getUserAgent();
     IsIE9 = !GXT.isOpera && (agent.indexOf("msie 9") != -1);
     IsGecko40 = GXT.isGecko && agent.indexOf("rv:2") != -1;
@@ -184,7 +185,7 @@ public class AppController extends Presenter {
       @Override
       public void onSuccess(UserModel result) {
         //logged int
-        if(result.getId() != null) {
+        if(result.getUid() != null) {
           //fire logged in event
           final LoggedInEvent event = new LoggedInEvent(result);
           eventBus.fireEvent(event);

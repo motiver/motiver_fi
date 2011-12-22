@@ -26,12 +26,12 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.delect.motiver.server.ExerciseName;
-import com.delect.motiver.server.FoodName;
 import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.Time;
-import com.delect.motiver.server.UserOpenid;
-import com.delect.motiver.server.Workout;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
+import com.delect.motiver.server.jdo.training.ExerciseName;
+import com.delect.motiver.server.jdo.training.Workout;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 
 import net.sf.jsr107cache.Cache;
@@ -53,6 +53,7 @@ public class WeekCache {
 	//prefixes
 	private final static String PREFIX_WORKOUT = "w";
   private final static String PREFIX_EXERCISENAMES = "en";
+  private final static String PREFIX_EXERCISE_NAME_COUNT = "en_c";
   private final static String PREFIX_FOOD_NAMES = "fnames";
   private final static String PREFIX_FOOD_NAME = "fn";
   private final static String PREFIX_FOOD_NAME_COUNT = "fn_c";
@@ -216,7 +217,6 @@ public class WeekCache {
     cache.remove(PREFIX_USERS);
   }
 
-  @SuppressWarnings("unchecked")
   public FoodName getFoodName(Long nameId) {
     if(cache == null) {
       return null;
@@ -414,5 +414,36 @@ public class WeekCache {
     builder.append(uid);
     cache.put(builder.toString(), count);
     
+  }
+
+  public void addExerciseNameCount(Long id, String uid, int count) {
+    if(cache == null) {
+      return;
+    }
+    
+    //meal
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_EXERCISE_NAME_COUNT);
+    builder.append(id);
+    builder.append("_");
+    builder.append(uid);
+    cache.put(builder.toString(), count);
+    
+  }
+
+  public int getExerciseNameCount(Long id, String uid) {
+    if(cache == null) {
+      return -1;
+    }
+    
+    //count
+    StringBuilder builder = new StringBuilder();
+    builder.append(PREFIX_EXERCISE_NAME_COUNT);
+    builder.append(id);
+    builder.append("_");
+    builder.append(uid);
+    Object obj = cache.get(builder.toString());
+        
+    return  (obj != null)? (Integer)obj : -1;
   }
 }

@@ -46,6 +46,14 @@
     <servlet-name>testServlet</servlet-name>
     <servlet-class>com.delect.motiver.server.servlet.TestServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>nutritionDumpServlet</servlet-name>
+    <servlet-class>com.delect.motiver.server.servlet.NutritionDumpServlet</servlet-class>
+  </servlet>
+  <servlet>
+    <servlet-name>backupServlet</servlet-name>
+    <servlet-class>com.delect.motiver.server.servlet.BackupServlet</servlet-class>
+  </servlet>
   
 
  
@@ -77,6 +85,14 @@
     <servlet-name>testServlet</servlet-name>
     <url-pattern>/motiver/test</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>nutritionDumpServlet</servlet-name>
+    <url-pattern>/motiver/nds</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>backupServlet</servlet-name>
+    <url-pattern>/motiver/bs</url-pattern>
+  </servlet-mapping>
   
     
   <!-- Default page to serve -->
@@ -86,8 +102,6 @@
   
   <security-constraint>
     <web-resource-collection>
-        <web-resource-name>app</web-resource-name>
-        <description>app</description>
         <url-pattern>/app/*</url-pattern>
     </web-resource-collection>
     <auth-constraint>

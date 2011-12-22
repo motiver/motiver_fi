@@ -153,16 +153,16 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 					//create copy
 					FoodModel foodCopy = new FoodModel();
 					foodCopy.setId(food.getId());
-					foodCopy.setUid(time.getUid());
+					foodCopy.setUid(time.getUser().getUid());
 					foodCopy.setTimeId(time.getId());
 					foodCopy.setName(food.getName());
 					foodCopy.setAmount(food.getAmount());
-					rpcService.addFood(foodCopy, new MyAsyncCallback<FoodModel>() {
+					final Request req = rpcService.addFood(foodCopy, new MyAsyncCallback<FoodModel>() {
 						@Override
 						public void onSuccess(FoodModel result) {
 							display.setContentEnabled(true);
 							
-							result.setUid(time.getUid());
+							result.setUid(time.getUser().getUid());
 							result.setTimeId(time.getId());
               result.setMealId(0L);
 							
@@ -173,6 +173,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 							fireEvent(new FoodCreatedEvent(result));
 						}
 					});
+					addRequest(req);
 				}
 				//show selection
 				else {
@@ -189,15 +190,14 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 					//create copy
 					MealModel mealCopy = new MealModel();
 					mealCopy.setId(meal.getId());
-					mealCopy.setUid(time.getUid());
+//					mealCopy.setUid(time.getUid());
 					mealCopy.setTimeId(time.getId());
-					final Request req = rpcService.addMeal(mealCopy, new MyAsyncCallback<MealModel>() {
+					final Request req = rpcService.addMeal(mealCopy, time.getId(), new MyAsyncCallback<MealModel>() {
 						@Override
 						public void onSuccess(MealModel result) {
 							display.setContentEnabled(true);
 							
-							result.setUid(time.getUid());
-							result.setUid(time.getUid());
+//							result.setUid(time.getUid());
 							result.setTimeId(time.getId());
 							
 							//fire event
@@ -322,7 +322,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 	
 	@Override
 	public void onRun() {
-		show();
+		showContent();
 	    
 		//new time
 		if(time.getId() == 0) {
@@ -363,7 +363,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 	 * @param food : to be updated
 	 */
 	private void addNewFoodPresenter(FoodModel food) {
-    food.setUid(time.getUid());
+    food.setUid(time.getUser().getUid());
     food.setTimeId(time.getId());
     food.setMealId(0L);
 		final FoodPresenter wp = new FoodPresenter(rpcService, eventBus, (FoodDisplay)GWT.create(FoodView.class), food);
@@ -375,8 +375,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 	 * @param meal : to be updated
 	 */
 	private void addNewMealPresenter(MealModel meal) {
-		meal.setUid(time.getUid());
-		meal.setUid(time.getUid());
+//		meal.setUid(time.getUid());
 		meal.setTimeId(time.getId());
 		final MealPresenter wp = new MealPresenter(rpcService, eventBus, (MealDisplay)GWT.create(MealView.class), meal);
 		addNewPresenter(wp);
@@ -390,7 +389,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 
 		//if no meals/foods -> show empty presenter
 		if(mealfoodPresenters.size() == 0) {
-      if(time.getUid().equals(AppController.User.getUid())) {
+      if(time.getUser().equals(AppController.User)) {
 				emptyPresenter = new EmptyTimePresenter(rpcService, eventBus, (EmptyTimeDisplay)GWT.create(EmptyTimeView.class));
       }
 			else {
@@ -461,7 +460,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 		//create dummy food
 		final FoodModel foodDummy = new FoodModel(new FoodNameModel(0L, ""));
 		foodDummy.setTimeId(time.getId());
-		foodDummy.setUid(time.getUid());
+		foodDummy.setUid(time.getUser().getUid());
 		//init new foodpresenter
     final FoodPresenter fp = new FoodPresenter(rpcService, eventBus, (FoodDisplay)GWT.create(FoodView.class), foodDummy);
     addNewPresenter(fp);
@@ -531,7 +530,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 				
 				//highlight if new meal created
 				if(target == 0) {
-					display.highlight();
+					highlight();
 		    }
 			}
 		}
@@ -587,7 +586,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 
 				//highlight if new meal created
 				if(target == 0) {
-					display.highlight();
+					highlight();
 		    }
 			}	
 		}
@@ -661,7 +660,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 	/**
 	 * shows meals and foods from time model
 	 */
-	void show() {
+	void showContent() {
 
 		display.setContentEnabled(false);
 		
@@ -694,7 +693,7 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
     }
 		
     if(!found) {
-      if(time.getUid().equals(AppController.User.getUid())) {
+      if(time.getUser().equals(AppController.User)) {
 				emptyPresenter = new EmptyTimePresenter(rpcService, eventBus, (EmptyTimeDisplay)GWT.create(EmptyTimeView.class));
       }
 			else {

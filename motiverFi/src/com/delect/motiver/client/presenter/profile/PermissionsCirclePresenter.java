@@ -183,7 +183,6 @@ public class PermissionsCirclePresenter extends Presenter {
     emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING);
     emptyPresenter.run(display.getBodyContainer());
     
-    Motiver.setNextCallCacheable(true);
     final Request req = rpcService.getUsersFromCircle(target, new MyAsyncCallback<List<UserModel>>() {
       @Override
       public void onSuccess(List<UserModel> result) {
@@ -212,11 +211,12 @@ public class PermissionsCirclePresenter extends Presenter {
         emptyPresenter.run(display.getBodyContainer());
       }
       else {
-        
+
+        display.setAllUsersEnabled(false);
         for(UserModel m : list) {
           String id = m.getUid();
-          
-          //if all users (id == -1)
+
+          //if enabled permissions for all users, uid is "-1"
           if(m.getUid().equals("-1")) {
             display.setAllUsersEnabled(true);
           }

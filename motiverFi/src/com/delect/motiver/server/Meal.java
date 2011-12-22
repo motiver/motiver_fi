@@ -31,149 +31,148 @@ import com.delect.motiver.shared.MealModel;
 
 @PersistenceCapable(identityType = IdentityType.DATASTORE)
 public class Meal implements Serializable, Comparable<Meal> {
-		
+    
   /**
    * 
    */
   private static final long serialVersionUID = -1889245717390374201L;
 
   /**
-	 * Converts server object to client side object
-	 * @param model : server side model
-	 * @return Client side model
-	 */
-	public static MealModel getClientModel(Meal model) {
-		if(model == null) {
-			return null;
+   * Converts server object to client side object
+   * @param model : server side model
+   * @return Client side model
+   */
+  public static MealModel getClientModel(Meal model) {
+    if(model == null) {
+      return null;
     }
-		
-		MealModel modelClient = new MealModel(model.getName());
-		modelClient.setId(model.getId());
-		modelClient.setUid(model.getUid());
-		
-		return modelClient;
-	}
+    
+    MealModel modelClient = new MealModel(model.getName());
+    modelClient.setId(model.getId());
+    
+    return modelClient;
+  }
 
-	/**
-	 * Converts client object to server side object
-	 * @param model : client side model
-	 * @return Server side model
-	 */
-	public static Meal getServerModel(MealModel model) {
-		if(model == null) {
-			return null;
+  /**
+   * Converts client object to server side object
+   * @param model : client side model
+   * @return Server side model
+   */
+  public static Meal getServerModel(MealModel model) {
+    if(model == null) {
+      return null;
     }
-		
-		Meal modelServer = new Meal(model.getName());
-		modelServer.setId(model.getId());
-		
-		return modelServer;
-	}
-	
-	/**
-	 * How many times this have been copied
-	 */
+    
+    Meal modelServer = new Meal(model.getName());
+    modelServer.setId(model.getId());
+    
+    return modelServer;
+  }
+  
+  /**
+   * How many times this have been copied
+   */
   @Persistent
-	private Integer copyCount = 0;
+  private Integer copyCount = 0;
 
-	@Persistent(mappedBy = "parent")
+  @Persistent(mappedBy = "parent")
   private List<FoodInMeal> foods = new ArrayList<FoodInMeal>();
 
-	@PrimaryKey
-	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
-	private Key id = null;
+  @PrimaryKey
+  @Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
+  private Key id = null;
 
-	@Persistent
-	private String name = "";
+  @Persistent
+  private String name = "";
 
-	@Persistent
-	private Key time;
+  @Persistent
+  private Key time;
 
-	@Persistent
-	private Long uid;
+  @Persistent
+  private Long uid;
   
   @Persistent
   public String openId;
 
-	public Meal() {
-		
-	}
+  public Meal() {
+    
+  }
 
-	public Meal(String name) {
-		this.setName(name);
-	}
+  public Meal(String name) {
+    this.setName(name);
+  }
 
-	@Override
-	public int compareTo(Meal compare) {
-		return getName().toLowerCase().compareTo(compare.getName().toLowerCase());
-	}
+  @Override
+  public int compareTo(Meal compare) {
+    return getName().toLowerCase().compareTo(compare.getName().toLowerCase());
+  }
 
-	public List<FoodInMeal> getFoods() {
-		return foods;
-	}
+  public List<FoodInMeal> getFoods() {
+    return foods;
+  }
 
-	public Long getId() {
-		if(id != null) {
-			return id.getId();
+  public Long getId() {
+    if(id != null) {
+      return id.getId();
     }
-		else {
-			return 0L;
+    else {
+      return 0L;
     }
   }
 
-	public Key getKey() {
-		return id;
-	}
+  public Key getKey() {
+    return id;
+  }
 
-	public String getName() {
+  public String getName() {
     return name;
   }
 
-	public Key getTime() {
-		return time;
-	}
+  public Key getTime() {
+    return time;
+  }
 
-	public String getUid() {
-		if(openId != null) {
-			return openId;
+  public String getUid() {
+    if(openId != null) {
+      return openId;
     }
-		else {
-			return "";
+    else {
+      return "";
     }
   }
 
-	/**
-	 * Adds one to copy count
-	 */
-	public void incrementCopyCount() {
-		copyCount++;
-	}
+  /**
+   * Adds one to copy count
+   */
+  public void incrementCopyCount() {
+    copyCount++;
+  }
 
-	public void setFoods(List<FoodInMeal> foods) {
-		this.foods = foods;
-	}
+  public void setFoods(List<FoodInMeal> foods) {
+    this.foods = foods;
+  }
 
-	public void setId(Long id) {
-		
-		Key k = null;
-		if(id != null && id != 0) {
+  public void setId(Long id) {
+    
+    Key k = null;
+    if(id != null && id != 0) {
       k = KeyFactory.createKey(Meal.class.getSimpleName(), id);
     }
-		
-		this.id = k;
-	}
-	
-	public void setName(String name) {
+    
+    this.id = k;
+  }
+  
+  public void setName(String name) {
     this.name = name;
   }
 
-	public void setTime(Key time) {
+  public void setTime(Key time) {
     this.time = time;
   }
-	
-	public void setUid(String openId) {
-		this.openId = openId;
-	} 
+  
+  public void setUid(String openId) {
+    this.openId = openId;
+  } 
 
   public Long getUidOld() {
     return uid;

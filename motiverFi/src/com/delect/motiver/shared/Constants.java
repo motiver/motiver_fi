@@ -27,9 +27,9 @@ public interface Constants {
 //    public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR ONLINE TESTING (change also API_KEY in index.html & blog.html!!!)
-//  public static final String URL_APP = "http://dev.motiver-app.appspot.com/";
-//  public static final String URL_APP_STATIC = "http://dev.motiver-app.appspot.com/";
-//  public static final String URL_APP_CURR = "dev.motiver-app.appspot.com";
+//  public static final String URL_APP = "http://v2-0.motiver-app.appspot.com/";
+//  public static final String URL_APP_STATIC = "http://v2-0.motiver-app.appspot.com/";
+//  public static final String URL_APP_CURR = "v2-0.motiver-app.appspot.com";
 
   //FOR RELEASE (change also API_KEY in index.html & blog.html!!!)
     public static final String URL_APP = "http://www.motiver.fi/";
@@ -97,9 +97,13 @@ public interface Constants {
 	 */
 	public static final int DAYS_SEARCH_INDEXES_EXPIRE = 21;
 	/**
+	 * Default number of days in routine
+	 */
+  public static final int DAYS_ROUTINE_DEFAULT = 7;
+	/**
 	 * How often comments are refreshed in comment box (milliseconds)
 	 */
-	public static final int DELAY_COMMENTS_REFRESH = 1000 * 60 * 5;	//5 min
+	public static final int DELAY_COMMENTS_REFRESH = 1000 * 60 * 10;	//10 min
 	
 	/**
 	 * How long we wait after validating text field (after user stops entering value)
@@ -215,7 +219,7 @@ public interface Constants {
 	/**
 	 * Max length for name
 	 */
-	public static final int LIMIT_NAME_MAX = 30;
+	public static final int LIMIT_NAME_MAX = 40;
 	/**
 	 * Min length for name
 	 */
@@ -244,6 +248,10 @@ public interface Constants {
    * Max number of users shown
    */
   public static int LIMIT_USERS = 5;
+  /**
+   * How many days from past we search exercises
+   */
+  public static final int LIMIT_EXERCISE_HISTORY_BACK = 365*2;
 
   //error codes
   public static final int JSONP_GET_ALL = 77;
@@ -261,7 +269,7 @@ public interface Constants {
 	/**
 	 * How many times we try to update entity if there is some problems
 	 */
-  public static final int LIMIT_UPDATE_RETRIES = 3;
+  public static final int LIMIT_UPDATE_RETRIES = 15;
   
   /**
    * Default values for training day times
@@ -286,5 +294,7 @@ public interface Constants {
    */
   public static final String DRAG_GROUP_USER = "user";
   public static final String DRAG_GROUP_WORKOUT = "wp";   // + workout's ID
-	
+  
+  public static final String LOCALE_DEFAULT = "en_US";
+	  
 }

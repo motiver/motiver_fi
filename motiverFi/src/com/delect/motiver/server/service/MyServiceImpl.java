@@ -27,7 +27,6 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -41,7 +40,6 @@ import java.util.logging.Logger;
 
 import javax.jdo.PersistenceManager;
 import javax.jdo.Query;
-import javax.jdo.Transaction;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -49,45 +47,42 @@ import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 
 import com.delect.motiver.client.service.MyService;
-import com.delect.motiver.server.Base64;
-import com.delect.motiver.server.Cardio;
-import com.delect.motiver.server.CardioValue;
-import com.delect.motiver.server.Circle;
-import com.delect.motiver.server.Comment;
-import com.delect.motiver.server.CommentsRead;
-import com.delect.motiver.server.Exercise;
-import com.delect.motiver.server.ExerciseName;
-import com.delect.motiver.server.ExerciseNameCount;
-import com.delect.motiver.server.ExerciseSearchIndex;
-import com.delect.motiver.server.Food;
 import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
-import com.delect.motiver.server.FoodInTime;
-import com.delect.motiver.server.FoodName;
-import com.delect.motiver.server.FoodSearchIndex;
-import com.delect.motiver.server.GuideValue;
 import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.MealInTime;
-import com.delect.motiver.server.Measurement;
-import com.delect.motiver.server.MeasurementValue;
-import com.delect.motiver.server.MicroNutrient;
-import com.delect.motiver.server.MonthlySummary;
-import com.delect.motiver.server.MonthlySummaryExercise;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.Routine;
-import com.delect.motiver.server.Run;
-import com.delect.motiver.server.RunValue;
-import com.delect.motiver.server.Time;
-import com.delect.motiver.server.UserOpenid;
-import com.delect.motiver.server.Workout;
-import com.delect.motiver.server.datastore.StoreNutrition;
-import com.delect.motiver.server.datastore.StoreTraining;
-import com.delect.motiver.server.datastore.StoreUser;
+import com.delect.motiver.server.jdo.Cardio;
+import com.delect.motiver.server.jdo.CardioValue;
+import com.delect.motiver.server.jdo.Circle;
+import com.delect.motiver.server.jdo.Comment;
+import com.delect.motiver.server.jdo.CommentsRead;
+import com.delect.motiver.server.jdo.ExerciseSearchIndex;
+import com.delect.motiver.server.jdo.FoodSearchIndex;
+import com.delect.motiver.server.jdo.Measurement;
+import com.delect.motiver.server.jdo.MeasurementValue;
+import com.delect.motiver.server.jdo.MicroNutrient;
+import com.delect.motiver.server.jdo.MonthlySummary;
+import com.delect.motiver.server.jdo.MonthlySummaryExercise;
+import com.delect.motiver.server.jdo.Run;
+import com.delect.motiver.server.jdo.RunValue;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
+import com.delect.motiver.server.jdo.nutrition.GuideValue;
+import com.delect.motiver.server.jdo.nutrition.MealJDO;
+import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.jdo.training.Exercise;
+import com.delect.motiver.server.jdo.training.ExerciseName;
+import com.delect.motiver.server.jdo.training.Routine;
+import com.delect.motiver.server.jdo.training.Workout;
+import com.delect.motiver.server.manager.NutritionManager;
+import com.delect.motiver.server.manager.TrainingManager;
+import com.delect.motiver.server.manager.UserManager;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
 import com.delect.motiver.shared.CommentModel;
-import com.delect.motiver.shared.ConnectionException;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
@@ -109,29 +104,38 @@ import com.delect.motiver.shared.TicketModel;
 import com.delect.motiver.shared.TimeModel;
 import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
-import com.google.appengine.api.urlfetch.HTTPHeader;
-import com.google.appengine.api.urlfetch.HTTPMethod;
-import com.google.appengine.api.urlfetch.HTTPRequest;
-import com.google.appengine.api.urlfetch.URLFetchService;
-import com.google.appengine.api.urlfetch.URLFetchServiceFactory;
-import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class MyServiceImpl extends RemoteServiceServlet implements MyService {
+  
+  private static ThreadLocal<StringBuilder> threadLocalBuilder = new ThreadLocal<StringBuilder>() {
+    @Override
+    protected StringBuilder initialValue() {
+      return new StringBuilder(150);
+    }
+
+    @Override
+    public StringBuilder get() {
+        StringBuilder b = super.get();
+        b.setLength(0);
+        return b;
+    }
+  };
+  
+  public static StringBuilder getStringBuilder() {
+    return threadLocalBuilder.get();
+  }
 
   /**
    * 
    */
   private static final long serialVersionUID = -7106279162988246661L;
-
-  /**
-   * How long we wait between retries (milliseconds)
-   */
-  public static final int DELAY_BETWEEN_RETRIES = 75;
   
+  UserManager userManager = UserManager.getInstance();
 
   private static final class MyListItem implements Comparable<MyListItem> {
     
@@ -155,107 +159,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   
   static final int MAX_COUNT = 4000;
     
-  /**
-   * Checks if current user has permission to coach given uid
-   * @param uid
-   * @return accesstoken for user
-   * @throws ConnectionException
-   */
-//  @SuppressWarnings("unchecked")
-//  public static String getCoachAccess(String uid) {
-//
-//    log.log(Level.FINE, "getCoachAccess()");
-//
-//    //get uid
-//    final String UID = getUid();
-//    if(UID == null) {
-//      return null;
-//    }
-//
-//    String str = "";
-//    PersistenceManager pm =  PMF.get().getPersistenceManager();
-//    
-//    try {
-//          
-//        //check if found in our database AND has set as coach
-//        Query q = pm.newQuery(UserOpenid.class, "openId == openIdParam && shareCoach == shareCoachParam");
-//        q.declareParameters("java.lang.String openIdParam, java.lang.Long shareCoachParam");
-//        List<UserOpenid> users = (List<UserOpenid>) q.execute(uid, UID);
-//
-//        //data found
-//        if(users.size() > 0) {
-//          //reset token
-//          final UserOpenid user = users.get(0);
-//          str = user.getFbAuthToken();
-//        }
-//
-//    } catch (Exception e) {
-//      log.log(Level.SEVERE, "getCoachAccess", e);
-//      
-//      return null;
-//    }
-//    finally {
-//      if (!pm.isClosed()) {
-//        pm.close();
-//      } 
-//    }
-//    
-//    return str;
-//  }
-  
-  /**
-   * Checks if current user is friend with given uid
-   * @param uid
-   * @return
-   * @throws ConnectionException 
-   */
-  private static boolean areFriends(String uid) {
-
-    logger.log(Level.FINE, "areFriends()");
-
-    boolean areFriends = false;
-    
-//    try {
-//      //if coach mode -> get token from trainee
-//      if(token.contains("____")) {
-//        token = getTraineesToken(token);
-//      }
-//      
-//      //get friends from facebook
-//      URL url = new URL("https://graph.facebook.com/me/friends?access_token=" + URLEncoder.encode(token.replaceAll("____.*", "")));
-//      BufferedReader reader = null;
-//      String line = null;
-//      try {
-//        reader = new BufferedReader(new InputStreamReader(url.openStream()));
-//        line = reader.readLine();
-//      } catch (Exception e1) {
-//        log.log(Level.SEVERE, "", e1);
-//        throw new ConnectionException("areFriends", "Could not connect to Facebook.com");
-//      }
-//      finally {
-//        reader.close();
-//      } 
-//      if(line != null) {
-//        JSONObject json = new JSONObject(line);
-//        JSONArray groups = json.getJSONArray("data");
-//        
-//        for(int i=0; i < groups.length(); i++) {
-//          JSONObject obj = groups.getJSONObject(i);
-//          final long id = obj.getLong("id");
-//          
-//          //check if IDs match
-//          if(id == uid) {
-//            areFriends = true;
-//            break;
-//          }
-//        }
-//      }
-//    } catch (Exception e) {
-//      log.log(Level.SEVERE, "", e);
-//    }
-    
-    return areFriends;
-  }
   
   /**
    * Calculates energy from times (searches meals and foods)
@@ -263,7 +166,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param times
    * @return
    */
-  private static NutritionDayModel calculateEnergyFromTimes(PersistenceManager pm, List<Time> times, String UID) {
+  @Deprecated private static NutritionDayModel calculateEnergyFromTimesOfDays(List<TimeJDO> times, String UID) {
 
     logger.log(Level.FINE, "calculateEnergyFromTimes()");
     double energy = 0;
@@ -272,22 +175,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     double fet = 0;
 
     try {
-      List<TimeModel> list = new ArrayList<TimeModel>();
-      for(Time time : times) {
-        list.add(StoreNutrition.getTimeModel(pm, time.getId(), UID));
-      }
       
       //each time
-      for(TimeModel tClient : list) {
+      for(TimeJDO tClient : times) {
         
         //each meal
-        for(MealModel m : tClient.getMeals()) {
+        for(MealJDO m : tClient.getMealsNew()) {
           
             if(m.getFoods() != null) {
-              for(FoodModel food : m.getFoods()) {
+              for(FoodJDO food : m.getFoods()) {
 
                 final double amount = food.getAmount();
-                final FoodNameModel name = food.getName();
+                final FoodName name = food.getName();
                 if(name != null) {
                   energy += (name.getEnergy() / 100) * amount;
                   protein += (name.getProtein() / 100) * amount;
@@ -300,10 +199,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         }
 
         if(tClient.getFoods() != null) {
-          for(FoodModel food : tClient.getFoods()) {
+          for(FoodJDO food : tClient.getFoods()) {
 
             final double amount = food.getAmount();
-            final FoodNameModel name = food.getName();
+            final FoodName name = food.getName();
             if(name != null) {
               energy += (name.getEnergy() / 100) * amount;
               protein += (name.getProtein() / 100) * amount;
@@ -326,7 +225,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param exercise
    * @return duplicated exercise
    */
-  public static Exercise duplicateExercise(Exercise e) {
+  @Deprecated public static Exercise duplicateExercise(Exercise e) {
 
     logger.log(Level.FINE, "duplicateExercise()");
 
@@ -407,151 +306,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   }
 
   /**
-   * Duplicates time model
-   * @param time
-   * @return duplicated time
-   */
-  private static Time duplicateTime(Time t) throws ConnectionException {
-
-    logger.log(Level.FINE, "duplicateTime()");
-    
-    try {
-      Time tNew = new Time(t.getDate(), t.getTime());
-      return tNew;
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "duplicateTime", e);
-      throw new ConnectionException("duplicateTime", e.getMessage());
-    }
-  }
-
-  /**
-   * Duplicates workout model (including exercises)
-   * @param workout
-   * @return duplicated workout
-   * @throws ConnectionException 
-   */
-  private static Workout duplicateWorkout(Workout w) throws ConnectionException {
-
-    logger.log(Level.FINE, "duplicateWorkout()");
-
-    try {
-      Workout wNew = new Workout(w.getName());
-      wNew.setDate(w.getDate());
-      wNew.setDayInRoutine(w.getDayInRoutine());
-      wNew.setRoutineId(w.getRoutineId());
-      //exercises
-      List<Exercise> eNew = new ArrayList<Exercise>();
-      for(Exercise e : w.getExercises())
-        eNew.add(duplicateExercise(e));
-      wNew.setExercises(eNew);
-      
-      return wNew;
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "duplicateWorkout", e);
-      throw new ConnectionException("duplicateWorkout", e.getMessage());
-    }
-  }
-
-  /**
-   * Gets openId string
-   * @return null if no user found
-   */
-  private String getUid() {
-
-    String coachModeUid = null;
-    
-    try {
-      String s = this.perThreadRequest.get().getHeader("coach_mode_uid");
-      if(s != null && s.length() > 1) {
-        coachModeUid = s;
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error checkin coach mode", e);
-      coachModeUid = null;
-    }
-    
-    return _getUid(coachModeUid);
-  }
-  @SuppressWarnings("unchecked")
-  static String _getUid(String coachModeUid) {
-
-    logger.log(Level.FINE, "getUid()");
-
-    String openId = null;
-
-    UserService userService = UserServiceFactory.getUserService();
-    User userCurrent = userService.getCurrentUser();
-    
-    if(userCurrent != null) {
-      openId = userCurrent.getUserId();
-    }
-  
-    //if coach mode -> return trainee's uid
-    if(coachModeUid != null) {
-      if(logger.isLoggable(Level.FINE)) {
-        logger.log(Level.FINE, "Checking if user "+openId+" is coach to "+coachModeUid);
-      }
-
-      PersistenceManager pm =  PMF.get().getPersistenceManager();
-      
-      try {
-        Query q = pm.newQuery(Circle.class);
-        q.setFilter("openId == openIdParam && friendId == friendIdParam && target == targetParam");
-        q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
-        q.setRange(0,1);
-        List<Circle> list = (List<Circle>)q.execute(coachModeUid, openId, Permission.COACH);
-        
-        if(list.size() > 0) {
-          logger.log(Level.FINE, "Is coach!");
-          openId = list.get(0).getUid();
-        }
-      } catch (Exception e) {
-        logger.log(Level.SEVERE, "Error checkin coach", e);
-      }
-      finally {
-        if(!pm.isClosed()) {
-          pm.close();
-        }
-      }
-    }
-    
-    return openId;
-  }
-
-  /**
-   * Gets user's facebook id (uid) based on auth token
-   * @param object array: uid (long), locale (string)
-   */
-  private Object[] getUidAndLocale() {
-
-    logger.log(Level.FINE, "getUidAndLocale()");
-
-    String uid = getUid();
-    String locale = "";
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      //get our uid
-      UserModel u = StoreUser.getUserModel(pm, uid);
-      if(u != null) {
-        locale = u.getLocale();
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error fetching locale", e);
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return new Object[] {uid, locale};
-  }
-
-  /**
    * Checks if user has permission to given target
    * @param target : what item is shared, 0=training, 1=nutrition, 4=nutrition foods, 2=cardio, 3=measurement
    *        edit permissions: 10=training, 11=nutrition, 14=nutrition foods, 12=cardio, 13=measurement
@@ -601,7 +355,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return has permission
    */
   @SuppressWarnings("unchecked")
-  public static boolean hasPermission(PersistenceManager pm, int target, String ourUid, String uid) {
+  @Deprecated public static boolean hasPermission(PersistenceManager pm, int target, String ourUid, String uid) {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Checking permission "+target+" for "+ourUid+", "+uid);
@@ -650,7 +404,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param start or end date (time: 00:00:01 or 23:59:59)
    * @return date
    */
-  public static Date stripTime(Date date, boolean isStart) {
+  @Deprecated public static Date stripTime(Date date, boolean isStart) {
 
     logger.log(Level.FINE, "stripTime()");
 
@@ -674,33 +428,22 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public UserModel getUser() throws ConnectionException {
 
-    logger.log(Level.FINE, "getUser()");
+    UserModel jdo = null;
     
-    UserModel user = new UserModel();
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      UserService userService = UserServiceFactory.getUserService();
-      User userCurrent = userService.getCurrentUser();
+    //get uid
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
-      //user found
-      if(userCurrent != null) {
-        
-        user = StoreUser.addUser(pm, userCurrent);
-        user.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
-        
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error loading user", e);
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+    //user found
+    if(user != null) {
+      
+      jdo = UserOpenid.getClientModel(user);
+
+      UserService userService = UserServiceFactory.getUserService();
+      jdo.setLogoutUrl(userService.createLogoutURL("http://www.motiver.fi"));
+      
     }
     
-    return user;
+    return jdo;
   }
   
   
@@ -710,14 +453,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added cardio (null if add not successful)
    */
   @Override
-  public CardioModel addCardio(CardioModel cardio) throws ConnectionException {
+  @Deprecated public CardioModel addCardio(CardioModel cardio) throws ConnectionException {
 
     logger.log(Level.FINE, "addCardio()");
     
     CardioModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -760,14 +504,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added cardio (null if add not successful)
    */
   @Override
-  public CardioValueModel addCardioValue(CardioModel cardio, CardioValueModel value) throws ConnectionException {
+  @Deprecated public CardioValueModel addCardioValue(CardioModel cardio, CardioValueModel value) throws ConnectionException {
 
     logger.log(Level.FINE, "addCardioValue()");
     
     CardioValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -828,14 +573,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added comment (null if add not successful
    */
   @Override
-  public CommentModel addComment(CommentModel comment) throws ConnectionException  {
+  @Deprecated public CommentModel addComment(CommentModel comment) throws ConnectionException  {
 
     logger.log(Level.FINE, "addComment()");
     
     CommentModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -878,68 +624,65 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public ExerciseModel addExercise(ExerciseModel exercise) throws ConnectionException {
 
-    logger.log(Level.FINE, "addExercise()");
+    ExerciseModel m = null;
     
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return null;
-    }
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    Exercise jdo = Exercise.getServerModel(exercise);
+    trainingManager.addExercise(user, jdo, exercise.getWorkoutId());
+    m = Exercise.getClientModel(jdo);
+
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      exercise = StoreTraining.addExerciseModel(pm, exercise, UID, LOCALE);
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding exercise", e);
-      throw new ConnectionException("addExercise", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return exercise;
+    return m;
   }
 
   /**
    * Creates / updates exercisename (updates if already found)
-   * @param workout : model to be added
-   * @return added exercise (null if add not successful)
+   * @param name : model to be added
+   * @return added name (null if add not successful)
    */
   @Override
   public ExerciseNameModel addExercisename(ExerciseNameModel name) throws ConnectionException {
 
-    ExerciseNameModel m = null;
-    
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return m;
-    }
+      List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
+      list.add(name);
+      
+      list = addExercisename(list);
+      if(list.size() > 0) {
+        return list.get(0);
+      }
+      
+      return null;
+  }
 
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+  /**
+   * Creates / updates exercisename (updates if already found)
+   * @param title : model to be added
+   * @return added name (null if add not successful)
+   */
+  @Override
+  public List<ExerciseNameModel> addExercisename(List<ExerciseNameModel> names) throws ConnectionException {
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
-    try {
-      m = StoreTraining.addExerciseNameModel(pm, name, UID, LOCALE);
+    TrainingManager trainingManager = TrainingManager.getInstance();  
+    
+    List<ExerciseName> jdoList = new ArrayList<ExerciseName>();
+    for(ExerciseNameModel n : names) {
+      jdoList.add(ExerciseName.getServerModel(n));
     }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding exercise name", e);
-      throw new ConnectionException("addExercisename", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+    jdoList = trainingManager.addExerciseName(user, jdoList);
+    
+    //convert to client side models
+    List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
+    for(ExerciseName n : jdoList) {
+      list.add(ExerciseName.getClientModel(n));
     }
     
-    return m;
+    return list;
+    
   }
 
   /**
@@ -950,33 +693,20 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public FoodModel addFood(FoodModel food) throws ConnectionException {
 
-    logger.log(Level.FINE, "addFood()");
-
     FoodModel m = null;
     
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return m;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
     try {
-
-      m = StoreNutrition.addFoodModel(pm, food, UID, LOCALE);
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      FoodJDO jdo = FoodJDO.getServerModel(food);
+      nutritionManager.addFood(user, jdo, food.getTimeId(), food.getMealId());
+      m = FoodJDO.getClientModel(jdo);
 
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding food", e);
       throw new ConnectionException("addFood", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return m;
@@ -990,34 +720,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public FoodNameModel addFoodname(FoodNameModel name) throws ConnectionException {
 
-    logger.log(Level.FINE, "addFoodname()");
-    
-    FoodNameModel m = null;
-    
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return m;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      m = StoreNutrition.addFoodNameModel(pm, name, UID, LOCALE);
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding food name", e);
-      throw new ConnectionException("addFoodname", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+      List<FoodNameModel> list = new ArrayList<FoodNameModel>();
+      list.add(name);
+      
+      list = addFoodname(list);
+      if(list.size() > 0) {
+        return list.get(0);
+      }
+      
+      return null;
   }
 
   /**
@@ -1026,15 +737,26 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added name (null if add not successful)
    */
   @Override
-  public List<FoodNameModel> addFoodnames(List<FoodNameModel> names) throws ConnectionException {
+  public List<FoodNameModel> addFoodname(List<FoodNameModel> names) throws ConnectionException {
 
-    logger.log(Level.FINE, "addFoodnames()");
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    NutritionManager nutritionManager = NutritionManager.getInstance();  
+    
+    List<FoodName> jdoList = new ArrayList<FoodName>();
+    for(FoodNameModel n : names) {
+      jdoList.add(FoodName.getServerModel(n));
+    }
+    jdoList = nutritionManager.addFoodName(user, jdoList);
+    
+    //convert to client side models
     List<FoodNameModel> list = new ArrayList<FoodNameModel>();
-    for(FoodNameModel name : names)
-      list.add(addFoodname(name));
+    for(FoodName n : jdoList) {
+      list.add(FoodName.getClientModel(n));
+    }
     
     return list;
+    
   }
 
   /**
@@ -1042,14 +764,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param model
    * @return
    */
-  @Override public GuideValueModel addGuideValue(GuideValueModel model) throws ConnectionException {
+  @Override @Deprecated public GuideValueModel addGuideValue(GuideValueModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "addGuideValue()");
     
     GuideValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1091,16 +814,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public MealModel addMeal(MealModel meal) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Adding meal: "+meal.getName());
-    }
+  public MealModel addMeal(MealModel meal, long timeId) throws ConnectionException {
 
     List<MealModel> list = new ArrayList<MealModel>();
     list.add(meal);
     
-    list = addMeals(list);
+    list = addMeals(list, timeId);
     
     if(list != null && list.size() > 0) {
         return list.get(0);
@@ -1116,39 +835,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<MealModel> addMeals(List<MealModel> meals) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Adding meals. Count: "+meals.size());
-    }
+  public List<MealModel> addMeals(List<MealModel> meals, long timeId) throws ConnectionException {
+    
+    //get uid
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
     List<MealModel> list = new ArrayList<MealModel>();
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
+    List<MealJDO> jdos = new ArrayList<MealJDO>();
+    for(MealModel m : meals) {
+      jdos.add(MealJDO.getServerModel(m));
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //each meal
-      for(MealModel meal : meals) {
-        MealModel m = StoreNutrition.addMealModel(pm, meal, UID);
-        if(m != null) {
-          list.add(m);
-        }
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    List<MealJDO> jdosCopy = nutritionManager.addMeals(user, jdos, timeId);
+    if(jdosCopy != null) {
+      for(MealJDO m : jdosCopy) {
+        list.add(MealJDO.getClientModel(m));
       }
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding meals", e);
-      throw new ConnectionException("addMeals", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -1160,14 +864,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added measurement (null if add not successful)
    */
   @Override
-  public MeasurementModel addMeasurement(MeasurementModel meal) throws ConnectionException {
+  @Deprecated public MeasurementModel addMeasurement(MeasurementModel meal) throws ConnectionException {
 
     logger.log(Level.FINE, "addMeasurement()");
     
     MeasurementModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1210,14 +915,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added measurement (null if add not successful)
    */
   @Override
-  public MeasurementValueModel addMeasurementValue(MeasurementModel measurement, MeasurementValueModel value) throws ConnectionException {
+  @Deprecated public MeasurementValueModel addMeasurementValue(MeasurementModel measurement, MeasurementValueModel value) throws ConnectionException {
 
     logger.log(Level.FINE, "addMeasurementValue()");
     
     MeasurementValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1263,263 +969,49 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     return m;
   }
 
-  @SuppressWarnings({ "unchecked", "deprecation" })
   @Override
   public RoutineModel addRoutine(RoutineModel routine) throws ConnectionException  {
 
-    logger.log(Level.FINE, "addRoutine()");
-
-    RoutineModel m = null;
+    List<RoutineModel> list = new ArrayList<RoutineModel>();
+    list.add(routine);
+    list = addRoutines(list);
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return m;
+    //get new routine
+    RoutineModel model = null;
+    
+    if(list.size() > 0) {
+      model = list.get(0);
     }
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Routine modelServer = null;
-      
-      //if ID is null -> create new one (no exercises)
-      if(routine.getId() == 0) {
-        
-        //convert to server side model
-        modelServer = Routine.getServerModel(routine);
-      }
-      else {
-        
-        //get model
-        final Routine r = pm.getObjectById(Routine.class, routine.getId());
-        
-        boolean hasPermission = true;
-        
-        //if not ours -> check if we have permission to copy it
-        if(!r.getUid().equals(UID)) {
-          hasPermission = hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid());
-        }
-        
-        //create a copy
-        if(hasPermission) {
-          modelServer = duplicateRoutine(r);
-          
-          //increment copy count IF NOT our routine
-          if(!r.getUid().equals(UID)) {
-            r.incrementCopyCount();
-          }
-        }
-        //no permission
-        else {
-          throw new Exception();
-        }
-        
-        modelServer.setDate(routine.getDate());
-        
-      }
-
-      //reset time from date
-      Date d = modelServer.getDate();
-      if(d != null) {
-        d.setHours(0);
-        d.setMinutes(0);
-        d.setSeconds(0);
-        modelServer.setDate(d);
-      }
-      
-      //save user
-      modelServer.setUid(UID);
-      //default length: 7 days
-      if(modelServer.getDays() == 0) {
-        modelServer.setDays(7);
-      }
-
-      //save routine to db
-      modelServer = pm.makePersistent(modelServer);
-
-      //if workouts set -> add those
-      if(routine.getWorkouts() != null) {
-        for(WorkoutModel w : routine.getWorkouts()) {
-          //new workout
-          if(w.getId() == 0) {
-            w.setRoutineId(modelServer.getId());
-            this.addWorkout(w);
-          }
-        }
-      }
-      
-      //convert to client side model (which we return)
-      m = Routine.getClientModel(modelServer);
-      
-      //get workouts and copy those also (IF NOT new routine)
-      if(routine.getId() != 0) {
-
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("date == null && routineId == routineIdParam && dayInRoutine > 0");
-        q.declareParameters("java.lang.Long routineIdParam");
-        List<Workout> workouts = (List<Workout>) q.execute(routine.getId());
-
-        for(Workout w : workouts) {
-          Workout wNew = duplicateWorkout(w);
-          //set new routine id
-          wNew.setRoutineId(modelServer.getId());
-          //if routine has date -> set workout date based on that
-          if(routine.getDate() != null) {
-            final Date dateNew = new Date( (routine.getDate().getTime() / 1000 + 3600 * 24 * (wNew.getDayInRoutine().intValue() - 1) ) * 1000);
-            //reset time from date
-            dateNew.setHours(0);
-            dateNew.setMinutes(0);
-            dateNew.setSeconds(0);
-
-            wNew.setDate(dateNew);
-          }
-          wNew.setUid(UID);
-
-          pm.makePersistent(wNew);
-        }
-        
-      }
-      
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addRoutine", e);
-      throw new ConnectionException("addRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    return model;
   }
   
-  @SuppressWarnings({ "unchecked", "deprecation" })
   @Override
   public List<RoutineModel> addRoutines(List<RoutineModel> routines) throws ConnectionException  {
-
-    logger.log(Level.FINE, "addRoutines()");
-
-    List<RoutineModel> list = new ArrayList<RoutineModel>();
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    List<RoutineModel> list = null;
     
     try {
-      Routine modelServer = null;
-      
-      for(RoutineModel routine : routines) {
-        //if ID is null -> create new one (no exercises)
-        if(routine.getId() == 0) {
-          
-          //convert to server side model
-          modelServer = Routine.getServerModel(routine);
-        }
-        else {
-          
-          //get model
-          final Routine r = pm.getObjectById(Routine.class, routine.getId());
-          
-          boolean hasPermission = hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid());
-          
-          //create a copy
-          if(hasPermission) {
-            modelServer = duplicateRoutine(r);
-            
-            //increment copy count IF NOT our routine
-            if(!r.getUid().equals(UID)) {
-              r.incrementCopyCount();
-            }
-          }
-            //no permission
-          else {
-            throw new Exception();
-          }
-          
-          modelServer.setDate(routine.getDate());
-          
-        }
-
-        //reset time from date
-        Date d = modelServer.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-          modelServer.setDate(d);
-        }
-        
-        //save user
-        modelServer.setUid(UID);
-        //default length: 7 days
-        if(modelServer.getDays() == 0) {
-          modelServer.setDays(7);
-        }
-
-        //save routine to db
-        modelServer = pm.makePersistent(modelServer);
-
-        //if workouts set -> add those
-        if(routine.getWorkouts() != null) {
-          for(WorkoutModel w : routine.getWorkouts()) {
-            //new workout
-            if(w.getId() == 0) {
-              w.setRoutineId(modelServer.getId());
-              this.addWorkout(w);
-            }
-          }
-        }
-        
-        //convert to client side model (which we return)
-        RoutineModel m = Routine.getClientModel(modelServer);
-        
-        //get workouts and copy those also (IF NOT new routine)
-        if(routine.getId() != 0) {
-
-          Query q = pm.newQuery(Workout.class);
-          q.setFilter("date == null && routineId == routineIdParam && dayInRoutine > 0");
-          q.declareParameters("java.lang.Long routineIdParam");
-          List<Workout> workouts = (List<Workout>) q.execute(routine.getId());
-
-          for(Workout w : workouts) {
-            Workout wNew = duplicateWorkout(w);
-            //set new routine id
-            wNew.setRoutineId(modelServer.getId());
-            //if routine has date -> set workout date based on that
-            if(routine.getDate() != null) {
-              final Date dateNew = new Date( (routine.getDate().getTime() / 1000 + 3600 * 24 * (wNew.getDayInRoutine().intValue() - 1) ) * 1000);
-              //reset time from date
-              dateNew.setHours(0);
-              dateNew.setMinutes(0);
-              dateNew.setSeconds(0);
-
-              wNew.setDate(dateNew);
-            }
-            wNew.setUid(UID);
-
-            pm.makePersistent(wNew);
-          }
-          
-        }
-        
-        //add to array
-        list.add(m);
+      List<Routine> jdos = new ArrayList<Routine>();
+      for(RoutineModel t : routines) {
+        jdos.add(Routine.getServerModel(t));
       }
       
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addRoutines", e);
-      throw new ConnectionException("addRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      TrainingManager trainingManager = TrainingManager.getInstance();
+      List<Routine> jdosCopy = trainingManager.addRoutines(user, jdos);
+      if(jdosCopy != null) {
+        list = new ArrayList<RoutineModel>();
+        for(Routine t : jdosCopy) {
+          list.add(Routine.getClientModel(t));
+        }
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding routines", e);
+      throw new ConnectionException("Error adding routines", e);
     }
     
     return list;
@@ -1532,14 +1024,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public RunModel addRun(RunModel meal) throws ConnectionException {
+  @Deprecated public RunModel addRun(RunModel meal) throws ConnectionException {
 
     logger.log(Level.FINE, "addRun()");
     
     RunModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1582,14 +1075,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added run (null if add not successful)
    */
   @Override
-  public RunValueModel addRunValue(RunModel run, RunValueModel value) throws ConnectionException {
+  @Deprecated public RunValueModel addRunValue(RunModel run, RunValueModel value) throws ConnectionException {
 
     logger.log(Level.FINE, "addRunValue()");
     
     RunValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return m;
     }
@@ -1651,11 +1145,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override
   public TicketModel addTicket(TicketModel ticket) throws ConnectionException  {
-
-    logger.log(Level.FINE, "addTicket()");
         
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -1669,13 +1162,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       msg.setFrom(new InternetAddress("antti@motiver.fi", "Motiver.fi user"));
       msg.addRecipient(Message.RecipientType.TO, new InternetAddress("jira@delect.atlassian.net", "JIRA"));
       msg.setSubject(ticket.getTitle());
-      msg.setText(ticket.getDesc());
+      msg.setText(ticket.getTitle());
       Transport.send(msg);
       
       //TODO we don't check the response!
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "addTicket", e);
+      logger.log(Level.SEVERE, "Error adding ticket", e);
       throw new ConnectionException("addTicket", e.getMessage());
     }
     
@@ -1688,101 +1181,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added time (null if add not successful)
    * @throws ConnectionException 
    */
-  @SuppressWarnings({ "unchecked", "deprecation" })
   @Override
   public TimeModel addTime(TimeModel time) throws ConnectionException {
 
-    logger.log(Level.FINE, "addTime()");
-
-    TimeModel m = null;
+    TimeModel[] times = new TimeModel[] { time };    
+    times = addTimes(times);
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return m;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Time modelServer = null;
-      
-      //check if same time already exists -> return that instead
-      final Date dStart = stripTime(time.getDate(), true);
-      final Date dEnd = stripTime(time.getDate(), false);
-        
-      Query q = pm.newQuery(Time.class);
-      q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-      q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
-      for(Time t : times) {
-        if(t.getTime() == time.getTime()) {
-          modelServer = t;
-          break;
-        }
-      }
-      
-      //if no similar model found
-      if(modelServer == null) {
-      
-        //if ID is null -> create new one)
-        if(time.getId() == 0) {
-          
-          //convert to server side model
-          modelServer = Time.getServerModel(time);
-        }
-        else {
-          
-          //get model
-          final Time t = pm.getObjectById(Time.class, time.getId());
-          
-          boolean hasPermission = hasPermission(pm, Permission.WRITE_NUTRITION, UID, t.getUid());
-          
-          //create a copy
-          if(hasPermission) {
-  
-            modelServer = duplicateTime(t);
-          }
-        //no permission
-          else {
-            throw new Exception();
-          }
-
-          //set date if set
-          modelServer.setDate(time.getDate());
-        }
-
-        //reset time from date
-        Date d = modelServer.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-          modelServer.setDate(d);
-        }
-  
-        //save user
-        modelServer.setUid(UID);
-  
-        //save time to db
-        pm.makePersistent(modelServer);
-      }
-
-      //convert to client side model (which we return)
-      m = Time.getClientModel(modelServer);
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addTime", e);
-      throw new ConnectionException("addTime", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
-    
+    return (times != null && times.length > 0)? times[0] : null;
   }
 
   /**
@@ -1791,108 +1196,30 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return added time (null if add not successful)
    * @throws ConnectionException 
    */
-  @SuppressWarnings({ "deprecation", "unchecked" })
   @Override
-  public TimeModel[] addTimes(TimeModel[] timesParam) throws ConnectionException {
-
-    logger.log(Level.FINE, "addTimes()");
-
-    TimeModel[] list = new TimeModel[timesParam.length];
+  public TimeModel[] addTimes(TimeModel[] times) throws ConnectionException {
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
+    TimeModel[] list;
     try {
-      
-      int i = 0;
-      for(TimeModel time : timesParam) {
-    
-        
-        Time modelServer = null;
-        
-        //check if same time already exists -> return that instead
-        final Date dStart = stripTime(time.getDate(), true);
-        final Date dEnd = stripTime(time.getDate(), false);
-          
-        Query q = pm.newQuery(Time.class);
-        q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-        List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
-        for(Time t : times) {
-          if(t.getTime() == time.getTime()) {
-            modelServer = t;
-            break;
-          }
-        }
-        
-        //if no similar model found
-        if(modelServer == null) {
-        
-          //if ID is null -> create new one)
-          if(time.getId() == 0) {
-            
-            //convert to server side model
-            modelServer = Time.getServerModel(time);
-          }
-          else {
-            
-            //get model
-            final Time t = pm.getObjectById(Time.class, time.getId());
-            
-            boolean hasPermission = hasPermission(pm, Permission.WRITE_NUTRITION, UID, t.getUid());
-            
-            //create a copy
-            if(hasPermission) {
-    
-              modelServer = duplicateTime(t);
-            }
-            //no permission
-            else {
-              throw new Exception();
-            }
-
-            //set date if set
-            modelServer.setDate(time.getDate());
-          }
-
-          //reset time from date
-          Date d = modelServer.getDate();
-          if(d != null) {
-            d.setHours(0);
-            d.setMinutes(0);
-            d.setSeconds(0);
-            modelServer.setDate(d);
-          }
-    
-          //save user
-          modelServer.setUid(UID);
-    
-          //save time to db
-          pm.makePersistent(modelServer);
-        }
-
-        //convert to client side model (which we return)
-        TimeModel m = Time.getClientModel(modelServer);
-        
-        list[i] = m;
-        
-        i++;
-        
+      List<TimeJDO> jdos = new ArrayList<TimeJDO>();
+      for(TimeModel t : times) {
+        jdos.add(TimeJDO.getServerModel(t));
       }
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addTimes", e);
-      throw new ConnectionException("addTimes", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      List<TimeJDO> jdosCopy = nutritionManager.addTimes(user, jdos);
+
+      list = new TimeModel[jdosCopy.size()];
+      for(int i = 0; i < jdosCopy.size(); i++) {
+        list[i] = TimeJDO.getClientModel(jdosCopy.get(i));
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding times", e);
+      throw new ConnectionException("Error adding times", e);
     }
     
     return list;
@@ -1926,99 +1253,32 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param workouts : models to be added
    * @return added workouts (null if add not successful
    */
-  @SuppressWarnings("deprecation")
   @Override
   public List<WorkoutModel> addWorkouts(List<WorkoutModel> workouts) throws ConnectionException  {
-
-    logger.log(Level.FINE, "addWorkouts()");
-    
-    List<WorkoutModel> list = new ArrayList<WorkoutModel>();
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-      
+    List<WorkoutModel> list = null;
+    
     try {
-      Workout modelServer = null;
-      
-      for(WorkoutModel workout : workouts) {
-        //if ID is null -> create new one (no exercises)
-        if(workout.getId() == 0) {
-          
-          //convert to server side model
-          modelServer = Workout.getServerModel(workout);
-        }
-        else {
-          
-          //get model
-          final Workout w = pm.getObjectById(Workout.class, workout.getId());
-                    
-          //create a copy
-          if(hasPermission(pm, Permission.WRITE_TRAINING, UID, w.getUid())) {
-            modelServer = duplicateWorkout(w);
-            
-            //increment copy count IF NOT our workout
-            if(!w.getUid().equals(UID)) {
-              w.incrementCopyCount();
-            }
-          }
-          //no permission
-          else {
-            throw new Exception();
-          }
-          
-          //set routine or date if set
-          modelServer.setDate(workout.getDate());
-          modelServer.setRoutineId(workout.getRoutineId());
-          modelServer.setDayInRoutine(workout.getDayInRoutine());
-          
-        }
-
-        //reset time from date
-        Date d = modelServer.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-          modelServer.setDate(d);
-        }
-
-        //save user
-        modelServer.setUid(UID);
-
-        //save workout to db
-        modelServer = pm.makePersistent(modelServer);
-
-        //if workouts set -> add those
-        if(workout.getExercises() != null) {
-          for(ExerciseModel e : workout.getExercises()) {
-            //new workout
-            if(e.getId() == 0) {
-              e.setWorkoutId(modelServer.getId());
-              this.addExercise(e);
-            }
-          }
-        }
-        
-        //convert to client side model (which we return)
-        WorkoutModel m = Workout.getClientModel(modelServer);
-        
-        //add to array
-        list.add(m);
+      List<Workout> jdos = new ArrayList<Workout>();
+      for(WorkoutModel t : workouts) {
+        jdos.add(Workout.getServerModel(t));
       }
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "addWorkouts", e);
-      throw new ConnectionException("addWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      
+      TrainingManager trainingManager = TrainingManager.getInstance();
+      List<Workout> jdosCopy = trainingManager.addWorkouts(user, jdos);
+      if(jdosCopy != null) {
+        list = new ArrayList<WorkoutModel>();
+        for(Workout t : jdosCopy) {
+          list.add(Workout.getClientModel(t));
+        }
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error adding workouts", e);
+      throw new ConnectionException("Error adding workouts", e);
     }
     
     return list;
@@ -2031,14 +1291,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    */
   @Override @SuppressWarnings("unchecked")
-  public Boolean combineExerciseNames(Long firstId, Long[] ids) throws ConnectionException {
+  @Deprecated public Boolean combineExerciseNames(Long firstId, Long[] ids) throws ConnectionException {
 
     logger.log(Level.FINE, "combineExerciseNames()");
 
     boolean ok = true;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2113,16 +1374,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param firstId : where other IDs are combined
    * @param ids : other IDs
    * @return
+   * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public Boolean combineFoodNames(Long firstId, Long[] ids) {
+  @Deprecated public Boolean combineFoodNames(Long firstId, Long[] ids) throws ConnectionException {
 
     logger.log(Level.FINE, "combineFoodNames()");
 
     boolean ok = true;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2142,13 +1405,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         FoodName name = pm.getObjectById(FoodName.class, ids[i]);
         
         if(name != null) {
-          Query q = pm.newQuery(Food.class);
+          Query q = pm.newQuery(FoodJDO.class);
           q.setFilter("name == nameParam");
           q.declareParameters("java.lang.Long nameParam");
-          List<Food> foods = (List<Food>) q.execute(ids[i]);
+          List<FoodJDO> foods = (List<FoodJDO>) q.execute(ids[i]);
 
           //update other IDs
-          for(Food f : foods)
+          for(FoodJDO f : foods)
             f.setNameId(firstId);
           
           //delete name
@@ -2191,7 +1454,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     return ok;
   }
 
-  public String convertStreamToString(InputStream is) {
+  @Deprecated public String convertStreamToString(InputStream is) {
 
     logger.log(Level.FINE, "convertStreamToString()");
   /*
@@ -2241,13 +1504,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   }
   }
 
-  @Override public Boolean dummy(MicroNutrientModel model) {
+  @Override @Deprecated public Boolean dummy(MicroNutrientModel model) {
 
     logger.log(Level.FINE, "dummy()");
     return false;
   }
 
-  @Override public MonthlySummaryExerciseModel dummy2(MonthlySummaryExerciseModel model) {
+  @Override @Deprecated public MonthlySummaryExerciseModel dummy2(MonthlySummaryExerciseModel model) {
 
     logger.log(Level.FINE, "dummy2()");
     return new MonthlySummaryExerciseModel();
@@ -2260,12 +1523,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public Boolean fetchRemoveAll(Boolean removeTraining, Boolean removeCardio, Boolean removeNutrition, Boolean removeMeasurement) throws ConnectionException {
+  @Deprecated public Boolean fetchRemoveAll(Boolean removeTraining, Boolean removeCardio, Boolean removeNutrition, Boolean removeMeasurement) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchRemoveAll()");
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return true;
     }
@@ -2339,11 +1603,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       if(removeNutrition) {
         //foods
         if(count < MAX_COUNT) {
-          q = pm.newQuery(Food.class); 
+          q = pm.newQuery(FoodJDO.class); 
           q.setFilter("openId == openIdParam");
           q.declareParameters("java.lang.String openIdParam");
           q.setRange(0, MAX_COUNT - count);
-          List<Food> l = (List<Food>)q.execute(UID);
+          List<FoodJDO> l = (List<FoodJDO>)q.execute(UID);
           //if something found -> delete it
           if(l.size() > 0) {
             count += l.size();
@@ -2383,11 +1647,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         
         //times
         if(count < MAX_COUNT) {
-          q = pm.newQuery(Time.class); 
+          q = pm.newQuery(TimeJDO.class); 
           q.setFilter("openId == openIdParam");
           q.declareParameters("java.lang.String openIdParam");
           q.setRange(0, MAX_COUNT - count);
-          List<Time> l = (List<Time>)q.execute(UID);
+          List<TimeJDO> l = (List<TimeJDO>)q.execute(UID);
           //if something found -> delete it
           if(l.size() > 0) {
             count += l.size();
@@ -2485,14 +1749,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values (values for each cardio)
    * @return
    */
-  @Override public Boolean fetchSaveCardios(List<CardioModel> cardios, List<List<CardioValueModel>> values) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveCardios(List<CardioModel> cardios, List<List<CardioValueModel>> values) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveCardios()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2532,14 +1797,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param names
    * @return
    */
-  @Override public Boolean fetchSaveFoodNames(List<FoodNameModel> names) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveFoodNames(List<FoodNameModel> names) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveFoodNames()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2565,14 +1831,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values
    * @return
    */
-  @Override public Boolean fetchSaveGuideValues(List<GuideValueModel> values) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveGuideValues(List<GuideValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveGuideValues()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2612,14 +1879,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param meals
    * @return
    */
-  @Override public Boolean fetchSaveMeals(List<MealModel> meals) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveMeals(List<MealModel> meals) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveMeals()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2631,14 +1899,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       for(MealModel meal : meals) {
 
         //add meal
-        final Meal mMealAdded = Meal.getServerModel(meal);
+        final MealJDO mMealAdded = MealJDO.getServerModel(meal);
         mMealAdded.setUid(UID);
         
         //foods
-        List<FoodInMeal> list = new ArrayList<FoodInMeal>();
+        List<FoodJDO> list = new ArrayList<FoodJDO>();
         for(FoodModel food : meal.getFoods()) {
           //add food
-          FoodInMeal foodServer = FoodInMeal.getServerModel(food);
+          FoodJDO foodServer = FoodJDO.getServerModel(food);
           
           //if no food name -> search for it
           if(food.getName() != null && food.getName().getId() != 0) {
@@ -2674,14 +1942,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    */
   @Override @SuppressWarnings("unchecked")
-  public Boolean fetchSaveMeasurements(MeasurementModel measurement, List<MeasurementValueModel> values) throws ConnectionException {
+  @Deprecated public Boolean fetchSaveMeasurements(MeasurementModel measurement, List<MeasurementValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveMeasurements()");
 
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2749,14 +2018,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param workouts (workouts for each routine)
    * @return
    */
-  @Override public Boolean fetchSaveRoutines(List<RoutineModel> routines, List<List<WorkoutModel>> workouts) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveRoutines(List<RoutineModel> routines, List<List<WorkoutModel>> workouts) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveRoutines()");
 
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2836,14 +2106,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values (values for each run)
    * @return
    */
-  @Override public Boolean fetchSaveRuns(List<RunModel> runs, List<List<RunValueModel>> values) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveRuns(List<RunModel> runs, List<List<RunValueModel>> values) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveRuns()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2883,14 +2154,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param times
    * @return
    */
-  @Override public Boolean fetchSaveTimes(List<TimeModel> times) throws ConnectionException {
+  @Override @Deprecated public Boolean fetchSaveTimes(List<TimeModel> times) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveTimes()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -2901,7 +2173,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //each food
       for(TimeModel mTime : times) {
 
-        Time mTimeAdded = Time.getServerModel(mTime);
+        TimeJDO mTimeAdded = TimeJDO.getServerModel(mTime);
         mTimeAdded.setUid(UID);
         
         if(mTimeAdded.getId() != 0)  {
@@ -2930,10 +2202,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           mTimeAdded.setMeals(listMeals);
           
           //foods
-          List<FoodInTime> list = new ArrayList<FoodInTime>();
+          List<FoodJDO> list = new ArrayList<FoodJDO>();
           for(FoodModel food : mTime.getFoods()) {
             //add food
-            FoodInTime foodServer = FoodInTime.getServerModel(food);
+            FoodJDO foodServer = FoodJDO.getServerModel(food);
             
             //if no food name -> search for it
             if(food.getName() != null && food.getName().getId() != 0) {
@@ -2964,14 +2236,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   }
   
   @Override
-  public Boolean fetchSaveWorkouts(List<WorkoutModel> workouts) throws ConnectionException {
+  @Deprecated public Boolean fetchSaveWorkouts(List<WorkoutModel> workouts) throws ConnectionException {
 
     logger.log(Level.FINE, "fetchSaveWorkouts()");
 
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -3040,23 +2313,23 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public List<BlogData> getBlogData(int index, int limit, int target, Date dateStartParam, Date dateEndParam, String uidObj, Boolean showEmptyDays) throws ConnectionException {
+  @Deprecated public List<BlogData> getBlogData(int index, int limit, int target, Date dateStartParam, Date dateEndParam, String uidObj, Boolean showEmptyDays) throws ConnectionException {
 
     logger.log(Level.FINE, "getBlogData()");
 
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
+    //new methods
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
     //check if no uid -> use ours
     if(uidObj == null) {
-      uidObj = UID;
+      uidObj = user.getUid();
     }
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     List<BlogData> data = new ArrayList<BlogData>();
+    
     
     try {
 
@@ -3067,26 +2340,26 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       boolean permissionCardio = true;
       boolean permissionMeasurement = true;
             
-      //get user
-      UserModel user = StoreUser.getUserModel(pm, uidObj);
+      //get user      
+      UserOpenid userOther = userManager.getUser(uidObj);
       
-      if(user != null) {
+      if(userOther != null) {
         
-        String uid = user.getUid();
-        if(!hasPermission(pm, Permission.READ_TRAINING, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_TRAINING, UID, uid);
+        String uid = userOther.getUid();
+        if(!hasPermission(pm, Permission.READ_TRAINING, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_TRAINING, user.getUid(), uid);
         }
-        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_NUTRITION, UID, uid);
+        if(!hasPermission(pm, Permission.READ_NUTRITION, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_NUTRITION, user.getUid(), uid);
         }
-        if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, UID, uid);
+        if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
         }
-        if(!hasPermission(pm, Permission.READ_CARDIO, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_CARDIO, UID, uid);
+        if(!hasPermission(pm, Permission.READ_CARDIO, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_CARDIO, user.getUid(), uid);
         }
-        if(!hasPermission(pm, Permission.READ_MEASUREMENTS, UID, uid)) {
-          throw new NoPermissionException(Permission.READ_MEASUREMENTS, UID, uid);
+        if(!hasPermission(pm, Permission.READ_MEASUREMENTS, user.getUid(), uid)) {
+          throw new NoPermissionException(Permission.READ_MEASUREMENTS, user.getUid(), uid);
         }
       
         //reset start date
@@ -3108,11 +2381,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           Date dEnd = new Date((dateEndParam.getTime() / 1000 - 3600 * 24 * (fetchDays)) * 1000);
           dEnd = stripTime(dEnd, false);
           
-          final Object[] arrParams = new Object[] {user.getUid(), dStart, dEnd};
+          final Object[] arrParams = new Object[] {userOther.getUid(), dStart, dEnd};
           
           //variables
           List<Workout> workouts = null;
-          List<Time> times = null;
+          List<TimeJDO> times = null;
           List<CardioValue> cValues = null;
           List<RunValue> rValues = null;
           List<MeasurementValue> mValues = null;
@@ -3121,20 +2394,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           
           //TRAINING
           if(permissionTraining && (target == 0 || target == 1 || target == 5)) {
-            q = pm.newQuery(Workout.class);
-            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-            q.setOrdering("date DESC");
-            workouts = (List<Workout>) q.executeWithArray(arrParams);
+            workouts = trainingManager.getWorkouts(user, dStart, dEnd, userOther.getUid());
           }
           
           //NUTRITION
           if(permissionNutrition && (target == 0 || target == 2)) {
-            q = pm.newQuery(Time.class);
-            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-            q.setOrdering("date DESC");
-            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-            times = (List<Time>) q.executeWithArray(arrParams);
+            times = nutritionManager.getTimes(user, dStart, dEnd, userOther.getUid());
           }
           
           //CARDIO
@@ -3186,7 +2451,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             
             //blog data
             BlogData bd = new BlogData();
-            bd.setUser(user);
+            bd.setUser(UserOpenid.getClientModel(userOther));
             bd.setDate(d);
     
             boolean found = false;
@@ -3196,7 +2461,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               List<WorkoutModel> arrW = new ArrayList<WorkoutModel>();
               for(Workout w : workouts) {
                 if(fmt.format(w.getDate()).equals(strD)) {
-                  arrW.add( StoreTraining.getWorkoutModel(pm, w.getId(), UID));
+                  Workout jdo = trainingManager.getWorkout(user, w.getId());                  
+                  arrW.add( Workout.getClientModel(jdo) );
                   
                   found = true;
                 }
@@ -3206,15 +2472,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             
             //go through TIMES
             if(times != null) {
-              List<Time> arrT = new ArrayList<Time>();
-              for(Time t : times) {
+              List<TimeJDO> arrT = new ArrayList<TimeJDO>();
+              for(TimeJDO t : times) {
                 if(fmt.format(t.getDate()).equals(strD)) {
                   arrT.add(t);
                 }
               }
               //if times found
               if(arrT.size() > 0) {
-                NutritionDayModel ndm = calculateEnergyFromTimes(pm, arrT, UID);
+                NutritionDayModel ndm = calculateEnergyFromTimesOfDays(arrT, user.getUid());
                 if(ndm.getEnergy() > 0) {
                   ndm.setFoodsPermission(permissionNutritionFoods);
                   bd.setNutrition(ndm);
@@ -3301,14 +2567,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<CardioModel> getCardios(int index) throws ConnectionException {
+  @Deprecated public List<CardioModel> getCardios(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getCardios()");
 
     List<CardioModel> list = new ArrayList<CardioModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -3364,14 +2631,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public CardioValueModel getCardioValue(Long cardioId) throws ConnectionException {
+  @Deprecated public CardioValueModel getCardioValue(Long cardioId) throws ConnectionException {
 
     logger.log(Level.FINE, "getCardioValue()");
     
     CardioValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -3416,14 +2684,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<CardioValueModel> getCardioValues(CardioModel cardio, Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<CardioValueModel> getCardioValues(CardioModel cardio, Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getCardioValues()");
     
     List<CardioValueModel> list = new ArrayList<CardioValueModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -3478,19 +2747,22 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public List<CommentModel> getComments(int index, int limit, String target, String uid, boolean markAsRead) throws ConnectionException {
+  @Deprecated public List<CommentModel> getComments(int index, int limit, String target, String uid, boolean markAsRead) throws ConnectionException {
 
     logger.log(Level.FINE, "getComments()");
 
     List<CommentModel> list = new ArrayList<CommentModel>();
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    if(user.getUid() == null) {
       return null;
     }
 
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     
     try {
        
@@ -3526,25 +2798,25 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             CommentModel c = Comment.getClientModel(cc);
             
             //is unread? (if not our comment and meant for us)
-            if(!UID.equals(c.getUid()) && UID.equals(c.getUidTarget())) {
+            if(!user.getUid().equals(c.getUid()) && user.getUid().equals(c.getUidTarget())) {
               Query qUnread = pm.newQuery(CommentsRead.class); 
               qUnread.setFilter("comment == commentParam && openId == openIdParam");
               qUnread.declareParameters("com.google.appengine.api.datastore.Key commentParam, java.lang.String openIdParam");
               qUnread.setRange(0, 1);
-              List<CommentsRead> unreads = (List<CommentsRead>)qUnread.execute(cc.getKey(), UID);
+              List<CommentsRead> unreads = (List<CommentsRead>)qUnread.execute(cc.getKey(), user.getUid());
               c.setUnread(unreads.size() == 0);
 
               //mark this as read
               if(markAsRead && unreads.size() == 0) {
                 CommentsRead cr = new CommentsRead();
                 cr.setComment(cc.getKey());
-                cr.setUid(UID);
+                cr.setUid(user.getUid());
                 pm.makePersistent(cr);
               }
             }
                   
             //if all comments -> don't return user's own comments
-            if(target != null || !UID.equals(c.getUid())) {
+            if(target != null || !user.getUid().equals(c.getUid())) {
               
               //if all comments -> cut long texts
               if(target == null) {
@@ -3565,7 +2837,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               //get model//workout
               if(xid.matches("w[0-9]*")) {
                 final long id = Long.parseLong(xid.replace("w", ""));
-                WorkoutModel w = StoreTraining.getWorkoutModel(pm, id, UID);
+                Workout jdo = trainingManager.getWorkout(user, id);
+                WorkoutModel w = Workout.getClientModel(jdo);
                 if(w != null) {
                   found = true;
                   c.setWorkout( w );
@@ -3574,27 +2847,21 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               //routine
               else if(xid.matches("r[0-9]*")) {
                 final long id = Long.parseLong(xid.replace("r", ""));
-                Routine r = pm.getObjectById(Routine.class, id);
+                Routine jdo = trainingManager.getRoutine(user, id);
+                RoutineModel r = Routine.getClientModel(jdo);
                 if(r != null) {
-                  //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
-                  if(hasPermission) {
-                    found = true;
-                    c.setRoutine( Routine.getClientModel(r) );
-                  }
+                  found = true;
+                  c.setRoutine( r );
                 }
               }
               //meal
               else if(xid.matches("m[0-9]*")) {
                 final long id = Long.parseLong(xid.replace("m", ""));
-                Meal m = pm.getObjectById(Meal.class, id);
-                if(m != null) {
-                  //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, UID, m.getUid());
-                  if(hasPermission) {
-                    found = true;
-                    c.setMeal( Meal.getClientModel(m) );
-                  }
+                MealJDO jdo = nutritionManager.getMeal(user, id);
+                MealModel r = MealJDO.getClientModel(jdo);
+                if(r != null) {
+                  found = true;
+                  c.setMeal( r );
                 }
               }
               //measurement
@@ -3603,7 +2870,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 Measurement m = pm.getObjectById(Measurement.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_MEASUREMENTS, UID, m.getUid());
+                  boolean hasPermission = hasPermission(pm, Permission.READ_MEASUREMENTS, user.getUid(), m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setMeasurement( Measurement.getClientModel(m) );
@@ -3616,7 +2883,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 Cardio m = pm.getObjectById(Cardio.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, m.getUid());
+                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, user.getUid(), m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setCardio( Cardio.getClientModel(m) );
@@ -3629,7 +2896,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
                 Run m = pm.getObjectById(Run.class, id);
                 if(m != null) {
                   //check permission
-                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, UID, m.getUid());
+                  boolean hasPermission = hasPermission(pm, Permission.READ_CARDIO, user.getUid(), m.getUid());
                   if(hasPermission) {
                     found = true;
                     c.setRun( Run.getClientModel(m) );
@@ -3673,99 +2940,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param date
    * @return micronutrients
    */
-  @Override @SuppressWarnings("unchecked")
-  public List<Double> getEnergyInCalendar(Date dateStart, Date dateEnd) throws ConnectionException {
-
-    logger.log(Level.FINE, "getEnergyInCalendar()");
-
-    if(dateStart.getTime() > dateEnd.getTime()) {
-      return null;
-    }
-    
-    List<Double> list = new ArrayList<Double>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //go through days
-      final int days = (int)((dateEnd.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-      
-      for(int i=0; i < days; i++) {
-        
-        final Date d = new Date((dateStart.getTime() / 1000 + 3600 * 24 * i) * 1000);
-        //strip time
-        final Date dStart = stripTime(d, true);
-        final Date dEnd = stripTime(d, false);
-        
-        //get times
-        Query q = pm.newQuery(Time.class);
-        q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-        List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
-
-        NutritionDayModel m = calculateEnergyFromTimes(pm, times, UID);
-
-        //round
-        list.add(m.getEnergy());
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getEnergyInCalendar", e);
-      throw new ConnectionException("getEnergyInCalendar", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    return list;
-  }
-
-  /**
-   * Returns all exercises from single workout
-   * @param workout
-   * @return exercises
-   * @throws ConnectionException 
-   */
   @Override
-  public List<ExerciseModel> getExercises(WorkoutModel workout) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loading exercises from workout: "+workout.getId());
-    }
-    
-    List<ExerciseModel> list = new ArrayList<ExerciseModel>();
+  public List<Double> getEnergyInCalendar(Date dateStart, Date dateEnd) throws ConnectionException {
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
 
-    try {
-      WorkoutModel w = StoreTraining.getWorkoutModel(pm, workout.getId(), UID);      
-      list = w.getExercises();
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error loading exercises", e);
-      throw new ConnectionException("getExercises", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return list;
+    return nutritionManager.getTotalEnergy(user, dateStart, dateEnd, user.getUid());
   }
 
   /**
@@ -3776,88 +2958,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param limit : -1 if no limit
    * @return exercises
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<ExerciseModel> getExercisesFromName(Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
-
-    logger.log(Level.FINE, "getExercisesFromName()");
-        
-    List<ExerciseModel> list = new ArrayList<ExerciseModel>();
-    
-    if(dateStart == null && dateEnd == null) {
-      return list;
-    }
     
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
 
-    try {
-      
-      List<Workout> workouts = null;
-      
-      //if only end date -> get all exercises before that
-      if(dateStart == null) {
-        Date d1 = stripTime(dateEnd, true);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date != null && date <= dateParam");
-        q.setOrdering("date DESC");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateParam");
-        workouts = (List<Workout>) q.execute(UID, d1);
-      }
-      //if only start date -> get all exercises after that
-      else if(dateEnd == null) {
-        Date d1 = stripTime(dateEnd, false);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date != null && date >= dateParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateParam");
-        workouts = (List<Workout>) q.execute(UID, d1);
-      }
-      //both dates
-      else {
-        Date d1 = stripTime(dateStart, false);
-        Date d2 = stripTime(dateEnd, true);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date != null && date >= d1Param && date <= d2Param");
-        q.setOrdering("date DESC");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date d1Param, java.util.Date d2Param");
-        workouts = (List<Workout>) q.execute(UID, d1, d2);
-        
-      }
-      
-      for(Workout w : workouts) {
-        //check if correct exercise name found
-        for(Exercise e : w.getExercises()) {
-          if(e.getNameId().longValue() == nameId.longValue()) {
-            //save to list (including date, workoutId)
-            ExerciseModel m = Exercise.getClientModel(e);
-            m.setWorkoutId(e.getWorkout().getId());
-            m.setDate(e.getWorkout().getDate());
-            list.add(m);
-          }
+    List<ExerciseModel> list = new ArrayList<ExerciseModel>();
           
-          if(limit != -1 && list.size() >= limit) {
-            break;
-          }
-        }
-        if(limit != -1 && list.size() >= limit) {
-          break;
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getExercisesFromName", e);
-      throw new ConnectionException("getExercises", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
+    List<Exercise> jdos = trainingManager.getExercises(user, nameId, dateStart, dateEnd, limit);
+    if(jdos != null) {
+      for(Exercise e : jdos) {
+        ExerciseModel dto = Exercise.getClientModel(e);
+        Workout w = e.getWorkout();
+        dto.setWorkoutId(e.getWorkout().getId());
+        dto.setDate(w.getDate());
+        
+        list.add(dto);
       } 
     }
     
@@ -3872,44 +2990,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public FoodNameModel getFoodname(Long id) throws ConnectionException {
 
-    logger.log(Level.FINE, "getFoodname()");
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     
-    FoodNameModel m = null;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return m;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-  
-      FoodName f = pm.getObjectById(FoodName.class, id);
-      
-      if(f != null) {
-        m = FoodName.getClientModel(f);
-        
-        //micronutrients
-        List<MicroNutrientModel> list = new ArrayList<MicroNutrientModel>();
-        for(MicroNutrient mn : f.getMicroNutrients()) {
-          list.add(MicroNutrient.getClientModel(mn));
-        }
-        m.setMicronutrients(list);
-      }
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "getFoodname", e);
-      throw new ConnectionException("getFoodname", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    FoodName jdo = nutritionManager.getFoodName(user, id);                  
+    return FoodName.getClientModel(jdo);
   }
   
   /**
@@ -3918,8 +3003,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return foods
    * @throws ConnectionException 
    */
-  @Override
-  public List<FoodModel> getFoods(MealModel meal) throws ConnectionException {
+  /*@Override
+  @Deprecated public List<FoodModel> getFoods(MealModel meal) throws ConnectionException {
 
     logger.log(Level.FINE, "getFoods()");
 
@@ -3934,13 +3019,13 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     if(UID == null) {
       return list;
     }
-        
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    NutritionManagerOld nutritionManager = NutritionManagerOld.getInstance();
 
     try {      
       //if in time
       if(meal.getTimeId() != 0) {
-        TimeModel time = StoreNutrition.getTimeModel(pm, meal.getTimeId(), UID);
+        TimeModel time = nutritionManager.getTimeModel(meal.getTimeId(), UID);
         if(time != null) {
           for(MealModel m : time.getMeals()) {
             if(m.getId() == meal.getId()) {
@@ -3952,37 +3037,32 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       }
       //not in time
       else {
-        MealModel m = StoreNutrition.getMealModel(pm, meal.getId(), UID);
+        MealModel m = nutritionManager.getMealModel(meal.getId(), UID);
         list = m.getFoods();
       }
       
     } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error loading foods", e);
       throw new ConnectionException("getFoods", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
     
-  }
+  }*/
 
   /**
    * Returns user all facebook friends that have logged to motiver
    * @return
    * @throws ConnectionException 
    */
-  public List<UserModel> getFriends() {
+  @Deprecated public List<UserModel> getFriends() throws ConnectionException {
 
     logger.log(Level.FINE, "getFriends()");
     
     List<UserModel> list = new ArrayList<UserModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4052,35 +3132,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
   public Boolean addUserToCircle(int target, String uid) throws ConnectionException {
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Adding user from circle: friendid="+uid+", target="+target);
-    }
-    
-    boolean ok = false;
 
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
 
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    Circle circle = new Circle(target, user.getUid(), uid);
     
-    try {
-      
-      ok = StoreUser.addUserToCircle(pm, UID, uid, target);
-
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error adding user to circle", e);
-      throw new ConnectionException("addUserToCircle", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    userManager.addUserToCircle(user, circle);
     
-    return ok;
+    return (circle != null);
   }
 
   
@@ -4092,35 +3151,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
   public Boolean removeUserFromCircle(int target, String uid) throws ConnectionException {
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Removing user from circle: friendid="+uid+", target="+target);
-    }
-    
-    boolean ok = false;
 
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
-    try {
-      
-      ok = StoreUser.removeUserToCircle(pm, UID, uid, target);
-
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing user from circle", e);
-      throw new ConnectionException("removeUserFromCircle", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    userManager.removeUserFromCircle(user, target, uid);
     
-    return ok;
+    return true;
   }
   
   /**
@@ -4131,46 +3167,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public MealModel getMeal(Long mealId) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMeal()");
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     
-    MealModel m = null;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      final Meal w = pm.getObjectById(Meal.class, mealId);
-      if(w != null) {
-        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid())) {
-          throw new NoPermissionException(Permission.READ_NUTRITION, UID, w.getUid());
-        }
-        
-        m = Meal.getClientModel(w);
-        
-        //get date from time
-        if(m.getTimeId() != 0) {
-          Time t = pm.getObjectById(Time.class, m.getTimeId());
-          if(t != null) {
-            m.setDate(t.getDate());
-          }
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMeal", e);
-      throw new ConnectionException("getMeal", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    MealJDO jdo = nutritionManager.getMeal(user, mealId);                  
+    return MealJDO.getClientModel(jdo);
   }
 
   /**
@@ -4179,58 +3180,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return meal' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<MealModel> getMeals(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMeals()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading meals");
+    }
 
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    
     List<MealModel> list = new ArrayList<MealModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Query q = pm.newQuery(Meal.class);
-      q.setFilter("openId == openIdParam && time == null");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setRange(index, index + Constants.LIMIT_MEALS + 1);
-      List<Meal> meals = (List<Meal>) q.execute(UID);
-            
-      //get meals
-      if(meals != null) {
-        
-        Collections.sort(meals);
-        
-        int i = 0;
-        for(Meal w : meals) {
-          
-          //if limit reached -> add null value
-          if(i == Constants.LIMIT_MEALS) {
-            list.add(null);
-            break;
-          }
-          
-          MealModel m = StoreNutrition.getMealModel(pm, w.getId(), UID);                  
-          list.add(m);
-          
-          i++;
-        }
-        
+      
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    List<MealJDO> meals = nutritionManager.getMeals(user, index, user.getUid());
+    if(meals != null) {
+      for(MealJDO m : meals) {
+        list.add(MealJDO.getClientModel(m));
       }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMeals", e);
-      throw new ConnectionException("getMeals", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -4242,14 +3209,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<MeasurementModel> getMeasurements(int index) throws ConnectionException {
+  @Deprecated public List<MeasurementModel> getMeasurements(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getMeasurements()");
 
     List<MeasurementModel> list = new ArrayList<MeasurementModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4304,14 +3272,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public MeasurementValueModel getMeasurementValue(Long measurementId) throws ConnectionException {
+  @Deprecated public MeasurementValueModel getMeasurementValue(Long measurementId) throws ConnectionException {
 
     logger.log(Level.FINE, "getMeasurementValue()");
     
     MeasurementValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -4356,14 +3325,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<MeasurementValueModel> getMeasurementValues(MeasurementModel measurement, Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<MeasurementValueModel> getMeasurementValues(MeasurementModel measurement, Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getMeasurementValues()");
 
     List<MeasurementValueModel> list = new ArrayList<MeasurementValueModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4417,140 +3387,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param date
    * @return energies in each days
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<MicroNutrientModel> getMicroNutrientsInCalendar(String uid, Date date) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMicroNutrientsInCalendar()");
-    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading times for "+date);
+    }
+
     List<MicroNutrientModel> list = new ArrayList<MicroNutrientModel>();
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
-      //check permission
-      if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, UID, uid)) {
-        throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, UID, uid);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    List<MicroNutrient> jdos = nutritionManager.getMicroNutrients(user, date, uid);
+    if(jdos != null) {
+      for(MicroNutrient m : jdos) {
+        list.add(MicroNutrient.getClientModel(m));
       }
-    
-      //strip time
-      final Date dStart = stripTime(date, true);
-      final Date dEnd = stripTime(date, false);
-      
-      //get times
-      Query q = pm.newQuery(Time.class);
-      q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-      q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
-
-      //each time
-      for(Time t : times) {
-
-        //each meal
-        List<MealInTime> meals = t.getMeals();
-        if(meals != null) {
-          for(MealInTime m : meals) {
-            
-            try {
-
-              if(m.getFoods() != null) {
-                for(FoodInMealTime food : m.getFoods()) {
-                  try {
-                    //get name
-                    if(food.getNameId() != 0) {
-                      FoodName name = pm.getObjectById(FoodName.class, food.getNameId());
-                      if(name != null) {
-                        for(MicroNutrient mn : name.getMicroNutrients()) {
-                          //check if already found in array
-                          int i=0;
-                          double val = -1;
-                          for(MicroNutrientModel model : list) {
-                            if(model.getNameId() == mn.getNameId()) {
-                              val = model.getValue();
-                              break;
-                            }
-                            i++;
-                          }
-                          //found -> update value
-                          if(val != -1) {
-                            list.get(i).setValue(val + mn.getValue() * (food.getAmount() / 100));
-                          }
-                          //not found
-                          else {
-                            MicroNutrientModel mn2 = MicroNutrient.getClientModel(mn);
-                            mn2.setValue(mn.getValue() * (food.getAmount() / 100));
-                            list.add(mn2);
-                          }
-                        }
-                      }
-                    }
-                  } catch (Exception e1) {
-                    logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
-                  }
-                }
-              }
-            } catch (Exception e1) {
-              logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
-            }
-            
-          }
-
-        }
-
-        if(t.getFoods() != null) {
-          for(FoodInTime food : t.getFoods()) {
-            try {
-              //get name
-              if(food.getNameId() != 0) {
-                FoodName name = pm.getObjectById(FoodName.class, food.getNameId());
-                if(name != null) {
-                  for(MicroNutrient mn : name.getMicroNutrients()) {
-                    //check if already found in array
-                    int i=0;
-                    double val = -1;
-                    for(MicroNutrientModel model : list) {
-                      if(model.getNameId() == mn.getNameId()) {
-                        val = model.getValue();
-                        break;
-                      }
-                      i++;
-                    }
-                    //found -> update value
-                    if(val != -1) {
-                      list.get(i).setValue(val + mn.getValue() * (food.getAmount() / 100));
-                    }
-                    //not found
-                    else {
-                      MicroNutrientModel mn2 = MicroNutrient.getClientModel(mn);
-                      mn2.setValue(mn.getValue() * (food.getAmount() / 100));
-                      list.add(mn2);
-                    }
-                  }
-                }
-              }
-            } catch (Exception e1) {
-              logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e1);
-              //TODO antaa v�lill� virheilmoitusta???
-            }
-          }
-        }
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMicroNutrientsInCalendar", e);
-      throw new ConnectionException("getMicroNutrientsInCalendar", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
 
     return list;
@@ -4561,25 +3415,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException
    */
-  public MonthlySummaryModel getMonthlySummary(Long id) throws ConnectionException {
-
-    logger.log(Level.FINE, "getMonthlySummary()");
+  @Deprecated public MonthlySummaryModel getMonthlySummary(Long id) throws ConnectionException {
     
     MonthlySummaryModel model = null;
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
+    UserOpenid user = userManager.getUser(perThreadRequest);    
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
     try {
       //get summaries from given month
       MonthlySummary modelServer = pm.getObjectById(MonthlySummary.class, id);
       //if found and our summary
-      if(modelServer != null && modelServer.getUid().equals(UID)) {
+      if(modelServer != null && modelServer.getUid().equals(user.getUid())) {
         model = MonthlySummary.getClientModel(modelServer);
         
         //exercises
@@ -4588,12 +3436,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
           MonthlySummaryExerciseModel exerciseClient = MonthlySummaryExercise.getClientModel(exercise);
           
           //get exercise name
-          ExerciseName exerciseName = pm.getObjectById(ExerciseName.class, exercise.getNameId());
-          if(exerciseName != null) {
-            exerciseClient.setExerciseName(ExerciseName.getClientModel(exerciseName));
+          ExerciseName jdo = trainingManager.getExerciseName(user, exercise.getNameId());
+          if(jdo != null) {
+            exerciseClient.setExerciseName(ExerciseName.getClientModel(jdo));
+            listExercises.add(exerciseClient);
           }
-          
-          listExercises.add(exerciseClient);
         }
 
         model.setExercises(listExercises);
@@ -4619,14 +3466,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException
    */
   @SuppressWarnings("unchecked")
-  public List<MonthlySummaryModel> getMonthlySummaries() throws ConnectionException {
+  @Deprecated public List<MonthlySummaryModel> getMonthlySummaries() throws ConnectionException {
 
     logger.log(Level.FINE, "getMonthlySummaries()");
     
     List<MonthlySummaryModel> list = new ArrayList<MonthlySummaryModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -4679,62 +3527,25 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return meals' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<MealModel> getMostPopularMeals(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMostPopularMeals()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular meals");
+    }
+
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+      
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+
+    List<MealJDO> meals = nutritionManager.getMostPopularMeals(user, index);
 
     List<MealModel> list = new ArrayList<MealModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Meal.class);
-
-      List<Meal> meals = null;
-      
-      //copy count > 1 and not our meal
-      q.setFilter("time == null && copyCount > 0");
-      q.setRange(index, index + Constants.LIMIT_MEALS + 1);
-      q.setOrdering("copyCount DESC");
-      meals = (List<Meal>) q.execute();
-
-      int i = 0;
-      for(Meal w : meals) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_WORKOUTS) {
-          list.add(null);
-          break;
-        }
-        
-        //check permission
-        if(!hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid())) {
-          throw new NoPermissionException(Permission.READ_NUTRITION, UID, w.getUid());
-        }
-        
-        MealModel m = Meal.getClientModel(w);
-        list.add(m);
-        
-        i++;
+    if(meals != null) {
+      for(MealJDO m : meals) {
+        list.add(MealJDO.getClientModel(m));
       }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMostPopularMeals", e);
-      throw new ConnectionException("getMostPopularMeals", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -4744,58 +3555,25 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Returns most popular
    * @return routines' models
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<RoutineModel> getMostPopularRoutines(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMostPopularRoutines()");
-
-    //convert to client side models
-    List<RoutineModel> list = new ArrayList<RoutineModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular routines");
     }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
 
-    try {
-      Query q = pm.newQuery(Routine.class);
-      q.setFilter("date == null && copyCount > 0");
-      q.setOrdering("copyCount DESC");
-      q.setRange(index, index + Constants.LIMIT_ROUTINES + 1);
-      List<Routine> routines = (List<Routine>) q.execute();
-
-      int i = 0;
-      for(Routine r : routines) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_ROUTINES) {
-          list.add(null);
-          break;
-        }
-
-        //check permission
-        if(!hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid())) {
-          throw new NoPermissionException(Permission.READ_TRAINING, UID, r.getUid());
-        }
-        
-        RoutineModel m = Routine.getClientModel(r);
-        list.add(m);
-        
-        i++;
-      }
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMostPopularRoutines", e);
-      throw new ConnectionException("getMostPopularRoutines", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+    TrainingManager trainingManager = TrainingManager.getInstance();
+
+    List<Routine> routines = trainingManager.getMostPopularRoutines(user, index);
+
+    List<RoutineModel> list = new ArrayList<RoutineModel>();
+    if(routines != null) {
+      for(Routine m : routines) {
+        list.add(Routine.getClientModel(m));
+      }
     }
     
     return list;
@@ -4805,60 +3583,25 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Returns most popular workouts
    * @return workouts' models
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<WorkoutModel> getMostPopularWorkouts(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getMostPopularWorkouts()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading most popular workouts");
+    }
+
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+      
+    TrainingManager trainingManager = TrainingManager.getInstance();
+
+    List<Workout> workouts = trainingManager.getMostPopularWorkouts(user, index);
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Workout.class);
-
-      List<Workout> workouts = null;
-      
-      q.setFilter("date == null && routineId == 0 && copyCount > 0");
-      q.setRange(index, index + Constants.LIMIT_WORKOUTS + 1);
-      q.setOrdering("copyCount DESC");
-      workouts = (List<Workout>) q.execute();
-
-      int i = 0;
-      for(Workout w : workouts) {
-        
-        try {
-          //if limit reached -> add null value
-          if(i == Constants.LIMIT_WORKOUTS) {
-            list.add(null);
-            break;
-          }
-          
-          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
-          list.add(m);
-          
-          i++;
-        } catch (NoPermissionException e) {
-          //no permission skipping this one
-        }
+    if(workouts != null) {
+      for(Workout m : workouts) {
+        list.add(Workout.getClientModel(m));
       }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getMostPopularWorkouts", e);
-      throw new ConnectionException("getMostPopularWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -4872,93 +3615,36 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public RoutineModel getRoutine(Long routineId) throws ConnectionException {
 
-    logger.log(Level.FINE, "getRoutine()");
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    RoutineModel m = null;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      final Routine w = pm.getObjectById(Routine.class, routineId);
-      if(w != null) {
-        if(!hasPermission(pm, Permission.READ_TRAINING, UID, w.getUid())) {
-          throw new NoPermissionException(Permission.READ_TRAINING, UID, w.getUid());
-        }
-        
-        m = Routine.getClientModel(w);
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getRoutine", e);
-      throw new ConnectionException("getRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    Routine jdo = trainingManager.getRoutine(user, routineId);                  
+    return Routine.getClientModel(jdo);
   }
 
   /**
    * Returns all routines that aren't in calendar
    * @return routines' models
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<RoutineModel> getRoutines(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getRoutines()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading routines");
+    }
 
-    //convert to client side models
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+
+    TrainingManager trainingManager = TrainingManager.getInstance();
+
+    List<Routine> routines = trainingManager.getRoutines(user, index, user.getUid());
+
     List<RoutineModel> list = new ArrayList<RoutineModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Query q = pm.newQuery(Routine.class);
-      q.setFilter("openId == openIdParam && date == null");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setRange(index, 100);
-      List<Routine> routines = (List<Routine>) q.execute(UID);
-      
-      Collections.sort(routines);
-
-      int i = 0;
-      for(Routine r : routines) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_ROUTINES) {
-          list.add(null);
-          break;
-        }
-        
-        RoutineModel m = Routine.getClientModel(r);
-        list.add(m);
-        
-        i++;
+    if(routines != null) {
+      for(Routine m : routines) {
+        list.add(Routine.getClientModel(m));
       }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getRoutines", e);
-      throw new ConnectionException("getRoutines", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -4970,14 +3656,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<RunModel> getRuns(int index) throws ConnectionException {
+  @Deprecated public List<RunModel> getRuns(int index) throws ConnectionException {
 
     logger.log(Level.FINE, "getRuns()");
 
     List<RunModel> list = new ArrayList<RunModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -5033,14 +3720,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public RunValueModel getRunValue(Long runId) throws ConnectionException {
+  @Deprecated public RunValueModel getRunValue(Long runId) throws ConnectionException {
 
     logger.log(Level.FINE, "getRunValue()");
     
     RunValueModel m = null;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -5085,14 +3773,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public List<RunValueModel> getRunValues(RunModel run, Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<RunValueModel> getRunValues(RunModel run, Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getRunValues()");
     
     List<RunValueModel> list = new ArrayList<RunValueModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -5147,14 +3836,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<ExerciseNameModel> getStatisticsTopExercises(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<ExerciseNameModel> getStatisticsTopExercises(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getStatisticsTopExercises()");
 
     List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -5248,14 +3938,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public List<MealModel> getStatisticsTopMeals(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public List<MealModel> getStatisticsTopMeals(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getStatisticsTopMeals()");
 
     List<MealModel> list = new ArrayList<MealModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -5268,16 +3959,16 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       final Date dStart = stripTime(dateStart, true);
       final Date dEnd = stripTime(dateEnd, false);
 
-      Query q = pm.newQuery(Time.class);
+      Query q = pm.newQuery(TimeJDO.class);
       q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
       q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
+      List<TimeJDO> times = (List<TimeJDO>) q.execute(UID, dStart, dEnd);
       
       List<MyListItem> listIds = new ArrayList<MyListItem>();
       
       //go through each workouts' exercises and calculate count for each nameId
       //TODO huge server load??
-      for(Time t : times) {
+      for(TimeJDO t : times) {
         try {
           //get meals
           List<MealInTime> meals = t.getMeals();
@@ -5345,14 +4036,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public int[] getStatisticsTrainingDays(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public int[] getStatisticsTrainingDays(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getStatisticsTrainingDays()");
     
     int[] count = new int[] {0, 0, 0, 0, 0, 0, 0};
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return count;
     }
@@ -5414,14 +4106,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  public int[] getStatisticsTrainingTimes(Date dateStart, Date dateEnd) throws ConnectionException {
+  @Deprecated public int[] getStatisticsTrainingTimes(Date dateStart, Date dateEnd) throws ConnectionException {
 
     logger.log(Level.FINE, "getStatisticsTrainingTimes()");
     
     int[] count = new int[] {0, 0, 0, 0, 0, 0, 0, 0};
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return count;
     }
@@ -5503,7 +4196,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return time models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<TimeModel> getTimesInCalendar(String uid, Date date) throws ConnectionException {
 
@@ -5512,45 +4204,16 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
 
     List<TimeModel> list = new ArrayList<TimeModel>();
-
-    if(date == null) {
-      return null;
-    }
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //strip time
-      final Date dStart = stripTime(date, true);
-      final Date dEnd = stripTime(date, false);
-        
-      Query q = pm.newQuery(Time.class);
-      q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-      q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-      List<Time> times = (List<Time>) q.execute(uid, dStart, dEnd);
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
-      //convert to client side models
-      for(Time time : times) {
-        TimeModel model = StoreNutrition.getTimeModel(pm, time.getId(), UID);
-        if(model != null) {
-          list.add(model);
-        }
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    List<TimeJDO> times = nutritionManager.getTimes(user, date, uid);
+    if(times != null) {
+      for(TimeJDO m : times) {
+        list.add(TimeJDO.getClientModel(m));
       }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error loading time for date: "+date, e);
-      throw new ConnectionException("getTimesInCalendar", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
 
     return list;
@@ -5562,14 +4225,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @SuppressWarnings("unchecked")
-  public List<UserModel> getTrainees() {
+  @Deprecated public List<UserModel> getTrainees() throws ConnectionException {
 
     logger.log(Level.FINE, "getTrainees()");
 
     List<UserModel> list = new ArrayList<UserModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return list;
     }
@@ -5583,7 +4247,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       List<Circle> users = (List<Circle>) q.execute(UID, Permission.COACH);
 
       if(users.size() > 0) {
-        UserModel u = StoreUser.getUserModel(pm, users.get(0).getUid());
+        UserModel u = UserOpenid.getClientModel(userManager.getUser(users.get(0).getUid()));
         if(u != null) {
           list.add(u);
         }
@@ -5608,14 +4272,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return remove successful
    */
   @Override
-  public Boolean removeCardio(CardioModel model) throws ConnectionException {
+  @Deprecated public Boolean removeCardio(CardioModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "removeCardio()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5651,7 +4316,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values to remove
    * @return remove successful
    */
-  @Override public Boolean removeCardioValues(CardioModel model, List<CardioValueModel> values) throws ConnectionException {
+  @Override @Deprecated public Boolean removeCardioValues(CardioModel model, List<CardioValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "removeCardioValues()");
 
@@ -5662,7 +4327,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5711,7 +4377,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return delete successfull
    */
   @Override
-  public boolean removeComments(List<CommentModel> comments) throws ConnectionException {
+  @Deprecated public boolean removeComments(List<CommentModel> comments) throws ConnectionException {
 
     logger.log(Level.FINE, "removeComments()");
 
@@ -5722,7 +4388,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     boolean ok = true;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5765,42 +4432,26 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public boolean removeExercises(List<ExerciseModel> exercises) throws ConnectionException {
 
-    if(exercises.size() < 1) {
-      return false;
-    }
+    boolean ok = true;
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Removing exercises. Count: "+exercises.size());
-    }
-    
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
     try {
-
-      //TODO needs improving
-      for(ExerciseModel e : exercises) {
-        StoreTraining.removeExerciseModel(pm, e, UID);
+      TrainingManager trainingManager = TrainingManager.getInstance();
+      
+      for(ExerciseModel exercise : exercises) {
+        Exercise jdo = Exercise.getServerModel(exercise);
+        boolean res = trainingManager.removeExercise(user, jdo, exercise.getWorkoutId());
+        
+        if(!res) {
+          ok = false;
+        }
       }
-      
-      ok = true;
-      
+
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing exercise", e);
-      throw new ConnectionException("removeExercises", e.getMessage());
-    }
-    finally { 
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      throw new ConnectionException("addExercise", e.getMessage());
     }
     
     return ok;
@@ -5813,40 +4464,26 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public boolean removeFoods(List<FoodModel> foods) throws ConnectionException {
 
-    logger.log(Level.FINE, "removeFoods()");
+    boolean ok = true;
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    if(foods.size() < 1) {
-      return false;
-    }
-    
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
     try {
-
-      //TODO needs improving
-      for(FoodModel m : foods) {
-        StoreNutrition.removeFoodModel(pm, m, UID);
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      
+      for(FoodModel food : foods) {
+        FoodJDO jdo = FoodJDO.getServerModel(food);
+        boolean res = nutritionManager.removeFood(user, jdo, food.getTimeId(), food.getMealId());
+        
+        if(!res) {
+          ok = false;
+        }
       }
-      
-      ok = true;
-      
+
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing foods", e);
-      throw new ConnectionException("removeFoods", e.getMessage());
-    }
-    finally { 
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      throw new ConnectionException("addFood", e.getMessage());
     }
     
     return ok;
@@ -5857,7 +4494,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param list
    * @return
    */
-  @Override public Boolean removeGuideValues(List<GuideValueModel> list) throws ConnectionException {
+  @Override @Deprecated public Boolean removeGuideValues(List<GuideValueModel> list) throws ConnectionException {
 
     logger.log(Level.FINE, "removeGuideValues()");
 
@@ -5868,7 +4505,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -5919,33 +4557,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override
   public Boolean removeMeal(MealModel model) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Removing meal "+model.getId());
-    }
     
-    boolean ok = false;
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return false;
-    }
+    NutritionManager nutritionManager = NutritionManager.getInstance();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      ok = StoreNutrition.removeMealModel(pm, model, UID);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing meal", e);
-      throw new ConnectionException("removeMeal", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    MealJDO jdo = MealJDO.getServerModel(model);
+    boolean ok = nutritionManager.removeMeal(user, jdo, model.getTimeId());
     
     return ok;
   }
@@ -5956,14 +4575,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return remove successful
    */
   @Override
-  public Boolean removeMeasurement(MeasurementModel model) throws ConnectionException {
+  @Deprecated public Boolean removeMeasurement(MeasurementModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "removeMeasurement()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6000,7 +4620,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values to remove
    * @return remove successful
    */
-  @Override public Boolean removeMeasurementValues(MeasurementModel model, List<MeasurementValueModel> values) throws ConnectionException {
+  @Override @Deprecated public Boolean removeMeasurementValues(MeasurementModel model, List<MeasurementValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "removeMeasurementValues()");
 
@@ -6011,7 +4631,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6060,53 +4681,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param model to remove
    * @return remove successful
    */
-  @SuppressWarnings("unchecked")
   @Override
   public Boolean removeRoutine(RoutineModel model) throws ConnectionException {
 
-    logger.log(Level.FINE, "removeRoutine()");
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Routine r = pm.getObjectById(Routine.class, model.getId());
-      if(r != null) {
-        if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
-          throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
-        }
-        
-        pm.deletePersistent(r);
-        
-        //remove also workouts which belongs to this routine
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && routineId == routineIdParam");
-        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineIdParam");
-        List<Workout> workouts = (List<Workout>) q.execute(UID, r.getId());
-        for(Workout mWorkout : workouts) {
-          StoreTraining.removeWorkoutModel(pm, mWorkout.getId(), UID);
-        }
-          
-        
-        ok = true;
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "removeRoutine", e);
-      throw new ConnectionException("removeRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    List<Routine> list = new ArrayList<Routine>();
+    list.add(Routine.getServerModel(model));
+    Boolean ok = trainingManager.removeRoutines(user, list);
     
     return ok;
   }
@@ -6117,14 +4700,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return remove successful
    */
   @Override
-  public Boolean removeRun(RunModel model) throws ConnectionException {
+  @Deprecated public Boolean removeRun(RunModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "removeRun()");
     
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6161,7 +4745,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param values to remove
    * @return remove successful
    */
-  @Override public Boolean removeRunValues(RunModel model, List<RunValueModel> values) throws ConnectionException {
+  @Override @Deprecated public Boolean removeRunValues(RunModel model, List<RunValueModel> values) throws ConnectionException {
 
     logger.log(Level.FINE, "removeRunValues()");
 
@@ -6172,7 +4756,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -6222,44 +4807,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return remove successful
    * @throws ConnectionException 
    */
-  @Override public Boolean removeTimes(TimeModel[] models) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Removing times. Count: "+models.length);
-    }
-    
-    boolean ok = true;
-    
+  @Override
+  public Boolean removeTimes(TimeModel[] models) throws ConnectionException {
+        
     //get uid
-    final String UID = getUid();
-    if(UID == null) {
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    if(user == null) {
       return false;
     }
+    final String UID = user.getUid();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //each time
-      for(TimeModel model : models) {
-        
-        boolean removeOk = StoreNutrition.removeTimeModel(pm, model.getId(), UID);
-        
-        if(!removeOk) {
-          ok = false;
-        }
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing times", e);
-      throw new ConnectionException("removeTime", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    
+    List<TimeJDO> jdos = new ArrayList<TimeJDO>();
+    for(TimeModel t : models) {
+      jdos.add(TimeJDO.getServerModel(t));
     }
     
-    return ok;
+    return nutritionManager.removeTimes(jdos, UID);
   }
   
   /**
@@ -6270,30 +4835,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public Boolean removeWorkout(WorkoutModel model) throws ConnectionException {
 
-    logger.log(Level.FINE, "removeWorkout()");
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      ok = StoreTraining.removeWorkoutModel(pm, model.getId(), UID);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error removing workout", e);
-      throw new ConnectionException("removeWorkout", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    List<Workout> list = new ArrayList<Workout>();
+    list.add(Workout.getServerModel(model));
+    Boolean ok = trainingManager.removeWorkouts(user, list);
     
     return ok;
   }
@@ -6304,7 +4851,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override
-  public UserModel saveToken() throws ConnectionException {
+  @Deprecated public UserModel saveToken() throws ConnectionException {
 
     logger.log(Level.FINE, "saveToken()");
     
@@ -6400,27 +4947,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   public UserModel saveUserData(UserModel u) throws ConnectionException {
 
-    logger.log(Level.FINE, "saveUserData()");
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return u;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      u = StoreUser.saveUserModel(pm, u);
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error saving user", e);
-      throw new ConnectionException("saveUserData", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    UserOpenid jdo = UserOpenid.getServerModel(u);
+    userManager.saveUser(user, jdo);
+    u = UserOpenid.getClientModel(jdo);
     
     return u;
   }
@@ -6429,134 +4960,22 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * Returns all exercise names
    * @return names' models
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<ExerciseNameModel> searchExerciseNames(String query, int limit) throws ConnectionException {
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Searching exercises: "+query);
-    }
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    
+    TrainingManager trainingManager = TrainingManager.getInstance();    
+    List<ExerciseName> jdoList = trainingManager.searchExerciseNames(user, query, limit);
     
     //convert to client side models
     List<ExerciseNameModel> list = new ArrayList<ExerciseNameModel>();
-    
-    //get uid
-    //get uid and locale
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //split query string
-      query = query.toLowerCase();
-      String[] arr = query.split(" ");
-      
-      //if some equipment
-//      int equipment = -1;
-//      try {
-//        String s3 = query.replaceAll(".*--([0-9])--.*", "$1");
-//        equipment = Integer.parseInt(s3);
-//        
-//        //remove index from query
-//        query = query.replaceAll("\\(--[0-9]--\\)", "");
-//        query = query.replaceAll("--[0-9]--\\)", "");
-//        query = query.replaceAll("\\(--[0-9]--", "");
-//        query = query.replaceAll("--[0-9]--", "");
-//        query = query.trim();
-//      } catch (Exception e) {
-//        log.log(Level.SEVERE, "searchExerciseNames", e);
-//      }
-      
-      //TODO missing equipment search and locale
-      List<ExerciseName> names = StoreTraining.getExerciseNames(pm);
-
-      List<ExerciseName> arrNames = new ArrayList<ExerciseName>();
-
-      arr = query.split(" ");
-      
-      for(int i=0; i < names.size(); i++) {
-        ExerciseName n = names.get(i);
-        
-        final String name = n.getName();
-        
-        //filter by query (add count variable)
-        int count = 0;
-        for(String s : arr) {
-          //if word long enough
-          if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-            //exact match
-            if(name.toLowerCase().equals( s )) {
-              count += 2;
-            }
-            //partial match
-            else if(name.toLowerCase().contains( s )) {
-              count++;
-            }
-          }
-        }
-        
-        //if found
-        if(count > 0) {
-          
-          //get count from use table
-          int countUse = 0;
-          try {
-            Query qUse = pm.newQuery(ExerciseNameCount.class);
-            qUse.setFilter("nameId == nameIdParam && openId == openIdParam");
-            qUse.declareParameters("java.lang.Long nameIdParam, java.lang.String openIdParam");
-            qUse.setRange(0, 1);
-            List<ExerciseNameCount> valueCount = (List<ExerciseNameCount>) qUse.execute(n.getId(), UID);
-            if(valueCount.size() > 0) {
-              countUse = valueCount.get(0).getCount();
-            }
-          } catch (Exception e) {
-            e.printStackTrace();
-            logger.log(Level.SEVERE, "searchExerciseNames", e);
-          }
-          
-          n.setCount(count, countUse);
-          arrNames.add(n);
-        }
-      }
-      
-      //sort array based on count
-      Collections.sort(arrNames);
-      
-      //convert to client model
-      for(int i=0; i < arrNames.size() && i < limit; i++) {
-        ExerciseName n = arrNames.get(i);
-        if(n.getCountQuery() > 0) {
-          list.add(ExerciseName.getClientModel(n));
-        }
-        else {
-          break;
-        }
-        //limit query (only if not "admin search" (==no query word)
-        if(list.size() >= limit) {
-          break;
-        }
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchExerciseNames", e);
-      throw new ConnectionException("searchExerciseNames", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(ExerciseName n : jdoList) {
+      list.add(ExerciseName.getClientModel(n));
     }
     
     return list;
+    
   }
   
   /**
@@ -6566,120 +4985,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public List<FoodNameModel> searchFoodNames(String query, int limit) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchFoodNames()");
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    
+    NutritionManager nutritionManager = NutritionManager.getInstance();    
+    List<FoodName> jdoList = nutritionManager.searchFoodNames(user, query, limit);
     
     //convert to client side models
     List<FoodNameModel> list = new ArrayList<FoodNameModel>();
-    
-    //get uid and locale
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return list;
-    }
-      
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //split query string
-      //strip special characters
-      query = query.replace("(", "");
-      query = query.replace(")", "");
-      query = query.replace(",", "");
-      query = query.toLowerCase();
-      String[] arr = query.split(" ");
-      
-      //TODO missing equipment search and locale
-      List<FoodName> names = StoreNutrition.getFoodNames(pm);
-
-      List<FoodName> arrNames = new ArrayList<FoodName>();
-        
-      for(int i=0; i < names.size(); i++) {
-        FoodName n = names.get(i);
-
-        String name = n.getName();
-        //strip special characters
-        name = name.replace("(", "");
-        name = name.replace(")", "");
-        name = name.replace(",", "");
-        
-        //filter by query (add count variable)
-        int count = 0;
-        for(String s : arr) {
-          //if word long enough
-          if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-            //exact match
-            if(name.toLowerCase().equals( s )) {
-              count += 3;
-            }
-            //partial match
-            else if(name.toLowerCase().contains( s )) {
-              count++;
-            }
-          }
-        }
-        //if motiver's food -> add count
-        if(count > 0) {
-          if(n.getTrusted() == 100) {
-            count += 2;
-          }
-          //if verified
-          else if(n.getTrusted() == 1) {
-            count++;
-          }
-        }
-        
-        //if found
-        if(count > 0) {
-
-          int countUse = 0;
-          try {
-            countUse = StoreNutrition.getFoodNameCount(pm, UID, n.getId());
-          } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error fetching food name count", e);
-          }
-          
-          n.setCount(count, countUse);
-          arrNames.add(n);
-        }
-      }
-      
-      //sort array based on count
-      Collections.sort(arrNames);
-      
-      //convert to client model
-      for(int i=0; i < arrNames.size() && i < limit; i++) {
-        FoodName n = arrNames.get(i);
-        if(n.getCountQuery() > 0) {
-          FoodNameModel nameClient = FoodName.getClientModel(n);
-          //if admin -> return also micronutrients
-          if(limit > 100) {
-            List<MicroNutrientModel> listMN = new ArrayList<MicroNutrientModel>();
-            for(MicroNutrient mn : n.getMicroNutrients())
-              listMN.add(MicroNutrient.getClientModel(mn));
-            nameClient.setMicronutrients(listMN);
-          }
-          list.add(nameClient);
-        }
-        else {
-          break;
-        }
-        //limit query (only if not "admin search" (==no query word)
-        if(list.size() >= limit) {
-          break;
-        }
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error searching food names", e);
-
-      throw new ConnectionException("searchFoodNames", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+    for(FoodName n : jdoList) {
+      list.add(FoodName.getClientModel(n));
     }
     
     return list;
@@ -6691,81 +5005,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return meals' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<MealModel> searchMeals(int index, String query) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchMeals()");
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    NutritionManager nutritionManager = NutritionManager.getInstance();    
+    List<MealJDO> jdoList = nutritionManager.searchMeals(user, query, index);
+    
+    //convert to client side models
     List<MealModel> list = new ArrayList<MealModel>();
-    
-    if(query == null) {
-      return list;
-    }
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Query q = pm.newQuery(Meal.class);
-      q.setFilter("time == null");
-      q.setOrdering("name ASC");
-      q.setRange(index, index + Constants.LIMIT_MEALS + 1);
-      List<Meal> meals = (List<Meal>) q.execute();
-      
-      //split query string
-      String[] arr = query.split(" ");
-
-      int i = 0;
-      for(Meal w : meals) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_MEALS) {
-          list.add(null);
-          break;
-        }
-
-        final String name = w.getName();
-        
-        //filter by query
-        boolean ok = false;
-        for(String s : arr) {
-          ok = name.toLowerCase().contains( s.toLowerCase() );
-          if(ok) {
-            break;
-          }
-        }
-
-        //if name matched -> check permission
-        if(ok) {
-          
-          boolean hasPermission = hasPermission(pm, Permission.READ_NUTRITION, UID, w.getUid());
-          
-          if(hasPermission) {
-            MealModel m = Meal.getClientModel(w);
-            list.add(m);
-            
-            i++;
-          }
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchMeals", e);
-      throw new ConnectionException("searchMeals", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(MealJDO n : jdoList) {
+      list.add(MealJDO.getClientModel(n));
     }
     
     return list;
@@ -6776,79 +5028,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return routines' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<RoutineModel> searchRoutines(int index, String query) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchRoutines()");
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    TrainingManager trainingManager = TrainingManager.getInstance();    
+    List<Routine> jdoList = trainingManager.searchRoutines(user, query, index);
+    
+    //convert to client side models
     List<RoutineModel> list = new ArrayList<RoutineModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Routine.class);
-      q.setFilter("date == null");
-      q.setOrdering("name ASC");
-      q.setRange(index, index + Constants.LIMIT_ROUTINES + 1);
-      List<Routine> routines = (List<Routine>) q.execute();
-      
-      //split query string
-      String[] arr = query.split(" ");
-
-      int i = 0;
-      for(Routine r : routines) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_ROUTINES) {
-          list.add(null);
-          break;
-        }
-
-        final String name = r.getName();
-        
-        //filter by query
-        boolean ok = false;
-        for(String s : arr) {
-          ok = name.toLowerCase().contains( s.toLowerCase() );
-          if(ok) {
-            break;
-          }
-        }
-
-        //if name matched -> check permission
-        if(ok) {
-          
-          boolean hasPermission = hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid());
-          
-          if(hasPermission) {
-            RoutineModel m = Routine.getClientModel(r);
-            list.add(m);
-            
-            i++;
-          }
-          
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchRoutines", e);
-      throw new ConnectionException("searchRoutines", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(Routine n : jdoList) {
+      list.add(Routine.getClientModel(n));
     }
     
     return list;
@@ -6859,85 +5051,19 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return workouts' models
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<WorkoutModel> searchWorkouts(int index, String query) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchWorkouts()");
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    TrainingManager trainingManager = TrainingManager.getInstance();    
+    List<Workout> jdoList = trainingManager.searchWorkouts(user, query, index);
+    
+    //convert to client side models
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
-    
-    if(query == null) {
-      return list;
-    }
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Query q = pm.newQuery(Workout.class);
-      q.setFilter("date == null && routineId == 0");
-      q.setOrdering("name ASC");
-      q.setRange(index, index + Constants.LIMIT_WORKOUTS + 1);
-      List<Workout> workouts = (List<Workout>) q.execute();
-      
-      //split query string
-      String[] arr = query.split(" ");
-
-      int i = 0;
-      for(Workout w : workouts) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_WORKOUTS) {
-          list.add(null);
-          break;
-        }
-        
-
-        final String name = w.getName();
-        
-        //filter by query
-        boolean ok = false;
-        for(String s : arr) {
-          ok = name.toLowerCase().contains( s.toLowerCase() );
-          if(ok) {
-            break;
-          }
-        }
-
-        //if name matched -> check permission
-        if(ok) {          
-          WorkoutModel m = null;
-          try {
-            m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
-          } catch (NoPermissionException e) {
-            //no permission -> skipping
-          }
-
-          if(m != null) {
-              list.add(m);                
-              i++;
-          }
-          
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchWorkouts", e);
-      throw new ConnectionException("searchWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(Workout n : jdoList) {
+      list.add(Workout.getClientModel(n));
     }
     
     return list;
@@ -6951,75 +5077,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException
    */
-  @SuppressWarnings("unchecked")
   public List<UserModel> searchUsers(int index, String query) throws ConnectionException {
 
-    logger.log(Level.FINE, "searchUsers()");
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
+    List<UserOpenid> jdoList = userManager.searchUsers(user, query, index);
+    
+    //convert to client side models
     List<UserModel> list = new ArrayList<UserModel>();
-    
-    if(query == null) {
-      return list;
-    }
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      //everything but current user
-      Query q = pm.newQuery(UserOpenid.class);
-      q.setFilter("id != idParam");
-      q.declareParameters("java.lang.String idParam");
-      q.setRange(index, index + Constants.LIMIT_USERS + 1);
-      List<UserOpenid> users = (List<UserOpenid>) q.execute(UID);
-      
-      //split query string
-      String[] arr = query.split(" ");
-
-      int i = 0;
-      for(UserOpenid u : users) {
-        
-        //if limit reached -> add null value
-        if(i == Constants.LIMIT_USERS) {
-          list.add(null);
-          break;
-        }
-        
-        final String name = u.getNickName();
-        
-        //filter by query
-        boolean ok = false;
-        for(String s : arr) {
-          ok = name.toLowerCase().contains( s.toLowerCase() );
-          if(ok) {
-            break;
-          }
-        }
-        
-        if(ok) {
-          UserModel m = UserOpenid.getClientModel(u);
-          list.add(m);
-          
-          i++;
-        }
-      }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "searchUsers", e);
-      throw new ConnectionException("searchUsers", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, " query: "+query+", results: "+list.size());
+    for(UserOpenid n : jdoList) {
+      list.add(UserOpenid.getClientModel(n));
     }
     
     return list;
@@ -7032,54 +5100,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException
    */
-  @SuppressWarnings("unchecked")
   public List<UserModel> getUsersFromCircle(int target) throws ConnectionException {
 
-    logger.log(Level.FINE, "getUsersFromCircle()");
-    
-    List<UserModel> list = new ArrayList<UserModel>();
-        
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading user from circle: "+target);
     }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
 
-    try {
-      //everything but current user
-      Query q = pm.newQuery(Circle.class);
-      q.setFilter("openId == openIdParam && target == targetParam");
-      q.declareParameters("java.lang.String openIdParam, java.lang.Integer targetParam");
-      List<Circle> users = (List<Circle>) q.execute(UID, target);
-      
-      for(Circle c : users) {
-        UserModel m;
-        
-        //get user (id not -1)
-        if(!c.getFriendId().equals("-1")) {
-          UserOpenid u = pm.getObjectById(UserOpenid.class, c.getFriendId());
-        
-          m = UserOpenid.getClientModel(u);
-        }
-        //id == -1 (all users enabled)
-        else {
-          m = new UserModel("-1");
-        }
-        list.add(m);
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getUsersFromCircle", e);
-      throw new ConnectionException("getUsersFromCircle", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    List<UserModel> list = new ArrayList<UserModel>();
     
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+      
+    List<UserOpenid> users = userManager.getUsersFromCircle(user, target);
+    if(users != null) {
+      for(UserOpenid m : users) {
+        list.add(UserOpenid.getClientModel(m));
+      }
+    }
+
     return list;
   }
   
@@ -7090,14 +5128,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateCardio(CardioModel model) throws ConnectionException {
+  @Deprecated public Boolean updateCardio(CardioModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateCardio()");
 
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -7139,33 +5178,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public ExerciseModel updateExercise(ExerciseModel exercise) throws ConnectionException {
 
-    logger.log(Level.FINE, "Updating exercise");
+    ExerciseModel m = null;
     
-    //get uid
-    final Object[] obj = getUidAndLocale();
-    final String UID = (String)obj[0];
-    final String LOCALE = (String)obj[1];
-    if(UID == null) {
-      return null;
-    }
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    Exercise jdo = Exercise.getServerModel(exercise);
+    trainingManager.addExercise(user, jdo, exercise.getWorkoutId());
+    m = Exercise.getClientModel(jdo);
     
-    try {
-      exercise = StoreTraining.updateExerciseModel(pm, exercise, UID, LOCALE);
-        
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "Error updating exercise", e);
-      throw new ConnectionException("updateExercise", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return exercise;
+    return m;
   }
 
   /**
@@ -7173,75 +5196,20 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param exercise : model to be updated
    * @return updated exercise name (null if add not successful)
    */
-  @SuppressWarnings("unchecked")
   @Override
   public Boolean updateExerciseName(ExerciseNameModel model) throws ConnectionException {
+    
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
 
-    logger.log(Level.FINE, "updateExerciseName()");
+    ExerciseName jdo = ExerciseName.getServerModel(model);
+    List<ExerciseName> names = new ArrayList<ExerciseName>();
+    names.add(jdo);
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
+    names = trainingManager.addExerciseName(user, names);
+    ExerciseNameModel m = ExerciseName.getClientModel(jdo);
 
-    //if not admin
-    if( !isAdmin(UID) ) {
-      return false;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      ExerciseName m = pm.getObjectById(ExerciseName.class, model.getId());
-      if(m != null) {
-
-        //remove search indexes which has this name as query
-        final String strName = m.getName();
-        //if name or locale changed
-        if(!strName.equals(model.getName()) || !m.getLocale().equals(model.getLocale())) {
-          Query q1 = pm.newQuery(ExerciseSearchIndex.class);
-          List<ExerciseSearchIndex> arrQuery = (List<ExerciseSearchIndex>) q1.execute();
-          for(ExerciseSearchIndex index : arrQuery) {
-            //check if query words that match added name
-            int count = 0;
-            for(String s : index.getQuery().split(" ")) {
-              //if word long enough and match
-              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD && strName.toLowerCase().contains( s.toLowerCase() )) {
-                  count++;
-              }
-            }
-            
-            //if found -> remove index
-            if(count > 0) {
-              pm.deletePersistent(index);
-            }
-          }
-        }
-        
-        //update name
-        m.setName(model.getName());
-        m.setTarget(model.getTarget());
-        m.setVideo(model.getVideo());
-        m.setLocale(model.getLocale());
-        
-        ok = true;
-      }
-
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "updateExerciseName", e);
-      throw new ConnectionException("updateExerciseName", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    return (m != null);
   }
 
   /**
@@ -7252,33 +5220,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override
   public Boolean updateExerciseOrder(WorkoutModel workout, Long[] ids) throws ConnectionException {
-
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Updating exercise order for workout: "+workout.getName());
-    }
     
     boolean ok = true;
+
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      ok = StoreTraining.updateExerciseOrder(pm, workout.getId(), ids, UID);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error updating exercise order", e);
-      throw new ConnectionException("updateExerciseOrder", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
+    ok = trainingManager.updateExerciseOrder(user, workout.getId(), ids);
     
     return ok;
   }
@@ -7291,118 +5240,44 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
   @Override
   public FoodModel updateFood(FoodModel food) throws ConnectionException {
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Updating food: "+food.getId());
-    }
-
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
+    FoodModel m = null;
     
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-      
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+
     try {
-      food = StoreNutrition.updateFoodModel(pm, food, UID);
-  
+      NutritionManager nutritionManager = NutritionManager.getInstance();
+      FoodJDO jdo = FoodJDO.getServerModel(food);
+      nutritionManager.addFood(user, jdo, food.getTimeId(), food.getMealId());
+      m = FoodJDO.getClientModel(jdo);
+
     }
     catch (Exception e) {
-      logger.log(Level.SEVERE, "Error updating food", e);
-      throw new ConnectionException("updateFood", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
+      throw new ConnectionException("addFood", e.getMessage());
     }
     
-    return food;
+    return m;
   }
   
   /**
-   * Updates exercise name
-   * @param exercise : model to be updated
-   * @return updated exercise name (null if add not successful)
+   * Updates food name
+   * @param food : model to be updated
+   * @return updated food name (null if add not successful)
    */
-  @SuppressWarnings("unchecked")
   @Override
   public Boolean updateFoodName(FoodNameModel model) throws ConnectionException {
+    
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
+    NutritionManager nutritionManager = NutritionManager.getInstance();
 
-    logger.log(Level.FINE, "updateFoodName()");
+    FoodName jdo = FoodName.getServerModel(model);
+    List<FoodName> names = new ArrayList<FoodName>();
+    names.add(jdo);
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    names = nutritionManager.addFoodName(user, names);
+    FoodNameModel m = FoodName.getClientModel(jdo);
 
-    FoodName m;
-    try {
-      m = pm.getObjectById(FoodName.class, model.getId());
-      
-      //admin or our food
-      if(m != null && (isAdmin(UID) || m.getUid().equals(UID))) {
-        
-        //remove search indexes which has this name as query
-        final String strName = m.getName();
-        //if name or locale changed
-        if(!strName.equals(model.getName()) || m.getTrusted() != model.getTrusted() || !m.getLocale().equals(model.getLocale())) {
-          Query q1 = pm.newQuery(FoodSearchIndex.class);
-          List<FoodSearchIndex> arrQuery = (List<FoodSearchIndex>) q1.execute();
-          for(FoodSearchIndex index : arrQuery) {
-            //check if query words that match added name
-            int count = 0;
-            for(String s : index.getQuery().split(" ")) {
-              //if word long enough and match
-              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD && strName.toLowerCase().contains( s.toLowerCase() )) {
-                  count++;
-              }
-            }
-            
-            //if found -> remove index
-            if(count > 0) {
-              pm.deletePersistent(index);
-            }
-          }
-        }
-        
-        //update name
-        m.setName(model.getName());
-        m.setEnergy(model.getEnergy());
-        m.setProtein(model.getProtein());
-        m.setCarb(model.getCarb());
-        m.setFet(model.getFet());
-        m.setPortion(model.getPortion());
-        m.setLocale(model.getLocale());
-        m.setTrusted(model.getTrusted());
-        m.setUid(model.getUid());
-        //update micronutrients
-        List<MicroNutrient> arr = new ArrayList<MicroNutrient>();
-        for(MicroNutrientModel mn : model.getMicroNutrients()) {
-          arr.add(MicroNutrient.getServerModel(mn));
-        }
-        m.setMicronutrients(arr);
-        pm.makePersistent(m);
-        ok = true;
-      }
-
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "updateFoodName", e);
-      throw new ConnectionException("updateFoodName", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    return (m != null);
   }
 
   /**
@@ -7411,71 +5286,17 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateMeal(MealModel meal) throws ConnectionException {
+  public Boolean updateMeal(MealModel model) throws ConnectionException {
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    logger.log(Level.FINE, "updateMeal()");
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    MealJDO jdo = MealJDO.getServerModel(model);
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Meal mealServer = null;
-      //if in time
-      if(meal.getTimeId() != 0) {
-        //get time
-        Time time = pm.getObjectById(Time.class, meal.getTimeId());
-        if(time != null) {
-          if(!hasPermission(pm, Permission.WRITE_NUTRITION, UID, time.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_NUTRITION, UID, time.getUid());
-          }
-          
-          //get meal
-          for(MealInTime m : time.getMeals()) {
-            if(m.getId() == meal.getId()) {
-              //update meal
-              m.setName(meal.getName());
-              
-              ok = true;
-              
-              break;
-            }
-          }
-        }
-      }
-      //not in time
-      else {
-        mealServer = pm.getObjectById(Meal.class, meal.getId());
-        //check if correct user
-        if(mealServer != null) {
-          if(!hasPermission(pm, Permission.WRITE_NUTRITION, UID, mealServer.getUid())) {
-            throw new NoPermissionException(Permission.WRITE_NUTRITION, UID, mealServer.getUid());
-          }
-          
-          mealServer.setName(meal.getName());
-          
-          ok = true;
-        }
-      }
+    nutritionManager.updateMeal(user, jdo);
 
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "updateMeal", e);
-      throw new ConnectionException("updateMeal", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    return true;
   }
 
   /**
@@ -7484,14 +5305,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateMeasurement(MeasurementModel model) throws ConnectionException {
+  @Deprecated public Boolean updateMeasurement(MeasurementModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateMeasurement()");
 
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -7532,71 +5354,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @param model to be updated
    * @return update successfull
    */
-  @SuppressWarnings({ "unchecked", "deprecation" })
   @Override
   public Boolean updateRoutine(RoutineModel model) throws ConnectionException {
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    logger.log(Level.FINE, "updateRoutine()");
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    Routine jdo = Routine.getServerModel(model);
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      Routine r = pm.getObjectById(Routine.class, model.getId());
-      if(r != null) {
-        if(!hasPermission(pm, Permission.WRITE_TRAINING, UID, r.getUid())) {
-          throw new NoPermissionException(Permission.WRITE_TRAINING, UID, r.getUid());
-        }
-          
-        boolean daysRemoved = r.getDays() > model.getDays(); 
+    trainingManager.updateRoutine(user, jdo);
 
-        //reset time from date
-        Date d = model.getDate();
-        if(d != null) {
-          d.setHours(0);
-          d.setMinutes(0);
-          d.setSeconds(0);
-        }
-        
-        //update workout
-        r.setDate(d);
-        r.setDays(model.getDays());
-        r.setName(model.getName());
-        
-        //if days removed -> remove workouts
-        if(daysRemoved) {
-          Query q = pm.newQuery(Workout.class);
-          q.setFilter("date == null && routineId == routineIdParam && dayInRoutine > daysParam");
-          q.declareParameters("java.lang.Long routineIdParam, java.lang.Integer daysParam");
-          List<Workout> workouts = (List<Workout>) q.execute(r.getId(), r.getDays());
-          if(workouts != null) {
-            pm.deletePersistentAll(workouts);
-          }
-          
-        }
-        
-        ok = true;
-      }
-
-    }
-    catch (Exception e) {
-      logger.log(Level.SEVERE, "updateRoutine", e);
-      throw new ConnectionException("updateRoutine", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    return true;
   }
   
   /**
@@ -7605,14 +5374,15 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    */
   @Override
-  public Boolean updateRun(RunModel model) throws ConnectionException {
+  @Deprecated public Boolean updateRun(RunModel model) throws ConnectionException {
 
     logger.log(Level.FINE, "updateRun()");
 
     boolean ok = false;
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return ok;
     }
@@ -7653,117 +5423,18 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return update successful
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public Boolean updateTime(TimeModel model) throws ConnectionException {
-
-    logger.log(Level.FINE, "updateTime()");
-
-    boolean ok = false;
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    //try to update X times
-    int retries = Constants.LIMIT_UPDATE_RETRIES;
-    while (true) {
-      
-      Transaction tx = pm.currentTransaction();
-      tx.begin();
-
-      try {
-        
-        Time m = pm.getObjectById(Time.class, model.getId());
-        if(m != null) {
-          //check if correct user
-          if(m.getUid().equals(UID)) {
-            
-            //check if same time already exists -> remove this one and add its foods/meals to previous
-            Time timeSimilar = null;
-            final Date dStart = stripTime(model.getDate(), true);
-            final Date dEnd = stripTime(model.getDate(), false);
-              
-            Query q = pm.newQuery(Time.class);
-            q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-            q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-            List<Time> times = (List<Time>) q.execute(UID, dStart, dEnd);
-            for(Time t : times) {
-              if(t.getTime() == model.getTime() && t.getId() != model.getId()) {
-                timeSimilar = t;
-                break;
-              }
-            }
-            
-            //if similar time found -> add meals/foods from old time to similar times
-            if(timeSimilar != null) {
-              
-              //meals
-              List<MealInTime> listMeals = timeSimilar.getMeals();
-              for(MealInTime meal : m.getMeals()) {
-                listMeals.add(meal);
-              }
-              timeSimilar.setMeals(listMeals);
-              
-              //foods
-              List<FoodInTime> listFoods = timeSimilar.getFoods();
-              for(FoodInTime food : m.getFoods()) {
-                listFoods.add(food);
-              }
-              timeSimilar.setFoods(listFoods);
-              
-              //remove given time
-              pm.deletePersistent(m);
-            }
-            //update Time
-            else {
-              m.setTime((long) model.getTime());
-            }
-            
-            ok = true;
-          }
-        }
-        
-        pm.flush();
-        tx.commit();
-        
-        break;
-  
-      }
-      catch (Exception e) {
-        logger.log(Level.SEVERE, "updateTime", e);
-        
-        //retries used
-        if (retries == 0) {
-          if (!pm.isClosed()) {
-            pm.close();
-          }
-          throw new ConnectionException("updateTime", e.getMessage());
-        }
-        
-        --retries;
-        
-        //small delay between retries
-        try {
-          Thread.sleep(DELAY_BETWEEN_RETRIES);
-        }
-        catch(Exception ex) { }
-      }
-      finally {
-        if (tx.isActive()) {
-          tx.rollback();
-        }
-      }
-    }
-    if (!pm.isClosed()) {
-      pm.close();
-    } 
+    NutritionManager nutritionManager = NutritionManager.getInstance();
+    TimeJDO jdo = TimeJDO.getServerModel(model);
     
-    return ok;
+    nutritionManager.updateTime(user, jdo);
+
+    return true;
   }
   
   /**
@@ -7773,35 +5444,16 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override
   public Boolean updateWorkout(WorkoutModel model) throws ConnectionException {
+    
+    //get user
+    final UserOpenid user = userManager.getUser(this.perThreadRequest);
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Updating workout");
-    }
+    TrainingManager trainingManager = TrainingManager.getInstance();
+    Workout jdo = Workout.getServerModel(model);
     
-    boolean ok = false;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return ok;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      StoreTraining.updateWorkoutModel(pm, model, UID);
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error updating workout", e);
-      throw new ConnectionException("updateWorkout", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return ok;
+    trainingManager.updateWorkout(user, jdo);
+
+    return true;
   }
 
   /**
@@ -7824,9 +5476,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     }
   }
 
-
-
-
   /**
    * Returns single workout
    * @param workoutId
@@ -7835,33 +5484,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @Override public WorkoutModel getWorkout(Long workoutId) throws ConnectionException {
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loading single workout ("+workoutId+")");
-    }
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    TrainingManager trainingManager = TrainingManager.getInstance();
     
-    WorkoutModel m = null;
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      m = StoreTraining.getWorkoutModel(pm, workoutId, UID);
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getWorkout", e);
-      throw new ConnectionException("getWorkout", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
-    }
-    
-    return m;
+    Workout jdo = trainingManager.getWorkout(user, workoutId);                  
+    return Workout.getClientModel(jdo);
   }
 
   /**
@@ -7870,79 +5497,32 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return workouts' models (if routine set -> also exercises are returned)
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<WorkoutModel> getWorkouts(int index, RoutineModel routine) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loading workouts. Index="+index);
+      logger.log(Level.FINE, "Loading workouts");
+    }
+
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+
+    TrainingManager trainingManager = TrainingManager.getInstance();
+
+    List<Workout> workouts = null;
+    if(routine == null) {
+      workouts = trainingManager.getWorkouts(user, index, user.getUid());
+    }
+    //from routine
+    else {
+      workouts = trainingManager.getWorkouts(user, Routine.getServerModel(routine), user.getUid());
     }
 
     List<WorkoutModel> list = new ArrayList<WorkoutModel>();
-    
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
-      
-      Query q = pm.newQuery(Workout.class);
-
-      List<Workout> workouts = null;
-      //if from single routine
-      if(routine != null) {
-        
-        //get routine so we know is it shared
-        Routine r = pm.getObjectById(Routine.class, routine.getId());
-        if(r != null) {
-          if(!hasPermission(pm, Permission.READ_TRAINING, UID, r.getUid())) {
-            throw new NoPermissionException(Permission.READ_TRAINING, UID, r.getUid());
-          }
-          
-          q.setFilter("date == null && routineId == routineIdParam");
-          q.declareParameters("java.lang.Long routineIdParam");
-          workouts = (List<Workout>) q.execute(r.getId());
-        }        
+    if(workouts != null) {
+      for(Workout m : workouts) {
+        list.add(Workout.getClientModel(m));
       }
-      //all single workouts
-      else {
-        q.setFilter("date == null && routineId == 0 && openId == openIdParam");
-        q.declareParameters("java.lang.String openIdParam");
-        q.setRange(index, 100);
-        workouts = (List<Workout>) q.execute(UID);
-      }
-
-      if(workouts != null) {
-        Collections.sort(workouts);
-        
-        int i = 0;
-        for(Workout w : workouts) {
-          
-          //if limit reached -> add null value
-          if(i == Constants.LIMIT_WORKOUTS) {
-            list.add(null);
-            break;
-          }
-
-          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
-          list.add(m);
-          
-          i++;
-        }
-      }
-      
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getWorkouts", e);
-      throw new ConnectionException("getWorkouts", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;
@@ -7956,69 +5536,39 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return workoutmodels in each days ( model[days][day's workouts] )
    * @throws ConnectionException 
    */
-  @SuppressWarnings("unchecked")
   @Override
   public List<WorkoutModel[]> getWorkoutsInCalendar(String uid, Date dateStart, Date dateEnd) throws ConnectionException {
 
-    logger.log(Level.FINE, "getWorkoutsInCalendar()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts for "+dateStart+" - "+dateEnd);
+    }
 
     List<WorkoutModel[]> list = new ArrayList<WorkoutModel[]>();
     
-    //get uid
-    final String UID = getUid();
-    if(UID == null) {
-      return null;
-    }
-    
-    //check dates
-    if(dateStart.getTime() > dateEnd.getTime()) {
-      return null;
-    }
-
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
-    try {
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
       
-      //check permission
-      if(!hasPermission(pm, Permission.READ_TRAINING, UID, uid)) {
-        throw new NoPermissionException(Permission.READ_TRAINING, UID, uid);
-      }
+    TrainingManager trainingManager = TrainingManager.getInstance();
 
-      //go through days
-      final int days = (int)((dateEnd.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
-      
-      for(int i=0; i < days; i++) {
-        
-        final Date d = new Date((dateStart.getTime() / 1000 + 3600 * 24 * i) * 1000);
-        //strip time
-        final Date dStart = stripTime(d, true);
-        final Date dEnd = stripTime(d, false);
-        
-        Query q = pm.newQuery(Workout.class);
-        q.setFilter("openId == openIdParam && date >= dateStartParam && date <= dateEndParam");
-        q.declareParameters("java.lang.String openIdParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
-        List<Workout> workouts = (List<Workout>) q.execute(uid, dStart, dEnd);
-
-        //convert to client side models
+    //go through days
+    final int days = (int)((dateEnd.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000)) + 1;
+    
+    for(int i=0; i < days; i++) {
+      final Date d = new Date((dateStart.getTime() / 1000 + 3600 * 24 * i) * 1000);
+            
+      List<Workout> workouts = trainingManager.getWorkouts(user, d, uid);
+      if(workouts != null) {
         WorkoutModel[] arr = new WorkoutModel[workouts.size()];
-        int c = 0;
-        for(Workout w : workouts) {
-          WorkoutModel m = StoreTraining.getWorkoutModel(pm, w.getId(), UID);
-
-          arr[c] = m;
-          c++;
+        
+        int j = 0;
+        for(Workout m : workouts) {
+          arr[j] = Workout.getClientModel(m);
+          j++;
         }
+        
         list.add(arr);
       }
       
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getWorkoutsInCalendar", e);
-      throw new ConnectionException("getWorkoutsInCalendar", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
 
     return list;
@@ -8032,7 +5582,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @throws ConnectionException 
    */
   @Override @SuppressWarnings("unchecked")
-  public List<GuideValueModel> getGuideValues(String uid, int index, Date date) throws ConnectionException {
+  @Deprecated public List<GuideValueModel> getGuideValues(String uid, int index, Date date) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading guide values: "+date);
@@ -8041,7 +5591,8 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     List<GuideValueModel> list = new ArrayList<GuideValueModel>();
     
     //get uid
-    final String UID = getUid();
+    UserOpenid user = userManager.getUser(perThreadRequest);
+    final String UID = user.getUid();
     if(UID == null) {
       return null;
     }
@@ -8130,7 +5681,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    * @return
    * @throws ConnectionException 
    */
-  public boolean hasTraining(String uid, Date date) throws ConnectionException {
+  @Deprecated public boolean hasTraining(String uid, Date date) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Checking if date '"+date+"' has training");
@@ -8166,12 +5717,12 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             
       //if found
       boolean found = false;
-      //update Time
+      //update TimeJDO
       if(arr != null && arr.size() > 0) {
           found = true;
       }
 
-      //update Time
+      //update TimeJDO
       if(found) {
         id = arr.get(0).getId();
       }
@@ -8180,7 +5731,9 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
         FoodName mServer = FoodName.getServerModel(food.getName());
 
         //get uid
-        final String UID = getUid();
+        UserManager userManager = UserManager.getInstance();
+        UserOpenid user = userManager.getUser(perThreadRequest);
+        final String UID = user.getUid();
         if(UID == null) {
           return id;
         }

@@ -103,7 +103,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 		try {
 						
 			//food selection combo
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUser().getUid().equals(AppController.User.getUid())) {
 				comboName = addExerciseCombo();
 				containerName.add(comboName);
 				this.add(containerName, rowData);
@@ -118,7 +118,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 				this.add(textName, rowData);
 			}
 
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUser().getUid().equals(AppController.User.getUid())) {
 				spinSets  = new SpinnerField();
 				//save value when valid
 				spinSets.addListener(Events.Change, new Listener<BaseEvent>() {
@@ -137,8 +137,8 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 				spinSets.setIncrement(1);
 				spinSets.setMinValue(0);
 				spinSets.setMaxValue(30);
+        Functions.setWarningMessages(spinSets);
 				spinSets.setEditable(true);
-				spinSets.setMessageTarget("none");
 				spinSets.setPropertyEditorType(Integer.class);
 				spinSets.setFormat(NumberFormat.getFormat("0"));
 				if(AppController.IsSupportedBrowser) {
@@ -159,7 +159,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 			//reps
 			HBoxLayoutData flexReps = new HBoxLayoutData(new Margins(0, 0, 0, 10));
 			flexReps.setFlex(1);  
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUser().getUid().equals(AppController.User.getUid())) {
 				final TextField<String> tfReps = new TextField<String>();
 				tfReps.addStyleName("field-amount");
 				tfReps.addListener(Events.OnClick, CustomListener.fieldOnClicked);
@@ -175,6 +175,8 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 						handler.saveData(exercise, false);
 					}
 				});
+				tfReps.setMaxLength(100);
+        Functions.setWarningMessages(tfReps);
         this.add(tfReps, rowData);
 			}
 			else {
@@ -185,10 +187,9 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 			}
 			
 			//weights
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUser().getUid().equals(AppController.User.getUid())) {
 				final TextField<String> tfWeights = new TextField<String>();
 				tfWeights.addStyleName("field-amount");
-				
 				tfWeights.addListener(Events.OnClick, CustomListener.fieldOnClicked);
 				tfWeights.setValue(exercise.getWeights());
 				if(AppController.IsSupportedBrowser) {
@@ -202,6 +203,8 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 					}
 				});
 				tfWeights.setWidth("100%");
+				tfWeights.setMaxLength(100);
+	      Functions.setWarningMessages(tfWeights);
         this.add(tfWeights, rowData);
 			}
 			else {
@@ -212,7 +215,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         this.add(textWeights, rowData);
 			}			
 	        
-			if(exercise.getUid().equals(AppController.User.getUid())) {
+			if(exercise.getWorkout().getUser().equals(AppController.User)) {
 		        
 				//buttons layout
 				HBoxLayout layoutButtons = new HBoxLayout();

@@ -28,8 +28,8 @@ import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.cardio.CardioPresenter;
 import com.delect.motiver.client.presenter.cardio.CardioPresenter.CardioHandler;
 import com.delect.motiver.client.res.MyResources;
-import com.delect.motiver.client.view.EnterNamePanel;
-import com.delect.motiver.client.view.EnterNamePanel.EnterNamePanelHandler;
+import com.delect.motiver.client.view.widget.NameInputWidget;
+import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
 import com.delect.motiver.client.view.SmallNotePanel;
 import com.delect.motiver.client.view.SmallNotePanelDisplay;
 import com.delect.motiver.shared.CardioModel;
@@ -114,7 +114,7 @@ public class CardioView extends CardioPresenter.CardioDisplay {
 			if(cardio.getId() == 0) {
 				
 				//add panel where user can type name
-				EnterNamePanel panelNameInput = new EnterNamePanel(new EnterNamePanelHandler() {
+				NameInputWidget panelNameInput = new NameInputWidget(new EnterNamePanelHandler() {
 					@Override
 					public void newName(String name) {
 						//if cancelled

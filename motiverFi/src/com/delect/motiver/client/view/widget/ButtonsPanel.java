@@ -147,6 +147,7 @@ public class ButtonsPanel extends LayoutContainer {
     //else return old button
     else {
       btn = (MyButton)this.getItem(position);
+      btn.removeAllListeners();
     }
     
     return btn;

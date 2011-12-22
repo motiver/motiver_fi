@@ -27,8 +27,8 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.delect.motiver.server.FoodName;
 import com.delect.motiver.server.PMF;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.shared.Constants;
 import com.google.appengine.repackaged.org.json.JSONWriter;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;

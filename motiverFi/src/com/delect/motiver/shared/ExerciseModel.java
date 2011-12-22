@@ -124,14 +124,14 @@ public class ExerciseModel extends BaseModelData implements Serializable, Compar
 			return "";
     }
   }
-	public String getUid() {
-		if(get("uid") != null) {
-			return get("uid");
-    }
-		else {
-			return "";
-    }
-  }
+//	public String getUid() {
+//		if(get("uid") != null) {
+//			return get("uid");
+//    }
+//		else {
+//			return "";
+//    }
+//  }
 	public String getWeights() {
 		if(get("w") != null) {
 			return get("w");
@@ -157,6 +157,10 @@ public class ExerciseModel extends BaseModelData implements Serializable, Compar
     else {
       return false;
     }
+  }
+  
+  public WorkoutModel getWorkout() {
+    return get("wo");
   }
 	
 	public void setDate(Date date) {
@@ -189,9 +193,9 @@ public class ExerciseModel extends BaseModelData implements Serializable, Compar
 	public void setTempo(String tempo) {
     set("t", tempo);
   }
-	public void setUid(String uid) {
-		set("uid", uid);
-	}
+//	public void setUid(String uid) {
+//		set("uid", uid);
+//	}
 	public void setWeights(String weights) {
     set("w", weights);
   }
@@ -201,4 +205,13 @@ public class ExerciseModel extends BaseModelData implements Serializable, Compar
 	public void setWorkoutId(long id) {
 		set("wid", id);
 	}
+
+  public void setWorkout(WorkoutModel workout) {
+    set("wo", workout);
+  }
+  
+  @Override
+  public String toString() {
+    return "Exercise"+getOrder()+": [name: '"+((getName() != null)? getName().getName() : "")+"', "+getSets()+" x "+getReps()+" x "+getWeights()+"]";
+  }
 }

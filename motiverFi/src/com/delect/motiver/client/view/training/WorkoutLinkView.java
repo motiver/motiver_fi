@@ -149,14 +149,15 @@ public class WorkoutLinkView extends WorkoutLinkPresenter.WorkoutLinkDisplay {
       this.add(new Text(), flex);  
 	        
       //username
-      if(!workout.getUid().equals(AppController.User.getUid())) {
+      if(!workout.getUser().equals(AppController.User)) {
         LayoutContainer panelUsername = new LayoutContainer();
         panelUsername.setWidth(100);
         panelUsername.setHeight(15);
         panelUsername.setStyleName("label-title-username");
-        panelUsername.addText("<fb:name uid=\"" + workout.getUid() + "\" useyou=false linked=false></fb:name>");
+        panelUsername.addText(workout.getUser().getNickName());
         this.add(panelUsername, new HBoxLayoutData(new Margins(0)));
       }
+      
       //show remove button
       else if(workout.getDate() != null) {
 				//buttons layout

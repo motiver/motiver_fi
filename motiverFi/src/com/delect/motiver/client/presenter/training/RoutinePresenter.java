@@ -47,7 +47,6 @@ import com.delect.motiver.client.view.UserView;
 import com.delect.motiver.client.view.training.RoutineDayView;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.RoutineModel;
-import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -274,8 +273,14 @@ public class RoutinePresenter extends Presenter {
 	 */
 	protected void loadWorkouts() {
 
+	  //if workouts already found
+	  if(routine.getWorkouts().size() > 0) {
+	    showWorkouts(0, routine.getWorkouts());
+	    return;
+	  }
+	  
 		//add empty presenter
-		emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING);
+		emptyPresenter = new EmptyPresenter(rpcService, eventBus, (EmptyDisplay)GWT.create(EmptyView.class), EmptyPresenter.EMPTY_LOADING_SMALL);
 		emptyPresenter.run(display.getBodyContainer());
 		
 		//fetch workouts
@@ -316,10 +321,8 @@ public class RoutinePresenter extends Presenter {
     }
 		
 		//show user if not our workout
-		if(!routine.getUid().equals(AppController.User.getUid()) && index == 0) {
-			UserModel user = new UserModel();
-			user.setUid(routine.getUid());
-			userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), user, false);
+		if(!routine.getUser().equals(AppController.User) && index == 0) {
+			userPresenter = new UserPresenter(rpcService, eventBus, (UserDisplay) GWT.create(UserView.class), routine.getUser(), false);
 			userPresenter.run(display.getUserContainer());
 		}
 				

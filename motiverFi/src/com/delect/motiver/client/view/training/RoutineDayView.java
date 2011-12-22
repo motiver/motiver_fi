@@ -109,7 +109,7 @@ public class RoutineDayView extends RoutineDayPresenter.RoutineDayDisplay {
     panelHeader.add(new Text(), flex); 
 													
 		//add new workout -link
-		if(routine.getUid().equals(AppController.User.getUid())) {
+		if(routine.getUser().equals(AppController.User)) {
 
 			//buttons layout
 			HBoxLayout layoutButtons = new HBoxLayout();

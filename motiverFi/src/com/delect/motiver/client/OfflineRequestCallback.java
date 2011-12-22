@@ -23,7 +23,7 @@ public class OfflineRequestCallback implements RequestCallback {
 
 	public interface OfflineRequestCallbackHandler {
 		String loadFromStorage();
-		void onErrorReceived();
+		void onErrorReceived(Request request, Throwable throwable);
 		/**
 		 * @param responseData
 		 * @return true if data changed. If false, same data that have already been delivered to client
@@ -76,13 +76,15 @@ public class OfflineRequestCallback implements RequestCallback {
 		}
 		//not found in local storage
 		else {
-			handler.onErrorReceived();
+			handler.onErrorReceived(request, exception);
+			
     }
 	}
 
 	@Override
 	public void onResponseReceived(Request request, Response response) {
 
+	  int i = response.getStatusCode();
 		if (response.getStatusCode() == 200) {
       final String serializedResponse = response.getText();
 
@@ -95,15 +97,15 @@ public class OfflineRequestCallback implements RequestCallback {
 			}
 		}
 		else {
-			//get response from local storage
-			String res = handler.loadFromStorage();
-			if(res != null) {
-				callback.onResponseReceived(request, getCustomResponse(res));
-			}
-			//not found in local storage
-			else {
-				handler.onErrorReceived();
-      }
+//			//get response from local storage
+//			String res = handler.loadFromStorage();
+//			if(res != null) {
+//				callback.onResponseReceived(request, getCustomResponse(res));
+//			}
+//			//not found in local storage
+//			else {
+				handler.onErrorReceived(request, null);
+//      }
 		}
 	}
 	
