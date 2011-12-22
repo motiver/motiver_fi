@@ -372,7 +372,7 @@ public class TrainingDAO {
     return routine;
   }
 
-  public void updateWorkout(Workout workout) throws Exception {
+  public void updateWorkout(Workout workout, boolean updateExercises) throws Exception {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating workout: "+workout);
@@ -388,7 +388,7 @@ public class TrainingDAO {
       Workout t = pm.getObjectById(Workout.class, workout.getId());
       
       if(t != null) {
-        t.update(workout, false);
+        t.update(workout, false, updateExercises);
       }
       
       tx.commit();
@@ -812,7 +812,7 @@ public class TrainingDAO {
       
       tx.commit();
       
-      workout.update(t, true);
+      workout.update(t, true, false);
       
     } catch (Exception e) {
       throw e;

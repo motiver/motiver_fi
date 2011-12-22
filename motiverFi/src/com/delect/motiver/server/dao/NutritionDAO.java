@@ -520,7 +520,7 @@ public class NutritionDAO {
     return t;
   }
 
-  public void updateTime(TimeJDO time) throws Exception {
+  public void updateTime(TimeJDO time, boolean updateFoods) throws Exception {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating time: "+time);
@@ -536,7 +536,7 @@ public class NutritionDAO {
       TimeJDO t = pm.getObjectById(TimeJDO.class, time.getId());
       
       if(t != null) {
-        t.update(time, false);
+        t.update(time, false, updateFoods);
       }
       
       tx.commit();
@@ -556,7 +556,7 @@ public class NutritionDAO {
     }
   }
 
-  public void updateMeal(MealJDO meal) throws Exception {
+  public void updateMeal(MealJDO meal, boolean updateFoods) throws Exception {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating meal: "+meal);
@@ -573,7 +573,7 @@ public class NutritionDAO {
       
       if(t != null) {
         int c = t.getCount();
-        t.update(meal, false);
+        t.update(meal, false, updateFoods);
         
         //restore count
         t.setCount(c);
@@ -619,7 +619,7 @@ public class NutritionDAO {
       
       tx.commit();
       
-      meal.update(t, true);
+      meal.update(t, true, false);
       
     } catch (Exception e) {
       throw e;

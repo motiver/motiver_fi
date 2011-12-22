@@ -158,7 +158,7 @@ public class NutritionManager {
         if(i == -1) {
           time.getFoodsKeys().add(model.getKey());
         }
-        dao.updateTime(time);
+        dao.updateTime(time, true);
       }
       //if food is in meal
       else if(mealId != 0) {
@@ -171,7 +171,7 @@ public class NutritionManager {
         if(i == -1) {
           meal.getFoodsKeys().add(model.getKey());
         }
-        dao.updateMeal(meal);
+        dao.updateMeal(meal, true);
         
         cache.removeMeal(mealId); //clear cache
       }
@@ -219,7 +219,7 @@ public class NutritionManager {
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
 
         time.getFoodsKeys().remove(model.getKey());
-        dao.updateTime(time);
+        dao.updateTime(time, true);
       }
       //if food is in meal
       else if(mealId != 0) {
@@ -229,7 +229,7 @@ public class NutritionManager {
 
         //update if found, otherwise add
         meal.getFoodsKeys().remove(model.getKey());
-        dao.updateMeal(meal);
+        dao.updateMeal(meal, true);
         
         cache.removeMeal(mealId); //clear cache
       }
@@ -419,16 +419,16 @@ public class NutritionManager {
   }
 
 
-  private void _updateMeal(MealJDO meal) throws Exception {
-
-    if(logger.isLoggable(Level.FINER)) {
-      logger.log(Level.FINER, "_updateMeal ("+meal+")");
-    }
-    
-    dao.updateMeal(meal);
-    
-    cache.addMeal(meal);
-  }
+//  private void _updateMeal(MealJDO meal) throws Exception {
+//
+//    if(logger.isLoggable(Level.FINER)) {
+//      logger.log(Level.FINER, "_updateMeal ("+meal+")");
+//    }
+//    
+//    dao.updateMeal(meal);
+//    
+//    cache.addMeal(meal);
+//  }
 
 
   public boolean removeTimes(List<TimeJDO> models, String uid) throws ConnectionException {
@@ -642,7 +642,7 @@ public class NutritionManager {
         userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
 
         time.getMealsKeys().remove(model.getKey());
-        dao.updateTime(time);
+        dao.updateTime(time, true);
         
         //remove from cache
         cache.setTimes(time.getUid(), time.getDate(), null);
@@ -903,7 +903,7 @@ public class NutritionManager {
     
   }
 
-  public void updateMeal(UserOpenid user, MealJDO model) throws ConnectionException {
+  public void updateMeal(UserOpenid user, MealJDO model, boolean updateFoods) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating meal: "+model);
@@ -915,11 +915,11 @@ public class NutritionManager {
       
       userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), meal.getUid());
       
-      meal.update(model, false);
-      dao.updateMeal(meal);
+      meal.update(model, false, updateFoods);
+      dao.updateMeal(meal, updateFoods);
 
       //update meal given as parameter
-      model.update(meal, true);
+      model.update(meal, true, updateFoods);
       model.setCount(meal.getCount());
 
       //update cache (also old date if moved)
@@ -932,7 +932,7 @@ public class NutritionManager {
   
   }
 
-  public void updateTime(UserOpenid user, TimeJDO model) throws ConnectionException {
+  public void updateTime(UserOpenid user, TimeJDO model, boolean updateFoods) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating time: "+model);
@@ -944,11 +944,11 @@ public class NutritionManager {
       
       userManager.checkPermission(Permission.WRITE_NUTRITION, user.getUid(), time.getUid());
       
-      time.update(model, false);
-      dao.updateTime(time);
+      time.update(model, false, updateFoods);
+      dao.updateTime(time, updateFoods);
 
       //update time given as parameter
-      model.update(time, true);
+      model.update(time, true, updateFoods);
       
       //clear cache
       cache.setTimes(time.getUid(), time.getDate(), null);  //clear day's cache

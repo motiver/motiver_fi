@@ -383,7 +383,7 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
    * @param model
    * @throws CloneNotSupportedException 
    */
-  public void update(Workout model, boolean includeId) throws CloneNotSupportedException {
+  public void update(Workout model, boolean includeId, boolean updateExercises) throws CloneNotSupportedException {
     if(includeId) {
       setId(model.getId());
     }
@@ -398,28 +398,30 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
     setTimeStart(model.getTimeStart());
     setCount(model.getCount());
 
-    //if exercises removed -> check which was removed
-    if(getExercises() != null && model.getExercises() != null) {
-      if(getExercises().size() > model.getExercises().size()) {
-        for(Exercise f : getExercises()) {
-          if(!model.getExercises().contains(f)) {
-            getExercises().remove(f);
-            break;
+    if(updateExercises) {
+      //if exercises removed -> check which was removed
+      if(getExercises() != null && model.getExercises() != null) {
+        if(getExercises().size() > model.getExercises().size()) {
+          for(Exercise f : getExercises()) {
+            if(!model.getExercises().contains(f)) {
+              getExercises().remove(f);
+              break;
+            }
           }
         }
-      }
-      //new exercise added
-      else {
-        for(Exercise f : model.getExercises()) {
-            int i = getExercises().indexOf(f);
-            if(i != -1) {
-              Exercise fOld = getExercises().get(i);
-              fOld.update(f, includeId);
+        //new exercise added
+        else {
+          for(Exercise f : model.getExercises()) {
+              int i = getExercises().indexOf(f);
+              if(i != -1) {
+                Exercise fOld = getExercises().get(i);
+                fOld.update(f, includeId);
+              }
+              else {
+                getExercises().add(f);
+              }
             }
-            else {
-              getExercises().add(f);
-            }
-          }
+        }
       }
     }
   }

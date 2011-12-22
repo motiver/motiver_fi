@@ -79,7 +79,7 @@ public class TrainingManager {
           f = workout.getExercises().get(i);
           f.update(model, false);
         }
-        dao.updateWorkout(workout);
+        dao.updateWorkout(workout, true);
         
         //return updated model
         model.update(f, true);
@@ -131,7 +131,7 @@ public class TrainingManager {
         userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), workout.getUid());
 
         workout.getExercises().remove(model);
-        dao.updateWorkout(workout);
+        dao.updateWorkout(workout, true);
 
         //update cache
         if(workout.getDate() != null) {
@@ -527,16 +527,16 @@ public class TrainingManager {
     return listAll;
   }
 
-  private void _updateWorkout(Workout workout) throws Exception {
-
-    if(logger.isLoggable(Level.FINER)) {
-      logger.log(Level.FINER, "_updateWorkout ("+workout+")");
-    }
-    
-    dao.updateWorkout(workout);
-    
-    cache.addWorkout(workout);
-  }
+//  private void _updateWorkout(Workout workout) throws Exception {
+//
+//    if(logger.isLoggable(Level.FINER)) {
+//      logger.log(Level.FINER, "_updateWorkout ("+workout+")");
+//    }
+//    
+//    dao.updateWorkout(workout);
+//    
+//    cache.addWorkout(workout);
+//  }
 
   public boolean removeWorkouts(UserOpenid user, List<Workout> models) throws ConnectionException {
 
@@ -1132,7 +1132,7 @@ public class TrainingManager {
     
   }
 
-  public void updateWorkout(UserOpenid user, Workout model) throws ConnectionException {
+  public void updateWorkout(UserOpenid user, Workout model, boolean updateExercises) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Updating workout: "+model);
@@ -1147,8 +1147,8 @@ public class TrainingManager {
       //save old date
       Date dOld = workout.getDate();
       
-      workout.update(model, false);
-      dao.updateWorkout(workout);
+      workout.update(model, false, updateExercises);
+      dao.updateWorkout(workout, updateExercises);
       
       //find names for each exercise
       for(Exercise e : workout.getExercises()) {
@@ -1158,7 +1158,7 @@ public class TrainingManager {
       }
 
       //update workout given as parameter
-      model.update(workout, true);
+      model.update(workout, true, updateExercises);
 
       //remove from cache (also old date if moved)
       if(workout.getDate() != null) {
@@ -1298,7 +1298,7 @@ public class TrainingManager {
         }
       }
   
-      updateWorkout(user, w);
+      updateWorkout(user, w, true);
       
       ok = true;
       

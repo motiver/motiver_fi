@@ -232,7 +232,7 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
    * Updates meal from given model
    * @param model
    */
-  public void update(MealJDO model, boolean includeId) {
+  public void update(MealJDO model, boolean includeId, boolean updateFoods) {
     if(includeId) {
       setId(model.getId());
     }
@@ -240,22 +240,24 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
     setTime(model.getTime());
     setCount(model.getCount());
 
-    //if foods removed -> check which was removed
-    if(getFoodsKeys().size() > model.getFoodsKeys().size()) {
-      for(Key f : getFoodsKeys()) {
-        if(!model.getFoodsKeys().contains(f)) {
-          getFoodsKeys().remove(f);
-        }
-      }
-    }
-    //new food added
-    else {
-      for(Key f : model.getFoodsKeys()) {
-          int i = getFoodsKeys().indexOf(f);
-          if(i == -1) {
-            getFoodsKeys().add(f);
+    if(updateFoods) {
+      //if foods removed -> check which was removed
+      if(getFoodsKeys().size() > model.getFoodsKeys().size()) {
+        for(Key f : getFoodsKeys()) {
+          if(!model.getFoodsKeys().contains(f)) {
+            getFoodsKeys().remove(f);
           }
         }
+      }
+      //new food added
+      else {
+        for(Key f : model.getFoodsKeys()) {
+            int i = getFoodsKeys().indexOf(f);
+            if(i == -1) {
+              getFoodsKeys().add(f);
+            }
+          }
+      }
     }
   }
 

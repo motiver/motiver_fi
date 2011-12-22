@@ -5294,7 +5294,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     NutritionManager nutritionManager = NutritionManager.getInstance();
     MealJDO jdo = MealJDO.getServerModel(model);
     
-    nutritionManager.updateMeal(user, jdo);
+    nutritionManager.updateMeal(user, jdo, false);
 
     return true;
   }
@@ -5432,7 +5432,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     NutritionManager nutritionManager = NutritionManager.getInstance();
     TimeJDO jdo = TimeJDO.getServerModel(model);
     
-    nutritionManager.updateTime(user, jdo);
+    nutritionManager.updateTime(user, jdo, false);
 
     return true;
   }
@@ -5451,7 +5451,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     TrainingManager trainingManager = TrainingManager.getInstance();
     Workout jdo = Workout.getServerModel(model);
     
-    trainingManager.updateWorkout(user, jdo);
+    trainingManager.updateWorkout(user, jdo, false);
 
     return true;
   }

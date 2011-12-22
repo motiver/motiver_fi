@@ -252,31 +252,34 @@ public class TimeJDO implements Serializable, Comparable<TimeJDO> {
    * Updates time from given model
    * @param model
    */
-  public void update(TimeJDO model, boolean includeId) {
+  public void update(TimeJDO model, boolean includeId, boolean updateFoods) {
     if(includeId) {
       setId(model.getId());
     }
     setDate(model.getDate());
-    setMealsNew(model.getMealsNew());
-    setMealsKeys(model.getMealsKeys());
     setTime(model.getTime());
 
-    //if foods removed -> check which was removed
-    if(getFoodsKeys().size() > model.getFoodsKeys().size()) {
-      for(Key f : getFoodsKeys()) {
-        if(!model.getFoodsKeys().contains(f)) {
-          getFoodsKeys().remove(f);
-        }
-      }
-    }
-    //new food added
-    else {
-      for(Key f : model.getFoodsKeys()) {
-          int i = getFoodsKeys().indexOf(f);
-          if(i == -1) {
-            getFoodsKeys().add(f);
+    if(updateFoods) {
+      setMealsNew(model.getMealsNew());
+      setMealsKeys(model.getMealsKeys());
+      
+      //if foods removed -> check which was removed
+      if(getFoodsKeys().size() > model.getFoodsKeys().size()) {
+        for(Key f : getFoodsKeys()) {
+          if(!model.getFoodsKeys().contains(f)) {
+            getFoodsKeys().remove(f);
           }
         }
+      }
+      //new food added
+      else {
+        for(Key f : model.getFoodsKeys()) {
+            int i = getFoodsKeys().indexOf(f);
+            if(i == -1) {
+              getFoodsKeys().add(f);
+            }
+          }
+      }
     }
   }
   
