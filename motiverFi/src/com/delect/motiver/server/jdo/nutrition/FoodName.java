@@ -171,6 +171,10 @@ public class FoodName implements Serializable, Comparable<FoodName> {
 	@Persistent
 	private Double protein;
 	
+	public FoodName() {
+	  
+	}
+	
 	public FoodName(String name) {
 		this.name = name;
 	}

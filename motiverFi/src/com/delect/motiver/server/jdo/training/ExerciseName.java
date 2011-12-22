@@ -112,6 +112,10 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
 	@Persistent	
 	private String video;
 
+	public ExerciseName() {
+	  
+	}
+	
 	public ExerciseName(String name, Integer target) {
 		this.name = name;
 		this.target = target;

@@ -30,7 +30,9 @@ import javax.persistence.OneToOne;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.repackaged.org.json.JSONWriter;
 
+import com.delect.motiver.server.jdo.RunValue;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.WorkoutModel;
@@ -427,4 +429,20 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
     return "Workout: [id: "+getId()+", '"+getName()+"', exercises: "+getExercises().size()+", date: '"+getDate()+"'" +
     		", '"+getUid()+"']";
   }
+
+//  public void getJson(JSONWriter writerJson) {
+//    writerJson.key("distance").value(getDistance());
+//    writerJson.key("id").value(getId());
+//    writerJson.key("name").value(getName());
+//    writerJson.key("openId").value(getUid());
+//    writerJson.key("targetTime").value(getTargetTime());
+//    writerJson.key("uid").value(getUidOld());
+//    writerJson.key("RunValue").array();
+//    for(Exercise value : getExercises()) {
+//      writerJson.object();
+//      value.getJson(writerJson);
+//      writerJson.endObject();
+//    }
+//    writerJson.endArray();
+//  }
 }

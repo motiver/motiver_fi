@@ -16,6 +16,7 @@ package com.delect.motiver.shared;
 
 import com.extjs.gxt.ui.client.event.EventType;
 import com.extjs.gxt.ui.client.event.Events;
+import com.google.gwt.user.client.Window;
 
 public interface Constants {
 
@@ -26,14 +27,14 @@ public interface Constants {
 //    public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR ONLINE TESTING (change also API_KEY in index.html & blog.html!!!)
-  public static final String URL_APP = "http://v2-0.motiver-app.appspot.com/";
-  public static final String URL_APP_STATIC = "http://v2-0.motiver-app.appspot.com/";
-  public static final String URL_APP_CURR = "v2-0.motiver-app.appspot.com";
+//  public static final String URL_APP = "http://v2-0.motiver-app.appspot.com/";
+//  public static final String URL_APP_STATIC = "http://v2-0.motiver-app.appspot.com/";
+//  public static final String URL_APP_CURR = "v2-0.motiver-app.appspot.com";
 
   //FOR RELEASE (change also API_KEY in index.html & blog.html!!!)
-//    public static final String URL_APP = "http://www.motiver.fi/";
-//    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
-//    public static final String URL_APP_CURR = Window.Location.getHostName();
+    public static final String URL_APP = "http://www.motiver.fi/";
+    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
+    public static final String URL_APP_CURR = Window.Location.getHostName();
   
 	/**
 	 * Default value for how many days after today are shown
@@ -268,7 +269,7 @@ public interface Constants {
 	/**
 	 * How many times we try to update entity if there is some problems
 	 */
-  public static final int LIMIT_UPDATE_RETRIES = 10;
+  public static final int LIMIT_UPDATE_RETRIES = 15;
   
   /**
    * Default values for training day times

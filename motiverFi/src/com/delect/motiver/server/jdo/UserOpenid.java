@@ -24,6 +24,8 @@ import javax.jdo.annotations.PrimaryKey;
 
 import com.delect.motiver.shared.UserModel;
 import com.google.appengine.api.users.User;
+import com.google.appengine.repackaged.org.json.JSONException;
+import com.google.appengine.repackaged.org.json.JSONWriter;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class UserOpenid implements Serializable {
@@ -509,5 +511,21 @@ public class UserOpenid implements Serializable {
     setEmail(model.getEmail());
     setUid(model.getUserId());
     setFedId(model.getFederatedIdentity());
+  }
+
+  public void getJson(JSONWriter writerJson) throws JSONException {
+    writerJson.key("timeComments").value(getLastCommentTime());
+    writerJson.key("alias").value(getAlias());
+    writerJson.key("dateFormat").value(getDateFormat());
+    writerJson.key("lastName").value(getEmail());
+    writerJson.key("fedId").value(getFedId());
+    writerJson.key("gender").value(getGender());
+    writerJson.key("id").value(getId());
+    writerJson.key("locale").value(getLocale());
+    writerJson.key("measurementSystem").value(getMeasurementSystem());
+    writerJson.key("firstName").value(getNickName());
+    writerJson.key("timeFormat").value(getTimeFormat());
+    writerJson.key("timeZone").value(getTimezone());
+    writerJson.key("uid").value(getUid());
   }
 }

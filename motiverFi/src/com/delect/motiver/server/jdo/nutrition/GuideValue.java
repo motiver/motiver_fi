@@ -134,6 +134,10 @@ public class GuideValue {
 	@Persistent
 	private Double proteinTraining;
 
+	public GuideValue() {
+	  
+	}
+	
 	public GuideValue(String name) {
 		setName(name);
 	}

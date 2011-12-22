@@ -25,6 +25,7 @@ import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.repackaged.org.json.JSONWriter;
 
 import com.delect.motiver.shared.ExerciseModel;
 
@@ -309,4 +310,16 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
   public int compareTo(Exercise model) {
     return getOrder() - model.getOrder();
   }
+
+//  public void getJson(JSONWriter writerJson) {
+//    writerJson.key("calories").value(getCalories());
+//    writerJson.key("date").value(getDate());
+//    writerJson.key("duration").value(getDuration());
+//    writerJson.key("id").value(getId());
+//    writerJson.key("info").value(getInfo());
+//    writerJson.key("openId").value(getUid());
+//    writerJson.key("pulse").value(getPulse());
+//    writerJson.key("pulseMax").value(getPulseMax());
+//    writerJson.key("uid").value(getUidOld());
+//  }
 }

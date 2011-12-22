@@ -44,6 +44,10 @@ public class ExerciseNameCount {
   @Persistent(defaultFetchGroup="false")
   public String openId;
 
+  public ExerciseNameCount() {
+    
+  }
+  
 	public ExerciseNameCount(Long nameId, Integer count, String openId) {
 		this.nameId = nameId;
 		this.count = count;

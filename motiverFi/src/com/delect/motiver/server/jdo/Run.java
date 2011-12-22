@@ -25,6 +25,8 @@ import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.repackaged.org.json.JSONException;
+import com.google.appengine.repackaged.org.json.JSONWriter;
 
 import com.delect.motiver.shared.RunModel;
 
@@ -163,5 +165,21 @@ public class Run {
 
   public Long getUidOld() {
     return uid;
+  }
+
+  public void getJson(JSONWriter writerJson) throws JSONException {
+    writerJson.key("distance").value(getDistance());
+    writerJson.key("id").value(getId());
+    writerJson.key("name").value(getName());
+    writerJson.key("openId").value(getUid());
+    writerJson.key("targetTime").value(getTargetTime());
+    writerJson.key("uid").value(getUidOld());
+    writerJson.key("RunValue").array();
+    for(RunValue value : getValues()) {
+      writerJson.object();
+      value.getJson(writerJson);
+      writerJson.endObject();
+    }
+    writerJson.endArray();
   } 
 }

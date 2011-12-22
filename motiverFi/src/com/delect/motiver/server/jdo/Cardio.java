@@ -25,6 +25,8 @@ import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
+import com.google.appengine.repackaged.org.json.JSONException;
+import com.google.appengine.repackaged.org.json.JSONWriter;
 
 import com.delect.motiver.shared.CardioModel;
 
@@ -136,5 +138,19 @@ public class Cardio {
 
   public Long getUidOld() {
     return uid;
+  }
+
+  public void getJson(JSONWriter writerJson) throws JSONException {
+    writerJson.key("id").value(getId());
+    writerJson.key("name").value(getName());
+    writerJson.key("openId").value(getUid());
+    writerJson.key("uid").value(getUidOld());
+    writerJson.key("CardioValue").array();
+    for(CardioValue value : getValues()) {
+      writerJson.object();
+      value.getJson(writerJson);
+      writerJson.endObject();
+    }
+    writerJson.endArray();
   }
 }

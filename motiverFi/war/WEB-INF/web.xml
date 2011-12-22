@@ -50,6 +50,10 @@
     <servlet-name>nutritionDumpServlet</servlet-name>
     <servlet-class>com.delect.motiver.server.servlet.NutritionDumpServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>backupServlet</servlet-name>
+    <servlet-class>com.delect.motiver.server.servlet.BackupServlet</servlet-class>
+  </servlet>
   
 
  
@@ -84,6 +88,10 @@
   <servlet-mapping>
     <servlet-name>nutritionDumpServlet</servlet-name>
     <url-pattern>/motiver/nds</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>backupServlet</servlet-name>
+    <url-pattern>/motiver/bs</url-pattern>
   </servlet-mapping>
   
     
