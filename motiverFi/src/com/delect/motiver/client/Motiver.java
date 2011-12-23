@@ -180,7 +180,7 @@ public class Motiver implements EntryPoint {
 
 	    //add each element of the stack trace
 	    for (StackTraceElement element : exception.getStackTrace() ){
-	      result.append( element );
+	      result.append( element.toString() );
 	      result.append( "\n" );
 	    }
 	    

@@ -143,7 +143,7 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
 	@Persistent
 	private String weights;
 
-	@Persistent
+	@Persistent(defaultFetchGroup = "true") 
 	private Workout workout;
 
   @NotPersistent
@@ -309,6 +309,10 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
   @Override
   public int compareTo(Exercise model) {
     return getOrder() - model.getOrder();
+  }
+
+  public void setWorkout(Workout workout) {
+    this.workout = workout;
   }
 
 //  public void getJson(JSONWriter writerJson) {

@@ -1363,11 +1363,11 @@ public class TrainingManager {
    */
   public List<Exercise> getExercises(UserOpenid user, Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
 
-    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loading exercises for name "+nameId+", "+dateStart+" - "+dateEnd);
-    }
+//    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.WARNING, "Loading exercises for name "+nameId+", "+dateStart+" - "+dateEnd);
+//    }
     
-    if(dateStart == null && dateEnd == null) {
+    if(nameId == null || (dateStart == null && dateEnd == null)) {
       return null;
     }
     
@@ -1387,21 +1387,27 @@ public class TrainingManager {
       //get workouts
       List<Workout> workouts = getWorkouts(user, dateStart, dateEnd, user.getUid());
       
-      for(Workout w : workouts) {
-        //check if correct exercise name found
-        for(Exercise e : w.getExercises()) {
-          if(e.getNameId().longValue() == nameId.longValue()) {
-            list.add(e);
+      if(workouts.size() > 0) {
+        for(int i = workouts.size(); i > 0; i--) {
+          Workout w = workouts.get(i-1);
+          if(w != null) {
+            //check if correct exercise name found
+            for(Exercise e : w.getExercises()) {
+              if(e.getNameId() != null && e.getNameId().equals(nameId)) {
+                e.setWorkout(w);
+                list.add(e);
+              }
+              
+              if(limit != -1 && list.size() >= limit) {
+                break;
+              }
+            }
+            if(limit != -1 && list.size() >= limit) {
+              break;
+            }
           }
-          
-          if(limit != -1 && list.size() >= limit) {
-            break;
-          }
-        }
-        if(limit != -1 && list.size() >= limit) {
-          break;
-        }
-      }        
+        }   
+      }     
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading exercises", e);
