@@ -1159,10 +1159,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       Properties props = new Properties();
       Session session = Session.getDefaultInstance(props, null);
       Message msg = new MimeMessage(session);
+      msg.addHeader("X-Priority", "3");
       msg.setFrom(new InternetAddress("antti@motiver.fi", "Motiver.fi user"));
       msg.addRecipient(Message.RecipientType.TO, new InternetAddress("jira@delect.atlassian.net", "JIRA"));
       msg.setSubject(ticket.getTitle());
-      msg.setText(ticket.getTitle());
+      msg.setText(ticket.getDesc());
       Transport.send(msg);
       
       //TODO we don't check the response!
