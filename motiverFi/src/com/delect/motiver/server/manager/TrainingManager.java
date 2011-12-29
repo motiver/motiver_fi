@@ -98,6 +98,9 @@ public class TrainingManager {
         if(workout.getDate() != null) {
           cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
         }
+        if(workout.getRoutineId() != null) {
+          cache.removeRoutine(workout.getRoutineId());
+        }
         cache.addWorkout(workout);
       }
       
@@ -136,6 +139,9 @@ public class TrainingManager {
         //update cache
         if(workout.getDate() != null) {
           cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+        }
+        if(workout.getRoutineId() != null) {
+          cache.removeRoutine(workout.getRoutineId());
         }
         cache.addWorkout(workout);
       }
