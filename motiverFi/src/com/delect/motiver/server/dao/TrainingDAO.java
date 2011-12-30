@@ -105,7 +105,7 @@ public class TrainingDAO {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
     try {
-    //try to update X times
+      //try to update X times
       int retries = Constants.LIMIT_UPDATE_RETRIES;
       while (true) {
 
@@ -380,26 +380,47 @@ public class TrainingDAO {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
-    Transaction tx = pm.currentTransaction();
-    tx.begin();
-    
     try {
-      
-      Workout t = pm.getObjectById(Workout.class, workout.getId());
-      
-      if(t != null) {
-        t.update(workout, false, updateExercises);
+      //try to update X times
+      int retries = Constants.LIMIT_UPDATE_RETRIES;
+      while (true) {
+
+        Transaction tx = pm.currentTransaction();
+        tx.begin();
+        
+        try {
+          Workout t = pm.getObjectById(Workout.class, workout.getId());
+          
+          if(t != null) {
+            t.update(workout, false, updateExercises);
+          }
+          
+          tx.commit();
+          
+          break;
+          
+        }
+        catch (Exception e) {
+          if (tx.isActive()) {
+            tx.rollback();
+          }
+          logger.log(Level.WARNING, "Error updating workout", e);
+          
+          //retries used
+          if (retries == 0) {          
+            throw e;
+          }
+          logger.log(Level.WARNING, " Retries left: "+retries);
+          
+          --retries;
+        }
+    
       }
-      
-      tx.commit();
       
     } catch (Exception e) {
       throw e;
     }
     finally {
-      if(tx.isActive()) {
-        tx.rollback();
-      }
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -414,30 +435,50 @@ public class TrainingDAO {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
-    Transaction tx = pm.currentTransaction();
-    tx.begin();
-    
     try {
-      
-      Routine t = pm.getObjectById(Routine.class, routine.getId());
-      
-      if(t != null) {
-        t.update(routine, false);
+      //try to update X times
+      int retries = Constants.LIMIT_UPDATE_RETRIES;
+      while (true) {
+
+        Transaction tx = pm.currentTransaction();
+        tx.begin();
         
-        pm.flush();
+        try {
+          Routine t = pm.getObjectById(Routine.class, routine.getId());
+          
+          if(t != null) {
+            t.update(routine, false);
+            
+            pm.flush();
+          }
+          
+          tx.commit();
+          routine.getWorkouts();
+          
+          break;
+          
+        }
+        catch (Exception e) {
+          if (tx.isActive()) {
+            tx.rollback();
+          }
+          logger.log(Level.WARNING, "Error updating workout", e);
+          
+          //retries used
+          if (retries == 0) {          
+            throw e;
+          }
+          logger.log(Level.WARNING, " Retries left: "+retries);
+          
+          --retries;
+        }
+    
       }
-      
-      tx.commit();
-      
-      routine.getWorkouts();
       
     } catch (Exception e) {
       throw e;
     }
     finally {
-      if(tx.isActive()) {
-        tx.rollback();
-      }
       if (!pm.isClosed()) {
         pm.close();
       } 

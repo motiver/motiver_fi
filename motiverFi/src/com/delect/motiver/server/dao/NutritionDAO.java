@@ -22,6 +22,7 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
@@ -528,28 +529,48 @@ public class NutritionDAO {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
-    Transaction tx = pm.currentTransaction();
-    tx.begin();
-    
     try {
-      
-      TimeJDO t = pm.getObjectById(TimeJDO.class, time.getId());
-      
-      if(t != null) {
-        t.update(time, false, updateFoods);
+      //try to update X times
+      int retries = Constants.LIMIT_UPDATE_RETRIES;
+      while (true) {
+
+        Transaction tx = pm.currentTransaction();
+        tx.begin();
+        
+        try {
+          TimeJDO t = pm.getObjectById(TimeJDO.class, time.getId());
+          
+          if(t != null) {
+            t.update(time, false, updateFoods);
+          }
+          
+          tx.commit();
+          
+          time.getFoods();
+          
+          break;
+          
+        }
+        catch (Exception e) {
+          if (tx.isActive()) {
+            tx.rollback();
+          }
+          logger.log(Level.WARNING, "Error updating workout", e);
+          
+          //retries used
+          if (retries == 0) {          
+            throw e;
+          }
+          logger.log(Level.WARNING, " Retries left: "+retries);
+          
+          --retries;
+        }
+    
       }
-      
-      tx.commit();
-      
-      time.getFoods();
-      
     } catch (Exception e) {
       throw e;
     }
     finally {
-      if(tx.isActive()) {
-        tx.rollback();
-      }
       if (!pm.isClosed()) {
         pm.close();
       } 
@@ -564,34 +585,54 @@ public class NutritionDAO {
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
-    Transaction tx = pm.currentTransaction();
-    tx.begin();
-    
     try {
-      
-      MealJDO t = pm.getObjectById(MealJDO.class, meal.getId());
-      
-      if(t != null) {
-        int c = t.getCount();
-        t.update(meal, false, updateFoods);
+      //try to update X times
+      int retries = Constants.LIMIT_UPDATE_RETRIES;
+      while (true) {
+
+        Transaction tx = pm.currentTransaction();
+        tx.begin();
         
-        //restore count
-        t.setCount(c);
-        
-        pm.flush();
+        try {
+          MealJDO t = pm.getObjectById(MealJDO.class, meal.getId());
+          
+          if(t != null) {
+            int c = t.getCount();
+            t.update(meal, false, updateFoods);
+            
+            //restore count
+            t.setCount(c);
+            
+            pm.flush();
+          }
+          
+          tx.commit();
+          
+          meal.getFoods();
+          
+          break;
+          
+        }
+        catch (Exception e) {
+          if (tx.isActive()) {
+            tx.rollback();
+          }
+          logger.log(Level.WARNING, "Error updating workout", e);
+          
+          //retries used
+          if (retries == 0) {          
+            throw e;
+          }
+          logger.log(Level.WARNING, " Retries left: "+retries);
+          
+          --retries;
+        }
+    
       }
-      
-      tx.commit();
-      
-      meal.getFoods();
-      
     } catch (Exception e) {
       throw e;
     }
     finally {
-      if(tx.isActive()) {
-        tx.rollback();
-      }
       if (!pm.isClosed()) {
         pm.close();
       } 
