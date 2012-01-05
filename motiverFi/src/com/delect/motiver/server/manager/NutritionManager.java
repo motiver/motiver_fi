@@ -816,10 +816,11 @@ public class NutritionManager {
           //update "cache" array
           listAll.add(name);
         }
-        //otherwise update (if name we have added)
+        //otherwise update (if name we have added or we are admin)
         else {
           FoodName nameOld = listAll.get(i);
-          if(nameOld != null && user.getUid().equals(nameOld.getUid())) {
+          if(nameOld != null 
+              && (user.getUid().equals(nameOld.getUid()) || user.isAdmin()) ) {
             nameOld.update(name, false);
             dao.updateFoodName(nameOld);
           }
@@ -992,7 +993,7 @@ public class NutritionManager {
     try {
       name = _getFoodName(id);
       
-      userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), name.getUid());
+//      userManager.checkPermission(Permission.READ_NUTRITION, user.getUid(), name.getUid());
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading name", e);

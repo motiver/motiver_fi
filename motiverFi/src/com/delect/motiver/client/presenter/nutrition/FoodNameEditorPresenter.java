@@ -19,6 +19,7 @@ import com.google.gwt.http.client.Request;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.MyAsyncCallback;
+import com.delect.motiver.client.event.FoodNameUpdatedEvent;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
@@ -121,6 +122,8 @@ public class FoodNameEditorPresenter extends Presenter {
 							if(handler != null) {
                 handler.nameSaved(model);
 					    }
+              
+              fireEvent(new FoodNameUpdatedEvent(model));
 						}
 					});
 					addRequest(req);

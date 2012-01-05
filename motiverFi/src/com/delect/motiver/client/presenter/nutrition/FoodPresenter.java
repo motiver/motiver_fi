@@ -26,8 +26,11 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.MyAsyncCallback;
 import com.delect.motiver.client.event.FoodCreatedEvent;
+import com.delect.motiver.client.event.FoodNameUpdatedEvent;
 import com.delect.motiver.client.event.FoodRemovedEvent;
 import com.delect.motiver.client.event.FoodUpdatedEvent;
+import com.delect.motiver.client.event.handler.FoodCreatedEventHandler;
+import com.delect.motiver.client.event.handler.FoodNameUpdatedEventHandler;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.presenter.nutrition.FoodNameEditorPresenter.FoodNameEditorDisplay;
 import com.delect.motiver.client.presenter.nutrition.FoodNameEditorPresenter.FoodNameEditorHandler;
@@ -132,8 +135,7 @@ public class FoodPresenter extends Presenter {
 							//enable combo
 							display.setNameComboEnabled(true);
 							
-							foodNameEditorPresenter = null;							
-							food.setName(model);
+							foodNameEditorPresenter = null;
 						}
 					});
 				}
@@ -231,6 +233,18 @@ public class FoodPresenter extends Presenter {
 					updateFood();
 				}
 			});
+
+	    //EVENT: food name updated
+	    addEventHandler(FoodNameUpdatedEvent.TYPE, new FoodNameUpdatedEventHandler() {
+	      @Override
+	      public void onFoodNameUpdated(FoodNameUpdatedEvent event) {
+	        if(food.getName() != null && food.getName().equals(event.getFoodName())) {
+	          food.setName(event.getFoodName());
+	          
+	          fireEvent(new FoodUpdatedEvent(food));
+	        }
+	      }     
+	    });
 		}
 		
 		

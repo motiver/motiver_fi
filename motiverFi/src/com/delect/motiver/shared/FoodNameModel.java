@@ -180,6 +180,16 @@ public class FoodNameModel extends BaseModelData implements IsSerializable {
   }
   
   @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof FoodNameModel) {
+      return ((FoodNameModel)obj).getId() == getId();
+    }
+    else {
+      return false;
+    }
+  }
+  
+  @Override
   public String toString() {
     return "FoodName: ['"+getName()+"', energy: '"+getEnergy()+"', "+getProtein()+" / "+getCarb()+" / "+getFet()+"]";
   }

@@ -199,18 +199,18 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 				this.add(linkCo, new HBoxLayoutData(new Margins(5, 3, 0, 0)));			
 			}
 
-			//admin
-			if(AppController.User.isAdmin()) {
-        linkA.addStyleName("header-link");
-				linkA.setText(AppController.Lang.Admin());
-				linkA.addListener(Events.OnClick, new Listener<BaseEvent>() {
-					@Override
-					public void handleEvent(BaseEvent be) {
-						handler.onTabClick(7);
-					}
-				});
-				this.add(linkA, new HBoxLayoutData(new Margins(5, 3, 0, 0)));		
-			}
+//			//admin
+//			if(AppController.User.isAdmin()) {
+//        linkA.addStyleName("header-link");
+//				linkA.setText(AppController.Lang.Admin());
+//				linkA.addListener(Events.OnClick, new Listener<BaseEvent>() {
+//					@Override
+//					public void handleEvent(BaseEvent be) {
+//						handler.onTabClick(7);
+//					}
+//				});
+//				this.add(linkA, new HBoxLayoutData(new Margins(5, 3, 0, 0)));		
+//			}
 			
 		}
 

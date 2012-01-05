@@ -16,6 +16,7 @@ package com.delect.motiver.shared;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
+import com.delect.motiver.server.jdo.training.Exercise;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 
 public class ExerciseNameModel extends BaseModelData implements IsSerializable {
@@ -98,6 +99,16 @@ public class ExerciseNameModel extends BaseModelData implements IsSerializable {
 	}
   public void setUid(String uid) {
     set("uid", uid);
+  }
+  
+  @Override
+  public boolean equals(Object obj) {
+    if(obj instanceof ExerciseNameModel) {
+      return ((ExerciseNameModel)obj).getId() == getId();
+    }
+    else {
+      return false;
+    }
   }
   
   @Override
