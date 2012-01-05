@@ -116,4 +116,9 @@
         <property name="copyCount" direction="desc"/>
     </datastore-index>
     
+    <datastore-index kind="Measurement" ancestor="false" source="manual">
+        <property name="openId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+    
 </datastore-indexes>

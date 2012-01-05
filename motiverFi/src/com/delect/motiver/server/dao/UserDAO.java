@@ -188,7 +188,18 @@ public class UserDAO {
       user = pm.getObjectById(UserOpenid.class, uid);
       
     } catch (Exception e) {
-      throw e;
+      
+      //if not found -> find from alias
+      Query q = pm.newQuery(UserOpenid.class);
+      q.setFilter("alias == aliasParam");
+      q.declareParameters("java.lang.String aliasParam");
+      q.setRange(0, 1);
+      List<UserOpenid> jdo = (List<UserOpenid>) q.execute(uid);
+      if(jdo != null && jdo.size() > 0) {
+        user = jdo.get(0);
+      }
+      else      
+        throw e;
     }
     finally {
       if (!pm.isClosed()) {
