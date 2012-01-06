@@ -56,6 +56,7 @@ import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
+import com.extjs.gxt.ui.client.widget.Popup;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.form.ComboBox;
 import com.extjs.gxt.ui.client.widget.form.ComboBox.TriggerAction;
@@ -84,6 +85,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 	private XTemplate template = XTemplate.create(Templates.getFoodNameTemplate());
 	//panels
 	private LayoutContainer thisContent = new LayoutContainer();
+	private Popup popup = new Popup();
 	
 	private Timer timerUpdate;	
 	
@@ -107,6 +109,10 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 				addStyleName("panel-food-active");
 				panelButtons.setVisible(true);
 				thisContent.layout(true);
+
+        if(!popup.isVisible()) {
+          popup.showAt(getAbsoluteLeft()+getWidth()+30, getAbsoluteTop()+5);
+        }
 			}
 		});
 		this.addListener(Events.OnMouseOut, new Listener<BaseEvent>() {
@@ -115,6 +121,10 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 				removeStyleName("panel-food-active");
 				panelButtons.setVisible(false);
 				thisContent.layout(true);
+				
+        if(popup.isVisible()) {
+          popup.hide();
+        }
 			}
 		});
 	}
@@ -153,6 +163,11 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 			if(food.getUid().equals(AppController.User.getUid())) {
 				thisContent.add(getPanelButtons());
 			}
+
+	    popup.setSize(150, 25);
+	    popup.setConstrainViewport(false);
+	    popup.setAutoHide(false);
+      updatePopup();
 						
 		} catch (Exception e) {
       Motiver.showException(e);
@@ -163,7 +178,32 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 		return this;
 	}
 	
-	protected LayoutContainer getPanelButtons() {
+	/**
+	 * Updates popup showing total calories
+	 */
+	private void updatePopup() {
+
+    double e = 0D;
+    double p = 0;
+    double c = 0;
+    double f = 0;
+    
+    if(food.getName() != null && food.getName().getEnergy() > 0) {
+      final double amount = food.getAmount();
+      e = (food.getName().getEnergy() / 100) * amount;
+      p = (food.getName().getProtein() / 100) * amount;
+      c = (food.getName().getCarb() / 100) * amount;
+      f = (food.getName().getFet() / 100) * amount;
+    }
+	  
+    popup.removeAll();
+    if(e > 0) {
+      popup.add(Functions.getTotalPanelFlow(e, p, c, f));
+    }
+    popup.layout();
+  }
+
+  protected LayoutContainer getPanelButtons() {
 
     //spacer
     HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 0, 0, 5));
@@ -515,6 +555,8 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 			}
 
 			labelPortions.setText(text);
+			
+      updatePopup();
 			
 		} catch (Exception e) {
       Motiver.showException(e);

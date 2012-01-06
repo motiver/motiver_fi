@@ -44,6 +44,8 @@ import com.extjs.gxt.ui.client.widget.form.DateTimePropertyEditor;
 import com.extjs.gxt.ui.client.widget.form.PropertyEditor;
 import com.extjs.gxt.ui.client.widget.form.SpinnerField;
 import com.extjs.gxt.ui.client.widget.form.TextField;
+import com.extjs.gxt.ui.client.widget.layout.FlowData;
+import com.extjs.gxt.ui.client.widget.layout.FlowLayout;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayout.HBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayoutData;
@@ -964,6 +966,38 @@ public abstract class Functions {
 		}
 		return lc;
 	}
+  
+  /**
+   * Returns total info panel used in time header and meal header
+   * @param energy
+   * @param protein
+   * @param carb
+   * @param fet
+   * @return
+   */
+  public static LayoutContainer getTotalPanelFlow(double energy, double protein, double carb, double fet) {
+
+    final NumberFormat fmt = NumberFormat.getFormat("0.0");
+    
+    final LayoutContainer lc = new LayoutContainer();
+    FlowLayout layout = new FlowLayout();
+    lc.setLayout(layout);
+    lc.setHeight(25);
+    
+    //energy
+    lc.add(new Text("<b>" + AppController.Lang.Energy() + ": </b>" + fmt.format(energy) + " kcal"), new FlowData(new Margins(0, 10, 0, 0)));
+    
+    if(protein > 0 || carb > 0 || fet > 0) {
+      //protein
+      lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + Functions.convertNutritionValueFromDB(protein)), new FlowData(new Margins(0, 10, 0, 0)));
+      //carb
+      lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + Functions.convertNutritionValueFromDB(carb)), new FlowData(new Margins(0, 10, 0, 0)));
+      //fet
+      lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + Functions.convertNutritionValueFromDB(fet)), new FlowData(new Margins(0, 0, 0, 0)));
+      
+    }
+    return lc;
+  }
 
 	/**
 	 * Checks if valid key combo is valid. Not typed in textfield, etc..
