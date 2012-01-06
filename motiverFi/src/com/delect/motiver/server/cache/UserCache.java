@@ -26,8 +26,8 @@ public class UserCache {
    */
   private static final Logger logger = Logger.getLogger(UserCache.class.getName());
 
-  private static final String PREFIX_CIRCLE = "uc_c";
-  private static final String PREFIX_USER = "uc_u";
+  private static final String PREFIX_CIRCLE = "uc_ci";
+  private static final String PREFIX_USER = "uc_us";
   
   private static Cache cache; 
   private static UserCache userCache; 

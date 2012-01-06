@@ -2347,21 +2347,11 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       if(userOther != null) {
         
         String uid = userOther.getUid();
-        if(!hasPermission(pm, Permission.READ_TRAINING, user.getUid(), uid)) {
-          throw new NoPermissionException(Permission.READ_TRAINING, user.getUid(), uid);
-        }
-        if(!hasPermission(pm, Permission.READ_NUTRITION, user.getUid(), uid)) {
-          throw new NoPermissionException(Permission.READ_NUTRITION, user.getUid(), uid);
-        }
-        if(!hasPermission(pm, Permission.READ_NUTRITION_FOODS, user.getUid(), uid)) {
-          throw new NoPermissionException(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
-        }
-        if(!hasPermission(pm, Permission.READ_CARDIO, user.getUid(), uid)) {
-          throw new NoPermissionException(Permission.READ_CARDIO, user.getUid(), uid);
-        }
-        if(!hasPermission(pm, Permission.READ_MEASUREMENTS, user.getUid(), uid)) {
-          throw new NoPermissionException(Permission.READ_MEASUREMENTS, user.getUid(), uid);
-        }
+        permissionTraining = userManager.hasPermission(Permission.READ_TRAINING, user.getUid(), uid);
+        permissionNutrition = userManager.hasPermission(Permission.READ_NUTRITION, user.getUid(), uid);
+        permissionNutritionFoods = userManager.hasPermission(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
+        permissionCardio = userManager.hasPermission(Permission.READ_CARDIO, user.getUid(), uid);
+        permissionMeasurement = userManager.hasPermission(Permission.READ_MEASUREMENTS, user.getUid(), uid);
       
         //reset start date
         if(dateStartParam != null) {
