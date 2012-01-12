@@ -80,7 +80,9 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
     }
 		
 		MealJDO modelServer = new MealJDO(model.getName());
-		modelServer.setId(model.getId());
+    if(model.getId() > 0) {
+      modelServer.setId(model.getId());
+    }
     if(model.getUser() != null)
       modelServer.setUid(model.getUser().getUid());
 		
