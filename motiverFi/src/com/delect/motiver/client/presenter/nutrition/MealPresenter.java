@@ -149,7 +149,6 @@ public class MealPresenter extends Presenter {
 				
 				//if food -> add copy of that
 				if(food != null) {
-					display.setContentEnabled(false);
 					
 					//create copy
 					FoodModel foodCopy = new FoodModel();
@@ -159,23 +158,11 @@ public class MealPresenter extends Presenter {
 					foodCopy.setUid(meal.getUser().getUid());
 					foodCopy.setName(food.getName());
 					foodCopy.setAmount(food.getAmount());
-					Request req = rpcService.addFood(foodCopy, new MyAsyncCallback<FoodModel>() {
-						@Override
-						public void onSuccess(FoodModel result) {
-							display.setContentEnabled(true);
-
-							result.setMealId(meal.getId());
-							result.setTimeId(meal.getTimeId());
-							result.setUid(meal.getUser().getUid());
-							
-							//add new presenter
-							addNewFoodPresenter(result);
-							
-							//fire event
-							fireEvent(new FoodCreatedEvent(result));
-						}
-					});
-					addRequest(req);
+          
+          meal.getFoods().add(foodCopy);
+          
+          //add new presenter
+          addNewFoodPresenter(foodCopy);
 				}
 				//create dummy food
 				else {
