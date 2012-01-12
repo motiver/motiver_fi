@@ -76,7 +76,9 @@ public class FoodJDO implements Serializable, Cloneable {
 		else {
 			modelServer.setNameId(0L);
     }
-		modelServer.setId(model.getId());
+		if(model.getId() > 0) {
+		  modelServer.setId(model.getId());
+		}
 		modelServer.setAmount(model.getAmount());
 		
 		return modelServer;

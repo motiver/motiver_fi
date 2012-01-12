@@ -173,12 +173,15 @@ public class TimeView extends TimePresenter.TimeDisplay {
 					
 					//meal
 					if(dragged instanceof MealModel) {
-						handler.newMeal( (MealModel)dragged );
+					  MealModel m = (MealModel)dragged;
+						handler.newMeal( m );
 						e.cancelBubble();
 					}
 					//food
 					else if(dragged instanceof FoodModel) {
-						handler.newFood( (FoodModel)dragged );
+            FoodModel f = (FoodModel)dragged;
+            f.setId(0);
+            handler.newFood( f );
 						e.cancelBubble();
 					}
 					

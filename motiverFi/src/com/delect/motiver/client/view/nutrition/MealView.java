@@ -178,7 +178,9 @@ public class MealView extends MealPresenter.MealDisplay {
 					//get dragged model
 					Object dragged = e.getData();
 					if(dragged instanceof FoodModel) {
-						handler.newFood( (FoodModel)dragged );
+					  FoodModel f = (FoodModel)dragged;
+					  f.setId(-1);
+						handler.newFood( f );
 						e.cancelBubble();
 
 						panelBase.removeStyleName("panel-highlight");
@@ -288,7 +290,7 @@ public class MealView extends MealPresenter.MealDisplay {
 			
 			//title
 			String name = "- " + AppController.Lang.NoName() + " -";
-			if(meal.getName().length() > 0) {
+			if(meal.getName() != null && meal.getName().length() > 0) {
 				name = meal.getName();
       }
 			panelBase.setTitleText(name);
