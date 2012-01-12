@@ -25,8 +25,6 @@ import javax.jdo.annotations.PrimaryKey;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.repackaged.org.json.JSONWriter;
-
 import com.delect.motiver.shared.ExerciseModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)

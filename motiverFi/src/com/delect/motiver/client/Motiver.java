@@ -35,15 +35,8 @@ import com.delect.motiver.client.view.AppView;
 import com.delect.motiver.shared.TicketModel;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.google.gwt.core.client.EntryPoint;
-import com.google.gwt.core.client.GWT;
-import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
-import com.google.gwt.http.client.RequestBuilder;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.rpc.RpcRequestBuilder;
-import com.google.gwt.user.client.rpc.ServiceDefTarget;
-import com.google.gwt.user.client.ui.RootPanel;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.

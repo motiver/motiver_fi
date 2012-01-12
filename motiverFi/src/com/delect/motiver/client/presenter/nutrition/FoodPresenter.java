@@ -29,7 +29,6 @@ import com.delect.motiver.client.event.FoodCreatedEvent;
 import com.delect.motiver.client.event.FoodNameUpdatedEvent;
 import com.delect.motiver.client.event.FoodRemovedEvent;
 import com.delect.motiver.client.event.FoodUpdatedEvent;
-import com.delect.motiver.client.event.handler.FoodCreatedEventHandler;
 import com.delect.motiver.client.event.handler.FoodNameUpdatedEventHandler;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.presenter.nutrition.FoodNameEditorPresenter.FoodNameEditorDisplay;
