@@ -121,4 +121,8 @@
         <property name="name" direction="asc"/>
     </datastore-index>
     
+    <datastore-index kind="MeasurementValue" ancestor="true" source="manual">
+        <property name="values_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+    
 </datastore-indexes>
