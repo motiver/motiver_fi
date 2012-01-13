@@ -170,7 +170,8 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 			else {
 				
 				//top panel
-				panelBase.getPanelData().add(getTopPanel(), new RowData(-1, -1, new Margins(5, 0, 10, 0)));
+			  getTopPanel();
+				panelBase.getPanelData().add(lcTop, new RowData(-1, -1, new Margins(5, 0, 10, 0)));
 				
 				//PANEL DATES
 				panelBase.getPanelData().add(panelDates, new RowData(-1, -1, new Margins(0, 0, 10, 0)));
@@ -204,7 +205,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 				
 				initTitlePanel();
 				
-				panelBase.getPanelData().setVisible(false);
+//				panelBase.getPanelData().setVisible(false);
 				
 				//hide top panel if not our measurement
 				if(!measurement.getUid().equals(AppController.User.getUid())) {
@@ -437,7 +438,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 	/**
 	 * Returns top panel
 	 */
-	private LayoutContainer getTopPanel() {
+	private void getTopPanel() {
 
 		//TOP PANEL
 		HBoxLayout layout = new HBoxLayout();
@@ -519,14 +520,12 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 				}
 			}
 		});
-		lcTop.add(textValue, new HBoxLayoutData(new Margins(0, 20, 0, 0)));
+		lcTop.add(textValue);
 		
 		//spacer
 		HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 5, 0, 0));
     flex.setFlex(1);
-    lcTop.add(new Text(), flex); 
-		
-		return lcTop;
+    lcTop.add(new Text(), flex);
 		
 	}
 
