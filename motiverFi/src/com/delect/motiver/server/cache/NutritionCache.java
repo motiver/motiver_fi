@@ -223,7 +223,7 @@ public class NutritionCache {
   }
   
   @SuppressWarnings("unchecked")
-  public List<FoodName> getFoodNames() {
+  public Map<Long, FoodName> getFoodNames() {
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -233,21 +233,14 @@ public class NutritionCache {
     builder.append(PREFIX_FOOD_NAMES);
     Object obj = cache.get(builder.toString());
 
-    List<FoodName> names = null;
+    Map<Long, FoodName> names = null;
     
     if(obj instanceof Map) {
 
       //prodeagle counter
       Counter.increment("Cache.FoodNames");
       
-      names = new ArrayList<FoodName>();
-      Map<Long, FoodName> map = (Map<Long, FoodName>)obj;
-      
-      Collection<FoodName> c = map.values();
-      Iterator<FoodName> itr = c.iterator();
-      while(itr.hasNext()) {
-        names.add(itr.next());
-      }
+      names = (Map<Long, FoodName>)obj;
     }
     
     if(logger.isLoggable(Level.FINE)) {
@@ -257,21 +250,14 @@ public class NutritionCache {
     return names;
   }
   
-  public void setFoodNames(List<FoodName> names) {
+  public void setFoodNames(Map<Long, FoodName> map) {
     
     if(cache == null || !CACHE_ON) {
       return;
     }
     
     if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Saving food names: "+names.size());
-    }
-    
-    Map<Long, FoodName> map = new HashMap<Long, FoodName>();
-    
-    //add each name
-    for(FoodName name : names) {
-      map.put(name.getId(), name);
+      logger.log(Level.FINE, "Saving food names: "+map.size());
     }
 
     StringBuilder builder = MyServiceImpl.getStringBuilder();

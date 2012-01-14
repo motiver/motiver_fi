@@ -3,8 +3,10 @@ package com.delect.motiver.server.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +19,7 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.server.util.NutritionUtils;
 import com.delect.motiver.shared.Constants;
@@ -386,30 +389,34 @@ public class NutritionManager {
       logger.log(Level.FINER, "_getFoodName ("+key+")");
     }
     
-    List<FoodName> names = _getFoodNames();
+    Map<Long, FoodName> names = _getFoodNames();
     
     if(names != null) {
-      for(FoodName name : names) {
-        if(name.getId().equals(key)) {
-          return name;
-        }
+      if(names.containsKey(key)) {
+        names.get(key);
       }
     }
     
     return null;
   }
 
-  private List<FoodName> _getFoodNames() throws Exception {
+  private Map<Long, FoodName> _getFoodNames() throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getFoodNames");
     }
 
     //load from cache
-    List<FoodName> listAll = cache.getFoodNames();
+    Map<Long, FoodName> listAll = cache.getFoodNames();
     
     if(listAll == null) {
-      listAll = dao.getFoodNames();
+      List<FoodName> list = dao.getFoodNames();
+
+      //create map
+      listAll = new HashMap<Long, FoodName>();      
+      for(FoodName name : list) {
+        listAll.put(name.getId(), name);
+      }
       
       //save to cache
       cache.setFoodNames(listAll);

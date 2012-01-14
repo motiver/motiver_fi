@@ -3,9 +3,11 @@ package com.delect.motiver.server.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +19,7 @@ import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -501,30 +504,34 @@ public class TrainingManager {
       logger.log(Level.FINER, "_getExerciseName ("+key+")");
     }
     
-    List<ExerciseName> names = _getExerciseNames();
+    Map<Long, ExerciseName> names = _getExerciseNames();
     
     if(names != null) {
-      for(ExerciseName name : names) {
-        if(name.getId().equals(key)) {
-          return name;
-        }
+      if(names.containsKey(key)) {
+        names.get(key);
       }
     }
     
     return null;
   }
 
-  private List<ExerciseName> _getExerciseNames() throws Exception {
+  private Map<Long, ExerciseName> _getExerciseNames() throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getExerciseNames");
     }
 
     //load from cache
-    List<ExerciseName> listAll = cache.getExerciseNames();
+    Map<Long, ExerciseName> listAll = cache.getExerciseNames();
     
     if(listAll == null) {
-      listAll = dao.getExerciseNames();
+      List<ExerciseName> list = dao.getExerciseNames();
+
+      //create map
+      listAll = new HashMap<Long, ExerciseName>();      
+      for(ExerciseName name : list) {
+        listAll.put(name.getId(), name);
+      }
       
       //save to cache
       cache.setExerciseNames(listAll);
