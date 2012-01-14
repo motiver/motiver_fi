@@ -14,6 +14,7 @@ import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
+import com.prodeagle.java.counters.Counter;
 
 public class UserCache {
 
@@ -141,6 +142,10 @@ public class UserCache {
     
     UserOpenid t = null;
     if(obj != null && obj instanceof UserOpenid) {
+
+      //prodeagle counter
+      Counter.increment("Cache.User");
+      
       t = (UserOpenid)obj;
     }
     

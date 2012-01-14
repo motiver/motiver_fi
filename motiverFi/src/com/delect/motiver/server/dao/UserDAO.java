@@ -15,6 +15,7 @@ import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.exception.AliasTakenException;
+import com.prodeagle.java.counters.Counter;
 
 public class UserDAO {
 
@@ -183,6 +184,9 @@ public class UserDAO {
 
     UserOpenid user = null;
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+
+    //prodeagle counter
+    Counter.increment("DAO.User");
     
     try {
       user = pm.getObjectById(UserOpenid.class, uid);

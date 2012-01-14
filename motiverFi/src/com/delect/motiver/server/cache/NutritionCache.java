@@ -22,6 +22,7 @@ import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
+import com.prodeagle.java.counters.Counter;
 
 public class NutritionCache {
 
@@ -144,6 +145,10 @@ public class NutritionCache {
     
     TimeJDO t = null;
     if(obj != null && obj instanceof TimeJDO) {
+
+      //prodeagle counter
+      Counter.increment("Cache.Time");
+      
       t = (TimeJDO)obj;
     }
     
@@ -168,6 +173,10 @@ public class NutritionCache {
     
     MealJDO t = null;
     if(obj != null && obj instanceof MealJDO) {
+
+      //prodeagle counter
+      Counter.increment("Cache.Meal");
+      
       t = (MealJDO)obj;
     }
     
@@ -227,6 +236,10 @@ public class NutritionCache {
     List<FoodName> names = null;
     
     if(obj instanceof Map) {
+
+      //prodeagle counter
+      Counter.increment("Cache.FoodNames");
+      
       names = new ArrayList<FoodName>();
       Map<Long, FoodName> map = (Map<Long, FoodName>)obj;
       

@@ -27,6 +27,7 @@ import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.Key;
+import com.prodeagle.java.counters.Counter;
 
 public class NutritionDAO {
 
@@ -473,6 +474,9 @@ public class NutritionDAO {
       logger.log(Level.FINE, "Loading meal for ID: "+mealId);
     }
 
+    //prodeagle counter
+    Counter.increment("DAO.Meal");
+
     MealJDO meal = null;
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -501,6 +505,9 @@ public class NutritionDAO {
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading time for ID: "+timeId);
     }
+
+    //prodeagle counter
+    Counter.increment("DAO.Time");
     
     TimeJDO t = null;
     
@@ -680,6 +687,9 @@ public class NutritionDAO {
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading food names");
     }
+
+    //prodeagle counter
+    Counter.increment("DAO.FoodNames");
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
