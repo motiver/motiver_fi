@@ -17,6 +17,7 @@ import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.AliasTakenException;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
+import com.delect.motiver.shared.exception.NotLoggedInException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -45,7 +46,7 @@ public class UserManager {
    * Returns user. Throws exception if user not found
    * @return null if no user found
    */
-  public UserOpenid getUser(ThreadLocal<HttpServletRequest> request) throws ConnectionException {
+  public UserOpenid getUser(ThreadLocal<HttpServletRequest> request) throws NotLoggedInException {
     
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading user: "+request);
@@ -66,7 +67,7 @@ public class UserManager {
     return _getUid(request, coachModeUid);
   }
   
-  private UserOpenid _getUid(ThreadLocal<HttpServletRequest> request, String coachModeUid) throws ConnectionException {
+  private UserOpenid _getUid(ThreadLocal<HttpServletRequest> request, String coachModeUid) throws NotLoggedInException {
     
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading user: "+coachModeUid);
@@ -121,7 +122,7 @@ public class UserManager {
     }
     
     if(user == null) {
-      throw new ConnectionException("_getUid", "");
+      throw new NotLoggedInException();
     }
     
     return user;
