@@ -112,8 +112,8 @@ public class CommentsBoxView extends CommentsBoxPresenter.CommentsBoxDisplay {
 			panelButtons.add(btnSend, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
 			
 			//publish on fb
-			panelButtons.add(cbPublish, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-			panelButtons.add(new Text(AppController.Lang.PublishAlsoOnFacebook()), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+//			panelButtons.add(cbPublish, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+//			panelButtons.add(new Text(AppController.Lang.PublishAlsoOnFacebook()), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 		    
 			this.add(panelButtons, new RowData(-1, -1, new Margins(0, 0, 10, 0)));
 		    
