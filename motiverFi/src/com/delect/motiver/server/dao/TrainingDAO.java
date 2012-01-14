@@ -27,6 +27,7 @@ import com.delect.motiver.server.service.MyServiceImpl;
 import com.delect.motiver.server.util.DateUtils;
 import com.delect.motiver.shared.Constants;
 import com.google.appengine.api.datastore.Cursor;
+import com.prodeagle.java.counters.Counter;
 
 public class TrainingDAO {
 
@@ -162,6 +163,9 @@ public class TrainingDAO {
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading exercise names");
     }
+
+    //prodeagle counter
+    Counter.increment("DAO.ExerciseNames");
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
 
@@ -319,6 +323,9 @@ public class TrainingDAO {
       logger.log(Level.FINE, "Loading workout: "+workoutId);
     }
 
+    //prodeagle counter
+    Counter.increment("DAO.Workout");
+
     Workout workout = null;
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
@@ -349,6 +356,9 @@ public class TrainingDAO {
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading routine: "+routineId);
     }
+
+    //prodeagle counter
+    Counter.increment("DAO.Routine");
 
     Routine routine = null;
     PersistenceManager pm =  PMF.get().getPersistenceManager();

@@ -22,6 +22,7 @@ import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.service.MyServiceImpl;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
+import com.prodeagle.java.counters.Counter;
 
 public class TrainingCache {
 
@@ -140,6 +141,10 @@ public class TrainingCache {
     
     Workout t = null;
     if(obj != null && obj instanceof Workout) {
+
+      //prodeagle counter
+      Counter.increment("Cache.Workout");
+      
       t = (Workout)obj;
     }
     
@@ -216,6 +221,10 @@ public class TrainingCache {
     List<ExerciseName> names = null;
     
     if(obj instanceof Map) {
+
+      //prodeagle counter
+      Counter.increment("Cache.ExerciseNames");
+      
       names = new ArrayList<ExerciseName>();
       Map<Long, ExerciseName> map = (Map<Long, ExerciseName>)obj;
       
@@ -313,6 +322,10 @@ public class TrainingCache {
     
     Routine t = null;
     if(obj != null && obj instanceof Routine) {
+
+      //prodeagle counter
+      Counter.increment("Cache.Routine");
+      
       t = (Routine)obj;
     }
     
