@@ -94,6 +94,14 @@
     <url-pattern>/motiver/bs</url-pattern>
   </servlet-mapping>
   
+  <servlet>
+    <servlet-name>ProdEagle</servlet-name>
+    <servlet-class>com.prodeagle.java.servlets.HarvestHandler</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>ProdEagle</servlet-name>
+    <url-pattern>/prodeagle/*</url-pattern>
+  </servlet-mapping>
     
   <!-- Default page to serve -->
   <welcome-file-list>
