@@ -32,11 +32,11 @@ import com.delect.motiver.client.presenter.InfoMessagePresenter.MessageColor;
 import com.delect.motiver.client.service.MyService;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.AppView;
-import com.delect.motiver.shared.TicketModel;
+import com.delect.motiver.shared.Constants;
+import com.delect.motiver.shared.exception.NotLoggedInException;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.google.gwt.http.client.Request;
-import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.Window;
 
 /**
  * Entry point classes define <code>onModuleLoad()</code>.
@@ -165,24 +165,12 @@ public class Motiver implements EntryPoint {
 	public static void showException(Throwable exception) {
 	  
 	  if(exception != null) {
-	    exception.printStackTrace();
 	    
-	    final StringBuilder result = new StringBuilder();
-	    result.append(exception.toString());
-	    result.append("\n");
-
-	    //add each element of the stack trace
-	    for (StackTraceElement element : exception.getStackTrace() ){
-	      result.append( element.toString() );
-	      result.append( "\n" );
+	    //if not logged in -> refresh page
+	    if(exception instanceof NotLoggedInException) {
+	      Window.Location.assign(Constants.URL_APP);
+	      return;
 	    }
-	    
-	    TicketModel ticket = new TicketModel();
-      ticket.setPriority(1);
-      ticket.setDesc(result.toString());
-      ticket.setTitle("Exception thrown at #" + History.getToken());
-      ticket.setUid(AppController.User.getUid());
-	    final Request req = rpcService.addTicket(ticket, MyAsyncCallback.EmptyCallback);
 	  }
 	  
 	  //show error message
