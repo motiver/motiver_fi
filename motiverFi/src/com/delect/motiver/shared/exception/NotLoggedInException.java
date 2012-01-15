@@ -31,6 +31,7 @@ public class NotLoggedInException extends ConnectionException implements IsSeria
   private static final long serialVersionUID = 2133121337551970816L;
 
   public NotLoggedInException() {
+    super();
   }
   
   @Override

@@ -34,6 +34,8 @@ public class NoPermissionException extends ConnectionException implements IsSeri
   private String targetUid;
 
   public NoPermissionException(int target, String ourUid, String targetUid) {
+    super();
+    
     this.target = target;
     this.ourUid = ourUid;
     this.targetUid = targetUid;
