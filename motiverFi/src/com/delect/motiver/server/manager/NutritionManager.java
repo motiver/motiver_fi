@@ -3,8 +3,10 @@ package com.delect.motiver.server.manager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +19,7 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.server.util.NutritionUtils;
 import com.delect.motiver.shared.Constants;
@@ -386,36 +389,38 @@ public class NutritionManager {
       logger.log(Level.FINER, "_getFoodName ("+key+")");
     }
     
-    List<FoodName> names = _getFoodNames();
+    Map<Long, FoodName> names = _getFoodNames();
     
     if(names != null) {
-      for(FoodName name : names) {
-        if(name.getId().equals(key)) {
-          return name;
-        }
-      }
+      return names.get(key);
     }
     
     return null;
   }
 
-  private List<FoodName> _getFoodNames() throws Exception {
+  private Map<Long, FoodName> _getFoodNames() throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getFoodNames");
     }
 
     //load from cache
-    List<FoodName> listAll = cache.getFoodNames();
+    Map<Long, FoodName> mapAll = cache.getFoodNames();
     
-    if(listAll == null) {
-      listAll = dao.getFoodNames();
+    if(mapAll == null) {
+      List<FoodName> list = dao.getFoodNames();
+
+      //create map
+      mapAll = new HashMap<Long, FoodName>();      
+      for(FoodName name : list) {
+        mapAll.put(name.getId(), name);
+      }
       
       //save to cache
-      cache.setFoodNames(listAll);
+      cache.setFoodNames(mapAll);
     }
     
-    return listAll;
+    return mapAll;
   }
 
 
@@ -672,16 +677,9 @@ public class NutritionManager {
     try {
 
       //load from cache
-      List<FoodName> listAll = cache.getFoodNames();
+      Map<Long, FoodName> mapAll = _getFoodNames();
       
-      if(listAll == null) {
-        listAll = dao.getFoodNames();
-        
-        //save to cache
-        cache.setFoodNames(listAll);
-      }
-      
-      if(listAll != null) {
+      if(mapAll != null) {
       
         //split query string
         //strip special characters
@@ -695,8 +693,7 @@ public class NutritionManager {
         List<FoodName> result = new ArrayList<FoodName>();
 
         String locale = user.getLocale();
-        for(int i=0; i < listAll.size(); i++) {
-          FoodName n = listAll.get(i);
+        for(FoodName n : mapAll.values()) {
   
           //if correct locale
           if(n.getLocale().equals(locale)) {
@@ -797,28 +794,22 @@ public class NutritionManager {
     try {
       
       //load from cache
-      List<FoodName> listAll = cache.getFoodNames();
-      
-      if(listAll == null) {
-        listAll = dao.getFoodNames();
-      }
+      Map<Long, FoodName> mapAll = _getFoodNames();
       
       for(FoodName name : names) {
-
-        int i = listAll.indexOf(name);
         
         //add if not found
-        if(i == -1) {
+        if(!mapAll.containsValue(name.getId())) {
           name.setUid(user.getUid());
           
           dao.addFoodName(name);
           
           //update "cache" array
-          listAll.add(name);
+          mapAll.put(name.getId(), name);
         }
         //otherwise update (if name we have added or we are admin)
         else {
-          FoodName nameOld = listAll.get(i);
+          FoodName nameOld = mapAll.get(name.getId());
           if(nameOld != null 
               && (user.getUid().equals(nameOld.getUid()) || user.isAdmin()) ) {
             nameOld.update(name, false);
@@ -830,7 +821,7 @@ public class NutritionManager {
       }
 
       //save to cache
-      cache.setFoodNames(listAll);
+      cache.setFoodNames(mapAll);
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding food names", e);

@@ -16,7 +16,6 @@ package com.delect.motiver.shared;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 
-import com.delect.motiver.server.jdo.training.Exercise;
 import com.extjs.gxt.ui.client.data.BaseModelData;
 
 public class ExerciseNameModel extends BaseModelData implements IsSerializable {
