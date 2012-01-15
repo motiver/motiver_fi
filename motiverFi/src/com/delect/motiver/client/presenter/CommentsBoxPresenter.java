@@ -44,6 +44,7 @@ import com.delect.motiver.shared.MealModel;
 import com.delect.motiver.shared.MeasurementModel;
 import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.RunModel;
+import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -380,7 +381,7 @@ public class CommentsBoxPresenter extends Presenter {
 		model.setDate(Functions.trimDateToDatabase(new Date(), false));
 		model.setTarget(target);
 		model.setText(text);
-		model.setUidTarget(uid);
+		model.setUserTarget(new UserModel(uid));
 		
 		display.setContentEnabled(false);
 		
