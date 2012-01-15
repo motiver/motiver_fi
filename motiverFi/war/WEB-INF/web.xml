@@ -102,7 +102,6 @@
     <servlet-name>ProdEagle</servlet-name>
     <url-pattern>/prodeagle/*</url-pattern>
   </servlet-mapping>
-  
     
   <!-- Default page to serve -->
   <welcome-file-list>

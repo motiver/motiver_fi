@@ -360,6 +360,10 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 		if(box != null && box.isVisible()) {
       box.close();
     }
+    
+    if(popup != null && popup.isVisible()) {
+      popup.hide();
+    }
 	}
 
 	@Override
