@@ -208,7 +208,7 @@ public class TrainingCache {
   }
   
   @SuppressWarnings("unchecked")
-  public List<ExerciseName> getExerciseNames() {
+  public Map<Long, ExerciseName> getExerciseNames() {
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -218,21 +218,14 @@ public class TrainingCache {
     builder.append(PREFIX_EXERCISE_NAMES);
     Object obj = cache.get(builder.toString());
 
-    List<ExerciseName> names = null;
+    Map<Long, ExerciseName> names = null;
     
     if(obj instanceof Map) {
 
       //prodeagle counter
       Counter.increment("Cache.ExerciseNames");
       
-      names = new ArrayList<ExerciseName>();
-      Map<Long, ExerciseName> map = (Map<Long, ExerciseName>)obj;
-      
-      Collection<ExerciseName> c = map.values();
-      Iterator<ExerciseName> itr = c.iterator();
-      while(itr.hasNext()) {
-        names.add(itr.next());
-      }
+      names = (Map<Long, ExerciseName>)obj;
     }
     
     if(logger.isLoggable(Level.FINE)) {
@@ -242,21 +235,14 @@ public class TrainingCache {
     return names;
   }
   
-  public void setExerciseNames(List<ExerciseName> names) {
+  public void setExerciseNames(Map<Long, ExerciseName> map) {
     
     if(cache == null || !CACHE_ON) {
       return;
     }
     
     if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Saving exercise names: "+names.size());
-    }
-    
-    Map<Long, ExerciseName> map = new HashMap<Long, ExerciseName>();
-    
-    //add each name
-    for(ExerciseName name : names) {
-      map.put(name.getId(), name);
+      logger.log(Level.FINE, "Saving exercise names: "+map.size());
     }
 
     StringBuilder builder = MyServiceImpl.getStringBuilder();
