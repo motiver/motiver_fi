@@ -15,6 +15,7 @@
 package com.delect.motiver.shared.exception;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
+import com.prodeagle.java.counters.Counter;
 
 public class ConnectionException extends Exception implements IsSerializable {
 
@@ -24,14 +25,18 @@ public class ConnectionException extends Exception implements IsSerializable {
 	private Throwable e;
 
 	public ConnectionException() {
+    super();
+	  Counter.increment("Exception.Connection");
 	}
 
 	public ConnectionException(String source, String message) {
+	  this();
 		this.source  = source;
     this.message = message;
 	}
 	
   public ConnectionException(String message, Throwable e) {
+    this();
     this.message = message;
     this.e = e;
   }
