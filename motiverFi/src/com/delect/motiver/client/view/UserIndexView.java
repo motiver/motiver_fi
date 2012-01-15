@@ -113,7 +113,7 @@ public class UserIndexView extends UserIndexPresenter.UserIndexDisplay {
 		
 		//footer
 		footer.setId("footer");
-		footer.addText("Motiver &#169; 2011&nbsp;&nbsp;|&nbsp;&nbsp;" + AppController.Lang.MotiverIsInBeta());
+		footer.addText("Motiver &#169; 2011&nbsp;&nbsp;|&nbsp;&nbsp;v3.0&nbsp;&nbsp;|&nbsp;&nbsp;" + AppController.Lang.MotiverIsInBeta());
 		footer.layout();
 		this.add(footer);
 	}
