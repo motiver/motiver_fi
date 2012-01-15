@@ -14,6 +14,8 @@
  ******************************************************************************/
 package com.delect.motiver.client.view;
 
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.ScriptElement;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.Widget;
@@ -101,8 +103,8 @@ public class UserIndexView extends UserIndexPresenter.UserIndexDisplay {
 			}
 		});
 		panelHelp.add(linkPrintPage);
-		//like MyButton
-		Html html = new Html("<iframe src=\"http://www.facebook.com/plugins/like.php?href=www.motiver.fi&amp;send=false&amp;layout=button_count&amp;width=90&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font=verdana&amp;height=21\" scrolling=\"no\" frameborder=\"0\" style=\"border:none; overflow:hidden; width:100px; height:21px;\" allowTransparency=\"true\"></iframe>");
+		//Google+ button
+    Html html = new Html("<g:plusone size=\"tall\" href=\"http://www.motiver.fi\"></g:plusone>");
 		html.setStyleAttribute("margin-top", "10px");
 		panelHelp.add(html);
 		this.add(panelHelp);
@@ -116,7 +118,21 @@ public class UserIndexView extends UserIndexPresenter.UserIndexDisplay {
 		footer.addText("Motiver &#169; 2012&nbsp;&nbsp;|&nbsp;&nbsp;v3.0");
 		footer.layout();
 		this.add(footer);
+		
+		setPlusLang(AppController.User.getLocale());
+		
+		//add Google+ script
+		Document doc = Document.get();
+    ScriptElement script = doc.createScriptElement();
+    script.setSrc("https://apis.google.com/js/plusone.js");
+    script.setType("text/javascript");
+    script.setLang("javascript");
+    doc.getBody().appendChild(script);
 	}
+	
+	public static native void setPlusLang(String l) /*-{
+    $wnd.___gcfg = {lang: l};
+  }-*/;
 	
 	@Override
 	public Widget asWidget() {
