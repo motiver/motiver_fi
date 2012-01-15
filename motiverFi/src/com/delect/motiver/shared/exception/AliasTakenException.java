@@ -12,9 +12,11 @@ public class AliasTakenException extends ConnectionException implements IsSerial
   private String alias;
 
   public AliasTakenException() {
+    super();
   }
 
   public AliasTakenException(String alias) {
+    this();
     this.alias = alias;
   }
 
