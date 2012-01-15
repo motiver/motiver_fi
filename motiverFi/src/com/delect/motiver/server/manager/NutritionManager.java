@@ -27,6 +27,7 @@ import com.delect.motiver.shared.NutritionDayModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.google.appengine.api.datastore.Key;
+import com.prodeagle.java.counters.Counter;
 
 public class NutritionManager {
 
@@ -672,6 +673,8 @@ public class NutritionManager {
       logger.log(Level.FINE, "Searching food names: "+query);
     }
     
+    long t = System.currentTimeMillis();
+    
     List<FoodName> list = new ArrayList<FoodName>();    
 
     try {
@@ -778,6 +781,10 @@ public class NutritionManager {
       logger.log(Level.SEVERE, "Error searching food names", e);
       throw new ConnectionException("Error searching food names", e);
     }
+    
+    //prodeagle counter
+    Counter.increment("Search.FoodName.Count");
+    Counter.increment("Search.FoodName.Latency", System.currentTimeMillis()-t);
     
     return list;
   }

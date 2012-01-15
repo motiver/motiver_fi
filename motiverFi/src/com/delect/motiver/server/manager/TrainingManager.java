@@ -28,6 +28,7 @@ import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
+import com.prodeagle.java.counters.Counter;
 
 public class TrainingManager {
 
@@ -852,6 +853,8 @@ public class TrainingManager {
       logger.log(Level.FINE, "Searching exercise names: "+query);
     }
     
+    long t = System.currentTimeMillis();
+    
     List<ExerciseName> list = new ArrayList<ExerciseName>();    
 
     try {
@@ -966,6 +969,10 @@ public class TrainingManager {
       logger.log(Level.SEVERE, "Error searching exercise names", e);
       throw new ConnectionException("Error searching exercise names", e);
     }
+    
+    //prodeagle counter
+    Counter.increment("Search.ExerciseName.Count");
+    Counter.increment("Search.ExerciseName.Latency", System.currentTimeMillis()-t);
     
     return list;
   }
