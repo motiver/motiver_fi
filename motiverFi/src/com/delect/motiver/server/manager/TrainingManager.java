@@ -507,9 +507,7 @@ public class TrainingManager {
     Map<Long, ExerciseName> names = _getExerciseNames();
     
     if(names != null) {
-      if(names.containsKey(key)) {
-        names.get(key);
-      }
+      return names.get(key);
     }
     
     return null;
@@ -522,22 +520,22 @@ public class TrainingManager {
     }
 
     //load from cache
-    Map<Long, ExerciseName> listAll = cache.getExerciseNames();
+    Map<Long, ExerciseName> mapAll = cache.getExerciseNames();
     
-    if(listAll == null) {
+    if(mapAll == null) {
       List<ExerciseName> list = dao.getExerciseNames();
 
       //create map
-      listAll = new HashMap<Long, ExerciseName>();      
+      mapAll = new HashMap<Long, ExerciseName>();      
       for(ExerciseName name : list) {
-        listAll.put(name.getId(), name);
+        mapAll.put(name.getId(), name);
       }
       
       //save to cache
-      cache.setExerciseNames(listAll);
+      cache.setExerciseNames(mapAll);
     }
     
-    return listAll;
+    return mapAll;
   }
 
 //  private void _updateWorkout(Workout workout) throws Exception {
@@ -859,9 +857,9 @@ public class TrainingManager {
     try {
       
       //load from cache
-      List<ExerciseName> listAll = _getExerciseNames();
+      Map<Long, ExerciseName> mapAll = _getExerciseNames();
       
-      if(listAll != null) {
+      if(mapAll != null) {
       
         //split query string
         //strip special characters
@@ -886,8 +884,7 @@ public class TrainingManager {
         List<ExerciseName> result = new ArrayList<ExerciseName>();
 
         String locale = user.getLocale();
-        for(int i=0; i < listAll.size(); i++) {
-          ExerciseName n = listAll.get(i);
+        for(ExerciseName n : mapAll.values()) {
           
           //if correct locale
           if(n.getLocale().equals(locale)) {
@@ -984,28 +981,22 @@ public class TrainingManager {
     try {
       
       //load from cache
-      List<ExerciseName> listAll = cache.getExerciseNames();
+      Map<Long, ExerciseName> mapAll = _getExerciseNames();
       
-      if(listAll == null) {
-        listAll = dao.getExerciseNames();
-      }
-      
-      for(ExerciseName name : names) {
-        
-        int i = listAll.indexOf(name);        
+      for(ExerciseName name : names) {   
         
         //add if not found
-        if(i == -1) {
+        if(!mapAll.containsValue(name.getId())) {
           name.setUid(user.getUid());
           
           dao.addExerciseName(name);
           
           //update "cache" array
-          listAll.add(name);
+          mapAll.put(name.getId(), name);
         }
         //otherwise update (if name we have added)
         else {
-          ExerciseName nameOld = listAll.get(i);
+          ExerciseName nameOld = mapAll.get(name.getId());
           if(nameOld != null && user.getUid().equals(nameOld.getUid())) {
             nameOld.update(name, false);
             dao.updateExerciseName(nameOld);
@@ -1016,7 +1007,7 @@ public class TrainingManager {
       }
 
       //save to cache
-      cache.setExerciseNames(listAll);
+      cache.setExerciseNames(mapAll);
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise names", e);
