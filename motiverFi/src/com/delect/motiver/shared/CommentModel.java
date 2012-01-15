@@ -68,21 +68,11 @@ public class CommentModel extends BaseModelData implements IsSerializable {
 			return "";
     }
   }
-	public String getUid() {
-		if(get("uid") != null) {
-			return get("uid");
-    }
-		else {
-			return "";
-    }
+	public UserModel getUser() {
+		return get("uid");
   }
-	public String getUidTarget() {
-		if(get("uidT") != null) {
-			return get("uidT");
-    }
-		else {
-			return "";
-    }
+	public UserModel getUserTarget() {
+		return get("uidT");
   }
 	public WorkoutModel getWorkout() {
 		return get("w");
@@ -131,10 +121,10 @@ public class CommentModel extends BaseModelData implements IsSerializable {
 	public void setText(String t) {
 		set("t", t);
 	}
-	public void setUid(String uid) {
+	public void setUser(UserModel uid) {
 		set("uid", uid);
 	}
-	public void setUidTarget(String uidT) {
+	public void setUserTarget(UserModel uidT) {
 		set("uidT", uidT);
 	}
 	public void setUnread(boolean isUnread) {

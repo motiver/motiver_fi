@@ -18,6 +18,7 @@ import java.util.Date;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -44,8 +45,8 @@ public class Comment {
 		modelClient.setId(model.getId());
 		modelClient.setDate(model.getDate());
 		modelClient.setText(model.getText());
-		modelClient.setUidTarget(model.getUidTarget());
-		modelClient.setUid(model.getUid());
+		modelClient.setUserTarget(UserOpenid.getClientModel(model.getUserTarget()));
+		modelClient.setUser(UserOpenid.getClientModel(model.getUser()));
 		return modelClient;
 	}
 
@@ -63,8 +64,10 @@ public class Comment {
 		modelServer.setId(model.getId());
 		modelServer.setDate(model.getDate());
 		modelServer.setText(model.getText());
-		modelServer.setUidTarget(model.getUidTarget());
-		modelServer.setUid(model.getUid());
+		if(model.getUserTarget() != null)
+		  modelServer.setUidTarget(model.getUserTarget().getUid());
+		if(model.getUser() != null)
+      modelServer.setUid(model.getUser().getUid());
 		modelServer.setTarget(model.getTarget());
 
 		return modelServer;
@@ -82,18 +85,17 @@ public class Comment {
 
   @Persistent
   private String text;
-
-  @Persistent
-  private Long uid;
   
   @Persistent
   public String openId;
 
-	@Persistent
-  private Long uidTarget;
-
   @Persistent
   private String idTarget;
+
+  @NotPersistent
+  private UserOpenid user;
+  @NotPersistent
+  private UserOpenid userTarget;
 
 	public Comment() {
     
@@ -152,6 +154,14 @@ public class Comment {
     }
   }
 
+  public UserOpenid getUser() {
+    return user;
+  }
+
+  public UserOpenid getUserTarget() {
+    return userTarget;
+  }
+
 	public void setDate(Date date) {
 		this.date = date;
   }
@@ -181,7 +191,11 @@ public class Comment {
 		this.idTarget = idTarget;
   } 
 
-  public Long getUidOld() {
-    return uid;
-  } 
+  public void setUser(UserOpenid user) {
+    this.user = user;
+  }
+  
+  public void setUserTarget(UserOpenid userTarget) {
+    this.userTarget = userTarget;
+  }
 }

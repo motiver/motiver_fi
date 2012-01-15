@@ -112,7 +112,7 @@ public class CommentView extends CommentPresenter.CommentDisplay {
     }
 		
     //profile pic
-    Html html = new Html("<fb:profile-pic uid=\"" + comment.getUid() + "\" facebook-logo=true size=square linked=false></fb:profile-pic>");
+    Html html = new Html("");
     html.setHeight(50);
     html.setWidth(50);
     TableData tdPic = new TableData();
@@ -124,14 +124,14 @@ public class CommentView extends CommentPresenter.CommentDisplay {
     panelButtons.setLayout(tl);
         
     //name & date
-    String str = "<div class=\"label-title-small\" style=\"display:inline;\"><fb:name uid=\"" + comment.getUid() + "\" capitalize=\"true\" linked=\"false\"></fb:name></div>";
+    String str = "<div class=\"label-title-small\" style=\"display:inline;\">" + comment.getUser().getNickName() + "</div>";
     labelTitle.setHeight(16);
     str += "<div class=\"label-date\" style=\"margin-left:10px;display:inline;\">" + Functions.getDateTimeString(comment.getDate(), true, true) + "</div>";
     labelTitle.setHtml(str);
     panelButtons.add(labelTitle, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
         
-    //remove
-    if(comment.getUid().equals(AppController.User.getUid())) {
+    //remove button if our comment
+    if(comment.getUser().equals(AppController.User)) {
 
 			//spacer
 			HBoxLayoutData flex = new HBoxLayoutData(new Margins(0, 0, 0, 5));
