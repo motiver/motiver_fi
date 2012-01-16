@@ -29,8 +29,14 @@ import com.delect.motiver.client.event.RoutineCreatedEvent;
 import com.delect.motiver.client.event.RoutineRemovedEvent;
 import com.delect.motiver.client.presenter.CommentsBoxPresenter;
 import com.delect.motiver.client.presenter.CommentsBoxPresenter.CommentsBoxDisplay;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogDisplay;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
 import com.delect.motiver.client.presenter.EmptyPresenter;
 import com.delect.motiver.client.presenter.EmptyPresenter.EmptyDisplay;
+import com.delect.motiver.client.presenter.InfoMessagePresenter;
+import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageDisplay;
+import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageHandler;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.presenter.ShowMorePresenter;
 import com.delect.motiver.client.presenter.ShowMorePresenter.ShowMoreDisplay;
@@ -40,8 +46,10 @@ import com.delect.motiver.client.presenter.UserPresenter.UserDisplay;
 import com.delect.motiver.client.presenter.training.RoutineDayPresenter.RoutineDayDisplay;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.CommentsBoxView;
+import com.delect.motiver.client.view.ConfirmDialogView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
+import com.delect.motiver.client.view.InfoMessageView;
 import com.delect.motiver.client.view.ShowMoreView;
 import com.delect.motiver.client.view.UserView;
 import com.delect.motiver.client.view.training.RoutineDayView;
@@ -87,6 +95,7 @@ public class RoutinePresenter extends Presenter {
 	private List<RoutineDayPresenter> routineDayPresenters = new ArrayList<RoutineDayPresenter>();
 	private ShowMorePresenter showMorePresenter;
 	private UserPresenter userPresenter;
+  private ConfirmDialogPresenter msgPresenter;
 	
 	protected RoutineModel routine;
 
@@ -147,7 +156,7 @@ public class RoutinePresenter extends Presenter {
 					display.setContentEnabled(false);
 					
 					//create model
-					rpcService.addRoutine(model, new MyAsyncCallback<RoutineModel>() {
+					final Request req = rpcService.addRoutine(model, new MyAsyncCallback<RoutineModel>() {
 						@Override
 						public void onSuccess(RoutineModel result) {
 							display.setContentEnabled(true);
@@ -160,6 +169,7 @@ public class RoutinePresenter extends Presenter {
 							eventBus.fireEvent(event);
 						}
 					});
+					addRequest(req);
 				}
 				//edited old value
 				else {
@@ -177,22 +187,52 @@ public class RoutinePresenter extends Presenter {
 					//add new presenter
 					final RoutineDayPresenter presenter = new RoutineDayPresenter(rpcService, eventBus, (RoutineDayDisplay)GWT.create(RoutineDayView.class), routine, routine.getDays(), new ArrayList<WorkoutModel>());
 					addNewPresenter(presenter);
+	        
+	        rpcService.updateRoutine(routine, MyAsyncCallback.EmptyCallback);
 				}
 				else {
-					routine.setDays( routine.getDays() - 1 );
-					
-					//remove last day
-					RoutineDayPresenter rdp = routineDayPresenters.get(routineDayPresenters.size() - 1);
-					rdp.stop();
-					routineDayPresenters.remove(rdp);
+				  //if not confirmed -> check last days workouts
+				  RoutineDayPresenter rdp = routineDayPresenters.get(routineDayPresenters.size() - 1);
+				  boolean confirmationNeeded = rdp.workoutPresenters.size() > 0;				    
+				  
+				  //ok to remove
+				  if(!confirmationNeeded) {
+				    removeLastDay();
+		        
+		        rpcService.updateRoutine(routine, MyAsyncCallback.EmptyCallback);
+				  }
+				  else {
+				    if(msgPresenter != null) {
+				      msgPresenter.stop();
+				    }
+				    msgPresenter = new ConfirmDialogPresenter(rpcService, eventBus, (ConfirmDialogDisplay)GWT.create(ConfirmDialogView.class), AppController.Lang.ConfirmRemoveLastDayInRoutine(), new ConfirmDialogHandler() {
+              @Override
+              public void onYes() {
+                removeLastDay();
+                
+                rpcService.updateRoutine(routine, MyAsyncCallback.EmptyCallback);
+              }
+              @Override
+              public void onNo() {
+              }
+				    });
+				    msgPresenter.run(display.getBodyContainer());
+				  }
 				}
-				
-				rpcService.updateRoutine(routine, MyAsyncCallback.EmptyCallback);
 			}
 		});
 	}
 	
-	@Override
+	protected void removeLastDay() {
+    routine.setDays( routine.getDays() - 1 );
+    
+    //remove last day
+    RoutineDayPresenter rdp = routineDayPresenters.get(routineDayPresenters.size() - 1);
+    rdp.stop();
+    routineDayPresenters.remove(rdp);
+  }
+
+  @Override
 	public void onRun() {
     if(routine.getId() != 0) {
       loadWorkouts();
@@ -215,6 +255,9 @@ public class RoutinePresenter extends Presenter {
     }
 		if(userPresenter != null) {
 			userPresenter.stop();
+    }
+    if(msgPresenter != null) {
+      msgPresenter.stop();
     }
 	}
 

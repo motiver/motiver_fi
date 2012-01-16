@@ -70,7 +70,7 @@ public class RoutineDayPresenter extends Presenter {
 	private EmptyPresenter emptyPresenter;
 	private RoutineModel routine;
 
-	private List<WorkoutPresenter> workoutPresenters = new ArrayList<WorkoutPresenter>();
+	public List<WorkoutPresenter> workoutPresenters = new ArrayList<WorkoutPresenter>();
 	private List<WorkoutModel> workouts;
 	//child presenters
 	private WorkoutsListPresenter workoutsListPresenter;
