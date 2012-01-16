@@ -1187,6 +1187,8 @@ public class TrainingManager extends AbstractManager {
       
       userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), routine.getUid());
       
+      Integer oldDays = routine.getDays();
+      
       routine.update(model, false);
       dao.updateRoutine(routine);
 
@@ -1195,6 +1197,18 @@ public class TrainingManager extends AbstractManager {
 
       //remove from cache
       cache.removeRoutine(routine.getId());
+      
+      //if days removed -> also remove workouts
+      if(oldDays > routine.getDays()) {
+        
+        //get workouts
+        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routine.getId(), oldDays));
+        ArrayList<Workout> list = new ArrayList<Workout>();
+        for(Long key : keys) {
+          list.add(_getWorkout(key));
+        }
+        removeWorkouts(user, list);
+      }
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating routine", e);

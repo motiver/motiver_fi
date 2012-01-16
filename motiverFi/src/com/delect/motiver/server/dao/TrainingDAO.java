@@ -562,6 +562,8 @@ public class TrainingDAO {
         }
         if(params.routineId != null) {
           builder.append("routineId == routineParam && ");
+          if(params.routineDay != null)
+            builder.append("dayInRoutine == routineDayParam && ");
         }
         else if(params.date == null) {
           builder.append("routineId == 0 && ");
@@ -580,9 +582,9 @@ public class TrainingDAO {
         }
 
         q.setFilter(builder.toString());
-        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineParam, java.lang.Integer copyCountParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
+        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineParam, java.lang.Long routineDayParam, java.lang.Integer copyCountParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
         q.setRange(offset, limit);
-        List<Workout> workouts = (List<Workout>) q.executeWithArray(params.uid, params.routineId, params.minCopyCount, dStart, dEnd);
+        List<Workout> workouts = (List<Workout>) q.executeWithArray(params.uid, params.routineId, params.routineDay, params.minCopyCount, dStart, dEnd);
               
         //get workouts
         if(workouts != null) {
