@@ -7,6 +7,7 @@ import com.delect.motiver.shared.Constants;
 public class WorkoutSearchParams {
   
   public Long routineId;
+  public Integer routineDay;
   public String uid;
   public int offset = 0;
   public int limit = Constants.LIMIT_WORKOUTS;
@@ -51,6 +52,11 @@ public class WorkoutSearchParams {
   
   public WorkoutSearchParams(Long routineId) {
     this.routineId = routineId;
+  }
+  
+  public WorkoutSearchParams(Long routineId, Integer routineDay) {
+    this.routineId = routineId;
+    this.routineDay = routineDay;
   }
 
   public static WorkoutSearchParams all() {
