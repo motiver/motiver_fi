@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
   <application>motiver-app</application>
-  <version>v2-16</version>
+  <version>v2-17</version>
 
   <!-- Configure serving/caching of GWT files -->
   <static-files>
@@ -28,5 +28,6 @@
 <!--   </admin-console> -->
 
   <threadsafe>true</threadsafe>
+  <sessions-enabled>true</sessions-enabled>
 
 </appengine-web-app>
