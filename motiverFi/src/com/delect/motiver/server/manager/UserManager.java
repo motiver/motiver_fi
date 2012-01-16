@@ -7,6 +7,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import com.delect.motiver.server.cache.UserCache;
 import com.delect.motiver.server.dao.UserDAO;
@@ -21,6 +22,7 @@ import com.delect.motiver.shared.exception.NotLoggedInException;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.prodeagle.java.counters.Counter;
 
 public class UserManager {
 
@@ -62,6 +64,13 @@ public class UserManager {
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error checkin coach mode", e);
       coachModeUid = null;
+    }
+    
+    //increment
+    HttpSession session = request.get().getSession();
+    if(session == null || session.getAttribute("newLogin") == null) {
+      session.setAttribute("newLogin", "true");
+      Counter.increment("User.Login");
     }
     
     return _getUid(request, coachModeUid);
