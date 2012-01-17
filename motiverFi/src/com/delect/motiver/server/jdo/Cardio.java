@@ -23,10 +23,12 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.repackaged.org.json.JSONException;
-import com.google.appengine.repackaged.org.json.JSONWriter;
+import com.google.gwt.dev.json.JsonArray;
 
 import com.delect.motiver.shared.CardioModel;
 
@@ -140,17 +142,20 @@ public class Cardio {
     return uid;
   }
 
-  public void getJson(JSONWriter writerJson) throws JSONException {
-    writerJson.key("id").value(getId());
-    writerJson.key("name").value(getName());
-    writerJson.key("openId").value(getUid());
-    writerJson.key("uid").value(getUidOld());
-    writerJson.key("CardioValue").array();
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("id",getId());
+    obj.put("id",getId());
+    obj.put("name",getName());
+    obj.put("openId",getUid());
+    obj.put("uid",getUidOld());
+    JSONArray list = new JSONArray();
     for(CardioValue value : getValues()) {
-      writerJson.object();
-      value.getJson(writerJson);
-      writerJson.endObject();
+      list.add(value.getJson());
     }
-    writerJson.endArray();
+    obj.put("CardioValue", list);
+
+    return obj;
   }
 }
