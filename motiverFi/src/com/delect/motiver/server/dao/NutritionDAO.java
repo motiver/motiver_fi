@@ -897,4 +897,30 @@ public class NutritionDAO {
     }
   }
 
+  public FoodName getFoodName(Long key) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading food name for ID: "+key);
+    }
+    
+    Counter.increment("DAO.FoodName");
+    
+    FoodName n = null;
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
+      n = pm.getObjectById(FoodName.class, key);
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return n;
+  }
+
 }

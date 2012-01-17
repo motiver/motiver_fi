@@ -25,7 +25,12 @@ import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.NutritionDayModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
+import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.TaskOptions.Method;
 import com.prodeagle.java.counters.Counter;
 
 public class NutritionManager extends AbstractManager {
@@ -388,11 +393,36 @@ public class NutritionManager extends AbstractManager {
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getFoodName ("+key+")");
     }
+
+
+    //check if food names are found from cache
+    Map<Long, FoodName> mapAll = cache.getFoodNames();
     
-    Map<Long, FoodName> names = _getFoodNames();
-    
-    if(names != null) {
-      return names.get(key);
+    //if cache is empty -> add backend task for loading names to cache
+    if(mapAll == null) {
+      
+      //add task
+      try {
+        Queue queue = QueueFactory.getQueue("load-names-queue");
+        TaskOptions opt = TaskOptions.Builder.withUrl("/tasks/load_names");
+        queue.add(opt.param("target", "foodname")
+            .method(Method.GET)
+            .header("Host", BackendServiceFactory.getBackendService().getBackendAddress("tasks", 0)));
+        
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Error adding new task", e);
+      }
+      
+      //get name by key
+      return dao.getFoodName(key);
+    }
+    //are found from cache
+    else {
+      Map<Long, FoodName> names = _getFoodNames();
+      
+      if(names != null) {
+        return names.get(key);
+      }
     }
     
     return null;
