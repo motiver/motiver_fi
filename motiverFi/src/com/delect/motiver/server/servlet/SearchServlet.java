@@ -27,10 +27,12 @@ import javax.jdo.Query;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.shared.Constants;
-import com.google.appengine.repackaged.org.json.JSONWriter;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 
@@ -111,50 +113,43 @@ public class SearchServlet extends RemoteServiceServlet {
       Collections.sort(arrNames);
 
       //convert to json
-      JSONWriter writer = new JSONWriter(response.getWriter());
-      writer.object();
-      writer.key("foods");
-      writer.array();
+      JSONObject obj = new JSONObject();
+      
+      JSONArray list = new JSONArray();
       
       int found = 0;
       for(int i=0; i < arrNames.size(); i++) {
         FoodName n = arrNames.get(i);
         
         if(n.getCountUse() > 0) {
-          
-          writer.object();
+
+          JSONObject objN = new JSONObject();
           
           //name
-          writer.key("n");
-          writer.value(n.getName());
+          objN.put("n", n.getName());
           //energy
-          writer.key("e");
-          writer.value(n.getEnergy());
+          objN.put("e", n.getEnergy());
           //protein
-          writer.key("p");
-          writer.value(n.getProtein());
+          objN.put("p", n.getProtein());
           //carb
-          writer.key("c");
-          writer.value(n.getCarb());
+          objN.put("c", n.getCarb());
           //fet
-          writer.key("f");
-          writer.value(n.getFet());
+          objN.put("f", n.getFet());
           //portion
-          writer.key("po");
-          writer.value(n.getPortion());
-          
-          writer.endObject(); 
+          objN.put("po", n.getPortion());
           
           found++;
         }
+        
+        obj.put("foods", list);
         
         //limit query
         if(found >= limit) {
           break;
         }
       }
-      writer.endArray();
-      writer.endObject();
+      
+      obj.writeJSONString(response.getWriter());
       
     } catch (Exception e) {
       try {

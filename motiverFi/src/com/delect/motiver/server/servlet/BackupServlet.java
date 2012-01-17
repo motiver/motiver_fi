@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.datanucleus.store.appengine.query.JDOCursorHelper;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
 
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Cardio;
@@ -22,7 +24,6 @@ import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.manager.TrainingManager;
 import com.google.appengine.api.datastore.Cursor;
-import com.google.appengine.repackaged.org.json.JSONWriter;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class BackupServlet extends RemoteServiceServlet {
@@ -44,42 +45,35 @@ public class BackupServlet extends RemoteServiceServlet {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     try {
       PrintWriter writer = response.getWriter();
-      
-      //json writer
-      JSONWriter writerJson = new JSONWriter(writer);
     
       //get users
       Query q = pm.newQuery(UserOpenid.class);
       List<UserOpenid> users = (List<UserOpenid>) q.execute();
       
-      writerJson.object();
-      writerJson.key("UserOpenid").array();
+      JSONObject obj = new JSONObject();
       
+      JSONArray list = new JSONArray();      
       for(UserOpenid user : users) {
-        writerJson.object();
+        JSONObject objU = new JSONObject();
         
         //user
-        user.getJson(writerJson);
+        objU.put("UserOpenid", user.getJson());
         
         //cardio
         List<Cardio> cardios = getCardios(pm, user);
-        writerJson.key("Cardio").array();
+        JSONArray listC = new JSONArray();  
         for(Cardio cardio : cardios) {
-          writerJson.object();
-          cardio.getJson(writerJson);
-          writerJson.endObject();
+          listC.add(cardio.getJson());
         }
-        writerJson.endArray();
+        objU.put("Cardio", list);
         
         //run
         List<Run> runs = getRuns(pm, user);
-        writerJson.key("Run").array();
+        JSONArray listR = new JSONArray();    
         for(Run run : runs) {
-          writerJson.object();
-          run.getJson(writerJson);
-          writerJson.endObject();
+          listC.add(run.getJson());
         }
-        writerJson.endArray();
+        objU.put("Run", list);
         
         //workout
 //        List<Workout> workouts = getWorkouts(pm, user);
@@ -90,11 +84,12 @@ public class BackupServlet extends RemoteServiceServlet {
 //          writerJson.endObject();
 //        }
 //        writerJson.endArray();
-        
-        writerJson.endObject();
       }
       
-      writerJson.endArray();
+      obj.put("UserOpenid", list);
+
+      
+      obj.writeJSONString(writer);
       writer.flush();
       
     } catch (Exception e) {
