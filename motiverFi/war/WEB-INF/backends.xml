@@ -6,4 +6,11 @@
    <public>false</public>
   </options>
  </backend>
+ <backend name="tasks">
+  <class>B8</class>
+  <options>
+   <dynamic>true</dynamic>
+   <public>false</public>
+  </options>
+ </backend>
 </backends>

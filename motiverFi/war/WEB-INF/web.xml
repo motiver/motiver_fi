@@ -54,6 +54,10 @@
     <servlet-name>backupServlet</servlet-name>
     <servlet-class>com.delect.motiver.server.servlet.BackupServlet</servlet-class>
   </servlet>
+  <servlet>
+    <servlet-name>loadNamesServlet</servlet-name>
+    <servlet-class>com.delect.motiver.server.servlet.tasks.LoadNamesServlet</servlet-class>
+  </servlet>
   
 
  
@@ -93,6 +97,10 @@
     <servlet-name>backupServlet</servlet-name>
     <url-pattern>/motiver/bs</url-pattern>
   </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>loadNamesServlet</servlet-name>
+    <url-pattern>/tasks/load_names</url-pattern>
+  </servlet-mapping>
   
   <servlet>
     <servlet-name>ProdEagle</servlet-name>
@@ -114,6 +122,15 @@
     </web-resource-collection>
     <auth-constraint>
         <role-name>*</role-name>
+    </auth-constraint>
+ </security-constraint>
+  
+  <security-constraint>
+    <web-resource-collection>
+        <url-pattern>/tasks/*</url-pattern>
+    </web-resource-collection>
+    <auth-constraint>
+        <role-name>admin</role-name>
     </auth-constraint>
  </security-constraint>
  

@@ -19,6 +19,7 @@ import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -27,6 +28,11 @@ import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
+import com.google.appengine.api.backends.BackendServiceFactory;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.TaskOptions.Method;
 import com.prodeagle.java.counters.Counter;
 
 public class TrainingManager extends AbstractManager {
@@ -503,11 +509,35 @@ public class TrainingManager extends AbstractManager {
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getExerciseName ("+key+")");
     }
+
+
+    //check if food names are found from cache
+    Map<Long, ExerciseName> mapAll = cache.getExerciseNames();
     
-    Map<Long, ExerciseName> names = _getExerciseNames();
-    
-    if(names != null) {
-      return names.get(key);
+    //if cache is empty -> add backend task for loading names to cache
+    if(mapAll == null) {
+      
+      //add task
+      try {
+        Queue queue = QueueFactory.getQueue("load-names-queue");
+        TaskOptions opt = TaskOptions.Builder.withUrl("/tasks/load_names");
+        queue.add(opt.param("target", "exercisename")
+            .method(Method.GET)
+            .header("Host", BackendServiceFactory.getBackendService().getBackendAddress("tasks", 0)));
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Error adding new task", e);
+      }
+      
+      //get name by key
+      return dao.getExerciseName(key);
+    }
+    //are found from cache
+    else {
+      Map<Long, ExerciseName> names = _getExerciseNames();
+      
+      if(names != null) {
+        return names.get(key);
+      }
     }
     
     return null;
