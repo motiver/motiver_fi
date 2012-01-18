@@ -15,7 +15,6 @@ import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
-import com.delect.motiver.shared.exception.AliasTakenException;
 import com.delect.motiver.shared.exception.ConnectionException;
 import com.delect.motiver.shared.exception.NoPermissionException;
 import com.delect.motiver.shared.exception.NotLoggedInException;
@@ -24,7 +23,7 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.prodeagle.java.counters.Counter;
 
-public class UserManager {
+public class UserManager extends AbstractManager {
 
   /**
    * Logger for this class
@@ -48,7 +47,7 @@ public class UserManager {
    * Returns user. Throws exception if user not found
    * @return null if no user found
    */
-  public UserOpenid getUser(ThreadLocal<HttpServletRequest> request) throws NotLoggedInException {
+  public UserOpenid getUser(ThreadLocal<HttpServletRequest> request) throws NotLoggedInException, ConnectionException {
     
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading user: "+request);
@@ -76,7 +75,7 @@ public class UserManager {
     return _getUid(request, coachModeUid);
   }
   
-  private UserOpenid _getUid(ThreadLocal<HttpServletRequest> request, String coachModeUid) throws NotLoggedInException {
+  private UserOpenid _getUid(ThreadLocal<HttpServletRequest> request, String coachModeUid) throws NotLoggedInException, ConnectionException {
     
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "Loading user: "+coachModeUid);
@@ -131,7 +130,7 @@ public class UserManager {
     }
     
     if(user == null) {
-      throw new NotLoggedInException();
+      handleException("UserManager._getUid", new NotLoggedInException());
     }
     
     return user;
@@ -190,7 +189,7 @@ public class UserManager {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading permission", e);
-      throw new ConnectionException("Error loading permission", e);
+      handleException("UserManager._checkPermission", e);
     }
     
     return ok;
@@ -205,7 +204,7 @@ public class UserManager {
    * @return
    * @throws NoPermissionException
    */
-  public void checkPermission(int target, String ourUid, String uid) throws NoPermissionException {
+  public void checkPermission(int target, String ourUid, String uid) throws NoPermissionException,ConnectionException {
     
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Checking permissions ("+target+", "+ourUid+", "+uid+")");
@@ -225,7 +224,7 @@ public class UserManager {
     }
     
     if(!ok) {
-      throw new NoPermissionException(target, ourUid, uid);
+      handleException("UserManager.checkPermission", new NoPermissionException(target, ourUid, uid));
     }
     
   }
@@ -276,7 +275,7 @@ public class UserManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding user to circle", e);
-      throw new ConnectionException("Error adding user to circle", e);
+      handleException("UserManager.addUserToCircle", e);
     }    
   }
 
@@ -297,7 +296,7 @@ public class UserManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding user to circle", e);
-      throw new ConnectionException("Error adding user to circle", e);
+      handleException("UserManager.removeUserFromCircle", e);
     } 
   }
 
@@ -335,7 +334,7 @@ public class UserManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading users", e);
-      throw new ConnectionException("Error loading users", e);
+      handleException("UserManager.getUsersFromCircle", e);
     } 
     
     return list;
@@ -421,7 +420,7 @@ public class UserManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise names", e);
-      throw new ConnectionException("Error adding exercise names", e);
+      handleException("UserManager.searchUsers", e);
     }
     
     
@@ -445,12 +444,9 @@ public class UserManager {
       //update cache
       cache.setUser(updatedModel);
         
-    } catch (AliasTakenException e) {
-      logger.log(Level.SEVERE, "Error saving user", e);
-      throw e;
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error saving user", e);
-      throw new ConnectionException("Error saving user", e);
+      handleException("UserManager.saveUser", e);
     }
   }
 
@@ -480,7 +476,7 @@ public class UserManager {
         
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error creating user", e);
-      throw new ConnectionException("Error creating user", e);
+      handleException("UserManager.createUser", e);
     }
     
     return user;

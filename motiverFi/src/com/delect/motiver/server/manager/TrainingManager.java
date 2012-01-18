@@ -28,9 +28,14 @@ import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
+import com.google.appengine.api.backends.BackendServiceFactory;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.TaskOptions.Method;
 import com.prodeagle.java.counters.Counter;
 
-public class TrainingManager {
+public class TrainingManager extends AbstractManager {
 
   /**
    * Logger for this class
@@ -110,7 +115,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise", e);
-      throw new ConnectionException("Add exercise", e.getMessage());
+      handleException("TrainingManager.addExercise", e);
     }
   }
 
@@ -154,7 +159,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise", e);
-      throw new ConnectionException("Add exercise", e.getMessage());
+      handleException("TrainingManager.removeExercise", e);
     }
     
     return ok;
@@ -174,7 +179,7 @@ public class TrainingManager {
     userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), uid);
     
     //get from cache
-    List<Workout> list;
+    List<Workout> list = null;
     
     try {    
       //get from cache
@@ -194,7 +199,7 @@ public class TrainingManager {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workouts", e);
-      throw new ConnectionException("Error loading workouts", e);
+      handleException("TrainingManager.getWorkouts", e);
     }
   
     return list;
@@ -252,7 +257,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workouts", e);
-      throw new ConnectionException("getWorkouts", e.getMessage());
+      handleException("TrainingManager.getWorkouts", e);
     }
     
     return list;
@@ -291,7 +296,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading routines", e);
-      throw new ConnectionException("getRoutines", e.getMessage());
+      handleException("TrainingManager.getRoutines", e);
     }
     
     return list;
@@ -345,7 +350,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workouts", e);
-      throw new ConnectionException("getMostPopularWorkouts", e.getMessage());
+      handleException("TrainingManager.getMostPopularWorkouts", e);
     }
     
     return list;
@@ -399,7 +404,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading routines", e);
-      throw new ConnectionException("getMostPopularRoutines", e.getMessage());
+      handleException("TrainingManager.getMostPopularRoutines", e);
     }
     
     return list;
@@ -421,7 +426,7 @@ public class TrainingManager {
       //TODO .!!!
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workouts", e);
-      throw new ConnectionException("getWorkouts", e.getMessage());
+      handleException("TrainingManager.getWorkouts", e);
     }
     
     return list;
@@ -504,11 +509,35 @@ public class TrainingManager {
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getExerciseName ("+key+")");
     }
+
+
+    //check if food names are found from cache
+    Map<Long, ExerciseName> mapAll = cache.getExerciseNames();
     
-    Map<Long, ExerciseName> names = _getExerciseNames();
-    
-    if(names != null) {
-      return names.get(key);
+    //if cache is empty -> add backend task for loading names to cache
+    if(mapAll == null) {
+      
+      //add task
+      try {
+        Queue queue = QueueFactory.getQueue("load-names-queue");
+        TaskOptions opt = TaskOptions.Builder.withUrl("/tasks/load_names");
+        queue.add(opt.param("target", "exercisename")
+            .method(Method.GET)
+            .header("Host", BackendServiceFactory.getBackendService().getBackendAddress("tasks", 0)));
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Error adding new task", e);
+      }
+      
+      //get name by key
+      return dao.getExerciseName(key);
+    }
+    //are found from cache
+    else {
+      Map<Long, ExerciseName> names = _getExerciseNames();
+      
+      if(names != null) {
+        return names.get(key);
+      }
     }
     
     return null;
@@ -538,17 +567,6 @@ public class TrainingManager {
     
     return mapAll;
   }
-
-//  private void _updateWorkout(Workout workout) throws Exception {
-//
-//    if(logger.isLoggable(Level.FINER)) {
-//      logger.log(Level.FINER, "_updateWorkout ("+workout+")");
-//    }
-//    
-//    dao.updateWorkout(workout);
-//    
-//    cache.addWorkout(workout);
-//  }
 
   public boolean removeWorkouts(UserOpenid user, List<Workout> models) throws ConnectionException {
 
@@ -588,7 +606,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing workouts", e);
-      throw new ConnectionException("Error removing workouts", e);
+      handleException("TrainingManager.removeWorkouts", e);
     }
     
     return ok;
@@ -636,7 +654,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing routines", e);
-      throw new ConnectionException("Error removing routines", e);
+      handleException("TrainingManager.removeRoutines", e);
     }
     
     return ok;
@@ -730,7 +748,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding workouts", e);
-      throw new ConnectionException("Error adding workouts", e);
+      handleException("TrainingManager.addWorkouts", e);
     }
     
     return modelsCopy;
@@ -840,7 +858,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding routines", e);
-      throw new ConnectionException("Error adding routines", e);
+      handleException("TrainingManager.addRoutines", e);
     }
     
     return modelsCopy;
@@ -967,7 +985,7 @@ public class TrainingManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error searching exercise names", e);
-      throw new ConnectionException("Error searching exercise names", e);
+      handleException("TrainingManager.searchExerciseNames", e);
     }
     
     //prodeagle counter
@@ -1018,7 +1036,7 @@ public class TrainingManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise names", e);
-      throw new ConnectionException("Error adding exercise names", e);
+      handleException("TrainingManager.addExerciseName", e);
     }
     
     return list;
@@ -1076,7 +1094,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise names", e);
-      throw new ConnectionException("Error adding exercise names", e);
+      handleException("TrainingManager.searchWorkouts", e);
     }
     
     
@@ -1135,7 +1153,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise names", e);
-      throw new ConnectionException("Error adding exercise names", e);
+      handleException("TrainingManager.searchRoutines", e);
     }
     
     
@@ -1182,7 +1200,7 @@ public class TrainingManager {
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating workout", e);
-      throw new ConnectionException("Error updating workout", e);
+      handleException("TrainingManager.updateWorkout", e);
     }
   
   }
@@ -1199,6 +1217,8 @@ public class TrainingManager {
       
       userManager.checkPermission(Permission.WRITE_TRAINING, user.getUid(), routine.getUid());
       
+      Integer oldDays = routine.getDays();
+      
       routine.update(model, false);
       dao.updateRoutine(routine);
 
@@ -1207,10 +1227,22 @@ public class TrainingManager {
 
       //remove from cache
       cache.removeRoutine(routine.getId());
+      
+      //if days removed -> also remove workouts
+      if(oldDays > routine.getDays()) {
+        
+        //get workouts
+        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routine.getId(), oldDays));
+        ArrayList<Workout> list = new ArrayList<Workout>();
+        for(Long key : keys) {
+          list.add(_getWorkout(key));
+        }
+        removeWorkouts(user, list);
+      }
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating routine", e);
-      throw new ConnectionException("Error updating routine", e);
+      handleException("TrainingManager.updateRoutine", e);
     }
   
   }
@@ -1230,7 +1262,7 @@ public class TrainingManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workout", e);
-      throw new ConnectionException("Error loading workout", e);
+      handleException("TrainingManager.getWorkout", e);
     }
     
     return workout;
@@ -1249,7 +1281,7 @@ public class TrainingManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading name", e);
-      throw new ConnectionException("getExerciseName", e);
+      handleException("TrainingManager.getExerciseName", e);
     }
     
     return name;
@@ -1270,7 +1302,7 @@ public class TrainingManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading routine", e);
-      throw new ConnectionException("Error loading routine", e);
+      handleException("TrainingManager.getRoutine", e);
     }
     
     return routine;
@@ -1315,7 +1347,7 @@ public class TrainingManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workout", e);
-      throw new ConnectionException("Error loading workout", e);
+      handleException("TrainingManager.updateExerciseOrder", e);
     }
   
     return ok;
@@ -1337,7 +1369,7 @@ public class TrainingManager {
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating workout", e);
-      throw new ConnectionException("Error updating workout", e);
+      handleException("TrainingManager.incrementWorkoutCount", e);
     }
   
   }
@@ -1358,7 +1390,7 @@ public class TrainingManager {
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating routine", e);
-      throw new ConnectionException("Error updating routine", e);
+      handleException("TrainingManager.incrementRoutineCount", e);
     }
   
   }
@@ -1374,9 +1406,9 @@ public class TrainingManager {
    */
   public List<Exercise> getExercises(UserOpenid user, Long nameId, Date dateStart, Date dateEnd, int limit) throws ConnectionException {
 
-//    if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.WARNING, "Loading exercises for name "+nameId+", "+dateStart+" - "+dateEnd);
-//    }
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading exercises for name "+nameId+", "+dateStart+" - "+dateEnd);
+    }
     
     if(nameId == null || (dateStart == null && dateEnd == null)) {
       return null;
@@ -1422,7 +1454,7 @@ public class TrainingManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading exercises", e);
-      throw new ConnectionException("getExercises", e);
+      handleException("TrainingManager.getExercises", e);
     }
     
     return list;

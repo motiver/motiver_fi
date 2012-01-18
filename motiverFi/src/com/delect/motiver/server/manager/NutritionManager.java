@@ -19,17 +19,21 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
-import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.server.util.NutritionUtils;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.NutritionDayModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
+import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.TaskOptions.Method;
 import com.prodeagle.java.counters.Counter;
 
-public class NutritionManager {
+public class NutritionManager extends AbstractManager {
 
   /**
    * Logger for this class
@@ -64,7 +68,7 @@ public class NutritionManager {
     userManager.checkPermission(Permission.READ_NUTRITION_FOODS, user.getUid(), uid);
     
     //get from cache
-    List<TimeJDO> list;
+    List<TimeJDO> list = null;
     
     try {    
       //get from cache
@@ -103,7 +107,7 @@ public class NutritionManager {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading times", e);
-      throw new ConnectionException("getTimes", e);
+      handleException("NutritionManager.getTimes", e);
     }
   
     return list;
@@ -186,7 +190,7 @@ public class NutritionManager {
       }
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding food", e);
-      throw new ConnectionException("Add food", e.getMessage());
+      handleException("NutritionManager.addFood", e);
     }
   }
 
@@ -247,7 +251,7 @@ public class NutritionManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding food", e);
-      throw new ConnectionException("Add food", e.getMessage());
+      handleException("NutritionManager.removeFood", e);
     }
     
     return ok;
@@ -288,7 +292,7 @@ public class NutritionManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading meals", e);
-      throw new ConnectionException("getMeals", e.getMessage());
+      handleException("NutritionManager.getMeals", e);
     }
     
     return list;
@@ -343,7 +347,7 @@ public class NutritionManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading meals", e);
-      throw new ConnectionException("getMostPopularMeals", e.getMessage());
+      handleException("NutritionManager.getMostPopularMeals", e);
     }
     
     return list;
@@ -389,11 +393,36 @@ public class NutritionManager {
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getFoodName ("+key+")");
     }
+
+
+    //check if food names are found from cache
+    Map<Long, FoodName> mapAll = cache.getFoodNames();
     
-    Map<Long, FoodName> names = _getFoodNames();
-    
-    if(names != null) {
-      return names.get(key);
+    //if cache is empty -> add backend task for loading names to cache
+    if(mapAll == null) {
+      
+      //add task
+      try {
+        Queue queue = QueueFactory.getQueue("load-names-queue");
+        TaskOptions opt = TaskOptions.Builder.withUrl("/tasks/load_names");
+        queue.add(opt.param("target", "foodname")
+            .method(Method.GET)
+            .header("Host", BackendServiceFactory.getBackendService().getBackendAddress("tasks", 0)));
+        
+      } catch (Exception e) {
+        logger.log(Level.WARNING, "Error adding new task", e);
+      }
+      
+      //get name by key
+      return dao.getFoodName(key);
+    }
+    //are found from cache
+    else {
+      Map<Long, FoodName> names = _getFoodNames();
+      
+      if(names != null) {
+        return names.get(key);
+      }
     }
     
     return null;
@@ -425,18 +454,6 @@ public class NutritionManager {
   }
 
 
-//  private void _updateMeal(MealJDO meal) throws Exception {
-//
-//    if(logger.isLoggable(Level.FINER)) {
-//      logger.log(Level.FINER, "_updateMeal ("+meal+")");
-//    }
-//    
-//    dao.updateMeal(meal);
-//    
-//    cache.addMeal(meal);
-//  }
-
-
   public boolean removeTimes(List<TimeJDO> models, String uid) throws ConnectionException {
 
     if(logger.isLoggable(Level.FINE)) {
@@ -465,7 +482,7 @@ public class NutritionManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing times", e);
-      throw new ConnectionException("Error removing times", e);
+      handleException("NutritionManager.removeTimes", e);
     }
     
     return ok;
@@ -511,7 +528,7 @@ public class NutritionManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding times", e);
-      throw new ConnectionException("Error adding times", e);
+      handleException("NutritionManager.addTimes", e);
     }
     
     return models;
@@ -625,7 +642,7 @@ public class NutritionManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding meal", e);
-      throw new ConnectionException("Error adding meal", e);
+      handleException("NutritionManager.addMeals", e);
     }
     
     return modelsCopy;
@@ -660,7 +677,7 @@ public class NutritionManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error removing meal", e);
-      throw new ConnectionException("Error removing meal", e);
+      handleException("NutritionManager.removeMeal", e);
     }
     
     return ok;
@@ -779,7 +796,7 @@ public class NutritionManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error searching food names", e);
-      throw new ConnectionException("Error searching food names", e);
+      handleException("NutritionManager.searchFoodNames", e);
     }
     
     //prodeagle counter
@@ -832,7 +849,7 @@ public class NutritionManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding food names", e);
-      throw new ConnectionException("Error adding food names", e);
+      handleException("NutritionManager.addFoodName", e);
     }
     
     return list;
@@ -894,7 +911,7 @@ public class NutritionManager {
       
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding food names", e);
-      throw new ConnectionException("Error adding food names", e);
+      handleException("NutritionManager.searchMeals", e);
     }
     
     
@@ -926,7 +943,7 @@ public class NutritionManager {
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating meal", e);
-      throw new ConnectionException("Error updating meal", e);
+      handleException("NutritionManager.updateMeal", e);
     }
   
   }
@@ -954,7 +971,7 @@ public class NutritionManager {
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating time", e);
-      throw new ConnectionException("Error updating time", e);
+      handleException("NutritionManager.updateTime", e);
     }
   
   }
@@ -975,7 +992,7 @@ public class NutritionManager {
     
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error updating meal", e);
-      throw new ConnectionException("Error updating meal", e);
+      handleException("NutritionManager.incrementMealCount", e);
     }
   
   }
@@ -995,7 +1012,7 @@ public class NutritionManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading name", e);
-      throw new ConnectionException("Error loading name", e);
+      handleException("NutritionManager.getFoodName", e);
     }
     
     return name;
@@ -1016,7 +1033,7 @@ public class NutritionManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading meal", e);
-      throw new ConnectionException("Error loading meal", e);
+      handleException("NutritionManager.getMeal", e);
     }
     
     return meal;
@@ -1051,7 +1068,7 @@ public class NutritionManager {
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading times", e);
-      throw new ConnectionException("getTimes", e);
+      handleException("NutritionManager.getTotalEnergy", e);
     }
     
     return list;
@@ -1144,7 +1161,7 @@ public class NutritionManager {
   
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading micronutrients", e);
-      throw new ConnectionException("getMicroNutrients", e);
+      handleException("NutritionManager.getMicroNutrients", e);
     }
     
     

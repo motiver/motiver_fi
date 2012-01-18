@@ -22,10 +22,10 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONObject;
+
 import com.delect.motiver.shared.UserModel;
 import com.google.appengine.api.users.User;
-import com.google.appengine.repackaged.org.json.JSONException;
-import com.google.appengine.repackaged.org.json.JSONWriter;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class UserOpenid implements Serializable {
@@ -513,19 +513,23 @@ public class UserOpenid implements Serializable {
     setFedId(model.getFederatedIdentity());
   }
 
-  public void getJson(JSONWriter writerJson) throws JSONException {
-    writerJson.key("timeComments").value(getLastCommentTime());
-    writerJson.key("alias").value(getAlias());
-    writerJson.key("dateFormat").value(getDateFormat());
-    writerJson.key("lastName").value(getEmail());
-    writerJson.key("fedId").value(getFedId());
-    writerJson.key("gender").value(getGender());
-    writerJson.key("id").value(getId());
-    writerJson.key("locale").value(getLocale());
-    writerJson.key("measurementSystem").value(getMeasurementSystem());
-    writerJson.key("firstName").value(getNickName());
-    writerJson.key("timeFormat").value(getTimeFormat());
-    writerJson.key("timeZone").value(getTimezone());
-    writerJson.key("uid").value(getUid());
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("timeComments", getLastCommentTime());
+    obj.put("alias", getAlias());
+    obj.put("dateFormat", getDateFormat());
+    obj.put("lastName", getEmail());
+    obj.put("fedId", getFedId());
+    obj.put("gender", getGender());
+    obj.put("id", getId());
+    obj.put("locale", getLocale());
+    obj.put("measurementSystem", getMeasurementSystem());
+    obj.put("firstName", getNickName());
+    obj.put("timeFormat", getTimeFormat());
+    obj.put("timeZone", getTimezone());
+    obj.put("uid", getUid());
+    
+    return obj;
   }
 }

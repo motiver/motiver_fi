@@ -112,24 +112,24 @@ public class TestServlet extends RemoteServiceServlet {
 //      out.write("<br>CardioValue: "+count_antti+" - "+count_pekka);
       
       //data: Comment
-      count_antti = 0;
-      count_pekka = 0;
-      q = pm.newQuery(Comment.class);
-      List<Comment> arrComment = (List<Comment>) q.execute();
-      for(Comment c : arrComment) {
-        if(openid_antti != null && c.getUidOld().longValue() == uid_antti) {
-          c.setUid(openid_antti);
-          c.setUidTarget(openid_antti);
-          count_antti++;
-        }
-        else if(openid_pekka != null && c.getUidOld().longValue() == uid_pekka) {
-          c.setUid(openid_pekka);
-          c.setUidTarget(openid_pekka);
-          count_pekka++;
-        }
-      }
-      pm.flush();
-      out.write("<br>Comment: "+count_antti+" - "+count_pekka);
+//      count_antti = 0;
+//      count_pekka = 0;
+//      q = pm.newQuery(Comment.class);
+//      List<Comment> arrComment = (List<Comment>) q.execute();
+//      for(Comment c : arrComment) {
+//        if(openid_antti != null && c.getUidOld().longValue() == uid_antti) {
+//          c.setUid(openid_antti);
+//          c.setUidTarget(openid_antti);
+//          count_antti++;
+//        }
+//        else if(openid_pekka != null && c.getUidOld().longValue() == uid_pekka) {
+//          c.setUid(openid_pekka);
+//          c.setUidTarget(openid_pekka);
+//          count_pekka++;
+//        }
+//      }
+//      pm.flush();
+//      out.write("<br>Comment: "+count_antti+" - "+count_pekka);
       
       //data: ExerciseName
 //      count_antti = 0;

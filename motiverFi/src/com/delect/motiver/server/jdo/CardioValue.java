@@ -22,10 +22,10 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.repackaged.org.json.JSONException;
-import com.google.appengine.repackaged.org.json.JSONWriter;
 
 import com.delect.motiver.shared.CardioValueModel;
 
@@ -213,15 +213,19 @@ public class CardioValue {
     return uid;
   }
 
-  public void getJson(JSONWriter writerJson) throws JSONException {
-    writerJson.key("calories").value(getCalories());
-    writerJson.key("date").value(getDate());
-    writerJson.key("duration").value(getDuration());
-    writerJson.key("id").value(getId());
-    writerJson.key("info").value(getInfo());
-    writerJson.key("openId").value(getUid());
-    writerJson.key("pulse").value(getPulse());
-    writerJson.key("pulseMax").value(getPulseMax());
-    writerJson.key("uid").value(getUidOld());
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("calories", getCalories());
+    obj.put("date", getDate());
+    obj.put("duration", getDuration());
+    obj.put("id", getId());
+    obj.put("info", getInfo());
+    obj.put("openId", getUid());
+    obj.put("pulse", getPulse());
+    obj.put("pulseMax", getPulseMax());
+    obj.put("uid", getUidOld());
+    
+    return obj;
   } 
 }

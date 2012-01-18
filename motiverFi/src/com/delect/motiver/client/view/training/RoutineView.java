@@ -243,15 +243,8 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 			btnRemove.addListener(Events.OnClick, new Listener<BaseEvent>() {
 				@Override
 				public void handleEvent(BaseEvent be) {
-					//remove last day
-					box = MessageBox.confirm(AppController.Lang.Confirm(), AppController.Lang.ConfirmRemoveLastDayInRoutine(), new Listener<MessageBoxEvent>() {   
-						public void handleEvent(MessageBoxEvent be) {
-							Button btn = be.getButtonClicked();
-							if(Dialog.YES.equals(btn.getItemId())) {
-								handler.saveDays(false);
-							}
-						}
-					});
+          //remove last day
+          handler.saveDays(false);
 				}
 			});
 			panelLinks.add(btnRemove, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
@@ -261,7 +254,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 		}
 	}
 
-	/**
+  /**
 	 * Inits panel which contains the title
 	 */
 	private void initTitlePanel() {
@@ -320,7 +313,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 					});
 					panelButtons.add(btnRenameWorkout, new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 					
-					//remove time
+					//remove routine
 					ImageButton btnRemoveTime = new ImageButton(AppController.Lang.RemoveTarget(AppController.Lang.Routine().toLowerCase()), MyResources.INSTANCE.iconRemove());
 					btnRemoveTime.addListener(Events.OnClick, new Listener<BaseEvent>() {
 						@Override

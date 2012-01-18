@@ -18,6 +18,7 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.ExerciseNameCount;
@@ -562,6 +563,8 @@ public class TrainingDAO {
         }
         if(params.routineId != null) {
           builder.append("routineId == routineParam && ");
+          if(params.routineDay != null)
+            builder.append("dayInRoutine == routineDayParam && ");
         }
         else if(params.date == null) {
           builder.append("routineId == 0 && ");
@@ -580,9 +583,9 @@ public class TrainingDAO {
         }
 
         q.setFilter(builder.toString());
-        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineParam, java.lang.Integer copyCountParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
+        q.declareParameters("java.lang.String openIdParam, java.lang.Long routineParam, java.lang.Long routineDayParam, java.lang.Integer copyCountParam, java.util.Date dateStartParam, java.util.Date dateEndParam");
         q.setRange(offset, limit);
-        List<Workout> workouts = (List<Workout>) q.executeWithArray(params.uid, params.routineId, params.minCopyCount, dStart, dEnd);
+        List<Workout> workouts = (List<Workout>) q.executeWithArray(params.uid, params.routineId, params.routineDay, params.minCopyCount, dStart, dEnd);
               
         //get workouts
         if(workouts != null) {
@@ -929,6 +932,32 @@ public class TrainingDAO {
     if(list.size() > 0) {
       routine = list.get(0);
     }
+  }
+
+  public ExerciseName getExerciseName(Long key) throws Exception {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading food name for ID: "+key);
+    }
+    
+    Counter.increment("DAO.ExerciseName");
+    
+    ExerciseName n = null;
+    
+    PersistenceManager pm =  PMF.get().getPersistenceManager();
+    
+    try {
+      n = pm.getObjectById(ExerciseName.class, key);
+    } catch (Exception e) {
+      throw e;
+    }
+    finally {
+      if (!pm.isClosed()) {
+        pm.close();
+      } 
+    }
+    
+    return n;
   }
 
 }

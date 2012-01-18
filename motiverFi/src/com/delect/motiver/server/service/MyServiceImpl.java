@@ -600,6 +600,10 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       //save comment to db
       pm.makePersistent(modelServer);
       
+      //temporary: get users
+      modelServer.setUser(userManager.getUser(modelServer.getUid()));
+      modelServer.setUserTarget(userManager.getUser(modelServer.getUidTarget()));
+      
       //convert to client side model (which we return)
       m = Comment.getClientModel(modelServer);
     }
@@ -2786,10 +2790,14 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
               break;
             }
             
+            //temporary: get users
+            cc.setUser(userManager.getUser(cc.getUid()));
+            cc.setUserTarget(userManager.getUser(cc.getUidTarget()));
+            
             CommentModel c = Comment.getClientModel(cc);
             
             //is unread? (if not our comment and meant for us)
-            if(!user.getUid().equals(c.getUid()) && user.getUid().equals(c.getUidTarget())) {
+            if(!user.equals(cc.getUser()) && user.equals(cc.getUserTarget())) {
               Query qUnread = pm.newQuery(CommentsRead.class); 
               qUnread.setFilter("comment == commentParam && openId == openIdParam");
               qUnread.declareParameters("com.google.appengine.api.datastore.Key commentParam, java.lang.String openIdParam");
@@ -2807,7 +2815,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
             }
                   
             //if all comments -> don't return user's own comments
-            if(target != null || !user.getUid().equals(c.getUid())) {
+            if(target != null || !user.equals(cc.getUser())) {
               
               //if all comments -> cut long texts
               if(target == null) {
