@@ -63,7 +63,7 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
 	  else {
 	    url += String.valueOf(getUid());
 	  }
-	  url += ".motiver.fi";
+	  url += ".motiver.fi/app/?";
 	  
 	  return url;
 	}
