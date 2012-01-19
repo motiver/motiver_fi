@@ -639,8 +639,8 @@ public interface Lang extends Messages {
   @DefaultMessage("Language")
   
   String Language();
-  @DefaultMessage("Page is refreshed automatically after language is changed.")
-  String LanguageDesc();
+  @DefaultMessage("Page needs to be refreshed to change the language. Do you want to do that now?")
+  String ConfirmRefreshLanguage();
 
   @DefaultMessage("No users found")
   String NoUsersFound();
