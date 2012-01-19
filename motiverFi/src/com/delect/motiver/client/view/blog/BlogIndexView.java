@@ -17,6 +17,7 @@ package com.delect.motiver.client.view.blog;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.delect.motiver.client.AppController;
+import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.blog.BlogIndexPresenter;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -47,7 +48,7 @@ public class BlogIndexView extends BlogIndexPresenter.BlogIndexDisplay {
 		
 		//footer
 		footer.setId("footer");
-    footer.addText("Motiver &#169; 2012&nbsp;&nbsp;|&nbsp;&nbsp;v3.0");
+    footer.addText("Motiver &#169; 2012&nbsp;&nbsp;|&nbsp;&nbsp;"+Motiver.VERSION);
 		footer.layout();
 		this.add(footer);
 	}
