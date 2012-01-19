@@ -47,7 +47,7 @@ public class BlogIndexView extends BlogIndexPresenter.BlogIndexDisplay {
 		
 		//footer
 		footer.setId("footer");
-		footer.addText("Motiver &#169; 2011&nbsp;&nbsp;|&nbsp;&nbsp;" + AppController.Lang.MotiverIsInBeta());
+    footer.addText("Motiver &#169; 2012&nbsp;&nbsp;|&nbsp;&nbsp;v3.0");
 		footer.layout();
 		this.add(footer);
 	}

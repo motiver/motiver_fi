@@ -100,6 +100,7 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 				int tf = comboTimeformat.getSelectedIndex();
 				int meas = comboMeas.getSelectedIndex();
 				String alias = tfAlias.getValue();
+				boolean locChanged = !locale.equals(user.getLocale());
 
 				//if data has changed
 				if(!locale.equals(user.getLocale())
@@ -115,7 +116,7 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 	        user.setMeasurementSystem(meas);
 	        user.setAlias(alias);
 	        
-	        handler.saveData(user);
+	        handler.saveData(user, locChanged);
 				}
 				
 			} catch (Exception e) {
