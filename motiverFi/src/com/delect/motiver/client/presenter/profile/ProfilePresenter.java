@@ -24,6 +24,7 @@ import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.ConfirmDialogView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.UserModel;
+import com.delect.motiver.shared.exception.AliasTakenException;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
@@ -84,8 +85,9 @@ public class ProfilePresenter extends Presenter {
               //if alias not changed -> already in use/invalid
               display.showAliasTaken(false);
             }
+            
             //if locale has changed -> ask to refresh
-            else if(localeChanged) {
+            if(localeChanged) {
               if(msgPresenter != null) {
                 msgPresenter.stop();
               }
@@ -103,12 +105,12 @@ public class ProfilePresenter extends Presenter {
           }
           @Override
           public void onFailure(Throwable throwable) {
-//            if(throwable instanceof AliasTakenException) {
-//              display.showAliasTaken(true);
-//            }
-//            else {
+            if(throwable instanceof AliasTakenException) {
+              display.showAliasTaken(true);
+            }
+            else {
               super.onFailure(throwable);
-//            }
+            }
           }
 				});
 				addRequest(req);
