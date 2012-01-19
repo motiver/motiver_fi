@@ -16,10 +16,15 @@ package com.delect.motiver.client.presenter.profile;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.MyAsyncCallback;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter;
 import com.delect.motiver.client.presenter.Presenter;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogDisplay;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
 import com.delect.motiver.client.service.MyServiceAsync;
+import com.delect.motiver.client.view.ConfirmDialogView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.UserModel;
+import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
 import com.google.gwt.user.client.Window;
@@ -44,6 +49,7 @@ public class ProfilePresenter extends Presenter {
 	}
 
 	private ProfileDisplay display;
+  private ConfirmDialogPresenter msgPresenter;
 
 	/**
 	 * Shows profile (from AppController.User)
@@ -78,9 +84,21 @@ public class ProfilePresenter extends Presenter {
               //if alias not changed -> already in use/invalid
               display.showAliasTaken(false);
             }
-            //if locale has changed -> refresh
+            //if locale has changed -> ask to refresh
             else if(localeChanged) {
-              Window.Location.reload();
+              if(msgPresenter != null) {
+                msgPresenter.stop();
+              }
+              msgPresenter = new ConfirmDialogPresenter(rpcService, eventBus, (ConfirmDialogDisplay)GWT.create(ConfirmDialogView.class), AppController.Lang.ConfirmRefreshLanguage(), new ConfirmDialogHandler() {
+                @Override
+                public void onYes() {
+                  Window.Location.reload();
+                }
+                @Override
+                public void onNo() {
+                }
+              });
+              msgPresenter.run(display.getBaseContainer());
             }
           }
           @Override
@@ -102,5 +120,13 @@ public class ProfilePresenter extends Presenter {
 	@Override
 	public void onRun() {
 	}
+
+
+  @Override
+  public void onStop() {
+    if(msgPresenter != null) {
+      msgPresenter.stop();
+    }
+  }
 
 }
