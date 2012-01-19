@@ -639,7 +639,7 @@ public interface Lang extends Messages {
   @DefaultMessage("Language")
   
   String Language();
-  @DefaultMessage("You need to refresh the page after changing the language")
+  @DefaultMessage("Page is refreshed automatically after language is changed.")
   String LanguageDesc();
 
   @DefaultMessage("No users found")
