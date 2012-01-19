@@ -186,8 +186,6 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
       }
       i++;
     }
-    comboLocale.addPlugin(plugin);
-    comboLocale.setData("text", AppController.Lang.LanguageDesc());
     fieldSet.add(comboLocale, formData);
     comboLocale.setValue( comboLocale.getStore().getAt( sel ));
 		
