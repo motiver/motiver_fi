@@ -22,6 +22,7 @@ import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.UserModel;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
+import com.google.gwt.user.client.Window;
 
 /**
  * 
@@ -39,7 +40,7 @@ public class ProfilePresenter extends Presenter {
 		public abstract void showAliasTaken(boolean taken);
 	}
 	public interface ProfileHandler {
-		void saveData(UserModel user);
+		void saveData(UserModel user, final boolean localeChanged);
 	}
 
 	private ProfileDisplay display;
@@ -66,7 +67,7 @@ public class ProfilePresenter extends Presenter {
 		display.setUserModel(AppController.User);
 		display.setHandler(new ProfileHandler() {
       @Override
-			public void saveData(UserModel user) {
+			public void saveData(UserModel user, final boolean localeChanged) {
 				AppController.User = user;
 				//save alias
 				final String alias = user.getAlias();
@@ -76,6 +77,10 @@ public class ProfilePresenter extends Presenter {
             if(result != null && alias != null) {
               //if alias not changed -> already in use/invalid
               display.showAliasTaken(false);
+            }
+            //if locale has changed -> refresh
+            else if(localeChanged) {
+              Window.Location.reload();
             }
           }
           @Override
