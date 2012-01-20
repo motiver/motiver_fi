@@ -18,6 +18,8 @@ public class AbstractManager {
     
     //ProdEagle
     if(e != null) {
+      Counter.increment("Exception");
+      
       if(e instanceof AliasTakenException) {
         Counter.increment("Exception.AliasTaken");
         
@@ -40,7 +42,6 @@ public class AbstractManager {
         
       }
     }
-    Counter.increment("Exception");
     
 
     throw new ConnectionException("Unknown", "");
