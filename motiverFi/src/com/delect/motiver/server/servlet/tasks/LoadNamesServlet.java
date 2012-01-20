@@ -35,19 +35,24 @@ public class LoadNamesServlet extends RemoteServiceServlet {
   NutritionDAO daoNutrition = NutritionDAO.getInstance();
   TrainingCache cacheTraining = TrainingCache.getInstance();
   TrainingDAO daoTraining = TrainingDAO.getInstance();
+
+  static boolean loadingFoodNames = false;
+  static boolean loadingExerciseNames = false;
   
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
 
     String target = request.getParameter("target");
 
-    try {
       
-      if(target != null) {
+    if(target != null) {
 
-        long t = System.currentTimeMillis();
-        
-        if(target.equals("foodname")) {
+      long t = System.currentTimeMillis();
+      
+      if(target.equals("foodname") && !loadingFoodNames) {
+
+        try {
+          loadingFoodNames = true;
           
           //load from cache
           Map<Long, FoodName> mapAll = cacheNutrition.getFoodNames();
@@ -69,8 +74,19 @@ public class LoadNamesServlet extends RemoteServiceServlet {
             Counter.increment("Task.FoodNameLoad.Latency", System.currentTimeMillis()-t);
             Counter.increment("Task.FoodNameLoad.Count");
           }
+          
+        } catch (Exception e) {
+          logger.log(Level.SEVERE, "Error running task", e);
         }
-        else if(target.equals("exercisename")) {
+        
+        loadingFoodNames = false;
+      }
+      
+      else if(target.equals("exercisename") && !loadingExerciseNames) {
+
+        try {
+          loadingExerciseNames = true;
+          
           //load from cache
           Map<Long, ExerciseName> mapAll = cacheTraining.getExerciseNames();
     
@@ -91,11 +107,13 @@ public class LoadNamesServlet extends RemoteServiceServlet {
             Counter.increment("Task.ExerciseNameLoad.Latency", System.currentTimeMillis()-t);
             Counter.increment("Task.ExerciseNameLoad.Count");
           }
+          
+        } catch (Exception e) {
+          logger.log(Level.SEVERE, "Error running task", e);
         }
-      }
         
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "Error running task", e);
+        loadingExerciseNames = false;
+      }
     }
   }
 }

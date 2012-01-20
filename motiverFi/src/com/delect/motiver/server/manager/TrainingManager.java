@@ -533,6 +533,9 @@ public class TrainingManager extends AbstractManager {
     }
     //are found from cache
     else {
+      
+      Counter.increment("Cache.ExerciseName");
+      
       Map<Long, ExerciseName> names = _getExerciseNames();
       
       if(names != null) {
@@ -1414,6 +1417,8 @@ public class TrainingManager extends AbstractManager {
       return null;
     }
     
+    long t = System.currentTimeMillis();
+    
     List<Exercise> list = new ArrayList<Exercise>();
     
     try {
@@ -1456,6 +1461,10 @@ public class TrainingManager extends AbstractManager {
       logger.log(Level.SEVERE, "Error loading exercises", e);
       handleException("TrainingManager.getExercises", e);
     }
+    
+    //prodeagle counter
+    Counter.increment("Search.ExerciseHistory.Count");
+    Counter.increment("Search.ExerciseHistory.Latency", System.currentTimeMillis()-t);
     
     return list;
   }

@@ -251,6 +251,9 @@ public class TrainingDAO {
       logger.log(Level.FINE, "Adding exercise name: "+name);
     }
     
+    //prodeagle counter
+    Counter.increment("DAO.ExerciseName.New");
+    
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     Transaction tx = pm.currentTransaction();
