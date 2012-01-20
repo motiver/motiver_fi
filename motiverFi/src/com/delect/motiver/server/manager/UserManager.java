@@ -462,6 +462,9 @@ public class UserManager extends AbstractManager {
       logger.log(Level.FINE, "Creating new user ("+userAppengine+")");
     }
     
+    //new user
+    Counter.increment("User.New");
+    
     UserOpenid user = new UserOpenid();
     
     try {

@@ -418,6 +418,9 @@ public class NutritionManager extends AbstractManager {
     }
     //are found from cache
     else {
+      
+      Counter.increment("Cache.FoodName");
+      
       Map<Long, FoodName> names = _getFoodNames();
       
       if(names != null) {

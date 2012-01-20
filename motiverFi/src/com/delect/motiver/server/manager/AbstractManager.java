@@ -40,6 +40,7 @@ public class AbstractManager {
         
       }
     }
+    Counter.increment("Exception");
     
 
     throw new ConnectionException("Unknown", "");

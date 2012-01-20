@@ -774,6 +774,9 @@ public class NutritionDAO {
       logger.log(Level.FINE, "Adding food name: "+name);
     }
     
+    //prodeagle counter
+    Counter.increment("DAO.FoodName.New");
+    
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
     Transaction tx = pm.currentTransaction();
