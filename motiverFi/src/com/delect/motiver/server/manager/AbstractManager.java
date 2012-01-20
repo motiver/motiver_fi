@@ -15,10 +15,11 @@ public class AbstractManager {
    * @throws Exception
    */
   protected void handleException(String source, Exception e) throws ConnectionException {
+
+    Counter.increment("Exception");
     
     //ProdEagle
     if(e != null) {
-      Counter.increment("Exception");
       
       if(e instanceof AliasTakenException) {
         Counter.increment("Exception.AliasTaken");
@@ -42,7 +43,8 @@ public class AbstractManager {
         
       }
     }
-    
+
+    Counter.increment("Exception.Unknown");
 
     throw new ConnectionException("Unknown", "");
     
