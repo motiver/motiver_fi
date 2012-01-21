@@ -1432,30 +1432,41 @@ public class TrainingManager extends AbstractManager {
         dateEnd = new Date();
       }
       
-      //get workouts
-      List<Workout> workouts = getWorkouts(user, dateStart, dateEnd, user.getUid());
-      
-      if(workouts.size() > 0) {
-        for(int i = workouts.size(); i > 0; i--) {
-          Workout w = workouts.get(i-1);
-          if(w != null) {
-            //check if correct exercise name found
-            for(Exercise e : w.getExercises()) {
-              if(e.getNameId() != null && e.getNameId().equals(nameId)) {
-                e.setWorkout(w);
-                list.add(e);
+      Date d1 = null;
+      Date d2 = dateEnd;
+      while(list.size() < limit && (d1 == null || d1.getTime() >= dateStart.getTime())) {
+
+        //search 14 days at once
+        d1 = new Date((d2.getTime() / 1000 - 3600 * 24 * 14) * 1000);
+        
+        //get workouts
+        List<Workout> workouts = getWorkouts(user, d1, d2, user.getUid());
+        
+        if(workouts.size() > 0) {
+          for(int i = workouts.size(); i > 0; i--) {
+            Workout w = workouts.get(i-1);
+            if(w != null) {
+              //check if correct exercise name found
+              for(Exercise e : w.getExercises()) {
+                if(e.getNameId() != null && e.getNameId().equals(nameId)) {
+                  e.setWorkout(w);
+                  list.add(e);
+                }
+                
+                if(limit != -1 && list.size() >= limit) {
+                  break;
+                }
               }
-              
               if(limit != -1 && list.size() >= limit) {
                 break;
               }
             }
-            if(limit != -1 && list.size() >= limit) {
-              break;
-            }
-          }
-        }   
-      }     
+          }   
+        }
+        
+        d2 = new Date((d1.getTime() / 1000 - 3600 * 24 * 1) * 1000); 
+        
+      }
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading exercises", e);
