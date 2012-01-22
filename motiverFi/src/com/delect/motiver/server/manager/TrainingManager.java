@@ -536,14 +536,8 @@ public class TrainingManager extends AbstractManager {
       
       Counter.increment("Cache.ExerciseName");
       
-      Map<Long, ExerciseName> names = _getExerciseNames();
-      
-      if(names != null) {
-        return names.get(key);
-      }
+      return mapAll.get(key);
     }
-    
-    return null;
   }
 
   private Map<Long, ExerciseName> _getExerciseNames() throws Exception {
