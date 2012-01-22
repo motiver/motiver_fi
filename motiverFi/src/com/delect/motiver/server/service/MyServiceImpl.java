@@ -52,8 +52,6 @@ import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.Meal;
 import com.delect.motiver.server.MealInTime;
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.jdo.Cardio;
-import com.delect.motiver.server.jdo.CardioValue;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.Comment;
 import com.delect.motiver.server.jdo.CommentsRead;
@@ -64,9 +62,11 @@ import com.delect.motiver.server.jdo.MeasurementValue;
 import com.delect.motiver.server.jdo.MicroNutrient;
 import com.delect.motiver.server.jdo.MonthlySummary;
 import com.delect.motiver.server.jdo.MonthlySummaryExercise;
-import com.delect.motiver.server.jdo.Run;
-import com.delect.motiver.server.jdo.RunValue;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.cardio.Cardio;
+import com.delect.motiver.server.jdo.cardio.CardioValue;
+import com.delect.motiver.server.jdo.cardio.Run;
+import com.delect.motiver.server.jdo.cardio.RunValue;
 import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.GuideValue;
@@ -76,6 +76,7 @@ import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
+import com.delect.motiver.server.manager.CardioManager;
 import com.delect.motiver.server.manager.NutritionManager;
 import com.delect.motiver.server.manager.TrainingManager;
 import com.delect.motiver.server.manager.UserManager;
@@ -2562,58 +2563,24 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
    */
   @SuppressWarnings("unchecked")
   @Override
-  @Deprecated public List<CardioModel> getCardios(int index) throws ConnectionException {
+  public List<CardioModel> getCardios(int index) throws ConnectionException {
 
-    logger.log(Level.FINE, "getCardios()");
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading cardios");
+    }
+
+    //get user
+    UserOpenid user = userManager.getUser(perThreadRequest);
+
+    CardioManager cardioManager = CardioManager.getInstance();
+
+    List<Cardio> cardios = cardioManager.getCardios(user, index, user.getUid());
 
     List<CardioModel> list = new ArrayList<CardioModel>();
-    
-    //get uid
-    UserOpenid user = userManager.getUser(perThreadRequest);
-    final String UID = user.getUid();
-    if(UID == null) {
-      return list;
-    }
-    
-    PersistenceManager pm =  PMF.get().getPersistenceManager();
-
-    try {
-      Query q = pm.newQuery(Cardio.class);
-
-      q.setFilter("openId == openIdParam");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setOrdering("name ASC");
-      q.setRange(index, index + Constants.LIMIT_CARDIOS + 1);
-      List<Cardio> cardios = (List<Cardio>) q.execute(UID);
-      
-      //get cardios
-      if(cardios != null) {
-
-        int i = 0;
-        for(Cardio w : cardios) {
-          
-          //if limit reached -> add null value
-          if(i == Constants.LIMIT_CARDIOS) {
-            list.add(null);
-            break;
-          }
-          
-          CardioModel m = Cardio.getClientModel(w);
-                  
-          list.add(m);
-          
-          i++;
-        }
-        
+    if(cardios != null) {
+      for(Cardio m : cardios) {
+        list.add(Cardio.getClientModel(m));
       }
-    } catch (Exception e) {
-      logger.log(Level.SEVERE, "getCardios", e);
-      throw new ConnectionException("getCardios", e.getMessage());
-    }
-    finally {
-      if (!pm.isClosed()) {
-        pm.close();
-      } 
     }
     
     return list;

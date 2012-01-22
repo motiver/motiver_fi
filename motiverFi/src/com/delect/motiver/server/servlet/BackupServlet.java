@@ -18,9 +18,9 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.delect.motiver.server.PMF;
-import com.delect.motiver.server.jdo.Cardio;
-import com.delect.motiver.server.jdo.Run;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.cardio.Cardio;
+import com.delect.motiver.server.jdo.cardio.Run;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.manager.TrainingManager;
 import com.google.appengine.api.datastore.Cursor;

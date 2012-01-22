@@ -12,13 +12,14 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo;
+package com.delect.motiver.server.jdo.cardio;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -28,27 +29,26 @@ import org.json.simple.JSONObject;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-
-import com.delect.motiver.shared.RunModel;
+import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.shared.CardioModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class Run {
+public class Cardio {
 	
 	/**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model
 	 */
-	public static RunModel getClientModel(Run model) {
+	public static CardioModel getClientModel(Cardio model) {
 		if(model == null) {
 			return null;
     }
 
-		RunModel modelClient = new RunModel(model.getId(), model.getName());
-		modelClient.setId(model.getId());
-		modelClient.setDistance(model.getDistance());
-		modelClient.setTargetTime(model.getTargetTime());
-		modelClient.setUid(model.getUid());
+		CardioModel modelClient = new CardioModel(model.getId(), model.getName());
+    
+    //user
+    modelClient.setUser(UserOpenid.getClientModel(model.getUser()));
 		
 		return modelClient;
 	}
@@ -58,47 +58,39 @@ public class Run {
 	 * @param model : client side model
 	 * @return Server side model
 	 */
-	public static Run getServerModel(RunModel model) {
+	public static Cardio getServerModel(CardioModel model) {
 		if(model == null) {
 			return null;
     }
 		
-		Run modelServer = new Run(model.getNameServer());
-		modelServer.setId(model.getId());
-		modelServer.setDistance(model.getDistance());
-		modelServer.setTargetTime(model.getTargetTime());
+		Cardio modelServer = new Cardio(model.getNameServer());
+    if(model.getUser() != null)
+      modelServer.setUid(model.getUser().getUid());
 		
 		return modelServer;
 	}
-	
-	@Persistent
-	public Long uid;
-  
-  @Persistent
-  public String openId;
 
 	@Persistent
-	private Double distance;		//in kilometers
+	public Long uid;
+	
+	@Persistent
+	public String openId;
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
-
+	
 	@Persistent
 	private String name;
 
-	@Persistent
-	private Long targetTime;	//in seconds
+  @NotPersistent
+  private UserOpenid user;
 
-	@Persistent(mappedBy = "run")
-  private List<RunValue> values = new ArrayList<RunValue>();
+	@Persistent(mappedBy = "cardio")
+  private List<CardioValue> values = new ArrayList<CardioValue>();
 
-	public Run(String name) {
+	public Cardio(String name) {
 		setName(name);
-	}
-
-	public Double getDistance() {
-		return distance;
 	}
 
 	public Long getId() {
@@ -118,10 +110,6 @@ public class Run {
     return name;
   }
 
-	public Long getTargetTime() {
-		return targetTime;
-	}
-
 	public String getUid() {
 		if(openId != null) {
 			return openId;
@@ -131,20 +119,16 @@ public class Run {
     }
   }
 
-	public List<RunValue> getValues() {
+	public List<CardioValue> getValues() {
 		return values;
-	}
-
-	public void setDistance(Double distance) {
-		this.distance = distance;
 	}
 
 	public void setId(Long id) {
 		Key k = null;
 		
 		if(id != null && id != 0) {
-      k = KeyFactory.createKey(Run.class.getSimpleName(), id);
-    }
+      k = KeyFactory.createKey(Cardio.class.getSimpleName(), id);
+		}
 		this.id = k;
 	}
 
@@ -152,37 +136,40 @@ public class Run {
 		this.name = name;
   }
 
-	public void setTargetTime(Long targetTime) {
-		this.targetTime = targetTime;
-	}
-
-	public void setUid(String openId) {
-		this.openId = openId;
+	public void setUid(String uid) {
+		this.openId = uid;
 	}
 	
-	public void setValues(List<RunValue> values) {
+	public void setValues(List<CardioValue> values) {
 		this.values = values;
-	} 
+	}
 
   public Long getUidOld() {
     return uid;
   }
 
+  public UserOpenid getUser() {
+    return user;
+  }
+
+  public void setUser(UserOpenid user) {
+    this.user = user;
+  }
+
   @SuppressWarnings("unchecked")
   public JSONObject getJson() {
-    JSONObject obj = new JSONObject();
-    obj.put("distance", getDistance());
-    obj.put("id", getId());
-    obj.put("name", getName());
-    obj.put("openId", getUid());
-    obj.put("targetTime", getTargetTime());
-    obj.put("uid", getUidOld());
+    JSONObject obj=new JSONObject();
+    obj.put("id",getId());
+    obj.put("id",getId());
+    obj.put("name",getName());
+    obj.put("openId",getUid());
+    obj.put("uid",getUidOld());
     JSONArray list = new JSONArray();
-    for(RunValue value : getValues()) {
+    for(CardioValue value : getValues()) {
       list.add(value.getJson());
     }
-    obj.put("RunValue", list);
+    obj.put("CardioValue", list);
 
     return obj;
-  } 
+  }
 }

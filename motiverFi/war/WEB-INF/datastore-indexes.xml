@@ -125,4 +125,12 @@
         <property name="values_INTEGER_IDX" direction="asc"/>
     </datastore-index>
     
+    <datastore-index kind="Run" ancestor="false" source="manual">
+        <property name="openId" direction="asc"/>
+        <property name="name" direction="asc"/>
+    </datastore-index>
+    
+    <datastore-index kind="CardioValue" ancestor="true" source="manual">
+        <property name="values_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
 </datastore-indexes>

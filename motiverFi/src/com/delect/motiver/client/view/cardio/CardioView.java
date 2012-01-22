@@ -354,7 +354,7 @@ public class CardioView extends CardioPresenter.CardioDisplay {
 			//buttons
 			if(cardio.getId() != 0) {
 				
-				if(cardio.getUid().equals(AppController.User.getUid())) {
+				if(cardio.getUser().equals(AppController.User)) {
 					
 					panelBase.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Value().toLowerCase()), 
           new Listener<BaseEvent>() {

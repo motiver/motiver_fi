@@ -68,14 +68,10 @@ public class CardioModel extends BaseModelData implements IsSerializable {
 			return "";
     }
   }
-	public String getUid() {
-		if(get("uid") != null) {
-			return get("uid");
-    }
-		else {
-			return "";
-    }
+  public UserModel getUser() {
+    return get("u");
   }
+  
 	public List<CardioValueModel> getValues() {
 		return get("v");
 	}
@@ -86,9 +82,9 @@ public class CardioModel extends BaseModelData implements IsSerializable {
 	public void setName(String name) {
 		set("n", name);
 	}
-	public void setUid(String uid) {
-		set("uid", uid);
-	}
+  public void setUser(UserModel u) {
+    set("u", u);
+  } 
 	public void setValues(List<CardioValueModel> values) {
 		set("v", values);
 	}

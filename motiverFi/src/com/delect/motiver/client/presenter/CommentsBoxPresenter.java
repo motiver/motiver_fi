@@ -245,7 +245,7 @@ public class CommentsBoxPresenter extends Presenter {
 		else if(cardio != null) {
 			title = cardio.getNameClient();
 			target = "c" + cardio.getId();
-			uid = cardio.getUid();
+			uid = cardio.getUser().getUid();
 		}
 		//run
 		else if(run != null) {

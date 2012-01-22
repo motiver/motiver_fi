@@ -12,9 +12,10 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo;
+package com.delect.motiver.server.jdo.cardio;
 
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.jdo.annotations.IdGeneratorStrategy;
 import javax.jdo.annotations.IdentityType;
@@ -22,35 +23,33 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.shared.CardioValueModel;
+import com.delect.motiver.shared.RunModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class CardioValue {
+public class Run {
 	
 	/**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model
 	 */
-	public static CardioValueModel getClientModel(CardioValue model) {
+	public static RunModel getClientModel(Run model) {
 		if(model == null) {
 			return null;
     }
-		
-		CardioValueModel modelClient = new CardioValueModel( );
+
+		RunModel modelClient = new RunModel(model.getId(), model.getName());
 		modelClient.setId(model.getId());
-		modelClient.setDate(model.getDate());
-		modelClient.setDuration(model.getDuration());
-		modelClient.setPulse(model.getPulse());
-    modelClient.setPulseMax(model.getPulseMax());
-		modelClient.setCalories(model.getCalories());
-		modelClient.setInfo(model.getInfo());
+		modelClient.setDistance(model.getDistance());
+		modelClient.setTargetTime(model.getTargetTime());
 		modelClient.setUid(model.getUid());
+		
 		return modelClient;
 	}
 
@@ -59,23 +58,19 @@ public class CardioValue {
 	 * @param model : client side model
 	 * @return Server side model
 	 */
-	public static CardioValue getServerModel(CardioValueModel model) {
+	public static Run getServerModel(RunModel model) {
 		if(model == null) {
 			return null;
     }
-
-		CardioValue modelServer = new CardioValue( );
+		
+		Run modelServer = new Run(model.getNameServer());
 		modelServer.setId(model.getId());
-		modelServer.setDate(model.getDate());
-		modelServer.setDuration(model.getDuration());
-		modelServer.setPulse(model.getPulse());
-    modelServer.setPulseMax(model.getPulseMax());
-		modelServer.setCalories(model.getCalories());
-		modelServer.setInfo(model.getInfo());
+		modelServer.setDistance(model.getDistance());
+		modelServer.setTargetTime(model.getTargetTime());
 		
 		return modelServer;
 	}
-
+	
 	@Persistent
 	public Long uid;
   
@@ -83,54 +78,28 @@ public class CardioValue {
   public String openId;
 
 	@Persistent
-	private Integer calories;
-
-	@Persistent
-	private Cardio cardio;
-
-	@Persistent
-	private Date date;
-
-	@Persistent
-	private Long duration;
+	private Double distance;		//in kilometers
 
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
 
 	@Persistent
-	private String info;
+	private String name;
 
 	@Persistent
-	private Integer pulse;
+	private Long targetTime;	//in seconds
 
-	@Persistent
-	private Integer pulseMax;
-	
-	public CardioValue() {
-	  
-	}
-	
-	public Integer getCalories() {
-    return calories;
-  }
+	@Persistent(mappedBy = "run")
+  private List<RunValue> values = new ArrayList<RunValue>();
 
-	public Cardio getCardio() {
-		return cardio;
+	public Run(String name) {
+		setName(name);
 	}
 
-	public Date getDate() {
-		return date;
+	public Double getDistance() {
+		return distance;
 	}
-
-	public Long getDuration() {
-		if(duration != null) {
-			return duration;
-    }
-		else {
-			return 0L;
-    }
-  }
 
 	public Long getId() {
 		if(id != null) {
@@ -141,27 +110,17 @@ public class CardioValue {
     }
   }
 
-	public String getInfo() {
-    return info;
+	public Key getKey() {
+		return id;
+	}
+
+	public String getName() {
+    return name;
   }
-  
-	public Integer getPulse() {
-    if(pulse != null) {
-      return pulse;
-    }
-    else {
-      return 0;
-    }
-  }
-  
-  public Integer getPulseMax() {
-    if(pulseMax != null) {
-      return pulseMax;
-    }
-    else {
-      return 0;
-    }
-  }
+
+	public Long getTargetTime() {
+		return targetTime;
+	}
 
 	public String getUid() {
 		if(openId != null) {
@@ -172,41 +131,37 @@ public class CardioValue {
     }
   }
 
-	public void setCalories(Integer calories) {
-		this.calories = calories;
-  }
+	public List<RunValue> getValues() {
+		return values;
+	}
 
-	public void setDate(Date date) {
-		this.date = date;
-  }
-
-	public void setDuration(Long duration) {
-		this.duration = duration;
-  }
+	public void setDistance(Double distance) {
+		this.distance = distance;
+	}
 
 	public void setId(Long id) {
 		Key k = null;
 		
 		if(id != null && id != 0) {
-      k = KeyFactory.createKey(CardioValue.class.getSimpleName(), id);
+      k = KeyFactory.createKey(Run.class.getSimpleName(), id);
     }
 		this.id = k;
 	}
 
-	public void setInfo(String info) {
-		this.info = info;
+	public void setName(String name) {
+		this.name = name;
   }
 
-	public void setPulse(Integer pulse) {
-		this.pulse = pulse;
-  }
+	public void setTargetTime(Long targetTime) {
+		this.targetTime = targetTime;
+	}
 
-  public void setPulseMax(Integer pulseMax) {
-    this.pulseMax = pulseMax;
-  }
-	
 	public void setUid(String openId) {
 		this.openId = openId;
+	}
+	
+	public void setValues(List<RunValue> values) {
+		this.values = values;
 	} 
 
   public Long getUidOld() {
@@ -215,17 +170,19 @@ public class CardioValue {
 
   @SuppressWarnings("unchecked")
   public JSONObject getJson() {
-    JSONObject obj=new JSONObject();
-    obj.put("calories", getCalories());
-    obj.put("date", getDate());
-    obj.put("duration", getDuration());
+    JSONObject obj = new JSONObject();
+    obj.put("distance", getDistance());
     obj.put("id", getId());
-    obj.put("info", getInfo());
+    obj.put("name", getName());
     obj.put("openId", getUid());
-    obj.put("pulse", getPulse());
-    obj.put("pulseMax", getPulseMax());
+    obj.put("targetTime", getTargetTime());
     obj.put("uid", getUidOld());
-    
+    JSONArray list = new JSONArray();
+    for(RunValue value : getValues()) {
+      list.add(value.getJson());
+    }
+    obj.put("RunValue", list);
+
     return obj;
   } 
 }

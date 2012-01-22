@@ -12,7 +12,7 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.server.jdo;
+package com.delect.motiver.server.jdo.cardio;
 
 import java.util.Date;
 
@@ -27,22 +27,22 @@ import org.json.simple.JSONObject;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.shared.RunValueModel;
+import com.delect.motiver.shared.CardioValueModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class RunValue {
+public class CardioValue {
 	
-  /**
+	/**
 	 * Converts server object to client side object
 	 * @param model : server side model
 	 * @return Client side model
 	 */
-	public static RunValueModel getClientModel(RunValue model) {
+	public static CardioValueModel getClientModel(CardioValue model) {
 		if(model == null) {
 			return null;
     }
 		
-		RunValueModel modelClient = new RunValueModel( );
+		CardioValueModel modelClient = new CardioValueModel( );
 		modelClient.setId(model.getId());
 		modelClient.setDate(model.getDate());
 		modelClient.setDuration(model.getDuration());
@@ -53,18 +53,18 @@ public class RunValue {
 		modelClient.setUid(model.getUid());
 		return modelClient;
 	}
-  
+
 	/**
 	 * Converts client object to server side object
 	 * @param model : client side model
 	 * @return Server side model
 	 */
-	public static RunValue getServerModel(RunValueModel model) {
+	public static CardioValue getServerModel(CardioValueModel model) {
 		if(model == null) {
 			return null;
     }
 
-		RunValue modelServer = new RunValue( );
+		CardioValue modelServer = new CardioValue( );
 		modelServer.setId(model.getId());
 		modelServer.setDate(model.getDate());
 		modelServer.setDuration(model.getDuration());
@@ -75,36 +75,49 @@ public class RunValue {
 		
 		return modelServer;
 	}
-	
+
 	@Persistent
 	public Long uid;
+  
   @Persistent
   public String openId;
+
 	@Persistent
 	private Integer calories;
+
+	@Persistent
+	private Cardio cardio;
+
 	@Persistent
 	private Date date;
+
 	@Persistent
 	private Long duration;
+
 	@PrimaryKey
 	@Persistent(valueStrategy = IdGeneratorStrategy.IDENTITY)
 	private Key id;
+
 	@Persistent
 	private String info;
+
 	@Persistent
 	private Integer pulse;
-  @Persistent
-  private Integer pulseMax;
-	@Persistent
-	private Run run;
 
-	public RunValue() {
-    
-  }
+	@Persistent
+	private Integer pulseMax;
+	
+	public CardioValue() {
+	  
+	}
 	
 	public Integer getCalories() {
     return calories;
   }
+
+	public Cardio getCardio() {
+		return cardio;
+	}
 
 	public Date getDate() {
 		return date;
@@ -132,7 +145,7 @@ public class RunValue {
     return info;
   }
   
-  public Integer getPulse() {
+	public Integer getPulse() {
     if(pulse != null) {
       return pulse;
     }
@@ -149,10 +162,6 @@ public class RunValue {
       return 0;
     }
   }
-
-	public Run getRun() {
-		return run;
-	}
 
 	public String getUid() {
 		if(openId != null) {
@@ -179,7 +188,7 @@ public class RunValue {
 		Key k = null;
 		
 		if(id != null && id != 0) {
-      k = KeyFactory.createKey(RunValue.class.getSimpleName(), id);
+      k = KeyFactory.createKey(CardioValue.class.getSimpleName(), id);
     }
 		this.id = k;
 	}
@@ -216,6 +225,7 @@ public class RunValue {
     obj.put("pulse", getPulse());
     obj.put("pulseMax", getPulseMax());
     obj.put("uid", getUidOld());
+    
     return obj;
   } 
 }
