@@ -10,6 +10,7 @@ import javax.jdo.Query;
 import javax.jdo.Transaction;
 
 import com.delect.motiver.server.PMF;
+import com.delect.motiver.server.dao.helper.CircleSearchParams;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.service.MyServiceImpl;
@@ -41,27 +42,28 @@ public class UserDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public Circle getCircle(int target, String ourUid, String uid) throws Exception {
+  public List<Circle> getCircle(CircleSearchParams params) throws Exception {
 
-    Circle circle = null;
+    List<Circle> list = null;
     
     PersistenceManager pm =  PMF.getUser().getPersistenceManager();
     
     try {      
       StringBuilder builder = MyServiceImpl.getStringBuilder();
-      builder.append("openId == openIdParam && ");
-      builder.append("(friendId == friendIdParam || friendId == '-1')");
-      builder.append(" && target == targetParam");
+      if(params.ourUid != null) {
+        builder.append("openId == openIdParam && ");
+      }
+      if(params.uid != null) {
+        builder.append("(friendId == friendIdParam || friendId == '-1') && ");
+      }
+      builder.append("target == targetParam");
       
       Query q = pm.newQuery(Circle.class);
       q.setFilter(builder.toString());
       q.declareParameters("java.lang.String openIdParam, java.lang.String friendIdParam, java.lang.Integer targetParam");
       q.setRange(0,1);
-      List<Circle> list = (List<Circle>)q.execute(ourUid, uid, target);
+      list = new ArrayList<Circle>(pm.detachCopyAll((List<Circle>)q.execute(params.ourUid, params.uid, params.target)));
       
-      if(list.size() > 0) {
-        circle = list.get(0);
-      }
     } catch (Exception e) {
       throw e;
     }
@@ -71,7 +73,7 @@ public class UserDAO {
       } 
     }
     
-    return circle;
+    return list;
   }
 
   public void addCircle(Circle circle) throws Exception {

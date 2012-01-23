@@ -11,6 +11,7 @@ import javax.servlet.http.HttpSession;
 
 import com.delect.motiver.server.cache.UserCache;
 import com.delect.motiver.server.dao.UserDAO;
+import com.delect.motiver.server.dao.helper.CircleSearchParams;
 import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.Constants;
@@ -147,9 +148,12 @@ public class UserManager extends AbstractManager {
     Circle circle = cache.getCircle(target, uid, friendUid);
     
     if(circle == null) {
-      circle = dao.getCircle(target, uid, friendUid);
+      CircleSearchParams params = new CircleSearchParams(target, uid, friendUid);
+      params.limit = 1;
+      List<Circle> list = dao.getCircle(params);
       
-      if(circle != null) {
+      if(list != null && list.size() > 0) {
+        circle = list.get(0);
         cache.addCircle(circle);
       }
     }
@@ -287,8 +291,12 @@ public class UserManager extends AbstractManager {
     
     try {
 
-      Circle circle = dao.getCircle(target, user.getUid(), uid);
-      if(circle != null) {
+      CircleSearchParams params = new CircleSearchParams(target, user.getUid(), uid);
+      params.limit = 1;
+      List<Circle> list = dao.getCircle(params);
+      
+      if(list != null && list.size() > 0) {
+        Circle circle = list.get(0);
         cache.removeCircle(circle);
         
         dao.removeCircle(circle);
@@ -359,8 +367,14 @@ public class UserManager extends AbstractManager {
       
       if(u == null) {
         u = dao.getUser(uid);
-
+        
         if(u != null) {
+
+          //check if someone has set this user as coach
+          Circle circle = _getCircle(Permission.COACH, null, u.getUid());
+          if(circle != null)
+            u.setCoach(true);
+          
           cache.setUser(u);
         }
       }
