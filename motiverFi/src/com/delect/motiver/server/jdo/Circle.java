@@ -101,7 +101,7 @@ public class Circle implements Serializable {
     this.target = target;
   }
 
-  public Object getTarget() {
+  public Integer getTarget() {
     return target;
   }
   

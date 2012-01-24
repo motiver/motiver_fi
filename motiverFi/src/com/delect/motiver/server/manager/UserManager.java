@@ -277,6 +277,12 @@ public class UserManager extends AbstractManager {
       
       cache.addCircle(circle);
       
+      //remove user's from cache if set as coach
+      if(circle.getTarget().equals(Permission.COACH)) {
+        cache.removeUser(circle.getFriendId());
+      }
+      
+      
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding user to circle", e);
       handleException("UserManager.addUserToCircle", e);

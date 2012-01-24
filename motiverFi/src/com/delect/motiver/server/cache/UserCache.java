@@ -172,4 +172,20 @@ public class UserCache {
     cache.put(builder.toString(), user);
     
   }
+
+  public void removeUser(String userId) {
+    
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Removing user, ID: "+userId);
+    }
+    
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_USER);
+    builder.append(userId);
+    cache.remove(builder.toString());
+  }
 }
