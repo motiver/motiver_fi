@@ -84,6 +84,10 @@ public class NutritionCache {
     List<TimeJDO> times = null;
     
     if(obj instanceof Map) {
+
+      //prodeagle counter
+      Counter.increment("Cache.Times");
+      
       times = new ArrayList<TimeJDO>();
       Map<Long, TimeJDO> map = (Map<Long, TimeJDO>)obj;
       

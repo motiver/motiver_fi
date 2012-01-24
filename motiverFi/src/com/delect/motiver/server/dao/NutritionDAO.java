@@ -51,6 +51,9 @@ public class NutritionDAO {
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading times ("+uid+", "+date+")");
     }
+
+    //prodeagle counter
+    Counter.increment("DAO.Times");
     
     List<TimeJDO> list = new ArrayList<TimeJDO>();
     
