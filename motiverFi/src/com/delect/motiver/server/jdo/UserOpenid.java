@@ -18,6 +18,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
@@ -61,16 +62,10 @@ public class UserOpenid implements Serializable {
 			modelClient.setTimezone(model.getTimezone());
 			modelClient.setGender(model.getGender());
 			modelClient.setLocale(model.getLocale());
-			
-//			modelClient.setShareTraining(model.getShareTraining());
-//			modelClient.setShareNutrition(model.getShareNutrition());
-//      modelClient.setShareNutritionFoods(model.getShareNutritionFoods());
-//			modelClient.setShareCardio(model.getShareCardio());
-//			modelClient.setShareMeasurement(model.getShareMeasurement());
-//			modelClient.setShareCoach(model.getShareCoach());
 			modelClient.setAdmin(model.isAdmin());
 			modelClient.setBanned(model.isBanned());
 			modelClient.setAlias(model.getAlias());
+      modelClient.setCoach(model.isCoach());
 			
 		} catch (Exception e) {
 		}
@@ -146,6 +141,9 @@ public class UserOpenid implements Serializable {
 	@PrimaryKey
   private String id; //open id
   private String fedId;
+  
+  @NotPersistent
+  private boolean isCoach;
 	
 	public UserOpenid() {
 		createDate = new Date();
@@ -353,6 +351,9 @@ public class UserOpenid implements Serializable {
 			return true;
     }
 	}
+  public boolean isCoach() {
+    return isCoach;
+  }
 
 	/**
 	 * Sets if user has administrator priviledges
@@ -418,59 +419,6 @@ public class UserOpenid implements Serializable {
 		this.measurementSystem = measurementSystem;
 	}
 
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareCardio(String shareCardio) {
-//		this.shareCardio = shareCardio;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody (DEFAULT)
-//	 */
-//	public void setShareCoach(String shareCoach) {
-//		this.shareCoach = shareCoach;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareMeasurement(String shareMeasurement) {
-//		this.shareMeasurement = shareMeasurement;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareNutrition(String shareNutrition) {
-//		this.shareNutrition = shareNutrition;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareNutritionFoods(String shareNutritionFoods) {
-//		this.shareNutritionFoods = shareNutritionFoods;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareTraining(String shareTraining) {
-//		this.shareTraining = shareTraining;
-//	}
-
 	public void setTimeFormat(int timeFormat) {
 		this.timeFormat = timeFormat;
 	}
@@ -485,6 +433,9 @@ public class UserOpenid implements Serializable {
   
   public void setFedId(String fedId) {
     this.fedId = fedId;
+  }
+  public void setCoach(boolean isCoach) {
+    this.isCoach = isCoach;
   }
 	
 	public String toString() {
