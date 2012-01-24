@@ -19,7 +19,6 @@ import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -105,7 +104,7 @@ public class TrainingManager extends AbstractManager {
       
         //update cache
         if(workout.getDate() != null) {
-          cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+          cache.setWorkouts(new WorkoutSearchParams(workout.getDate(), workout.getUid()), null);  //clear day's cache
         }
         if(workout.getRoutineId() != null) {
           cache.removeRoutine(workout.getRoutineId());
@@ -147,7 +146,7 @@ public class TrainingManager extends AbstractManager {
 
         //update cache
         if(workout.getDate() != null) {
-          cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+          cache.setWorkouts(new WorkoutSearchParams(workout.getDate(), workout.getUid()), null);  //clear day's cache
         }
         if(workout.getRoutineId() != null) {
           cache.removeRoutine(workout.getRoutineId());
@@ -182,21 +181,24 @@ public class TrainingManager extends AbstractManager {
     List<Workout> list = null;
     
     try {    
-      //get from cache
-      list = cache.getWorkouts(uid, date);
+      WorkoutSearchParams params = new WorkoutSearchParams(date, uid);
       
-      if(list == null) {
-        WorkoutSearchParams params = new WorkoutSearchParams(date, uid);
-        List<Long> keys = dao.getWorkouts(params);
+      //get from cache
+      Set<Long> keys = cache.getWorkouts(params);
+      
+      if(keys == null) {
+        keys = dao.getWorkouts(params);
         
-        list = new ArrayList<Workout>();
-        for(Long key : keys) {
-          list.add(_getWorkout(key));
-        }
 
         //add to cache
-        cache.setWorkouts(uid, date, list);
+        cache.setWorkouts(params, keys);
       }
+      
+      list = new ArrayList<Workout>();
+      for(Long key : keys) {
+        list.add(_getWorkout(key));
+      }
+      
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workouts", e);
       handleException("TrainingManager.getWorkouts", e);
@@ -240,7 +242,7 @@ public class TrainingManager extends AbstractManager {
       params.offset = offset;
       params.limit = Constants.LIMIT_WORKOUTS;
       params.uid = uid;
-      List<Long> keys = dao.getWorkouts(params);
+      Set<Long> keys = dao.getWorkouts(params);
       
       for(Long key : keys) {
         
@@ -319,7 +321,7 @@ public class TrainingManager extends AbstractManager {
       int i = 0;
       while(list.size() < Constants.LIMIT_WORKOUTS) {
         params.offset = i;
-        List<Long> keys = dao.getWorkouts(params);
+        Set<Long> keys = dao.getWorkouts(params);
         
         for(Long key : keys) {
           
@@ -491,7 +493,7 @@ public class TrainingManager extends AbstractManager {
       jdo.setUser(userManager.getUser(jdo.getUid()));
       
       //get workouts
-      List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routineId));
+      Set<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routineId));
       ArrayList<Workout> list = new ArrayList<Workout>();
       for(Long key : keys) {
         list.add(_getWorkout(key));
@@ -589,7 +591,7 @@ public class TrainingManager extends AbstractManager {
 
         //remove cache
         if(w.getDate() != null) {
-          cache.setWorkouts(w.getUid(), w.getDate(), null);
+          cache.setWorkouts(new WorkoutSearchParams(w.getDate(), w.getUid()), null);
         }
         cache.removeWorkout(w.getId());
 
@@ -634,7 +636,7 @@ public class TrainingManager extends AbstractManager {
         
         //remove workouts
         //TODO doesn't remove from cache
-        List<Long> keysW = dao.getWorkouts(new WorkoutSearchParams(w.getId()));
+        Set<Long> keysW = dao.getWorkouts(new WorkoutSearchParams(w.getId()));
         Long[] keysW2 = keysW.toArray(new Long[0]);
         dao.removeWorkouts(keysW2);
         
@@ -723,7 +725,7 @@ public class TrainingManager extends AbstractManager {
         
         //remove cache
         if(clone.getDate() != null) {
-          cache.setWorkouts(user.getUid(), clone.getDate(), null);
+          cache.setWorkouts(new WorkoutSearchParams(clone.getDate(), user.getUid()), null);
         }
       }
 
@@ -819,7 +821,7 @@ public class TrainingManager extends AbstractManager {
               wClone.setDate(dateNew);
               
               //clear cache
-              cache.setWorkouts(user.getUid(), dateNew, null);
+              cache.setWorkouts(new WorkoutSearchParams(dateNew, user.getUid()), null);
             }
             
             wClone.setUid(user.getUid());
@@ -841,7 +843,7 @@ public class TrainingManager extends AbstractManager {
         jdo.setUser(userManager.getUser(jdo.getUid()));
         
         //get workouts
-        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(jdo.getId()));
+        Set<Long> keys = dao.getWorkouts(new WorkoutSearchParams(jdo.getId()));
         ArrayList<Workout> list = new ArrayList<Workout>();
         for(Long key : keys) {
           list.add(_getWorkout(key));
@@ -1054,7 +1056,7 @@ public class TrainingManager extends AbstractManager {
       String[] arr = query.split(" ");
 
       //load from cache
-      List<Long> keysAll = dao.getWorkouts(WorkoutSearchParams.all());
+      Set<Long> keysAll = dao.getWorkouts(WorkoutSearchParams.all());
 
       int i = 0;
       for(Long key : keysAll) {
@@ -1188,9 +1190,9 @@ public class TrainingManager extends AbstractManager {
 
       //remove from cache (also old date if moved)
       if(workout.getDate() != null) {
-        cache.setWorkouts(workout.getUid(), workout.getDate(), null);
+        cache.setWorkouts(new WorkoutSearchParams(workout.getDate(), workout.getUid()), null);
         if(!dOld.equals(workout.getDate())) {
-          cache.setWorkouts(workout.getUid(), dOld, null);
+          cache.setWorkouts(new WorkoutSearchParams(dOld, workout.getUid()), null);
         }
       }
       cache.removeWorkout(workout.getId());
@@ -1229,7 +1231,7 @@ public class TrainingManager extends AbstractManager {
       if(oldDays > routine.getDays()) {
         
         //get workouts
-        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routine.getId(), oldDays));
+        Set<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routine.getId(), oldDays));
         ArrayList<Workout> list = new ArrayList<Workout>();
         for(Long key : keys) {
           list.add(_getWorkout(key));

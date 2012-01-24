@@ -3,8 +3,10 @@ package com.delect.motiver.server.dao;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -534,13 +536,13 @@ public class TrainingDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Long> getWorkouts(WorkoutSearchParams params) throws Exception {
+  public Set<Long> getWorkouts(WorkoutSearchParams params) throws Exception {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading workouts: "+params);
     }
 
-    List<Long> list = new ArrayList<Long>();
+    Set<Long> list = new HashSet<Long>();
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     
