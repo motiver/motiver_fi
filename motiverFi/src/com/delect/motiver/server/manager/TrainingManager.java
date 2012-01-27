@@ -885,7 +885,6 @@ public class TrainingManager extends AbstractManager {
         //search
         List<NameCountWrapper> result = new ArrayList<NameCountWrapper>();
 
-        String locale = user.getLocale();
         for(Entry<Long, String> entry : mapAll.entrySet()) {
           
           Long id = entry.getKey();
@@ -990,7 +989,8 @@ public class TrainingManager extends AbstractManager {
         }
         //otherwise update (if name we have added)
         else {
-          if(nameOld != null && user.getUid().equals(nameOld.getUid())) {
+          if(nameOld != null 
+              && (user.getUid().equals(nameOld.getUid()) || user.isAdmin()) ) {
             nameOld.update(name, false);
             dao.updateExerciseName(nameOld);
           }

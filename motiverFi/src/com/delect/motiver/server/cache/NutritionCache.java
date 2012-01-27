@@ -27,8 +27,9 @@ import com.prodeagle.java.counters.Counter;
 public class NutritionCache {
 
   private final static boolean CACHE_ON = true;
-  
-  private final static String PREFIX_FOOD_NAMES = "nc_fnames";
+
+  private final static String PREFIX_FOOD_NAME = "nc_en1_";
+  private final static String PREFIX_FOOD_NAMES = "nc_en2_";
   private final static String PREFIX_FOOD_NAME_COUNT = "nc_fn_c";
   private final static String PREFIX_TIMES = "nc_fn_t";
   private final static String PREFIX_TIME = "nc_t";
@@ -227,7 +228,7 @@ public class NutritionCache {
   }
   
   @SuppressWarnings("unchecked")
-  public Map<Long, FoodName> getFoodNames() {
+  public Map<Long, String> getFoodNames(String locale) {
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -235,26 +236,28 @@ public class NutritionCache {
     
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_FOOD_NAMES);
+    builder.append(locale);
+    builder.append("_");
     Object obj = cache.get(builder.toString());
 
-    Map<Long, FoodName> names = null;
+    Map<Long, String> names = null;
     
     if(obj instanceof Map) {
 
       //prodeagle counter
       Counter.increment("Cache.FoodNames");
       
-      names = (Map<Long, FoodName>)obj;
+      names = (Map<Long, String>)obj;
     }
     
     if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loaded food names: "+ ((names != null)? names.size() : 0));
+      logger.log(Level.FINE, "Loaded food names: "+((names != null)? names.size() : 0));
     }
     
     return names;
   }
   
-  public void setFoodNames(Map<Long, FoodName> map) {
+  public void setFoodNames(String locale, Map<Long, String> map) {
     
     if(cache == null || !CACHE_ON) {
       return;
@@ -266,6 +269,8 @@ public class NutritionCache {
 
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_FOOD_NAMES);
+    builder.append(locale);
+    builder.append("_");
     
     cache.put(builder.toString(), map);
     
@@ -311,5 +316,57 @@ public class NutritionCache {
     builder.append(user.getUid());
     cache.put(builder.toString(), count);
     
+  }
+
+  public FoodName getFoodName(Long key) {
+    
+    if(cache == null || !CACHE_ON) {
+      return null;
+    }
+    
+    //workout
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_FOOD_NAME);
+    builder.append(key);
+    Object obj = cache.get(builder.toString());
+    
+    FoodName t = null;
+    if(obj != null && obj instanceof FoodName) {
+
+      //prodeagle counter
+      Counter.increment("Cache.FoodName");
+      
+      t = (FoodName)obj;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded food name ("+key+"): "+t);
+    }
+    
+    return t;
+  }
+
+  public void addFoodName(FoodName jdo) {
+    
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving single food name: "+jdo);
+    }
+    
+    //food name
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_FOOD_NAME);
+    builder.append(jdo.getId());
+    cache.put(builder.toString(), jdo);
+    
+    //add to "search" cache
+    Map<Long, String> map = getFoodNames(jdo.getLocale());
+    if(map == null)
+      map = new HashMap<Long, String>();
+    map.put(jdo.getId(), jdo.getName());
+    this.setFoodNames(jdo.getLocale(), map);
   }
 }

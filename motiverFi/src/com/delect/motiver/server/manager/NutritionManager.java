@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,18 +20,14 @@ import com.delect.motiver.server.jdo.nutrition.FoodJDO;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.manager.helpers.NameCountWrapper;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.server.util.NutritionUtils;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.NutritionDayModel;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
-import com.google.appengine.api.backends.BackendServiceFactory;
 import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Method;
 import com.prodeagle.java.counters.Counter;
 
 public class NutritionManager extends AbstractManager {
@@ -393,58 +390,42 @@ public class NutritionManager extends AbstractManager {
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getFoodName ("+key+")");
     }
-
-
-    //check if food names are found from cache
-    Map<Long, FoodName> mapAll = cache.getFoodNames();
     
-    //if cache is empty -> add backend task for loading names to cache
-    if(mapAll == null) {
-      
-      //add task
-      try {
-        Queue queue = QueueFactory.getQueue("load-names-queue");
-        TaskOptions opt = TaskOptions.Builder.withUrl("/tasks/load_names");
-        queue.add(opt.param("target", "foodname")
-            .method(Method.GET)
-            .header("Host", BackendServiceFactory.getBackendService().getBackendAddress("tasks", 0)));
-        
-      } catch (Exception e) {
-        logger.log(Level.WARNING, "Error adding new task", e);
-      }
-      
-      //get name by key
-      return dao.getFoodName(key);
+    if(key == null || key == 0) {
+      return null;
     }
-    //are found from cache
-    else {
-      
-      Counter.increment("Cache.FoodName");
-      
-      return mapAll.get(key);
+    
+    FoodName jdo = cache.getFoodName(key);
+    
+    if(jdo == null) {      
+      jdo = dao.getFoodName(key);
+
+      cache.addFoodName(jdo);
     }
+    
+    return jdo;
   }
 
-  private Map<Long, FoodName> _getFoodNames() throws Exception {
+  private Map<Long, String> _getFoodNames(String locale) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getFoodNames");
     }
 
     //load from cache
-    Map<Long, FoodName> mapAll = cache.getFoodNames();
+    Map<Long, String> mapAll = cache.getFoodNames(locale);
     
     if(mapAll == null) {
-      List<FoodName> list = dao.getFoodNames();
+      List<FoodName> list = dao.getFoodNames(locale);
 
       //create map
-      mapAll = new HashMap<Long, FoodName>();      
+      mapAll = new HashMap<Long, String>();      
       for(FoodName name : list) {
-        mapAll.put(name.getId(), name);
+        mapAll.put(name.getId(), name.getName());
       }
       
       //save to cache
-      cache.setFoodNames(mapAll);
+      cache.setFoodNames(locale, mapAll);
     }
     
     return mapAll;
@@ -694,7 +675,7 @@ public class NutritionManager extends AbstractManager {
     try {
 
       //load from cache
-      Map<Long, FoodName> mapAll = _getFoodNames();
+      Map<Long, String> mapAll = _getFoodNames(user.getLocale());
       
       if(mapAll != null) {
       
@@ -705,80 +686,67 @@ public class NutritionManager extends AbstractManager {
         query = query.replace(",", "");
         query = query.toLowerCase();
         String[] arr = query.split(" ");
-        
-        //search
-        List<FoodName> result = new ArrayList<FoodName>();
 
-        String locale = user.getLocale();
-        for(FoodName n : mapAll.values()) {
-  
-          //if correct locale
-          if(n.getLocale().equals(locale)) {
+        //search
+        List<NameCountWrapper> result = new ArrayList<NameCountWrapper>();
+
+        for(Entry<Long, String> entry : mapAll.entrySet()) {
+          
+          Long id = entry.getKey();
+          String name = entry.getValue();
             
-            String name = n.getName();
-            
-            //strip special characters
-            name = name.replace("(", "");
-            name = name.replace(")", "");
-            name = name.replace(",", "");
-            
-            //filter by query (add count variable)
-            int count = 0;
-            for(String s : arr) {
-              //if word long enough
-              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-                //exact match
-                if(name.toLowerCase().equals( s )) {
-                  count += 3;
-                }
-                //partial match
-                else if(name.toLowerCase().contains( s )) {
-                  count++;
-                }
+          //strip special characters
+          name = name.replace("(", "");
+          name = name.replace(")", "");
+          name = name.replace(",", "");
+          
+          //filter by query (add count variable)
+          int count = 0;
+          for(String s : arr) {
+            //if word long enough
+            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
+              //exact match
+              if(name.toLowerCase().equals( s )) {
+                count += 3;
               }
-            }
-            //if motiver's food -> add count
-            if(count > 0) {
-              if(n.getTrusted() == 100) {
-                count += 2;
-              }
-              //if verified
-              else if(n.getTrusted() == 1) {
+              //partial match
+              else if(name.toLowerCase().contains( s )) {
                 count++;
               }
             }
+          }
 
-            //if found
-            if(count > 0) {
-    
-              int countUse = 0;
-              try {
-                countUse = cache.getFoodNameCount(user, n.getId());
+          //if found
+          if(count > 0) {
+  
+            int countUse = 0;
+            try {
+              countUse = cache.getFoodNameCount(user, id);
+              
+              if(countUse == -1) {
+                countUse = dao.getFoodNameCount(user, id);
                 
-                if(countUse == -1) {
-                  countUse = dao.getFoodNameCount(user, n.getId());
-                  
-                  cache.setFoodNameCount(user, n.getId(), countUse);
-                }
-                
-              } catch (Exception e) {
-                logger.log(Level.SEVERE, "Error fetching food name count", e);
+                cache.setFoodNameCount(user, id, countUse);
               }
               
-              n.setCount(count, countUse);
-              result.add(n);
+            } catch (Exception e) {
+              logger.log(Level.SEVERE, "Error fetching food name count", e);
             }
+            
+            NameCountWrapper n = new NameCountWrapper(id, count, countUse);
+            result.add(n);
           }
         }
-        
+      
         //sort array based on count
-        Collections.sort(result);
+        Collections.sort(result, NameCountWrapper.COUNT_COMPARATOR);
         
         //convert to client model
         for(int i=0; i < result.size() && i < limit; i++) {
-          FoodName n = result.get(i);
-          if(n.getCountQuery() > 0) {
-            list.add(n);
+          NameCountWrapper n = result.get(i);
+          if(n.countQuery > 0) {
+            //fetch correct name
+            list.add(_getFoodName(n.id));
           }
           else {
             break;
@@ -812,25 +780,19 @@ public class NutritionManager extends AbstractManager {
     
     List<FoodName> list = new ArrayList<FoodName>(); 
 
-    try {
-      
-      //load from cache
-      Map<Long, FoodName> mapAll = _getFoodNames();
-      
-      for(FoodName name : names) {
+    try {      
+      for(FoodName name : names) {   
+
+        FoodName nameOld = _getFoodName(name.getId());
         
         //add if not found
-        if(!mapAll.containsValue(name.getId())) {
+        if(nameOld == null) {
           name.setUid(user.getUid());
           
           dao.addFoodName(name);
-          
-          //update "cache" array
-          mapAll.put(name.getId(), name);
         }
-        //otherwise update (if name we have added or we are admin)
+        //otherwise update (if name we have added)
         else {
-          FoodName nameOld = mapAll.get(name.getId());
           if(nameOld != null 
               && (user.getUid().equals(nameOld.getUid()) || user.isAdmin()) ) {
             nameOld.update(name, false);
@@ -838,15 +800,15 @@ public class NutritionManager extends AbstractManager {
           }
         }
         
+        //update "cache" array
+        cache.addFoodName(name);
+        
         list.add(name);
       }
 
-      //save to cache
-      cache.setFoodNames(mapAll);
-
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding food names", e);
-      handleException("NutritionManager.addFoodName", e);
+      handleException("TrainingManager.addFoodName", e);
     }
     
     return list;
