@@ -20,7 +20,6 @@ import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.ExerciseNameCount;
@@ -161,7 +160,7 @@ public class TrainingDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public List<ExerciseName> getExerciseNames() throws Exception {
+  public List<ExerciseName> getExerciseNames(String locale) throws Exception {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading exercise names");
@@ -182,12 +181,14 @@ public class TrainingDAO {
       //get using cursors
       while(true){
         Query q = pm.newQuery(ExerciseName.class);
+        q.setFilter("locale == localeParam");
+        q.declareParameters("java.lang.String localeParam");
         q.setRange(0, 700);
         if(cursor != null) {
           extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
           q.setExtensions(extensionMap);
         }
-        List<ExerciseName> u = (List<ExerciseName>) q.execute();        
+        List<ExerciseName> u = (List<ExerciseName>) q.execute(locale);        
         cursor = JDOCursorHelper.getCursor(u);
 
         n.addAll(u);
