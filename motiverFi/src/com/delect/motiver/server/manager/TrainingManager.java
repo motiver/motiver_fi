@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -23,15 +24,11 @@ import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
+import com.delect.motiver.server.manager.helpers.NameCountWrapper;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
-import com.google.appengine.api.backends.BackendServiceFactory;
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Method;
 import com.prodeagle.java.counters.Counter;
 
 public class TrainingManager extends AbstractManager {
@@ -511,57 +508,42 @@ public class TrainingManager extends AbstractManager {
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getExerciseName ("+key+")");
     }
-
-
-    //check if food names are found from cache
-    Map<Long, ExerciseName> mapAll = cache.getExerciseNames();
     
-    //if cache is empty -> add backend task for loading names to cache
-    if(mapAll == null) {
-      
-      //add task
-      try {
-        Queue queue = QueueFactory.getQueue("load-names-queue");
-        TaskOptions opt = TaskOptions.Builder.withUrl("/tasks/load_names");
-        queue.add(opt.param("target", "exercisename")
-            .method(Method.GET)
-            .header("Host", BackendServiceFactory.getBackendService().getBackendAddress("tasks", 0)));
-      } catch (Exception e) {
-        logger.log(Level.WARNING, "Error adding new task", e);
-      }
-      
-      //get name by key
-      return dao.getExerciseName(key);
+    if(key == null || key == 0) {
+      return null;
     }
-    //are found from cache
-    else {
-      
-      Counter.increment("Cache.ExerciseName");
-      
-      return mapAll.get(key);
+    
+    ExerciseName jdo = cache.getExerciseName(key);
+    
+    if(jdo == null) {      
+      jdo = dao.getExerciseName(key);
+
+      cache.addExerciseName(jdo);
     }
+    
+    return jdo;
   }
 
-  private Map<Long, ExerciseName> _getExerciseNames() throws Exception {
+  private Map<Long, String> _getExerciseNames(String locale) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getExerciseNames");
     }
 
     //load from cache
-    Map<Long, ExerciseName> mapAll = cache.getExerciseNames();
+    Map<Long, String> mapAll = cache.getExerciseNames(locale);
     
     if(mapAll == null) {
-      List<ExerciseName> list = dao.getExerciseNames();
+      List<ExerciseName> list = dao.getExerciseNames(locale);
 
       //create map
-      mapAll = new HashMap<Long, ExerciseName>();      
+      mapAll = new HashMap<Long, String>();      
       for(ExerciseName name : list) {
-        mapAll.put(name.getId(), name);
+        mapAll.put(name.getId(), name.getName());
       }
       
       //save to cache
-      cache.setExerciseNames(mapAll);
+      cache.setExerciseNames(locale, mapAll);
     }
     
     return mapAll;
@@ -877,7 +859,7 @@ public class TrainingManager extends AbstractManager {
     try {
       
       //load from cache
-      Map<Long, ExerciseName> mapAll = _getExerciseNames();
+      Map<Long, String> mapAll = _getExerciseNames(user.getLocale());
       
       if(mapAll != null) {
       
@@ -901,75 +883,67 @@ public class TrainingManager extends AbstractManager {
         }
         
         //search
-        List<ExerciseName> result = new ArrayList<ExerciseName>();
+        List<NameCountWrapper> result = new ArrayList<NameCountWrapper>();
 
-        String locale = user.getLocale();
-        for(ExerciseName n : mapAll.values()) {
+        for(Entry<Long, String> entry : mapAll.entrySet()) {
           
-          //if correct locale
-          if(n.getLocale().equals(locale)) {
-            String name = n.getName();
-            int target = n.getTarget();
-            
-            //strip special characters
-            name = name.replace("(", "");
-            name = name.replace(")", "");
-            name = name.replace(",", "");
-            
-            //filter by query (add count variable)
-            int count = 0;
-            for(String s : arr) {
-              //if word long enough
-              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-                //exact match
-                if(name.toLowerCase().equals( s )) {
-                  count += 3;
-                }
-                //partial match
-                else if(name.toLowerCase().contains( s )) {
-                  count++;
-                }
+          Long id = entry.getKey();
+          String name = entry.getValue();
+          
+          //strip special characters
+          name = name.replace("(", "");
+          name = name.replace(")", "");
+          name = name.replace(",", "");
+          
+          //filter by query (add count variable)
+          int count = 0;
+          for(String s : arr) {
+            //if word long enough
+            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
+              //exact match
+              if(name.toLowerCase().equals( s )) {
+                count += 3;
+              }
+              //partial match
+              else if(name.toLowerCase().contains( s )) {
+                count++;
               }
             }
-            
-            //if targets matches
-            if(targets.contains(target)) {
-              count += 3;
-            }
-            
-            logger.info(" count: "+count);
+          }
+          
+          logger.info(" count: "+count);
 
-            //if found
-            if(count > 0) {
-    
-              int countUse = 0;
-              try {
-                countUse = cache.getExerciseNameCount(user, n.getId());
+          //if found
+          if(count > 0) {
+  
+            int countUse = 0;
+            try {
+              countUse = cache.getExerciseNameCount(user, id);
+              
+              if(countUse == -1) {
+                countUse = dao.getExerciseNameCount(user, id);
                 
-                if(countUse == -1) {
-                  countUse = dao.getExerciseNameCount(user, n.getId());
-                  
-                  cache.setExerciseNameCount(user, n.getId(), countUse);
-                }
-                
-              } catch (Exception e) {
-                logger.log(Level.SEVERE, "Error fetching exercise name count", e);
+                cache.setExerciseNameCount(user, id, countUse);
               }
               
-              n.setCount(count, countUse);
-              result.add(n);
+            } catch (Exception e) {
+              logger.log(Level.SEVERE, "Error fetching exercise name count", e);
             }
+            
+            NameCountWrapper n = new NameCountWrapper(id, count, countUse);
+            result.add(n);
           }
         }
         
         //sort array based on count
-        Collections.sort(result);
+        Collections.sort(result, NameCountWrapper.COUNT_COMPARATOR);
         
         //convert to client model
         for(int i=0; i < result.size() && i < limit; i++) {
-          ExerciseName n = result.get(i);
-          if(n.getCountQuery() > 0) {
-            list.add(n);
+          NameCountWrapper n = result.get(i);
+          if(n.countQuery > 0) {
+            //fetch correct name
+            list.add(_getExerciseName(n.id));
           }
           else {
             break;
@@ -1002,36 +976,31 @@ public class TrainingManager extends AbstractManager {
     
     List<ExerciseName> list = new ArrayList<ExerciseName>(); 
 
-    try {
-      
-      //load from cache
-      Map<Long, ExerciseName> mapAll = _getExerciseNames();
-      
+    try {      
       for(ExerciseName name : names) {   
+
+        ExerciseName nameOld = _getExerciseName(name.getId());
         
         //add if not found
-        if(!mapAll.containsValue(name.getId())) {
+        if(nameOld == null) {
           name.setUid(user.getUid());
           
           dao.addExerciseName(name);
-          
-          //update "cache" array
-          mapAll.put(name.getId(), name);
         }
         //otherwise update (if name we have added)
         else {
-          ExerciseName nameOld = mapAll.get(name.getId());
-          if(nameOld != null && user.getUid().equals(nameOld.getUid())) {
+          if(nameOld != null 
+              && (user.getUid().equals(nameOld.getUid()) || user.isAdmin()) ) {
             nameOld.update(name, false);
             dao.updateExerciseName(nameOld);
           }
         }
         
+        //update "cache" array
+        cache.addExerciseName(name);
+        
         list.add(name);
       }
-
-      //save to cache
-      cache.setExerciseNames(mapAll);
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise names", e);

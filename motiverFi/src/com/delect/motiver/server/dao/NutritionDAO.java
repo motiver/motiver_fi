@@ -685,7 +685,7 @@ public class NutritionDAO {
   }
 
   @SuppressWarnings("unchecked")
-  public List<FoodName> getFoodNames() throws Exception {
+  public List<FoodName> getFoodNames(String locale) throws Exception {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading food names");
@@ -706,12 +706,14 @@ public class NutritionDAO {
       //get using cursors
       while(true){
         Query q = pm.newQuery(FoodName.class);
+        q.setFilter("locale == localeParam");
+        q.declareParameters("java.lang.String localeParam");
         q.setRange(0, 700);
         if(cursor != null) {
           extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
           q.setExtensions(extensionMap);
         }
-        List<FoodName> u = (List<FoodName>) q.execute();        
+        List<FoodName> u = (List<FoodName>) q.execute(locale);        
         cursor = JDOCursorHelper.getCursor(u);
 
         n.addAll(u);

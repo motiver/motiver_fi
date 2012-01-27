@@ -54,10 +54,6 @@
     <servlet-name>backupServlet</servlet-name>
     <servlet-class>com.delect.motiver.server.servlet.BackupServlet</servlet-class>
   </servlet>
-  <servlet>
-    <servlet-name>loadNamesServlet</servlet-name>
-    <servlet-class>com.delect.motiver.server.servlet.tasks.LoadNamesServlet</servlet-class>
-  </servlet>
   
 
  
@@ -96,10 +92,6 @@
   <servlet-mapping>
     <servlet-name>backupServlet</servlet-name>
     <url-pattern>/motiver/bs</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>loadNamesServlet</servlet-name>
-    <url-pattern>/tasks/load_names</url-pattern>
   </servlet-mapping>
   
   <servlet>

@@ -1,12 +1,6 @@
 package com.delect.motiver.server.cache;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
@@ -23,7 +17,6 @@ import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.service.MyServiceImpl;
-import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
 import com.prodeagle.java.counters.Counter;
 
@@ -34,7 +27,8 @@ public class TrainingCache {
   private final static String PREFIX_WORKOUTS = "tc_ws2";
   private final static String PREFIX_WORKOUT = "tc_w";
   private final static String PREFIX_ROUTINE = "tc_r";
-  private final static String PREFIX_EXERCISE_NAMES = "tc_en";
+  private final static String PREFIX_EXERCISE_NAME = "tc_en1_";
+  private final static String PREFIX_EXERCISE_NAMES = "tc_en2_";
   private final static String PREFIX_EXERCISE_NAME_COUNT = "tc_en_c";
   
   private final static int CACHE_EXPIRE_SECONDS = 604800;
@@ -188,7 +182,7 @@ public class TrainingCache {
   }
   
   @SuppressWarnings("unchecked")
-  public Map<Long, ExerciseName> getExerciseNames() {
+  public Map<Long, String> getExerciseNames(String locale) {
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -196,16 +190,18 @@ public class TrainingCache {
     
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAMES);
+    builder.append(locale);
+    builder.append("_");
     Object obj = cache.get(builder.toString());
 
-    Map<Long, ExerciseName> names = null;
+    Map<Long, String> names = null;
     
     if(obj instanceof Map) {
 
       //prodeagle counter
       Counter.increment("Cache.ExerciseNames");
       
-      names = (Map<Long, ExerciseName>)obj;
+      names = (Map<Long, String>)obj;
     }
     
     if(logger.isLoggable(Level.FINE)) {
@@ -215,7 +211,7 @@ public class TrainingCache {
     return names;
   }
   
-  public void setExerciseNames(Map<Long, ExerciseName> map) {
+  public void setExerciseNames(String locale, Map<Long, String> map) {
     
     if(cache == null || !CACHE_ON) {
       return;
@@ -227,6 +223,8 @@ public class TrainingCache {
 
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAMES);
+    builder.append(locale);
+    builder.append("_");
     
     cache.put(builder.toString(), map);
     
@@ -318,5 +316,57 @@ public class TrainingCache {
     builder.append(routine.getId());
     cache.put(builder.toString(), routine);
     
+  }
+
+  public ExerciseName getExerciseName(Long key) {
+    
+    if(cache == null || !CACHE_ON) {
+      return null;
+    }
+    
+    //workout
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_EXERCISE_NAME);
+    builder.append(key);
+    Object obj = cache.get(builder.toString());
+    
+    ExerciseName t = null;
+    if(obj != null && obj instanceof ExerciseName) {
+
+      //prodeagle counter
+      Counter.increment("Cache.ExerciseName");
+      
+      t = (ExerciseName)obj;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded exercise name ("+key+"): "+t);
+    }
+    
+    return t;
+  }
+
+  public void addExerciseName(ExerciseName jdo) {
+    
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving single exercise name: "+jdo);
+    }
+    
+    //exercise name
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_EXERCISE_NAME);
+    builder.append(jdo.getId());
+    cache.put(builder.toString(), jdo);
+    
+    //add to "search" cache
+    Map<Long, String> map = getExerciseNames(jdo.getLocale());
+    if(map == null)
+      map = new HashMap<Long, String>();
+    map.put(jdo.getId(), jdo.getName());
+    this.setExerciseNames(jdo.getLocale(), map);
   }
 }
