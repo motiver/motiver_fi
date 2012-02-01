@@ -22,6 +22,9 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.UserPresenter;
 import com.delect.motiver.client.presenter.UserPresenter.UserHandler;
 import com.delect.motiver.client.res.MyResources;
+import com.delect.motiver.client.view.widget.CustomDragSource;
+import com.delect.motiver.client.view.widget.DNDTabletEvent;
+import com.delect.motiver.client.view.widget.DragSourceTablet;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.UserModel;
@@ -62,7 +65,7 @@ public class UserView extends UserPresenter.UserDisplay {
 		});
 		
 		//drag source
-		DragSource source = new DragSource(this) {  
+		CustomDragSource source = new CustomDragSource(this) {  
       @Override  
       protected void onDragStart(DNDEvent event) { 
           super.onDragStart(event);
