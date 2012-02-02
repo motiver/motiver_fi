@@ -145,6 +145,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
     }
 		
 		panelBase.getPanelData().removeAll();
+    panelBase.getPanelButtons().removeAll();
 
 		try {
 			//if no model -> ask for name
@@ -343,7 +344,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 				
 				if(workout.getUser().equals(AppController.User)) {
 					
-					//add food
+					//add exercise
 					panelBase.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Exercise().toLowerCase()), 
           new Listener<BaseEvent>() {
             @Override
@@ -427,10 +428,20 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
               }
             });
 					}
+          
+          //open in new window
+          panelBase.addHeaderImageButton("_open in new window_", MyResources.INSTANCE.iconBtnNewWindow(), 
+              new Listener<BaseEvent>() {
+            @Override
+            public void handleEvent(BaseEvent be) {
+              if(handler != null)
+                handler.openNewWindow();
+            }
+          });
 					
 					//rename workout
 					panelBase.addHeaderImageButton(AppController.Lang.Rename(), MyResources.INSTANCE.iconBtnRename(), 
-          new Listener<BaseEvent>() {
+					    new Listener<BaseEvent>() {
             @Override
             public void handleEvent(BaseEvent be) {
               if(box != null && box.isVisible()) {

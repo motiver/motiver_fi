@@ -210,6 +210,11 @@ public class SmallNotePanel extends SmallNotePanelDisplay {
 	public LayoutContainer getPanelData() {
 		return panelData;
 	}
+  
+  @Override
+  public LayoutContainer getPanelButtons() {
+    return panelButtons;
+  }
 	
 	/**
 	 * Sets if panel can be collapsed
