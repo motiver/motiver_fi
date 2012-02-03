@@ -4627,7 +4627,7 @@ a.x-menu-item {
     zoom:1;
 }
 .x-window-mc {
-    border:1px solid;
+    border:0;
     padding:0;
     margin:0;
 }
@@ -7236,7 +7236,7 @@ a.x-menu-item {
 .x-window-mc {
     border-color:#99bbe8;
     font: normal 11px tahoma,arial,helvetica,sans-serif;
-    background-color:#dfe8f6;
+    background-color:#F4F2F3;
 }
 .x-window-ml {
 	background-image: url(../images/mytheme/window/left-right.png);
