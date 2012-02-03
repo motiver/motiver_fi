@@ -25,12 +25,19 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.MyAsyncCallback;
 import com.delect.motiver.client.presenter.EmptyPresenter;
+import com.delect.motiver.client.presenter.PopupPresenter;
 import com.delect.motiver.client.presenter.EmptyPresenter.EmptyDisplay;
+import com.delect.motiver.client.presenter.PopupPresenter.PopupDisplay;
+import com.delect.motiver.client.presenter.PopupPresenter.PopupHandler;
+import com.delect.motiver.client.presenter.training.WorkoutPresenter.WorkoutDisplay;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
+import com.delect.motiver.client.view.PopupView;
+import com.delect.motiver.client.view.training.WorkoutView;
 import com.delect.motiver.shared.ExerciseModel;
+import com.delect.motiver.shared.WorkoutModel;
 
 /**
  * Shows history (sets, reps, weights) from single exercise (name)
@@ -44,7 +51,14 @@ public class SingleExerciseHistoryPresenter extends Presenter {
 	*/
 	public abstract static class SingleExerciseHistoryDisplay extends Display {
 		public abstract void setLastWeights(List<ExerciseModel> result);
+    public abstract void setHandler(SingleExerciseHistoryHandler handler);
 	}
+  
+  /** Handler for view to call.
+   */
+  public interface SingleExerciseHistoryHandler {
+    void onSelected(ExerciseModel exercise);
+  }
 	
 	private Date dateEnd;
 	private Date dateStart;
@@ -64,6 +78,18 @@ public class SingleExerciseHistoryPresenter extends Presenter {
     this.limit = limit;
 	    
 	}
+
+  @Override
+  public void onBind() {
+    display.setHandler(new SingleExerciseHistoryHandler() {
+      @Override
+      public void onSelected(ExerciseModel exercise) {
+        WorkoutModel workout = exercise.getWorkout();
+        PopupPresenter p = new PopupPresenter(rpcService, eventBus, (PopupDisplay)GWT.create(PopupView.class), new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), workout), WorkoutPresenter.POPUP_WORKOUT);
+        p.run(display.getBaseContainer());
+      }
+    });
+  }
 	
 	@Override
 	public Display getView() {
@@ -77,7 +103,6 @@ public class SingleExerciseHistoryPresenter extends Presenter {
 
 	@Override
 	public void onStop() {
-		
 		if(emptyPresenter != null) {
 			emptyPresenter.stop();
     }

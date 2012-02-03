@@ -52,6 +52,7 @@ import com.delect.motiver.client.view.UserView;
 import com.delect.motiver.client.view.training.EmptyWorkoutView;
 import com.delect.motiver.client.view.training.ExerciseView;
 import com.delect.motiver.client.view.training.WorkoutView;
+import com.delect.motiver.client.view.widget.PopupSize;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
@@ -67,6 +68,8 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
  */
 public class WorkoutPresenter extends Presenter {
 
+  static PopupSize POPUP_WORKOUT = new PopupSize(800,500);
+  
 	/**
 	* Abstract class for view to extend
 	*/
@@ -130,7 +133,6 @@ public class WorkoutPresenter extends Presenter {
 	public Display getView() {
 		return display;
 	}
-
 
 	@Override
 	public void onBind() {
@@ -310,7 +312,7 @@ public class WorkoutPresenter extends Presenter {
 			}
       @Override
       public void openNewWindow() {
-        PopupPresenter p = new PopupPresenter(rpcService, eventBus, (PopupDisplay)GWT.create(PopupView.class), new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), workout));
+        PopupPresenter p = new PopupPresenter(rpcService, eventBus, (PopupDisplay)GWT.create(PopupView.class), new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), workout), POPUP_WORKOUT);
         p.run(display.getBodyContainer());
       }
 		});

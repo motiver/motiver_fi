@@ -19,6 +19,7 @@ import com.google.gwt.event.shared.SimpleEventBus;
 import com.delect.motiver.client.presenter.PopupPresenter.PopupHandler;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
+import com.delect.motiver.client.view.widget.PopupSize;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -39,6 +40,7 @@ public class PopupPresenter extends Presenter {
 		 * @param handler PopupHandler
 		 */
 		public abstract void setHandler(PopupHandler handler);
+		public abstract void setSize(PopupSize size);
 	}
 	
 	/** Handler for view to call.
@@ -54,6 +56,7 @@ public class PopupPresenter extends Presenter {
 	private PopupDisplay display;
 	private Presenter presenter;
   private PopupHandler handler;
+  private PopupSize size;
 	
 	/**
 	 * 
@@ -61,11 +64,12 @@ public class PopupPresenter extends Presenter {
 	 * @param eventBus
 	 * @param display
 	 */
-	public PopupPresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, PopupDisplay display, Presenter presenter) {
+	public PopupPresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, PopupDisplay display, Presenter presenter, PopupSize size) {
 		super(rpcService, eventBus);
 		this.display = display;
 
     this.presenter = presenter;
+    this.size = size;
 	}
 	
 	@Override
@@ -77,6 +81,7 @@ public class PopupPresenter extends Presenter {
 	@Override
 	public void onBind() {
 
+	  display.setSize(size);
 		display.setHandler(new PopupHandler() {
 			@Override
 			public void onClose() {

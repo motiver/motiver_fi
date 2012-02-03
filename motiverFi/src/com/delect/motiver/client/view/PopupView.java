@@ -19,6 +19,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.PopupPresenter;
 import com.delect.motiver.client.presenter.PopupPresenter.PopupHandler;
+import com.delect.motiver.client.view.widget.PopupSize;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
 import com.extjs.gxt.ui.client.Style.VerticalAlignment;
@@ -41,6 +42,7 @@ public class PopupView extends PopupPresenter.PopupDisplay {
   final Window window = new Window();
   LayoutContainer body = new LayoutContainer();
 	private PopupHandler handler;
+  private PopupSize size = new PopupSize(600, 400);
 
 	public PopupView() {
 	}
@@ -49,9 +51,9 @@ public class PopupView extends PopupPresenter.PopupDisplay {
 	public Widget asWidget() {
 	  window.setMaximizable(false);
 	  window.setConstrain(false);
-	  window.setSize(700, 500);
-	  window.setMinWidth(400);
-	  window.setMinHeight(300);
+	  window.setSize(size.w, size.h);
+	  window.setMinWidth(size.wMin);
+	  window.setMinHeight(size.hMin);
 	  window.setScrollMode(Scroll.AUTO);
 	  window.add(body);
 	  window.addListener(Events.Hide, new Listener<BaseEvent>() {
@@ -69,7 +71,6 @@ public class PopupView extends PopupPresenter.PopupDisplay {
       }
     });
 	  window.show();
-	  body.setBorders(true);
 	  body.layout();
 		return this;
 	}
@@ -89,6 +90,11 @@ public class PopupView extends PopupPresenter.PopupDisplay {
     if(window != null && window.isVisible()) {
       window.hide();
     }
+  }
+
+  @Override
+  public void setSize(PopupSize size) {
+    this.size  = size;
   }
 	
 }
