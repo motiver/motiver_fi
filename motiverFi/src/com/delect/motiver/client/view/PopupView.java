@@ -96,5 +96,10 @@ public class PopupView extends PopupPresenter.PopupDisplay {
   public void setSize(PopupSize size) {
     this.size  = size;
   }
+
+  @Override
+  public void setTitle(String title) {
+    window.setHeading(title);
+  }
 	
 }

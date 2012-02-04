@@ -312,7 +312,7 @@ public class WorkoutPresenter extends Presenter {
 			}
       @Override
       public void openNewWindow() {
-        PopupPresenter p = new PopupPresenter(rpcService, eventBus, (PopupDisplay)GWT.create(PopupView.class), new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), workout), POPUP_WORKOUT);
+        PopupPresenter p = WorkoutPresenter.getWorkoutPopup(rpcService, eventBus, workout);
         p.run(display.getBodyContainer());
       }
 		});
@@ -543,5 +543,18 @@ public class WorkoutPresenter extends Presenter {
 		display.setContentEnabled(true);
 	
 	}
+
+	/**
+	 * Returns popup presenter for workout
+	 * @param rpcService
+	 * @param eventBus
+	 * @param workout
+	 * @return
+	 */
+  protected static PopupPresenter getWorkoutPopup(MyServiceAsync rpcService, SimpleEventBus eventBus, WorkoutModel workout) {
+    PopupPresenter p = new PopupPresenter(rpcService, eventBus, (PopupDisplay)GWT.create(PopupView.class), new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), workout), POPUP_WORKOUT);
+    p.setTitle(Functions.getDateString(workout.getDate(), true, false));
+    return p;
+  }
 
 }

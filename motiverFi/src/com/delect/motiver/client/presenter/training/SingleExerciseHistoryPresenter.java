@@ -85,7 +85,7 @@ public class SingleExerciseHistoryPresenter extends Presenter {
       @Override
       public void onSelected(ExerciseModel exercise) {
         WorkoutModel workout = exercise.getWorkout();
-        PopupPresenter p = new PopupPresenter(rpcService, eventBus, (PopupDisplay)GWT.create(PopupView.class), new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), workout), WorkoutPresenter.POPUP_WORKOUT);
+        PopupPresenter p = WorkoutPresenter.getWorkoutPopup(rpcService, eventBus, workout);
         p.run(display.getBaseContainer());
       }
     });

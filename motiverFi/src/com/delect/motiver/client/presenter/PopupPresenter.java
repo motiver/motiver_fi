@@ -41,6 +41,7 @@ public class PopupPresenter extends Presenter {
 		 */
 		public abstract void setHandler(PopupHandler handler);
 		public abstract void setSize(PopupSize size);
+    public abstract void setTitle(String title);
 	}
 	
 	/** Handler for view to call.
@@ -100,6 +101,10 @@ public class PopupPresenter extends Presenter {
   public void onRun() {
     if(presenter != null)
       presenter.run(display.getBaseContainer());
+  }
+
+  public void setTitle(String title) {
+    display.setTitle(title);
   }
 
 }

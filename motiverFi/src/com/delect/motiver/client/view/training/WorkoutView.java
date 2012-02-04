@@ -430,7 +430,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 					}
           
           //open in new window
-          panelBase.addHeaderImageButton("_open in new window_", MyResources.INSTANCE.iconBtnNewWindow(), 
+          panelBase.addHeaderImageButton(AppController.Lang.OpenInNewWindow(), MyResources.INSTANCE.iconBtnNewWindow(), 
               new Listener<BaseEvent>() {
             @Override
             public void handleEvent(BaseEvent be) {
