@@ -3,6 +3,8 @@ package com.delect.motiver.client.view;
 import com.delect.motiver.client.presenter.BeginnersGuidePresenter;
 import com.delect.motiver.client.presenter.BeginnersGuidePresenter.BeginnersGuideHandler;
 import com.delect.motiver.client.presenter.BeginnersGuidePresenter.Button;
+import com.delect.motiver.client.presenter.BeginnersGuidePresenter.PointDirection;
+import com.delect.motiver.client.res.MyResources;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.VerticalAlignment;
@@ -12,6 +14,10 @@ import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.widget.Popup;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.layout.TableLayout;
+import com.google.gwt.resources.client.ImageResource;
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Widget;
 
 public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDisplay {
@@ -54,6 +60,8 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
     });
     this.add(btnNext);
     
+    popup.setAutoHide(false);
+    popup.setSize(16, 16);
   }
   @Override
   public Widget asWidget() {
@@ -84,6 +92,34 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
       case PREVIOUS:
         btnPrev.setEnabled(enabled);
         break;
+    }
+  }
+  @Override
+  public void showArrow(String id, PointDirection direction) {
+    if(popup != null && popup.isVisible()) {
+      popup.hide();
+    }
+    popup.removeAll();
+    
+    if(id != null) {
+      ImageResource image;
+      switch(direction) {
+        case LEFT:
+          image = MyResources.INSTANCE.getArrowRedLeft();
+          break;
+        case RIGHT:
+          image = MyResources.INSTANCE.getArrowRedRight();
+          break;
+        default:
+          image = MyResources.INSTANCE.getArrowRedUp();
+          break;
+      }
+      
+      popup.add(new Image(image));
+      Element el = DOM.getElementById(id);
+      popup.show(el, "", new int[] {el.getClientWidth()/2, el.getClientHeight()+5} );
+      popup.setZIndex(2000);
+      popup.layout();
     }
   }
 

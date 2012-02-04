@@ -14,7 +14,7 @@ public class BeginnersGuidePresenter extends Presenter {
     public abstract void showText(String text);
     public abstract void setHandler(BeginnersGuideHandler handler);
     public abstract void setButtonEnabled(Button button, boolean enabled);
-    public abstract void showArrow(String id, Direction direction);
+    public abstract void showArrow(String id, PointDirection direction);
   }
   
   public interface BeginnersGuideHandler {
@@ -27,7 +27,7 @@ public class BeginnersGuidePresenter extends Presenter {
     CLOSE
   }
   
-  public enum Direction {
+  public enum PointDirection {
     UP,
     DOWN,
     LEFT,
@@ -38,6 +38,7 @@ public class BeginnersGuidePresenter extends Presenter {
   private Timer t;
   
   private int level = 1;
+  private int levelPrev = 1;
 
   public BeginnersGuidePresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, BeginnersGuideDisplay display) {
     super(rpcService, eventBus);
@@ -83,6 +84,18 @@ public class BeginnersGuidePresenter extends Presenter {
       public void run() {
         if(level <= texts.length) {
           display.showText(texts[level-1]); 
+        }
+        
+        display.setButtonEnabled(Button.PREVIOUS, (level != 1));
+        
+        if(level != levelPrev) {
+          display.showArrow(null, PointDirection.UP);
+          //introduce header links
+          if(level >= 2 && level <= 7) {
+            display.showArrow("header-link-"+(level-1), PointDirection.UP);
+          }
+          
+          levelPrev = level;
         }
       }
     };
