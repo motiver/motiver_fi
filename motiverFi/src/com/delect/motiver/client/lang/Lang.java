@@ -677,7 +677,9 @@ public interface Lang extends Messages {
   String FieldNanText();
   @DefaultMessage("The value must be greater or equal to 0")
   String FieldNegativeText();
-  
+
   @DefaultMessage("Open in new window")
   String OpenInNewWindow();
+  @DefaultMessage("Click to try the experimental version of Motiver")
+  String ExpirementalVersion();
  }
