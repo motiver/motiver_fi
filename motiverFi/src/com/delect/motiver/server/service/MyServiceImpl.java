@@ -2969,7 +2969,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
     List<Exercise> jdos = trainingManager.getExercises(user, nameId, dateStart, dateEnd, limit);
     if(jdos != null) {
       for(Exercise e : jdos) {
-        ExerciseModel dto = Exercise.getClientModel(e);
+        ExerciseModel dto = Exercise.getClientModel(e, true);
         Workout w = e.getWorkout();
         if(w != null) {
           dto.setWorkoutId(e.getWorkout().getId());

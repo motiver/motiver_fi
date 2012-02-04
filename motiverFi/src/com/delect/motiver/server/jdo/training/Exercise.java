@@ -40,7 +40,10 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
 	 * @param model : server side model
 	 * @return Client side model
 	 */
-	public static ExerciseModel getClientModel(Exercise model) {
+  public static ExerciseModel getClientModel(Exercise model) {
+    return getClientModel(model, false);
+  }
+	public static ExerciseModel getClientModel(Exercise model, boolean includeWorkout) {
 		if(model == null) {
 			return null;
     }
@@ -53,7 +56,8 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
 		modelClient.setOrder(model.getOrder());
 		modelClient.setName(ExerciseName.getClientModel(model.getName()));
 		
-//		modelClient.setWorkout(Workout.getClientModel(model.getWorkout()));
+		if(includeWorkout && model.getWorkout() != null)
+		  modelClient.setWorkout(Workout.getClientModel(model.getWorkout()));
 		
 		return modelClient;
 	}

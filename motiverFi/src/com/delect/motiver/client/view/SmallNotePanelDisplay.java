@@ -26,6 +26,7 @@ public abstract class SmallNotePanelDisplay extends LayoutContainer {
   public abstract void addHeaderButton(String text, Listener<BaseEvent> listener);
   public abstract ImageButton addHeaderImageButton(String text, ImageResource image, Listener<BaseEvent> listener);
   public abstract LayoutContainer getPanelData();
+  public abstract LayoutContainer getPanelButtons();
   public abstract void setCollapsible(boolean isCollapsible);
   public abstract void setStylePrefix(String style);
   public abstract void setTitleText(String title);
