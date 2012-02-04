@@ -54,6 +54,7 @@ import com.delect.motiver.client.event.handler.OfflineModeEventHandler;
 import com.delect.motiver.client.event.handler.RunShowEventHandler;
 import com.delect.motiver.client.event.handler.TabEventHandler;
 import com.delect.motiver.client.event.handler.WorkoutShowEventHandler;
+import com.delect.motiver.client.presenter.BeginnersGuidePresenter.BeginnersGuideDisplay;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderDisplay;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderTarget;
 import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageDisplay;
@@ -78,6 +79,7 @@ import com.delect.motiver.client.presenter.statistics.StatisticsPagePresenter.St
 import com.delect.motiver.client.presenter.training.TrainingPagePresenter;
 import com.delect.motiver.client.presenter.training.TrainingPagePresenter.TrainingPageDisplay;
 import com.delect.motiver.client.service.MyServiceAsync;
+import com.delect.motiver.client.view.BeginnersGuideView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.HeaderView;
 import com.delect.motiver.client.view.InfoMessageView;
@@ -167,6 +169,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 	private LoadingPresenter loadingPresenter;
 	private Presenter pagePresenter;
 	private ShortcutKeysPresenter shortcutKeysPresenter;
+	private BeginnersGuidePresenter beginnersGuidePresenter;
 
 	private Timer timer;
 	private Timer timerReload;
@@ -181,12 +184,13 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 	public UserIndexPresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, UserIndexDisplay display) {
 		super(rpcService, eventBus);
 		this.display = display;
-	    
+
     //containers
     headerUserPresenter = new HeaderPresenter(rpcService, eventBus, (HeaderDisplay)GWT.create(HeaderView.class), HeaderTarget.USER, 0);
     shortcutKeysPresenter = new ShortcutKeysPresenter(rpcService, eventBus, (ShortcutKeysDisplay)GWT.create(ShortcutKeysView.class));
 //    browserCheckPresenter = new BrowserCheckPresenter(rpcService, eventBus, (BrowserCheckDisplay)GWT.create(BrowserCheckView.class));
-	    
+    beginnersGuidePresenter = new BeginnersGuidePresenter(rpcService, eventBus, (BeginnersGuideDisplay)GWT.create(BeginnersGuideView.class));
+
   }
 
 	@Override
@@ -441,6 +445,8 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     headerUserPresenter.run(display.getHeaderContainer());
 
 		shortcutKeysPresenter.run(display.getMessageContainer());
+
+    beginnersGuidePresenter.run(display.getMessageContainer());
 	    	    	    
     History.fireCurrentHistoryState();
 
