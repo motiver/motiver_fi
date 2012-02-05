@@ -114,6 +114,7 @@ public class NameInputWidget extends LayoutContainer {
         //add button
         btnAdd.setText(AppController.Lang.Create());
         btnAdd.setEnabled(false);
+        btnAdd.setId("ni-btn-add");
         btnAdd.setScale(ButtonScale.MEDIUM);
         btnAdd.addListener(Events.OnClick, new Listener<BaseEvent>() {
           @Override

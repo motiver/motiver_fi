@@ -31,6 +31,8 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
   
   public BeginnersGuideView() {
 
+    this.setWidth(225);
+    
     TableLayout layout = new TableLayout(2);
     layout.setWidth("100%");
     layout.setCellVerticalAlign(VerticalAlignment.MIDDLE);
@@ -61,7 +63,7 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
     this.add(btnNext);
     
     popup.setAutoHide(false);
-    popup.setSize(16, 16);
+    popup.setSize(32, 32);
   }
   @Override
   public Widget asWidget() {
@@ -114,13 +116,18 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
       switch(direction) {
         case LEFT:
           image = MyResources.INSTANCE.getArrowRedLeft();
-          offsetX = -20;
+          offsetX = el.getClientWidth()+5;
           offsetY = el.getClientHeight()/2;
           break;
         case RIGHT:
           image = MyResources.INSTANCE.getArrowRedRight();
-          offsetX = el.getClientWidth()+5;
+          offsetX = -36;
           offsetY = el.getClientHeight()/2;
+          break;
+        case DOWN:
+          image = MyResources.INSTANCE.getArrowRedDown();
+          offsetX = el.getClientWidth()/2;
+          offsetY = -36;
           break;
         default:
           image = MyResources.INSTANCE.getArrowRedUp();

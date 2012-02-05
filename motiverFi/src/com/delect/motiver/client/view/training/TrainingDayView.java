@@ -74,6 +74,7 @@ public class TrainingDayView extends TrainingDayPresenter.TrainingDayDisplay {
 	public TrainingDayView() {
 		
 		this.setLayout(new RowLayout());
+		this.setId("panel-tday");
 		
 		//listener for shift + key
 		Document.get().addListener(Constants.EVENT_TYPE_GLOBAL_HOTKEYS, listenerShortcut);

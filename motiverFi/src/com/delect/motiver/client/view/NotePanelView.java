@@ -119,6 +119,9 @@ public class NotePanelView extends NotePanelPresenter.NotePanelDisplay  {
 	@Override
 	public void addHeaderButton(String text, Listener<BaseEvent> listener) {
 		MyButton btn = new MyButton(text);
+		//id based on parent ID
+		String id = getId()+"-btn"+(panelHeader.getItemCount()-1);
+		btn.setId(id);
 		btn.setScale(ButtonScale.MEDIUM);
 		btn.addListener(Events.OnClick, new Listener<BaseEvent>() {
 			@Override

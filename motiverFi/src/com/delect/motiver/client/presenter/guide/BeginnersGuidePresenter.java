@@ -122,7 +122,7 @@ public class BeginnersGuidePresenter extends Presenter {
 
       }
     };
-    t.scheduleRepeating(2000);
+    t.scheduleRepeating(500);
   }
 
   @Override
