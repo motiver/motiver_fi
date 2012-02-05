@@ -1,8 +1,14 @@
-package com.delect.motiver.client.presenter;
+package com.delect.motiver.client.presenter.guide;
 
+import java.util.ArrayList;
+
+import com.delect.motiver.client.presenter.Presenter;
+import com.delect.motiver.client.presenter.guide.GuideSteps.GuideStep;
+import com.delect.motiver.client.presenter.guide.GuideSteps.Guides;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.google.gwt.event.shared.SimpleEventBus;
+import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 
 public class BeginnersGuidePresenter extends Presenter {
@@ -33,12 +39,16 @@ public class BeginnersGuidePresenter extends Presenter {
     LEFT,
     RIGHT
   }
+
+  protected static final int LEVEL_WORKOUT_CREATE = 8;
   
   private BeginnersGuideDisplay display = null;
   private Timer t;
   
-  private int level = 1;
-  private int levelPrev = 1;
+  private int level = 0;
+  private int levelPrev = -1;
+
+  private ArrayList<GuideStep> steps;
 
   public BeginnersGuidePresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, BeginnersGuideDisplay display) {
     super(rpcService, eventBus);
@@ -78,25 +88,38 @@ public class BeginnersGuidePresenter extends Presenter {
   @Override
   public void onRun() {
     
+    steps = new ArrayList<GuideStep>();
+    GuideSteps.addSteps(Guides.MAIN, steps);
+    GuideSteps.addSteps(Guides.WORKOUT_CREATE, steps);
+    
     //start timer
     t = new Timer() {
       @Override
       public void run() {
-        if(level <= texts.length) {
-          display.showText(texts[level-1]); 
-        }
         
-        display.setButtonEnabled(Button.PREVIOUS, (level != 1));
-        
+        display.setButtonEnabled(Button.PREVIOUS, (level != 0));
+
+        GuideStep step = steps.get(level);
         if(level != levelPrev) {
           display.showArrow(null, PointDirection.UP);
-          //introduce header links
-          if(level >= 2 && level <= 7) {
-            display.showArrow("header-link-"+(level-1), PointDirection.UP);
-          }
+          step.init(eventBus, display);
           
           levelPrev = level;
         }
+        
+        //check if next step is ready
+        if(steps.size() > level+1) {
+          boolean isReady = steps.get(level+1).isReady();
+          display.setButtonEnabled(Button.NEXT, isReady);
+          
+          //check if current step should be skipped
+          if(isReady && step.skip()) {
+            level++;
+          }
+        }
+        else
+          display.setButtonEnabled(Button.NEXT, false);
+
       }
     };
     t.scheduleRepeating(2000);
@@ -107,16 +130,5 @@ public class BeginnersGuidePresenter extends Presenter {
     if(t != null)
       t.cancel();
   }
-  
-  private String[] texts = new String[] {
-      "Tervetuloa",
-      "P‰‰sivulla n‰et aktiviteetti historia",
-      "Treeni-osiossa voi merkit‰ treenisi",
-      "Ravinto-osiossa voit laskea kalorit",
-      "Aerobinen kuvaus",
-      "Tilastot kuvaus",
-      "Profiili kuvaus",
-      "Mene treenisivulle"
-  };
 
 }

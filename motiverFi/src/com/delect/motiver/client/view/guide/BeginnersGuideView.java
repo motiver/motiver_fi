@@ -1,9 +1,9 @@
-package com.delect.motiver.client.view;
+package com.delect.motiver.client.view.guide;
 
-import com.delect.motiver.client.presenter.BeginnersGuidePresenter;
-import com.delect.motiver.client.presenter.BeginnersGuidePresenter.BeginnersGuideHandler;
-import com.delect.motiver.client.presenter.BeginnersGuidePresenter.Button;
-import com.delect.motiver.client.presenter.BeginnersGuidePresenter.PointDirection;
+import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter;
+import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.BeginnersGuideHandler;
+import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.Button;
+import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.PointDirection;
 import com.delect.motiver.client.res.MyResources;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -102,22 +102,35 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
     popup.removeAll();
     
     if(id != null) {
+      Element el = DOM.getElementById(id);
+      
+      if(el == null)
+        return;
+      
       ImageResource image;
+      int offsetY = 0;
+      int offsetX = 0;
+      
       switch(direction) {
         case LEFT:
           image = MyResources.INSTANCE.getArrowRedLeft();
+          offsetX = -20;
+          offsetY = el.getClientHeight()/2;
           break;
         case RIGHT:
           image = MyResources.INSTANCE.getArrowRedRight();
+          offsetX = el.getClientWidth()+5;
+          offsetY = el.getClientHeight()/2;
           break;
         default:
           image = MyResources.INSTANCE.getArrowRedUp();
+          offsetX = el.getClientWidth()/2;
+          offsetY = el.getClientHeight()+5;
           break;
       }
       
       popup.add(new Image(image));
-      Element el = DOM.getElementById(id);
-      popup.show(el, "", new int[] {el.getClientWidth()/2, el.getClientHeight()+5} );
+      popup.show(el, "", new int[] {offsetX, offsetY} );
       popup.setZIndex(2000);
       popup.layout();
     }
