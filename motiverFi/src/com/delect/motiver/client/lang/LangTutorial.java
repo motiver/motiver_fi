@@ -14,39 +14,50 @@
  ******************************************************************************/
 package com.delect.motiver.client.lang;
 
-import com.google.gwt.i18n.client.Constants.DefaultStringArrayValue;
 import com.google.gwt.i18n.client.LocalizableResource.DefaultLocale;
-import com.google.gwt.i18n.client.Constants;
 import com.google.gwt.i18n.client.Messages;
 
 @DefaultLocale("en")
-public interface LangTutorial extends Constants {
-
-  @DefaultStringArrayValue({
-    "P‰‰sivulla n‰et aktiviteetti historia",
-    "Treeni-osiossa voi merkit‰ treenisi",
-    "Ravinto-osiossa voit laskea kalorit",
-    "Aerobinen kuvaus",
-    "Tilastot kuvaus",
-    "Profiili kuvaus"
-  })
-  String[] Main();
+public interface LangTutorial extends Messages {
   
-  @DefaultStringArrayValue({
-    "Nyt yrit‰ luoda treeni. Mene treeniosioon",
-    "Kalenteri n‰kym‰n kuvaus",
-    "Omien treenien kuvaus. Klikkaa avataksesi.",
-    "Luo uusi treeni. Paina nappia",
-    "Anna nimi",
-    "Nyt voit muokata harjoitusta. Vie hiiri harjoituksen/liikkeen p‰‰lle n‰hd‰ksesi eri toiminto-ikonit. Klikkaa seuraava niin n‰et kuinka voit lis‰t‰ liikkeen.",
-    "Lis‰‰ nyt jokin liike. Anna hakusanaksi esim. ''Penkki'' ja valitse listasta haluamasi liike.",
-    "Voit muokata halutessasi myˆs sarjoja, toistoja ja painoja. Klikkaa ''Seuraava ohje'' kun olet valmis.",
-    "Nyt voit lis‰t‰ tekem‰si harjoituksen jollekin p‰iv‰lle. Valitse ylh‰‰lt‰ jokin p‰iv‰ ja klikkaa ''Lis‰‰ harjoitus''",
-    "Nyt voit valita haluamasi harjoituksen joko klikkaamalla sen vieress‰ olevaa valintaruutua tai klikkaamalla harjoituksen nime‰.",
-    "Lis‰‰ harjoitus painamalla ''Siirr‰ ...''-nappia",
-    "Nyt voit muokata harjoitusta mielesi mukaan ja n‰et myˆhemmin mit‰ olet t‰n‰ p‰iv‰n‰ tehnyt.",
-    "Harjoitusosion tutustumiskierros valmis. Nyt tied‰t miten luoda uusi harjoitus ja siirt‰‰ sen p‰iv‰lle jolloin olit salilla."
-  })
-  String[] WorkoutCreate();
+  @DefaultMessage("P‰‰sivulla n‰et aktiviteetti historia")
+  String Main1();
+  @DefaultMessage("Treeni-osiossa voi merkit‰ treenisi")
+  String Main2();
+  @DefaultMessage("Ravinto-osiossa voit laskea kalorit")
+  String Main3();
+  @DefaultMessage("Aerobinen kuvaus")
+  String Main4();
+  @DefaultMessage("Tilastot kuvaus")
+  String Main5();
+  @DefaultMessage("Profiili kuvaus")
+  String Main6();
+  
+  @DefaultMessage("Now we go through features in Training section. Open section by selection ''Training'' from top menu.")
+  String WorkoutCreate1();
+  @DefaultMessage("In calendar view you can see workouts added to each day. From calendar above the view you can select any day you want.")
+  String WorkoutCreate2();
+  @DefaultMessage("Under the calendar view there are your workouts. There you can create and edit new workouts. Click the header to open the panel.")
+  String WorkoutCreate3();
+  @DefaultMessage("On the left you can see your own workouts and with search you can look for workouts made by other users. Try now to create new workout by clicking ''Create workout'' button.")
+  String WorkoutCreate4();
+  @DefaultMessage("Give descriptive name for your workout. Name could be, for example, ''Chest, triceps''.")
+  String WorkoutCreate5();
+  @DefaultMessage("Now you can edit the workout as you like. Move cursor over the workout/exercise to see different action icons. Look next guide for how to add new exercise.")
+  String WorkoutCreate6();
+  @DefaultMessage("Add new exercise by searching it. For example, enter ''Bench'' as search word and select exercise from the list.")
+  String WorkoutCreate7();
+  @DefaultMessage("You can also edit sets, reps and weights. Look next guide when you''re ready.")
+  String WorkoutCreate8();
+  @DefaultMessage("Now we add workout to some day. Select day from calendar on top of the page and click ''Add workout''.")
+  String WorkoutCreate9();
+  @DefaultMessage("Nyt voit valita harjoituksen joko ruksaamalla sen vieress‰ olevaa valintaruutua tai klikkaamalla harjoituksen nime‰.")
+  String WorkoutCreate10();
+  @DefaultMessage("Lis‰‰ harjoitus valitulle p‰iv‰lle painamalla ''Siirr‰ ...''-nappia")
+  String WorkoutCreate11();
+  @DefaultMessage("Harjoitus on nyt tallennettu t‰lle p‰iv‰lle ja muokata sit‰ sen perusteella mit‰ olet salilla tehnyt. Tekem‰si muutokset tallentuvat vain t‰lle p‰iv‰lle, joten alkuper‰inen treeni s‰ilyy ennallaan.")
+  String WorkoutCreate12();
+  @DefaultMessage("Harjoitusosion tutustumiskierros valmis. Voit kokeilla tehd‰ myˆs harjoitusohjelmia aivan sivun alareunasta. Harjoitusohjelma sis‰lt‰‰ useita harjoituksia, joten voit suunnitella vaikka koko viikon treenin kerralla.")
+  String WorkoutCreate13();
 
 }

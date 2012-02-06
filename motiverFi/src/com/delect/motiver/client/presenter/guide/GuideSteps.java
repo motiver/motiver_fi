@@ -46,16 +46,22 @@ public abstract class GuideSteps {
     WORKOUT_CREATE
   }
 
-  private static LangTutorial Lang;
+  private static LangTutorial Lang = GWT.create(LangTutorial.class);
+  
+  private static String[] textsMain = new String[] {
+    Lang.Main1(),
+    Lang.Main2(),
+    Lang.Main3(),
+    Lang.Main4(),
+    Lang.Main5(),
+    Lang.Main6()
+  };
   
   /**
    * Adds steps to list
    * @param steps
    */
   public static void addSteps(Guides target, List<GuideStep> steps) {
-    
-    if(Lang == null)
-      Lang = GWT.create(LangTutorial.class);
     
     //main
     if(target == Guides.MAIN) {
@@ -67,7 +73,7 @@ public abstract class GuideSteps {
           public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
             Window.scrollTo(0, 0);
             display.showArrow("header-link-"+j, PointDirection.UP);
-            display.showText(Lang.Main()[j-1]); 
+            display.showText(textsMain[j-1]); 
             
             return true;
           }
@@ -83,7 +89,7 @@ public abstract class GuideSteps {
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
           display.showArrow("header-link-2", PointDirection.UP);
-          display.showText(Lang.WorkoutCreate()[0]);
+          display.showText(Lang.WorkoutCreate1());
           return true;
         }
         @Override
@@ -101,7 +107,7 @@ public abstract class GuideSteps {
         }
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[1]);
+          display.showText(Lang.WorkoutCreate2());
           display.showArrow("panel-note1", PointDirection.DOWN);
           return true;
         }
@@ -116,7 +122,7 @@ public abstract class GuideSteps {
         }
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[2]);
+          display.showText(Lang.WorkoutCreate3());
           display.showArrow("panel-note2", PointDirection.DOWN);
           return true;
         }
@@ -135,7 +141,7 @@ public abstract class GuideSteps {
         }
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[3]);
+          display.showText(Lang.WorkoutCreate4());
           display.showArrow("btn-add-workout", PointDirection.RIGHT);
           return true;
         }
@@ -157,7 +163,7 @@ public abstract class GuideSteps {
         }
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[4]);
+          display.showText(Lang.WorkoutCreate5());
           display.showArrow("ni-btn-add", PointDirection.UP);
           
           //listen for workout created event
@@ -185,7 +191,7 @@ public abstract class GuideSteps {
       GuideStep step6 = new GuideStep() {
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[5]);
+          display.showText(Lang.WorkoutCreate6());
           return true;
         }
         @Override
@@ -202,7 +208,7 @@ public abstract class GuideSteps {
         
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[6]);
+          display.showText(Lang.WorkoutCreate7());
 
           //listen for workout created event
           ret = eventBus.addHandler(ExerciseUpdatedEvent.TYPE, new ExerciseUpdatedEventHandler() {
@@ -228,7 +234,7 @@ public abstract class GuideSteps {
       GuideStep step8 = new GuideStep() {        
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[7]);
+          display.showText(Lang.WorkoutCreate8());
           return true;
         }
       };
@@ -238,7 +244,7 @@ public abstract class GuideSteps {
       GuideStep step9 = new GuideStep() {        
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[8]);
+          display.showText(Lang.WorkoutCreate9());
           display.showArrow("panel-note1-btn1", PointDirection.DOWN);
           return true;
         }
@@ -257,7 +263,7 @@ public abstract class GuideSteps {
         }       
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[9]);
+          display.showText(Lang.WorkoutCreate10());
           return true;
         }
         @Override
@@ -277,7 +283,7 @@ public abstract class GuideSteps {
         }
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[10]);
+          display.showText(Lang.WorkoutCreate11());
           display.showArrow( (DOM.getElementById("btn-move-to-date") != null)? "btn-move-to-date" : "btn-quick-select", PointDirection.LEFT);
           
           //listen for workout created event
@@ -305,7 +311,7 @@ public abstract class GuideSteps {
       GuideStep step12 = new GuideStep() { 
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[11]);
+          display.showText(Lang.WorkoutCreate12());
           return true;
         }
         @Override
@@ -319,7 +325,7 @@ public abstract class GuideSteps {
       GuideStep step13 = new GuideStep() { 
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
-          display.showText(Lang.WorkoutCreate()[12]);
+          display.showText(Lang.WorkoutCreate13());
           return true;
         }
         @Override

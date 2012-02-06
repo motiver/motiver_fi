@@ -1,5 +1,6 @@
 package com.delect.motiver.client.view.guide;
 
+import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter;
 import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.BeginnersGuideHandler;
 import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.Button;
@@ -13,6 +14,7 @@ import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.widget.Popup;
 import com.extjs.gxt.ui.client.widget.Text;
+import com.extjs.gxt.ui.client.widget.layout.TableData;
 import com.extjs.gxt.ui.client.widget.layout.TableLayout;
 import com.google.gwt.resources.client.ImageResource;
 import com.google.gwt.user.client.DOM;
@@ -32,18 +34,21 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
   public BeginnersGuideView() {
 
     this.setWidth(225);
+    this.setStyleName("panel-tutorial");
     
     TableLayout layout = new TableLayout(2);
     layout.setWidth("100%");
     layout.setCellVerticalAlign(VerticalAlignment.MIDDLE);
     layout.setCellHorizontalAlign(HorizontalAlignment.LEFT);
-    layout.setCellPadding(5);
+    layout.setCellPadding(5);    
     this.setLayout(layout);
-    
-    this.add(text);
+
+    TableData td = new TableData();
+    td.setColspan(2);
+    this.add(text, td);
     
     //previous button
-    btnPrev.setText("_prev_");
+    btnPrev.setText(AppController.Lang.Previous());
     btnPrev.addListener(Events.OnClick, new Listener<BaseEvent>() {
       @Override
       public void handleEvent(BaseEvent be) {
@@ -53,7 +58,7 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
     this.add(btnPrev);
     
     //next button
-    btnNext.setText("_next_");
+    btnNext.setText(AppController.Lang.Next());
     btnNext.addListener(Events.OnClick, new Listener<BaseEvent>() {
       @Override
       public void handleEvent(BaseEvent be) {

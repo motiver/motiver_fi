@@ -8,7 +8,6 @@ import com.delect.motiver.client.presenter.guide.GuideSteps.Guides;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.google.gwt.event.shared.SimpleEventBus;
-import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 
 public class BeginnersGuidePresenter extends Presenter {
