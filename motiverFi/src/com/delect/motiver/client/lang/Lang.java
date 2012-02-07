@@ -684,4 +684,8 @@ public interface Lang extends Messages {
   String Previous();
   @DefaultMessage("Next")
   String Next();
+  @DefaultMessage("First time tutorial")
+  String FirstTimeTutorial();
+  @DefaultMessage("Training section")
+  String TrainingSection();
  }

@@ -41,6 +41,7 @@ import com.delect.motiver.client.event.MeasurementShowEvent;
 import com.delect.motiver.client.event.NutritionDayShowEvent;
 import com.delect.motiver.client.event.OfflineModeEvent;
 import com.delect.motiver.client.event.RunShowEvent;
+import com.delect.motiver.client.event.ShortcutKeyEvent;
 import com.delect.motiver.client.event.TabEvent;
 import com.delect.motiver.client.event.WorkoutShowEvent;
 import com.delect.motiver.client.event.handler.BlogShowEventHandler;
@@ -52,6 +53,7 @@ import com.delect.motiver.client.event.handler.MeasurementShowEventHandler;
 import com.delect.motiver.client.event.handler.NutritionDayShowEventHandler;
 import com.delect.motiver.client.event.handler.OfflineModeEventHandler;
 import com.delect.motiver.client.event.handler.RunShowEventHandler;
+import com.delect.motiver.client.event.handler.ShortcutKeyEventHandler;
 import com.delect.motiver.client.event.handler.TabEventHandler;
 import com.delect.motiver.client.event.handler.WorkoutShowEventHandler;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderDisplay;
@@ -190,8 +192,6 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     headerUserPresenter = new HeaderPresenter(rpcService, eventBus, (HeaderDisplay)GWT.create(HeaderView.class), HeaderTarget.USER, 0);
     shortcutKeysPresenter = new ShortcutKeysPresenter(rpcService, eventBus, (ShortcutKeysDisplay)GWT.create(ShortcutKeysView.class));
 //    browserCheckPresenter = new BrowserCheckPresenter(rpcService, eventBus, (BrowserCheckDisplay)GWT.create(BrowserCheckView.class));
-    beginnersGuidePresenter = new BeginnersGuidePresenter(rpcService, eventBus, (BeginnersGuideDisplay)GWT.create(BeginnersGuideView.class));
-
   }
 
 	@Override
@@ -431,6 +431,21 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 				}
 			}
     });
+    
+    //EVENT: shortcut key
+    addEventHandler(ShortcutKeyEvent.TYPE, new ShortcutKeyEventHandler() {
+      @Override
+      public void onShortcutKey(ShortcutKeyEvent event) {
+        if(event.getKey() == 83) {
+          if(beginnersGuidePresenter != null)
+            beginnersGuidePresenter.stop();
+          
+          beginnersGuidePresenter = new BeginnersGuidePresenter(rpcService, eventBus, (BeginnersGuideDisplay)GWT.create(BeginnersGuideView.class));
+          beginnersGuidePresenter.run(display.getMessageContainer());
+        }
+        
+      }
+    });
 
     if(History.getToken().length() == 0) {
       History.newItem("user", false);
@@ -446,8 +461,6 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     headerUserPresenter.run(display.getHeaderContainer());
 
 		shortcutKeysPresenter.run(display.getMessageContainer());
-
-    beginnersGuidePresenter.run(display.getMessageContainer());
 	    	    	    
     History.fireCurrentHistoryState();
 

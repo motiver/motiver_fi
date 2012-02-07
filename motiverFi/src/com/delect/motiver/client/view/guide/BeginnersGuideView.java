@@ -12,6 +12,8 @@ import com.extjs.gxt.ui.client.Style.VerticalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.fx.Fx;
+import com.extjs.gxt.ui.client.fx.FxConfig;
 import com.extjs.gxt.ui.client.widget.Popup;
 import com.extjs.gxt.ui.client.widget.Text;
 import com.extjs.gxt.ui.client.widget.layout.TableData;
@@ -24,6 +26,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDisplay {
 
+  Text textTitle = new Text();
   Text text = new Text();
   Popup popup = new Popup();
   private BeginnersGuideHandler handler;
@@ -43,9 +46,15 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
     layout.setCellPadding(5);    
     this.setLayout(layout);
 
+    //title
     TableData td = new TableData();
     td.setColspan(2);
-    this.add(text, td);
+    textTitle.setStyleName("label-title-medium");
+    this.add(textTitle, td);
+    
+    TableData td2 = new TableData();
+    td2.setColspan(2);
+    this.add(text, td2);
     
     //previous button
     btnPrev.setText(AppController.Lang.Previous());
@@ -113,6 +122,8 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
       
       if(el == null)
         return;
+
+      el.scrollIntoView();
       
       ImageResource image;
       int offsetY = 0;
@@ -144,8 +155,15 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
       popup.add(new Image(image));
       popup.show(el, "", new int[] {offsetX, offsetY} );
       popup.setZIndex(2000);
+      FxConfig config = new FxConfig();
+      config.setDuration(500);
+      popup.el().blink(config);
       popup.layout();
     }
+  }
+  @Override
+  public void showTitle(String title) {
+    textTitle.setText(title);
   }
 
 }

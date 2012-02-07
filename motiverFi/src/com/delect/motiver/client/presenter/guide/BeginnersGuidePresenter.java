@@ -16,6 +16,7 @@ public class BeginnersGuidePresenter extends Presenter {
   * Abstract class for view to extend
   */
   public abstract static class BeginnersGuideDisplay extends Display {
+    public abstract void showTitle(String title);
     public abstract void showText(String text);
     public abstract void setHandler(BeginnersGuideHandler handler);
     public abstract void setButtonEnabled(Button button, boolean enabled);
@@ -61,7 +62,6 @@ public class BeginnersGuidePresenter extends Presenter {
 
   @Override
   public void onBind() {
-    display.showText("Testi teksti");
     display.setHandler(new BeginnersGuideHandler() {
       @Override
       public void onButtonClicked(Button btn) {
@@ -90,38 +90,48 @@ public class BeginnersGuidePresenter extends Presenter {
     steps = new ArrayList<GuideStep>();
     GuideSteps.addSteps(Guides.MAIN, steps);
     GuideSteps.addSteps(Guides.WORKOUT_CREATE, steps);
+
+    threadRun();
+    highlight();
     
     //start timer
     t = new Timer() {
       @Override
       public void run() {
-        
-        display.setButtonEnabled(Button.PREVIOUS, (level != 0));
-
-        GuideStep step = steps.get(level);
-        if(level != levelPrev) {
-          display.showArrow(null, PointDirection.UP);
-          step.init(eventBus, display);
-          
-          levelPrev = level;
-        }
-        
-        //check if next step is ready
-        if(steps.size() > level+1) {
-          boolean isReady = steps.get(level+1).isReady();
-          display.setButtonEnabled(Button.NEXT, isReady);
-          
-          //check if current step should be skipped
-          if(isReady && step.skip()) {
-            level++;
-          }
-        }
-        else
-          display.setButtonEnabled(Button.NEXT, false);
-
+        threadRun();
       }
     };
     t.scheduleRepeating(500);
+  }
+
+  protected void threadRun() {
+    
+    display.setButtonEnabled(Button.PREVIOUS, (level != 0));
+
+    GuideStep step = steps.get(level);
+    if(level != levelPrev) {
+      
+      //check if next step is ready
+      if(steps.size() > level+1) {
+        boolean isReady = steps.get(level+1).isReady();
+        display.setButtonEnabled(Button.NEXT, isReady);
+        
+        //check if current step should be skipped
+        if(isReady && step.skip()) {
+          level++;
+          
+          highlight();
+          return;
+        }
+      }
+      else
+        display.setButtonEnabled(Button.NEXT, false);
+      
+      display.showArrow(null, PointDirection.UP);
+      step.init(eventBus, display);
+      
+      levelPrev = level;
+    }
   }
 
   @Override

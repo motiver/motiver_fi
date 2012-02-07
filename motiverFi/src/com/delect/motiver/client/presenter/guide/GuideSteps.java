@@ -2,6 +2,7 @@ package com.delect.motiver.client.presenter.guide;
 
 import java.util.List;
 
+import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.event.ExerciseUpdatedEvent;
 import com.delect.motiver.client.event.WorkoutCreatedEvent;
 import com.delect.motiver.client.event.handler.ExerciseUpdatedEventHandler;
@@ -73,6 +74,7 @@ public abstract class GuideSteps {
           public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
             Window.scrollTo(0, 0);
             display.showArrow("header-link-"+j, PointDirection.UP);
+            display.showTitle(AppController.Lang.FirstTimeTutorial());
             display.showText(textsMain[j-1]); 
             
             return true;
@@ -89,6 +91,7 @@ public abstract class GuideSteps {
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
           display.showArrow("header-link-2", PointDirection.UP);
+          display.showTitle(AppController.Lang.TrainingSection());
           display.showText(Lang.WorkoutCreate1());
           return true;
         }
@@ -109,6 +112,7 @@ public abstract class GuideSteps {
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
           display.showText(Lang.WorkoutCreate2());
           display.showArrow("panel-note1", PointDirection.DOWN);
+          display.showTitle(AppController.Lang.TrainingSection());
           return true;
         }
       };

@@ -191,3 +191,34 @@ background-color: #c40505;
     #d51616 60%
   );
 }
+
+.x-item-disabled {
+  cursor: default !important;
+  opacity: .6 !important;
+  -moz-opacity: .6 !important;
+  filter: alpha(opacity =   60) !important;
+}
+.x-item-disabled {
+  cursor: default !important;
+  opacity: .6 !important;
+  -moz-opacity: .6 !important;
+  filter: alpha(opacity =   60) !important;
+}
+.x-item-disabled:hover {
+  background-color: #aaa;
+  background-image: -webkit-linear-gradient(
+    bottom,
+    #999 40%,
+    #bbb 60%
+  );
+  background-image: -moz-linear-gradient(
+    bottom,
+    #999 40%,
+    #bbb 60%
+  );
+  background-image: -o-linear-gradient(
+    bottom,
+    #999 40%,
+    #bbb 60%
+  );
+}
