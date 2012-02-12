@@ -127,6 +127,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 			
 			//main
       linkM.addStyleName("header-link");
+      linkM.setId("header-link-1");
 			linkM.setText(AppController.Lang.Main());
 			linkM.addListener(Events.OnClick, new Listener<BaseEvent>() {
 				@Override
@@ -137,6 +138,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 			this.add(linkM, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//training
       linkT.addStyleName("header-link");
+      linkT.setId("header-link-2");
 			linkT.setText(AppController.Lang.Training());
 			linkT.addListener(Events.OnClick, new Listener<BaseEvent>() {
 				@Override
@@ -147,6 +149,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 			this.add(linkT, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//nutrition
       linkN.addStyleName("header-link");
+      linkN.setId("header-link-3");
 			linkN.setText(AppController.Lang.Nutrition());
 			linkN.addListener(Events.OnClick, new Listener<BaseEvent>() {
 				@Override
@@ -157,6 +160,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 			this.add(linkN, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//cardio
       linkC.addStyleName("header-link");
+      linkC.setId("header-link-4");
 			linkC.setText(AppController.Lang.Cardio());
 			linkC.addListener(Events.OnClick, new Listener<BaseEvent>() {
 				@Override
@@ -167,6 +171,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 			this.add(linkC, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//statistic
       linkS.addStyleName("header-link");
+      linkS.setId("header-link-5");
 			linkS.setText(AppController.Lang.Statistics());
 			linkS.addListener(Events.OnClick, new Listener<BaseEvent>() {
 				@Override
@@ -177,6 +182,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 			this.add(linkS, new HBoxLayoutData(new Margins(5, 3, 0, 0)));
 			//profile
       linkP.addStyleName("header-link");
+      linkP.setId("header-link-6");
 			linkP.setText(AppController.Lang.Profile());
 			linkP.addListener(Events.OnClick, new Listener<BaseEvent>() {
 				@Override
@@ -189,6 +195,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 			//coach
 			if(AppController.User.isCoach()) {
 				linkCo.addStyleName("header-link");
+				linkCo.setId("header-link-7");
 				linkCo.setText(AppController.Lang.Coach());
 				linkCo.addListener(Events.OnClick, new Listener<BaseEvent>() {
 					@Override

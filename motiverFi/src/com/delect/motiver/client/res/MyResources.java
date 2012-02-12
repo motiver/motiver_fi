@@ -91,5 +91,15 @@ public interface MyResources extends ClientBundle {
 
   @Source("face.png")
   ImageResource getEmptyProfilePic();
+  
+  //arrows
+  @Source("arrow_red_up.png")
+  ImageResource getArrowRedUp();
+  @Source("arrow_red_down.png")
+  ImageResource getArrowRedDown();
+  @Source("arrow_red_left.png")
+  ImageResource getArrowRedLeft();
+  @Source("arrow_red_right.png")
+  ImageResource getArrowRedRight();
 
 }

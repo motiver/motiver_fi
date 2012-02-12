@@ -884,3 +884,15 @@ color: #fff;
 .panel-drag-ok {
 border: solid 1px #ff6600;	
 }
+
+.panel-tutorial {
+background: #F5F5F5 url('../img/panel-tutorial-bg.png') repeat-y right top; 
+padding:5px 10px 5px 10px;
+-webkit-border-radius: 0 10px 10px 0;
+-moz-border-radius: 0 10px 10px 0;
+border-radius: 0 10px 10px 0;
+-webkit-box-shadow: #ddd 0px 5px 22px;
+-moz-box-shadow: #ddd 0px 1px 3px;
+box-shadow: #aaa 1px 1px 3px;
+color: #444;
+}

@@ -55,6 +55,9 @@ public abstract class Display extends LayoutContainer {
 	 */
 	public void highlight() {
 		
+	  if(!isRendered())
+	    return;
+	  
 		scrollToView();
 		
 		//highlight

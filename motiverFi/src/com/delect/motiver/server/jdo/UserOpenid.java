@@ -66,13 +66,14 @@ public class UserOpenid implements Serializable {
 			modelClient.setBanned(model.isBanned());
 			modelClient.setAlias(model.getAlias());
       modelClient.setCoach(model.isCoach());
+      modelClient.setTutorialShowed(model.isTutorialShowed());
 			
 		} catch (Exception e) {
 		}
 		
 		return modelClient;
 	}
-	
+
   public static UserOpenid getServerModel(UserModel model) {
     UserOpenid modelServer = new UserOpenid();
     
@@ -89,14 +90,15 @@ public class UserOpenid implements Serializable {
       modelServer.setAdmin(model.isAdmin());
       modelServer.setBanned(model.isBanned());
       modelServer.setAlias(model.getAlias());
+      modelServer.setTutorialShowed(model.isTutorialShowed());
       
     } catch (Exception e) {
     }
     
     return modelServer;
   }
-	
-	@Persistent
+
+  @Persistent
 	private Boolean admin;
   @Persistent
   private String alias;
@@ -141,6 +143,9 @@ public class UserOpenid implements Serializable {
 	@PrimaryKey
   private String id; //open id
   private String fedId;
+
+  @Persistent
+  private boolean isTutorialShowed;
   
   @NotPersistent
   private boolean isCoach;
@@ -437,6 +442,14 @@ public class UserOpenid implements Serializable {
   public void setCoach(boolean isCoach) {
     this.isCoach = isCoach;
   }
+  
+  public boolean isTutorialShowed() {
+    return isTutorialShowed;
+  }
+  
+  public void setTutorialShowed(boolean showed) {
+    this.isTutorialShowed = showed;
+  }
 	
 	public String toString() {
 	  return "User [uid: '"+getUid()+"']";
@@ -453,6 +466,7 @@ public class UserOpenid implements Serializable {
     setTimeFormat(model.getTimeFormat());
     setTimezone(model.getTimezone());
     setFedId(model.getFedId());
+    setTutorialShowed(model.isTutorialShowed());
   }
 
   public void update(User model) {

@@ -129,6 +129,11 @@ public class ShortcutKeysView extends ShortcutKeysPresenter.ShortcutKeysDisplay 
 		Text t1 = new Text(AppController.Lang.Global());
 		t1.setStyleName("label-title-medium");
 		window.add(t1, td);
+    //tutorial
+    Text t1aa = new Text("Shift+S :");
+    t1aa.setStyleName("label-shortcut");
+    window.add(t1aa);
+    window.add(new Text(AppController.Lang.FirstTimeTutorial()));
 		//your blog
 		Text t1a = new Text("Shift+B :");
 		t1a.setStyleName("label-shortcut");

@@ -165,6 +165,7 @@ public class TrainingPagePresenter extends Presenter {
     notePanelToday.run(display.getBaseContainer());
     notePanelToday.setTitle(Functions.getDateString(date, true, false));
     notePanelToday.addNewPresenter(todayTrainingPresenter);
+    notePanelToday.getView().setId("panel-note1");
     notePanelToday.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Workout().toLowerCase()), todayTrainingPresenter.NewWorkoutListener);
     notePanelToday.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Routine().toLowerCase()), todayTrainingPresenter.NewRoutineListener);
     notePanelToday.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Cardio().toLowerCase()), todayTrainingPresenter.NewCardioListener);
@@ -177,6 +178,7 @@ public class TrainingPagePresenter extends Presenter {
 	    
     //workouts
     notePanelWorkouts.run(display.getBaseContainer());
+    notePanelWorkouts.getView().setId("panel-note2");
     final WorkoutsListPresenter workoutsListPresenter = new WorkoutsListPresenter(rpcService, eventBus, (WorkoutsListDisplay)GWT.create(WorkoutsListView.class), null, wid);
     notePanelWorkouts.setTitle(AppController.Lang.Workouts());
     notePanelWorkouts.addNewPresenter(workoutsListPresenter);
@@ -187,6 +189,7 @@ public class TrainingPagePresenter extends Presenter {
 	    
     //routines
     notePanelRoutines.run(display.getBaseContainer());
+    notePanelRoutines.getView().setId("panel-note3");
     final RoutinesListPresenter routinesListPresenter = new RoutinesListPresenter(rpcService, eventBus, (RoutinesListDisplay)GWT.create(RoutinesListView.class), null, rid);
     notePanelRoutines.setTitle(AppController.Lang.Routines());
     notePanelRoutines.addNewPresenter(routinesListPresenter);

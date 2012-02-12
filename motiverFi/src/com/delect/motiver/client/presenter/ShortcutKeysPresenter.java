@@ -18,6 +18,7 @@ import com.google.gwt.event.shared.SimpleEventBus;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.event.BlogShowEvent;
+import com.delect.motiver.client.event.ShortcutKeyEvent;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 
@@ -89,6 +90,8 @@ public class ShortcutKeysPresenter extends Presenter {
             display.showHelpWindow();
             break;
         }
+        
+        fireEvent(new ShortcutKeyEvent(key));
 			}
 			@Override
 			public void windowHidden() {
