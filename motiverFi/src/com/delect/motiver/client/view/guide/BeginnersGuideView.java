@@ -7,6 +7,7 @@ import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.Button;
 import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.PointDirection;
 import com.delect.motiver.client.res.MyResources;
 import com.delect.motiver.client.view.widget.MyButton;
+import com.delect.motiver.client.view.widget.MyButton.Style;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.VerticalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -33,6 +34,7 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
 
   MyButton btnPrev = new MyButton();
   MyButton btnNext = new MyButton();
+  MyButton btnClose = new MyButton();
   
   public BeginnersGuideView() {
 
@@ -74,7 +76,23 @@ public class BeginnersGuideView extends BeginnersGuidePresenter.BeginnersGuideDi
         handler.onButtonClicked(Button.NEXT);
       }
     });
-    this.add(btnNext);
+    btnNext.setColor(Style.GREEN);
+    TableData td3 = new TableData();
+    td3.setHorizontalAlign(HorizontalAlignment.RIGHT);
+    this.add(btnNext, td3);
+    
+    //close button
+    btnClose.setText(AppController.Lang.Close());
+    btnClose.addListener(Events.OnClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        handler.onButtonClicked(Button.CLOSE);
+      }
+    });
+    btnClose.setColor(Style.RED);
+    TableData td4 = new TableData();
+    td4.setColspan(2);
+    this.add(btnClose, td4);
     
     popup.setAutoHide(false);
     popup.setSize(32, 32);
