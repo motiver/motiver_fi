@@ -44,7 +44,8 @@ public abstract class GuideSteps {
   
   public enum Guides {
     MAIN,
-    WORKOUT_CREATE
+    WORKOUT_CREATE,
+    NUTRITION
   }
 
   private static LangTutorial Lang = GWT.create(LangTutorial.class);
@@ -66,6 +67,19 @@ public abstract class GuideSteps {
     
     //main
     if(target == Guides.MAIN) {
+      
+      GuideStep step0 = new GuideStep() {
+        @Override
+        public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
+          Window.scrollTo(0, 0);
+          display.showTitle(AppController.Lang.FirstTimeTutorial());
+          display.showText(Lang.Main0()); 
+          
+          return true;
+        }
+      };
+      steps.add(step0);
+      
       //short description of main sections
       for(int i=1; i<=6; i++) {
         final int j = i;
@@ -338,6 +352,20 @@ public abstract class GuideSteps {
         }
       };
       steps.add(step13);
+    }
+    
+    //nutrition
+    else if(target == Guides.NUTRITION) {
+      //coming soon
+      GuideStep step = new GuideStep() {
+        @Override
+        public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
+          display.showTitle(AppController.Lang.NutritionSection());
+          display.showText(Lang.Nutrition1());
+          return true;
+        }
+      };
+      steps.add(step);
     }
   }
 }

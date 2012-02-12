@@ -688,4 +688,6 @@ public interface Lang extends Messages {
   String FirstTimeTutorial();
   @DefaultMessage("Training section")
   String TrainingSection();
+  @DefaultMessage("Nutrition section")
+  String NutritionSection();
  }

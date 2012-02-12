@@ -56,6 +56,8 @@ import com.delect.motiver.client.event.handler.RunShowEventHandler;
 import com.delect.motiver.client.event.handler.ShortcutKeyEventHandler;
 import com.delect.motiver.client.event.handler.TabEventHandler;
 import com.delect.motiver.client.event.handler.WorkoutShowEventHandler;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogDisplay;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderDisplay;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderTarget;
 import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageDisplay;
@@ -82,6 +84,7 @@ import com.delect.motiver.client.presenter.statistics.StatisticsPagePresenter.St
 import com.delect.motiver.client.presenter.training.TrainingPagePresenter;
 import com.delect.motiver.client.presenter.training.TrainingPagePresenter.TrainingPageDisplay;
 import com.delect.motiver.client.service.MyServiceAsync;
+import com.delect.motiver.client.view.ConfirmDialogView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.HeaderView;
 import com.delect.motiver.client.view.InfoMessageView;
@@ -101,6 +104,7 @@ import com.delect.motiver.shared.CommentModel;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.TicketModel;
+import com.delect.motiver.shared.UserModel;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -176,6 +180,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 
 	private Timer timer;
 	private Timer timerReload;
+  private ConfirmDialogPresenter msgPresenter;
 
 	
 	/**
@@ -437,11 +442,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
       @Override
       public void onShortcutKey(ShortcutKeyEvent event) {
         if(event.getKey() == 83) {
-          if(beginnersGuidePresenter != null)
-            beginnersGuidePresenter.stop();
-          
-          beginnersGuidePresenter = new BeginnersGuidePresenter(rpcService, eventBus, (BeginnersGuideDisplay)GWT.create(BeginnersGuideView.class));
-          beginnersGuidePresenter.run(display.getMessageContainer());
+          showBeginnerTutorial();
         }
         
       }
@@ -452,7 +453,15 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     }
 	}
 
-	@Override
+	protected void showBeginnerTutorial() {
+    if(beginnersGuidePresenter != null)
+      beginnersGuidePresenter.stop();
+    
+    beginnersGuidePresenter = new BeginnersGuidePresenter(rpcService, eventBus, (BeginnersGuideDisplay)GWT.create(BeginnersGuideView.class));
+    beginnersGuidePresenter.run(display.getMessageContainer());
+  }
+
+  @Override
 	public void onRun() {
 
     display.showLoading(true);
@@ -465,17 +474,16 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     History.fireCurrentHistoryState();
 
     //reload page each xx hours
-		setPageReloadTimer();	    
-
-//    //check browser
-//		//run in thread so everything else gets loaded first
-//		timer = new Timer() {
-//			@Override
-//			public void run() {
-//        browserCheckPresenter.run(display.getMessageContainer());
-//			}
-//		};
-//		timer.schedule(2000);
+		setPageReloadTimer();
+		
+		//show tutorial if not already shown
+		if(!AppController.User.isTutorialShowed()) {
+      showBeginnerTutorial();
+      
+      //save user
+      AppController.User.setTutorialShowed(true);
+      rpcService.saveUserData(AppController.User, MyAsyncCallback.EmptyCallback);
+		}
 	}
 
 	@Override
@@ -507,6 +515,10 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     }
 		if(pagePresenter != null) {
 			pagePresenter.stop();
+    }
+		
+    if(msgPresenter != null) {
+      msgPresenter.stop();
     }
 
 		if(infoMessagePresenters != null) {

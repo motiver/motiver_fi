@@ -90,6 +90,7 @@ public class BeginnersGuidePresenter extends Presenter {
     steps = new ArrayList<GuideStep>();
     GuideSteps.addSteps(Guides.MAIN, steps);
     GuideSteps.addSteps(Guides.WORKOUT_CREATE, steps);
+    GuideSteps.addSteps(Guides.NUTRITION, steps);
 
     threadRun();
     highlight();

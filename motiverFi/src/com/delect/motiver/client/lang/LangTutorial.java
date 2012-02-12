@@ -19,18 +19,20 @@ import com.google.gwt.i18n.client.Messages;
 
 @DefaultLocale("en")
 public interface LangTutorial extends Messages {
-  
-  @DefaultMessage("P‰‰sivulla n‰et aktiviteetti historia")
+
+  @DefaultMessage("Welcome to use Motiver. From here you can go through all the features, so you know how to use Motiver. Click ''Next'' button to start.")
+  String Main0();
+  @DefaultMessage("On main page you can see all the activities you''ve done. It is of course empty when you sign in for the first time.")
   String Main1();
-  @DefaultMessage("Treeni-osiossa voi merkit‰ treenisi")
+  @DefaultMessage("On training section there are all the workouts you''ve done. You can create your own or search workouts made by other users.")
   String Main2();
-  @DefaultMessage("Ravinto-osiossa voit laskea kalorit")
+  @DefaultMessage("Here you can create your own meals and calculate the total calories for each day")
   String Main3();
-  @DefaultMessage("Aerobinen kuvaus")
+  @DefaultMessage("Cardio section can be used to save runs and other sport specific training.")
   String Main4();
-  @DefaultMessage("Tilastot kuvaus")
+  @DefaultMessage("Stats sections contains many useful graphs for you.")
   String Main5();
-  @DefaultMessage("Profiili kuvaus")
+  @DefaultMessage("From profile section you see your profile and can give permissions to other users to view your activities.")
   String Main6();
   
   @DefaultMessage("Now we go through features in Training section. Open section by selection ''Training'' from top menu.")
@@ -51,13 +53,16 @@ public interface LangTutorial extends Messages {
   String WorkoutCreate8();
   @DefaultMessage("Now we add workout to some day. Select day from calendar on top of the page and click ''Add workout''.")
   String WorkoutCreate9();
-  @DefaultMessage("Nyt voit valita harjoituksen joko ruksaamalla sen vieress‰ olevaa valintaruutua tai klikkaamalla harjoituksen nime‰.")
+  @DefaultMessage("Now you can choose the workout by selecting its checkbox or clicking the name of the workout.")
   String WorkoutCreate10();
-  @DefaultMessage("Lis‰‰ harjoitus valitulle p‰iv‰lle painamalla ''Siirr‰ ...''-nappia")
+  @DefaultMessage("Add workout to selected day by clicking ''Move ...'' button")
   String WorkoutCreate11();
-  @DefaultMessage("Harjoitus on nyt tallennettu t‰lle p‰iv‰lle ja muokata sit‰ sen perusteella mit‰ olet salilla tehnyt. Tekem‰si muutokset tallentuvat vain t‰lle p‰iv‰lle, joten alkuper‰inen treeni s‰ilyy ennallaan.")
+  @DefaultMessage("Workout is now saved to this day and you can edit it based on what you''ve done in gym. Changes will be saved to this day only, so original workout remains unchanged.")
   String WorkoutCreate12();
-  @DefaultMessage("Harjoitusosion tutustumiskierros valmis. Voit kokeilla tehd‰ myˆs harjoitusohjelmia aivan sivun alareunasta. Harjoitusohjelma sis‰lt‰‰ useita harjoituksia, joten voit suunnitella vaikka koko viikon treenin kerralla.")
+  @DefaultMessage("You finished the tutorial for the training section. You can also try to create training routines from bottom of the page. Training routine contains multiple workouts, so you can plan whole week's workouts at once.")
   String WorkoutCreate13();
+  
+  @DefaultMessage("Tutorials for other sections are coming soon. Feel free to try them yourself before that!")
+  String Nutrition1();
 
 }
