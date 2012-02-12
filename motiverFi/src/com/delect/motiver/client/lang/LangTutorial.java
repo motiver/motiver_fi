@@ -59,7 +59,7 @@ public interface LangTutorial extends Messages {
   String WorkoutCreate11();
   @DefaultMessage("Workout is now saved to this day and you can edit it based on what you''ve done in gym. Changes will be saved to this day only, so original workout remains unchanged.")
   String WorkoutCreate12();
-  @DefaultMessage("You finished the tutorial for the training section. You can also try to create training routines from bottom of the page. Training routine contains multiple workouts, so you can plan whole week's workouts at once.")
+  @DefaultMessage("You finished the tutorial for the training section. You can also try to create training routines from bottom of the page. Training routine contains multiple workouts, so you can plan whole week''s workouts at once.")
   String WorkoutCreate13();
   
   @DefaultMessage("Tutorials for other sections are coming soon. Feel free to try them yourself before that!")
