@@ -41,6 +41,7 @@ import com.delect.motiver.client.event.MeasurementShowEvent;
 import com.delect.motiver.client.event.NutritionDayShowEvent;
 import com.delect.motiver.client.event.OfflineModeEvent;
 import com.delect.motiver.client.event.RunShowEvent;
+import com.delect.motiver.client.event.ShortcutKeyEvent;
 import com.delect.motiver.client.event.TabEvent;
 import com.delect.motiver.client.event.WorkoutShowEvent;
 import com.delect.motiver.client.event.handler.BlogShowEventHandler;
@@ -52,8 +53,11 @@ import com.delect.motiver.client.event.handler.MeasurementShowEventHandler;
 import com.delect.motiver.client.event.handler.NutritionDayShowEventHandler;
 import com.delect.motiver.client.event.handler.OfflineModeEventHandler;
 import com.delect.motiver.client.event.handler.RunShowEventHandler;
+import com.delect.motiver.client.event.handler.ShortcutKeyEventHandler;
 import com.delect.motiver.client.event.handler.TabEventHandler;
 import com.delect.motiver.client.event.handler.WorkoutShowEventHandler;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogDisplay;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderDisplay;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderTarget;
 import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageDisplay;
@@ -69,6 +73,8 @@ import com.delect.motiver.client.presenter.coach.CoachModeIndicatorPresenter;
 import com.delect.motiver.client.presenter.coach.CoachModeIndicatorPresenter.CoachModeIndicatorDisplay;
 import com.delect.motiver.client.presenter.coach.CoachPagePresenter;
 import com.delect.motiver.client.presenter.coach.CoachPagePresenter.CoachPageDisplay;
+import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter;
+import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.BeginnersGuideDisplay;
 import com.delect.motiver.client.presenter.nutrition.NutritionPagePresenter;
 import com.delect.motiver.client.presenter.nutrition.NutritionPagePresenter.NutritionPageDisplay;
 import com.delect.motiver.client.presenter.profile.ProfilePagePresenter;
@@ -78,6 +84,7 @@ import com.delect.motiver.client.presenter.statistics.StatisticsPagePresenter.St
 import com.delect.motiver.client.presenter.training.TrainingPagePresenter;
 import com.delect.motiver.client.presenter.training.TrainingPagePresenter.TrainingPageDisplay;
 import com.delect.motiver.client.service.MyServiceAsync;
+import com.delect.motiver.client.view.ConfirmDialogView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.HeaderView;
 import com.delect.motiver.client.view.InfoMessageView;
@@ -88,6 +95,7 @@ import com.delect.motiver.client.view.admin.AdminPageView;
 import com.delect.motiver.client.view.cardio.CardioPageView;
 import com.delect.motiver.client.view.coach.CoachModeIndicatorView;
 import com.delect.motiver.client.view.coach.CoachPageView;
+import com.delect.motiver.client.view.guide.BeginnersGuideView;
 import com.delect.motiver.client.view.nutrition.NutritionPageView;
 import com.delect.motiver.client.view.profile.ProfilePageView;
 import com.delect.motiver.client.view.statistics.StatisticsPageView;
@@ -96,6 +104,7 @@ import com.delect.motiver.shared.CommentModel;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.TicketModel;
+import com.delect.motiver.shared.UserModel;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -167,9 +176,11 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 	private LoadingPresenter loadingPresenter;
 	private Presenter pagePresenter;
 	private ShortcutKeysPresenter shortcutKeysPresenter;
+	private BeginnersGuidePresenter beginnersGuidePresenter;
 
 	private Timer timer;
 	private Timer timerReload;
+  private ConfirmDialogPresenter msgPresenter;
 
 	
 	/**
@@ -181,12 +192,11 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 	public UserIndexPresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, UserIndexDisplay display) {
 		super(rpcService, eventBus);
 		this.display = display;
-	    
+
     //containers
     headerUserPresenter = new HeaderPresenter(rpcService, eventBus, (HeaderDisplay)GWT.create(HeaderView.class), HeaderTarget.USER, 0);
     shortcutKeysPresenter = new ShortcutKeysPresenter(rpcService, eventBus, (ShortcutKeysDisplay)GWT.create(ShortcutKeysView.class));
 //    browserCheckPresenter = new BrowserCheckPresenter(rpcService, eventBus, (BrowserCheckDisplay)GWT.create(BrowserCheckView.class));
-	    
   }
 
 	@Override
@@ -426,13 +436,32 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 				}
 			}
     });
+    
+    //EVENT: shortcut key
+    addEventHandler(ShortcutKeyEvent.TYPE, new ShortcutKeyEventHandler() {
+      @Override
+      public void onShortcutKey(ShortcutKeyEvent event) {
+        if(event.getKey() == 83) {
+          showBeginnerTutorial();
+        }
+        
+      }
+    });
 
     if(History.getToken().length() == 0) {
       History.newItem("user", false);
     }
 	}
 
-	@Override
+	protected void showBeginnerTutorial() {
+    if(beginnersGuidePresenter != null)
+      beginnersGuidePresenter.stop();
+    
+    beginnersGuidePresenter = new BeginnersGuidePresenter(rpcService, eventBus, (BeginnersGuideDisplay)GWT.create(BeginnersGuideView.class));
+    beginnersGuidePresenter.run(display.getMessageContainer());
+  }
+
+  @Override
 	public void onRun() {
 
     display.showLoading(true);
@@ -445,17 +474,16 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     History.fireCurrentHistoryState();
 
     //reload page each xx hours
-		setPageReloadTimer();	    
-
-//    //check browser
-//		//run in thread so everything else gets loaded first
-//		timer = new Timer() {
-//			@Override
-//			public void run() {
-//        browserCheckPresenter.run(display.getMessageContainer());
-//			}
-//		};
-//		timer.schedule(2000);
+		setPageReloadTimer();
+		
+		//show tutorial if not already shown
+		if(!AppController.User.isTutorialShowed()) {
+      showBeginnerTutorial();
+      
+      //save user
+      AppController.User.setTutorialShowed(true);
+      rpcService.saveUserData(AppController.User, MyAsyncCallback.EmptyCallback);
+		}
 	}
 
 	@Override
@@ -487,6 +515,10 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     }
 		if(pagePresenter != null) {
 			pagePresenter.stop();
+    }
+		
+    if(msgPresenter != null) {
+      msgPresenter.stop();
     }
 
 		if(infoMessagePresenters != null) {

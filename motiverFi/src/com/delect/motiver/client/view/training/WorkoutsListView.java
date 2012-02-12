@@ -192,6 +192,7 @@ public class WorkoutsListView extends WorkoutsListPresenter.WorkoutsListDisplay 
     if(visible) {
       String text = (date != null)? AppController.Lang.MoveTo(Functions.getDateString(date, true, false)) : "";
       MyButton btn = panelButtons.addButton(ButtonTarget.MoveToDate, Style.GREEN, text);
+      btn.setId("btn-move-to-date");
       btn.addListener(Events.OnClick, new Listener<BaseEvent>() {
         @Override
         public void handleEvent(BaseEvent be) {
@@ -226,6 +227,7 @@ public class WorkoutsListView extends WorkoutsListPresenter.WorkoutsListDisplay 
     if(visible) {
       String text = (date != null)? AppController.Lang.MoveTo(Functions.getDateString(date, true, false)) : "";
       MyButton btn = panelButtons.addButton(ButtonTarget.QuickSelection, Style.GREEN, text);
+      btn.setId("btn-quick-select");
       btn.addListener(Events.OnClick, new Listener<BaseEvent>() {
         @Override
         public void handleEvent(BaseEvent be) {

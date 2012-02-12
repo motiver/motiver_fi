@@ -381,4 +381,16 @@ public class UserModel extends BaseModelData implements IsSerializable, Comparab
   public String toString() {
     return "User [uid: '"+getUid()+"']";
   }
+
+  public boolean isTutorialShowed() {
+    if(get("ts") != null) {
+      return get("ts");
+    }
+    else {
+      return false;
+    }}
+
+  public void setTutorialShowed(boolean showed) {
+    set("ts", showed);
+  }
 }

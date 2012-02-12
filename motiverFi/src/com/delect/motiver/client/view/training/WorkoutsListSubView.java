@@ -62,6 +62,7 @@ public class WorkoutsListSubView extends WorkoutsListSubPresenter.WorkoutsListSu
 		//new workout button
 		MyButton btnAddWorkout = new MyButton(AppController.Lang.CreateTarget(AppController.Lang.Workout().toLowerCase()));
 		btnAddWorkout.setScale(ButtonScale.MEDIUM);
+		btnAddWorkout.setId("btn-add-workout");
 		btnAddWorkout.setColor(MyButton.Style.GREEN);
 		btnAddWorkout.setStyleAttribute("margin-top", "10px");
 		btnAddWorkout.addListener(Events.OnClick, new Listener<BaseEvent>() {
