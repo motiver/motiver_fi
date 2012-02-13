@@ -107,10 +107,10 @@ public class BeginnersGuidePresenter extends Presenter {
 
   protected void threadRun() {
     
-    display.setButtonEnabled(Button.PREVIOUS, (level != 0));
+    try {
+      display.setButtonEnabled(Button.PREVIOUS, (level != 0));
 
-    GuideStep step = steps.get(level);
-    if(level != levelPrev) {
+      GuideStep step = steps.get(level);
       
       //check if next step is ready
       if(steps.size() > level+1) {
@@ -128,10 +128,15 @@ public class BeginnersGuidePresenter extends Presenter {
       else
         display.setButtonEnabled(Button.NEXT, false);
       
-      display.showArrow(null, PointDirection.UP);
-      step.init(eventBus, display);
+      if(level != levelPrev) {
+        
+        display.showArrow(null, PointDirection.UP);
+        step.init(eventBus, display);
+        
+        levelPrev = level;
+      }
       
-      levelPrev = level;
+    } catch (Exception e) {
     }
   }
 
