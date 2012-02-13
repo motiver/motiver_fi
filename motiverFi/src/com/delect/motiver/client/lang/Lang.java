@@ -692,4 +692,9 @@ public interface Lang extends Messages {
   String TrainingSection();
   @DefaultMessage("Nutrition section")
   String NutritionSection();
+  
+  @DefaultMessage("Thank you")
+  String ThankYou();
+  @DefaultMessage("We appreciate that you informed us about the problems using Motiver. We''re looking in to this as soon as possible!")
+  String ThankYouForReporting();
  }
