@@ -192,19 +192,19 @@ background-color: #c40505;
   );
 }
 
-.x-item-disabled {
+.btn .x-item-disabled {
   cursor: default !important;
   opacity: .6 !important;
   -moz-opacity: .6 !important;
   filter: alpha(opacity =   60) !important;
 }
-.x-item-disabled {
+.btn .x-item-disabled {
   cursor: default !important;
   opacity: .6 !important;
   -moz-opacity: .6 !important;
   filter: alpha(opacity =   60) !important;
 }
-.x-item-disabled:hover {
+.btn .x-item-disabled:hover {
   background-color: #aaa;
   background-image: -webkit-linear-gradient(
     bottom,

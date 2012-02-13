@@ -9,6 +9,7 @@ import com.delect.motiver.client.event.handler.ExerciseUpdatedEventHandler;
 import com.delect.motiver.client.event.handler.WorkoutCreatedEventHandler;
 import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.BeginnersGuideDisplay;
 import com.delect.motiver.client.presenter.guide.BeginnersGuidePresenter.PointDirection;
+import com.delect.motiver.client.view.widget.MyButton;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.HandlerRegistration;
 import com.google.gwt.event.shared.SimpleEventBus;
@@ -16,6 +17,10 @@ import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Window;
 import com.delect.motiver.client.lang.LangTutorial;
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.Listener;
+import com.extjs.gxt.ui.client.widget.ComponentManager;
 
 public abstract class GuideSteps {
 
@@ -260,15 +265,29 @@ public abstract class GuideSteps {
       
       //move workout to date
       GuideStep step9 = new GuideStep() {        
+        private MyButton btnAdd;
+        boolean skip = false;
+        Listener<BaseEvent> listener;
+
         @Override
         public boolean init(SimpleEventBus eventBus, BeginnersGuideDisplay display) {
           display.showText(Lang.WorkoutCreate9());
           display.showArrow("panel-note1-btn1", PointDirection.DOWN);
+          
+          btnAdd = (MyButton)ComponentManager.get().get("panel-note1-btn1");
+          listener = new Listener<BaseEvent>() {
+            @Override
+            public void handleEvent(BaseEvent be) {
+              skip = true;
+              btnAdd.removeListener(Events.OnClick, listener);
+            }
+          };
+          btnAdd.addListener(Events.OnClick, listener);
           return true;
         }
         @Override
         public boolean skip() {
-          return (DOM.getElementById("btn-add-workout") != null);
+          return skip;
         }
       };
       steps.add(step9);
