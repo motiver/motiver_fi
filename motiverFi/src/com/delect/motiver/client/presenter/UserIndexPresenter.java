@@ -165,7 +165,6 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 		 */
 		void printPage();
 	}
-//	private BrowserCheckPresenter browserCheckPresenter;
 	
 	private CoachModeIndicatorPresenter coachModeIndicatorPresenter;
 	private int connection_count = 0;
@@ -180,7 +179,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 
 	private Timer timer;
 	private Timer timerReload;
-  private ConfirmDialogPresenter msgPresenter;
+  protected ConfirmDialogPresenter dialog;
 
 	
 	/**
@@ -196,7 +195,6 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     //containers
     headerUserPresenter = new HeaderPresenter(rpcService, eventBus, (HeaderDisplay)GWT.create(HeaderView.class), HeaderTarget.USER, 0);
     shortcutKeysPresenter = new ShortcutKeysPresenter(rpcService, eventBus, (ShortcutKeysDisplay)GWT.create(ShortcutKeysView.class));
-//    browserCheckPresenter = new BrowserCheckPresenter(rpcService, eventBus, (BrowserCheckDisplay)GWT.create(BrowserCheckView.class));
   }
 
 	@Override
@@ -214,8 +212,13 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 			@SuppressWarnings("unchecked")
       @Override
 			public void newTicket(TicketModel ticket) {
-				final Request req = rpcService.addTicket(ticket, MyAsyncCallback.EmptyCallback);
-				addRequest(req);
+				rpcService.addTicket(ticket, MyAsyncCallback.EmptyCallback);
+				
+				//show "thank you" dialog
+				if(dialog != null)
+				  dialog.stop();
+				dialog = new ConfirmDialogPresenter(rpcService, eventBus, (ConfirmDialogDisplay)GWT.create(ConfirmDialogView.class), AppController.Lang.ThankYou(), AppController.Lang.ThankYouForReporting());
+				dialog.run(display.getBaseContainer());
 			}
 			@Override
 			public void printPage() {
@@ -504,9 +507,6 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 		if(coachModeIndicatorPresenter != null) {
 			coachModeIndicatorPresenter.stop();
     }
-//		if(browserCheckPresenter != null) {
-//			browserCheckPresenter.stop();
-//    }
 		if(shortcutKeysPresenter != null) {
 			shortcutKeysPresenter.stop();
     }
@@ -516,10 +516,8 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 		if(pagePresenter != null) {
 			pagePresenter.stop();
     }
-		
-    if(msgPresenter != null) {
-      msgPresenter.stop();
-    }
+    if(dialog != null)
+      dialog.stop();
 
 		if(infoMessagePresenters != null) {
 			for(InfoMessagePresenter p : infoMessagePresenters) {

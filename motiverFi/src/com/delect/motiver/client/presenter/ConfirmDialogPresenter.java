@@ -16,12 +16,9 @@ package com.delect.motiver.client.presenter;
 
 import com.google.gwt.event.shared.SimpleEventBus;
 
-import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
+import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
-
-import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.Listener;
 
 /**
  * Shows error message
@@ -43,7 +40,8 @@ public class ConfirmDialogPresenter extends Presenter {
 		 * Sets info message.
 		 * @param message String
 		 */
-		public abstract void setMessage(String message);
+		public abstract void setMessage(String title, String message);
+		public abstract void setDialogType(DialogType type);
 	}
 	
 	/** Handler for view to call.
@@ -59,12 +57,19 @@ public class ConfirmDialogPresenter extends Presenter {
 		void onNo();
 	}
 	
+	public enum DialogType {
+	  CONFIRM,
+	  ALERT
+	}
+	
 	private ConfirmDialogDisplay display;
+	private DialogType type = DialogType.CONFIRM;
+  private String title;
 	private String message;
   private ConfirmDialogHandler handler;
 	
 	/**
-	 * 
+	 * Shows confirmation dialog
 	 * @param rpcService
 	 * @param eventBus
 	 * @param display
@@ -76,9 +81,28 @@ public class ConfirmDialogPresenter extends Presenter {
 		super(rpcService, eventBus);
 		this.display = display;
 
+		this.title = AppController.Lang.Confirm();
     this.message = message;
     this.handler = handler;
 	}
+	
+  /**
+   * Shows confirmation dialog
+   * @param rpcService
+   * @param eventBus
+   * @param display
+   * @param color MessageColor
+   * @param message String
+   * @param clickListener Listener<BaseEvent>
+   */
+  public ConfirmDialogPresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, ConfirmDialogDisplay display, String title, String message) {
+    super(rpcService, eventBus);
+    this.display = display;
+
+    this.title = title;
+    this.message = message;
+    this.type = DialogType.ALERT;
+  }
 	
 	@Override
 	public Display getView() {
@@ -89,7 +113,8 @@ public class ConfirmDialogPresenter extends Presenter {
 	@Override
 	public void onBind() {
 
-		display.setMessage(message);
+		display.setMessage(title, message);
+		display.setDialogType(type);
 		display.setHandler(new ConfirmDialogHandler() {
 			@Override
 			public void onYes() {

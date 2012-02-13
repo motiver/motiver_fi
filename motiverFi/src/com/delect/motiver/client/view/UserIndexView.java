@@ -14,12 +14,6 @@
  ******************************************************************************/
 package com.delect.motiver.client.view;
 
-import com.google.gwt.dom.client.Document;
-import com.google.gwt.dom.client.ScriptElement;
-import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.Timer;
-import com.google.gwt.user.client.ui.Widget;
-
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.UserIndexPresenter;
@@ -27,7 +21,6 @@ import com.delect.motiver.client.presenter.UserIndexPresenter.UserIndexHandler;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.TicketModel;
-
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -46,6 +39,10 @@ import com.extjs.gxt.ui.client.widget.layout.HBoxLayout.HBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayoutData;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
+import com.google.gwt.dom.client.Document;
+import com.google.gwt.dom.client.ScriptElement;
+import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.ui.Widget;
 
 public class UserIndexView extends UserIndexPresenter.UserIndexDisplay {
 
@@ -253,23 +250,14 @@ public class UserIndexView extends UserIndexPresenter.UserIndexDisplay {
 				//send ticket
 				TicketModel ticket = new TicketModel();
 				ticket.setPriority(1);
-				ticket.setDesc(textArea.getValue());
+				ticket.setDesc("User: "+AppController.User.getEmail()+": "+textArea.getValue());
 				ticket.setTitle("Reported problem at #" + History.getToken());
 				ticket.setUid(AppController.User.getUid());
 				handler.newTicket(ticket);
 
-				//close popup after small delay
-				btnSend.setEnabled(false);
-				textArea.setEnabled(false);
-				Timer timer = new Timer() {
-					@Override
-					public void run() {
-						if(popup != null && popup.isVisible()) {
-              popup.hide();
-            }
-					}
-				};
-				timer.schedule(2000);
+        if(popup != null && popup.isVisible()) {
+          popup.hide();
+        }
 			}
     });
     panelButtons.add(btnSend, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
