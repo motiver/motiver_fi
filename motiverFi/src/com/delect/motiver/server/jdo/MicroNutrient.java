@@ -22,6 +22,9 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
@@ -197,5 +200,16 @@ public class MicroNutrient implements Serializable, Cloneable {
   @Override
   public String toString() {
     return "MicroNutrient: [id: "+getId()+", '"+getNameId()+"', value: '"+getValue()+"']";
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("id",getId());
+    obj.put("nameId",getNameId());
+    obj.put("openId",getUid());
+    obj.put("value",getValue());
+
+    return obj;
   }
 }

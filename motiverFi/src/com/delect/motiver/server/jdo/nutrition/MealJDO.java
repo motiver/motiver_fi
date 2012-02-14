@@ -25,9 +25,13 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
+import com.delect.motiver.server.jdo.MicroNutrient;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.MealModel;
@@ -283,5 +287,22 @@ public class MealJDO implements Serializable, Comparable<MealJDO>, Cloneable {
   public String toString() {
     return "Meal: [id: "+getId()+", '"+getName()+"', foods: "+getFoods().size()+"" +
         ", '"+getUid()+"']";
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("id",getId());
+    obj.put("name",getName());
+    obj.put("openId",getUid());
+    obj.put("timeId",getTime());
+    
+    JSONArray list = new JSONArray();
+    for(Key value : getFoodsKeys()) {
+      list.add(value.getId());
+    }
+    obj.put("foodsKeys", list);
+
+    return obj;
   }
 }

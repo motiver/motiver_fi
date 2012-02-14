@@ -26,6 +26,9 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
@@ -287,6 +290,29 @@ public class TimeJDO implements Serializable, Comparable<TimeJDO> {
   public String toString() {
     return "Time: [id: "+getId()+", '"+getTime()+"', meals: "+getMealsNew().size()+", meals (keys): "+getMealsKeys().size()+", foods: "+getFoods().size()+"" +
         ", '"+getUid()+"']";
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("date",(getDate() != null)? getDate().toString() : null);
+    obj.put("id",getId());
+    obj.put("time",getTime());
+    obj.put("openId",getUid());
+    
+    JSONArray list = new JSONArray();
+    for(Key value : getFoodsKeys()) {
+      list.add(value.getId());
+    }
+    obj.put("foodsKeys", list);
+    
+    JSONArray list2 = new JSONArray();
+    for(Key value : getMealsKeys()) {
+      list2.add(value.getId());
+    }
+    obj.put("mealsKeys", list2);
+
+    return obj;
   }
   
 }

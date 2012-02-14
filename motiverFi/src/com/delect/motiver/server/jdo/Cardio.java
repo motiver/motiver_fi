@@ -146,15 +146,13 @@ public class Cardio {
   public JSONObject getJson() {
     JSONObject obj=new JSONObject();
     obj.put("id",getId());
-    obj.put("id",getId());
     obj.put("name",getName());
     obj.put("openId",getUid());
-    obj.put("uid",getUidOld());
     JSONArray list = new JSONArray();
     for(CardioValue value : getValues()) {
       list.add(value.getJson());
     }
-    obj.put("CardioValue", list);
+    obj.put("values", list);
 
     return obj;
   }

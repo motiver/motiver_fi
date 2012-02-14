@@ -24,6 +24,9 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
@@ -183,4 +186,22 @@ public class Measurement {
   public Long getUidOld() {
     return uid;
   } 
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("date",(getDate() != null)? getDate().toString() : null);
+    obj.put("id",getId());
+    obj.put("name",getName());
+    obj.put("target",getTarget());
+    obj.put("openId",getUid());
+    obj.put("uid",getUidOld());
+    JSONArray list = new JSONArray();
+    for(MeasurementValue value : getValues()) {
+      list.add(value.getJson());
+    }
+    obj.put("values", list);
+
+    return obj;
+  }
 }
