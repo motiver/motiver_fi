@@ -176,7 +176,6 @@ public class Run {
     obj.put("name", getName());
     obj.put("openId", getUid());
     obj.put("targetTime", getTargetTime());
-    obj.put("uid", getUidOld());
     JSONArray list = new JSONArray();
     for(RunValue value : getValues()) {
       list.add(value.getJson());

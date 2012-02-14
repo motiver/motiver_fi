@@ -23,6 +23,9 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.ExerciseModel;
@@ -313,15 +316,19 @@ public class Exercise implements Serializable, Cloneable, Comparable<Exercise> {
     this.workout = workout;
   }
 
-//  public void getJson(JSONWriter writerJson) {
-//    writerJson.key("calories").value(getCalories());
-//    writerJson.key("date").value(getDate());
-//    writerJson.key("duration").value(getDuration());
-//    writerJson.key("id").value(getId());
-//    writerJson.key("info").value(getInfo());
-//    writerJson.key("openId").value(getUid());
-//    writerJson.key("pulse").value(getPulse());
-//    writerJson.key("pulseMax").value(getPulseMax());
-//    writerJson.key("uid").value(getUidOld());
-//  }
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("id",getId());
+    obj.put("info",getInfo());
+    obj.put("name",getNameId());
+    obj.put("order",getOrder());
+    obj.put("reps",getReps());
+    obj.put("rest",getRest());
+    obj.put("sets",getSets());
+    obj.put("tempo",getTempo());
+    obj.put("weights",getWeights());
+
+    return obj;
+  }
 }

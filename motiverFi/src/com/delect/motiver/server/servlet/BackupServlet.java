@@ -19,8 +19,16 @@ import org.json.simple.JSONObject;
 
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Cardio;
+import com.delect.motiver.server.jdo.Measurement;
+import com.delect.motiver.server.jdo.Permission;
 import com.delect.motiver.server.jdo.Run;
 import com.delect.motiver.server.jdo.UserOpenid;
+import com.delect.motiver.server.jdo.nutrition.FoodJDO;
+import com.delect.motiver.server.jdo.nutrition.FoodName;
+import com.delect.motiver.server.jdo.nutrition.MealJDO;
+import com.delect.motiver.server.jdo.nutrition.TimeJDO;
+import com.delect.motiver.server.jdo.training.ExerciseName;
+import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.manager.TrainingManager;
 import com.google.appengine.api.datastore.Cursor;
@@ -45,49 +53,132 @@ public class BackupServlet extends RemoteServiceServlet {
     PersistenceManager pm =  PMF.get().getPersistenceManager();
     try {
       PrintWriter writer = response.getWriter();
-    
-      //get users
-      Query q = pm.newQuery(UserOpenid.class);
-      List<UserOpenid> users = (List<UserOpenid>) q.execute();
       
       JSONObject obj = new JSONObject();
       
+      //users
+      Query q = pm.newQuery(UserOpenid.class);
+      List<UserOpenid> users = (List<UserOpenid>) q.execute();
       JSONArray list = new JSONArray();      
       for(UserOpenid user : users) {
-        JSONObject objU = new JSONObject();
-        
-        //user
-        objU.put("UserOpenid", user.getJson());
-        
-        //cardio
-        List<Cardio> cardios = getCardios(pm, user);
-        JSONArray listC = new JSONArray();  
-        for(Cardio cardio : cardios) {
-          listC.add(cardio.getJson());
-        }
-        objU.put("Cardio", list);
-        
-        //run
-        List<Run> runs = getRuns(pm, user);
-        JSONArray listR = new JSONArray();    
-        for(Run run : runs) {
-          listC.add(run.getJson());
-        }
-        objU.put("Run", list);
-        
-        //workout
-//        List<Workout> workouts = getWorkouts(pm, user);
-//        writerJson.key("Workout").array();
-//        for(Workout workout : workouts) {
-//          writerJson.object();
-//          workout.getJson(writerJson);
-//          writerJson.endObject();
-//        }
-//        writerJson.endArray();
+        list.add(user.getJson());
       }
-      
       obj.put("UserOpenid", list);
+      
+      /*
+       * TRAINING
+       */
+      
+      //exercise names
+      q = pm.newQuery(ExerciseName.class);
+      List<ExerciseName> names = (List<ExerciseName>) q.execute();
+      JSONArray listExerciseName = new JSONArray();      
+      for(ExerciseName name : names) {
+        listExerciseName.add(name.getJson());
+      }
+      obj.put("ExerciseName", listExerciseName);
+      
+      //workouts
+      q = pm.newQuery(Workout.class);
+      List<Workout> workouts = (List<Workout>) q.execute();
+      JSONArray listWorkout = new JSONArray();      
+      for(Workout workout : workouts) {
+        listWorkout.add(workout.getJson());
+      }
+      obj.put("Workout", listWorkout);
+      
+      //routines
+      q = pm.newQuery(Routine.class);
+      List<Routine> routines = (List<Routine>) q.execute();
+      JSONArray listRoutine = new JSONArray();      
+      for(Routine routine : routines) {
+        listRoutine.add(routine.getJson());
+      }
+      obj.put("Routine", listRoutine);
+      
+      /*
+       * NUTRITION
+       */
+      
+      //food names
+      q = pm.newQuery(FoodName.class);
+      List<FoodName> namesF = (List<FoodName>) q.execute();
+      JSONArray listFoodName = new JSONArray();      
+      for(FoodName name : namesF) {
+        listFoodName.add(name.getJson());
+      }
+      obj.put("FoodName", listFoodName);
+      
+      //foodJDO
+      q = pm.newQuery(FoodJDO.class);
+      List<FoodJDO> foods = (List<FoodJDO>) q.execute();
+      JSONArray listFoodJDO = new JSONArray();      
+      for(FoodJDO food : foods) {
+        listFoodJDO.add(food.getJson());
+      }
+      obj.put("FoodJDO", listFoodJDO);
+      
+      //mealJDO
+      q = pm.newQuery(MealJDO.class);
+      List<MealJDO> meals = (List<MealJDO>) q.execute();
+      JSONArray listMealJDO = new JSONArray();      
+      for(MealJDO meal : meals) {
+        listMealJDO.add(meal.getJson());
+      }
+      obj.put("MealJDO", listMealJDO);
+      
+      //timeJDO
+      q = pm.newQuery(TimeJDO.class);
+      List<TimeJDO> times = (List<TimeJDO>) q.execute();
+      JSONArray listTimeJDO = new JSONArray();      
+      for(TimeJDO time : times) {
+        listTimeJDO.add(time.getJson());
+      }
+      obj.put("TimeJDO", listTimeJDO);
+      
+      /*
+       * CARDIO
+       */
+      
+      //cardio
+      q = pm.newQuery(Cardio.class);
+      List<Cardio> cardios = (List<Cardio>) q.execute();
+      JSONArray listCardio = new JSONArray();      
+      for(Cardio cardio : cardios) {
+        listCardio.add(cardio.getJson());
+      }
+      obj.put("Cardio", listCardio);
+      
+      //run
+      q = pm.newQuery(Run.class);
+      List<Run> runs = (List<Run>) q.execute();
+      JSONArray listRun = new JSONArray();      
+      for(Run run : runs) {
+        listRun.add(run.getJson());
+      }
+      obj.put("Run", listRun);
 
+      /*
+       * MISC
+       */
+      
+      //measurements
+      q = pm.newQuery(Measurement.class);
+      List<Measurement> measurements = (List<Measurement>) q.execute();
+      JSONArray listMeasurement = new JSONArray();      
+      for(Measurement measurement : measurements) {
+        listMeasurement.add(measurement.getJson());
+      }
+      obj.put("Measurement", listMeasurement);
+      
+      //permissions
+      q = pm.newQuery(Permission.class);
+      List<Permission> permissions = (List<Permission>) q.execute();
+      JSONArray listPermission = new JSONArray();      
+      for(Permission permission : permissions) {
+        listPermission.add(permission.getJson());
+      }
+      obj.put("Permission", listPermission);
       
       obj.writeJSONString(writer);
       writer.flush();
@@ -104,95 +195,5 @@ public class BackupServlet extends RemoteServiceServlet {
       }
     }
     
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<Cardio> getCardios(PersistenceManager pm, UserOpenid user) {
-    
-    List<Cardio> data = new ArrayList<Cardio>();
-    
-    Cursor cursor = null;
-    Map<String, Object> extensionMap = new HashMap<String, Object>();
-    //get using cursors
-    while(true){
-      Query q = pm.newQuery(Cardio.class);
-      q.setFilter("openId == openidParam");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setRange(0, 700);
-      if(cursor != null) {
-        extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
-        q.setExtensions(extensionMap);
-      }
-      List<Cardio> u = (List<Cardio>) q.execute(user.getUid());        
-      cursor = JDOCursorHelper.getCursor(u);
-
-      data.addAll(u);
-      
-      if(u.size() == 0) {
-        break;
-      }
-    }
-    
-    return data;
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<Run> getRuns(PersistenceManager pm, UserOpenid user) {
-    
-    List<Run> data = new ArrayList<Run>();
-    
-    Cursor cursor = null;
-    Map<String, Object> extensionMap = new HashMap<String, Object>();
-    //get using cursors
-    while(true){
-      Query q = pm.newQuery(Run.class);
-      q.setFilter("openId == openidParam");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setRange(0, 700);
-      if(cursor != null) {
-        extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
-        q.setExtensions(extensionMap);
-      }
-      List<Run> u = (List<Run>) q.execute(user.getUid());        
-      cursor = JDOCursorHelper.getCursor(u);
-
-      data.addAll(u);
-      
-      if(u.size() == 0) {
-        break;
-      }
-    }
-    
-    return data;
-  }
-
-  @SuppressWarnings("unchecked")
-  private List<Workout> getWorkouts(PersistenceManager pm, UserOpenid user) {
-    
-    List<Workout> data = new ArrayList<Workout>();
-    
-    Cursor cursor = null;
-    Map<String, Object> extensionMap = new HashMap<String, Object>();
-    //get using cursors
-    while(true){
-      Query q = pm.newQuery(Workout.class);
-      q.setFilter("openId == openidParam");
-      q.declareParameters("java.lang.String openIdParam");
-      q.setRange(0, 700);
-      if(cursor != null) {
-        extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
-        q.setExtensions(extensionMap);
-      }
-      List<Workout> u = (List<Workout>) q.execute(user.getUid());        
-      cursor = JDOCursorHelper.getCursor(u);
-
-      data.addAll(u);
-      
-      if(u.size() == 0) {
-        break;
-      }
-    }
-    
-    return data;
   }
 }

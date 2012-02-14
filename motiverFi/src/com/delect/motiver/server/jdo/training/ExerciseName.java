@@ -22,6 +22,9 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.ExerciseNameModel;
@@ -275,5 +278,18 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
   @Override
   public String toString() {
     return "ExerciseName: [id: "+getId()+", '"+getName()+"', equipment: '"+getTarget()+"']";
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("id",getId());
+    obj.put("locale",getLocale());
+    obj.put("name",getName());
+    obj.put("openId",getUid());
+    obj.put("target",getTarget());
+    obj.put("video",getVideo());
+
+    return obj;
   }
 }

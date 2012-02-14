@@ -22,6 +22,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -85,4 +87,22 @@ public class Permission {
   public void setTarget(Integer target) {
     this.target = target;
   }
+
+  public Date getDate() {
+    return date;
+  }
+
+  public void setDate(Date date) {
+    this.date = date;
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("date",(getDate() != null)? getDate().toString() : null);
+    obj.put("friendId", getFriendId());
+    obj.put("openId", getUid());
+    
+    return obj;
+  } 
 }

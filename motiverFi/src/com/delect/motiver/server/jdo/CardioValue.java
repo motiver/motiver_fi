@@ -217,14 +217,13 @@ public class CardioValue {
   public JSONObject getJson() {
     JSONObject obj=new JSONObject();
     obj.put("calories", getCalories());
-    obj.put("date", getDate());
+    obj.put("date",(getDate() != null)? getDate().toString() : null);
     obj.put("duration", getDuration());
     obj.put("id", getId());
     obj.put("info", getInfo());
     obj.put("openId", getUid());
     obj.put("pulse", getPulse());
     obj.put("pulseMax", getPulseMax());
-    obj.put("uid", getUidOld());
     
     return obj;
   } 
