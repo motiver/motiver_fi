@@ -22,6 +22,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
@@ -152,5 +154,15 @@ public class MeasurementValue {
 
   public Long getUidOld() {
     return uid;
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("date",(getDate() != null)? getDate().toString() : null);
+    obj.put("id", getId());
+    obj.put("value", getValue());
+    
+    return obj;
   } 
 }

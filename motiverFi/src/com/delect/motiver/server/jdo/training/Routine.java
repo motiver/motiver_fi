@@ -26,6 +26,9 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
@@ -316,5 +319,18 @@ public class Routine implements Serializable, Cloneable, Comparable<Routine> {
   public String toString() {
     return "Routine: [id: "+getId()+", '"+getName()+"', workouts: "+((getWorkouts() != null)? getWorkouts().size() : "")+"" +
         ", '"+getUid()+"']";
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("date",(getDate() != null)? getDate().toString() : null);
+    obj.put("days",getDays());
+    obj.put("id",getId());
+    obj.put("info",getInfo());
+    obj.put("name",getName());
+    obj.put("openId",getUid());
+
+    return obj;
   }
 }

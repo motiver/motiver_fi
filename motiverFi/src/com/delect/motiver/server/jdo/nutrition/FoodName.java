@@ -24,7 +24,11 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.delect.motiver.server.jdo.MicroNutrient;
+import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.shared.FoodNameModel;
 import com.delect.motiver.shared.MicroNutrientModel;
 
@@ -450,5 +454,32 @@ public class FoodName implements Serializable, Comparable<FoodName> {
   @Override
   public String toString() {
     return "FoodName: [id: "+getId()+", '"+getName()+"', energy: '"+getEnergy()+"', "+getProtein()+" / "+getCarb()+" / "+getFet()+"]";
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("barcode",getBarcode());
+    obj.put("carb",getCarb());
+    obj.put("category",getCategory());
+    obj.put("energy",getEnergy());
+    obj.put("fet",getFet());
+    obj.put("id",getId());
+    obj.put("locale",getLocale());
+    obj.put("name",getName());
+    obj.put("openId",getUid());
+    obj.put("portion",getPortion());
+    obj.put("price",getPrice());
+    obj.put("protein",getProtein());
+    obj.put("trusted",getTrusted());
+    obj.put("uid",getUid());
+    
+    JSONArray list = new JSONArray();
+    for(MicroNutrient value : getMicroNutrients()) {
+      list.add(value.getJson());
+    }
+    obj.put("micronutrients", list);
+
+    return obj;
   }
 }

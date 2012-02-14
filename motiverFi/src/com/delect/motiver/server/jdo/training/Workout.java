@@ -28,11 +28,12 @@ import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 import javax.persistence.OneToOne;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.repackaged.org.json.JSONWriter;
-
-import com.delect.motiver.server.jdo.RunValue;
+import com.delect.motiver.server.jdo.CardioValue;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.WorkoutModel;
@@ -432,19 +433,27 @@ public class Workout implements Serializable, Comparable<Workout>, Cloneable {
     		", '"+getUid()+"']";
   }
 
-//  public void getJson(JSONWriter writerJson) {
-//    writerJson.key("distance").value(getDistance());
-//    writerJson.key("id").value(getId());
-//    writerJson.key("name").value(getName());
-//    writerJson.key("openId").value(getUid());
-//    writerJson.key("targetTime").value(getTargetTime());
-//    writerJson.key("uid").value(getUidOld());
-//    writerJson.key("RunValue").array();
-//    for(Exercise value : getExercises()) {
-//      writerJson.object();
-//      value.getJson(writerJson);
-//      writerJson.endObject();
-//    }
-//    writerJson.endArray();
-//  }
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("copyCount",getCount());
+    obj.put("date",(getDate() != null)? getDate().toString() : null);
+    obj.put("dayInRoutine",getDayInRoutine());
+    obj.put("done",getDone());
+    obj.put("id",getId());
+    obj.put("info",getInfo());
+    obj.put("name",getName());
+    obj.put("openId",getUid());
+    obj.put("rating",getRating());
+    obj.put("routineId",getRoutineId());
+    obj.put("timeEnd",getTimeEnd());
+    obj.put("timeStart",getTimeStart());
+    JSONArray list = new JSONArray();
+    for(Exercise value : getExercises()) {
+      list.add(value.getJson());
+    }
+    obj.put("exercises", list);
+
+    return obj;
+  }
 }

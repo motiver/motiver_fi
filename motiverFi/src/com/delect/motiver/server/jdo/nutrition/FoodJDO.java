@@ -23,12 +23,16 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
 import com.delect.motiver.server.FoodInMeal;
 import com.delect.motiver.server.FoodInMealTime;
 import com.delect.motiver.server.FoodInTime;
+import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.shared.FoodModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -256,5 +260,16 @@ public class FoodJDO implements Serializable, Cloneable {
   @Override
   public String toString() {
     return "Food: [id: "+getId()+", name: '"+((getName() != null)? getName().getName() : "")+"', "+getAmount()+"]";
+  }
+
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("amount",getAmount());
+    obj.put("id",getId());
+    obj.put("name",getNameId());
+    obj.put("openId",getUid());
+
+    return obj;
   }
 }

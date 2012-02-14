@@ -23,10 +23,11 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.appengine.repackaged.org.json.JSONException;
-import com.google.appengine.repackaged.org.json.JSONWriter;
 
 import com.delect.motiver.shared.RunModel;
 
@@ -167,19 +168,20 @@ public class Run {
     return uid;
   }
 
-  public void getJson(JSONWriter writerJson) throws JSONException {
-    writerJson.key("distance").value(getDistance());
-    writerJson.key("id").value(getId());
-    writerJson.key("name").value(getName());
-    writerJson.key("openId").value(getUid());
-    writerJson.key("targetTime").value(getTargetTime());
-    writerJson.key("uid").value(getUidOld());
-    writerJson.key("RunValue").array();
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj = new JSONObject();
+    obj.put("distance", getDistance());
+    obj.put("id", getId());
+    obj.put("name", getName());
+    obj.put("openId", getUid());
+    obj.put("targetTime", getTargetTime());
+    JSONArray list = new JSONArray();
     for(RunValue value : getValues()) {
-      writerJson.object();
-      value.getJson(writerJson);
-      writerJson.endObject();
+      list.add(value.getJson());
     }
-    writerJson.endArray();
+    obj.put("RunValue", list);
+
+    return obj;
   } 
 }

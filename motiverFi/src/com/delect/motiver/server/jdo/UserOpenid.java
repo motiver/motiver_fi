@@ -18,14 +18,15 @@ import java.io.Serializable;
 import java.util.Date;
 
 import javax.jdo.annotations.IdentityType;
+import javax.jdo.annotations.NotPersistent;
 import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONObject;
+
 import com.delect.motiver.shared.UserModel;
 import com.google.appengine.api.users.User;
-import com.google.appengine.repackaged.org.json.JSONException;
-import com.google.appengine.repackaged.org.json.JSONWriter;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
 public class UserOpenid implements Serializable {
@@ -61,23 +62,17 @@ public class UserOpenid implements Serializable {
 			modelClient.setTimezone(model.getTimezone());
 			modelClient.setGender(model.getGender());
 			modelClient.setLocale(model.getLocale());
-			
-//			modelClient.setShareTraining(model.getShareTraining());
-//			modelClient.setShareNutrition(model.getShareNutrition());
-//      modelClient.setShareNutritionFoods(model.getShareNutritionFoods());
-//			modelClient.setShareCardio(model.getShareCardio());
-//			modelClient.setShareMeasurement(model.getShareMeasurement());
-//			modelClient.setShareCoach(model.getShareCoach());
 			modelClient.setAdmin(model.isAdmin());
 			modelClient.setBanned(model.isBanned());
 			modelClient.setAlias(model.getAlias());
+      modelClient.setCoach(model.isCoach());
 			
 		} catch (Exception e) {
 		}
 		
 		return modelClient;
 	}
-	
+
   public static UserOpenid getServerModel(UserModel model) {
     UserOpenid modelServer = new UserOpenid();
     
@@ -100,8 +95,8 @@ public class UserOpenid implements Serializable {
     
     return modelServer;
   }
-	
-	@Persistent
+
+  @Persistent
 	private Boolean admin;
   @Persistent
   private String alias;
@@ -146,6 +141,12 @@ public class UserOpenid implements Serializable {
 	@PrimaryKey
   private String id; //open id
   private String fedId;
+
+  @Persistent
+  private boolean isTutorialShowed;
+  
+  @NotPersistent
+  private boolean isCoach;
 	
 	public UserOpenid() {
 		createDate = new Date();
@@ -353,6 +354,9 @@ public class UserOpenid implements Serializable {
 			return true;
     }
 	}
+  public boolean isCoach() {
+    return isCoach;
+  }
 
 	/**
 	 * Sets if user has administrator priviledges
@@ -418,59 +422,6 @@ public class UserOpenid implements Serializable {
 		this.measurementSystem = measurementSystem;
 	}
 
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareCardio(String shareCardio) {
-//		this.shareCardio = shareCardio;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody (DEFAULT)
-//	 */
-//	public void setShareCoach(String shareCoach) {
-//		this.shareCoach = shareCoach;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareMeasurement(String shareMeasurement) {
-//		this.shareMeasurement = shareMeasurement;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareNutrition(String shareNutrition) {
-//		this.shareNutrition = shareNutrition;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareNutritionFoods(String shareNutritionFoods) {
-//		this.shareNutritionFoods = shareNutritionFoods;
-//	}
-//
-//	/**
-//	 * facebook group id
-//	 * <br>"-1" : share with nobody
-//	 * <br>"0" : share with all facebook friends (DEFAULT)
-//	 */
-//	public void setShareTraining(String shareTraining) {
-//		this.shareTraining = shareTraining;
-//	}
-
 	public void setTimeFormat(int timeFormat) {
 		this.timeFormat = timeFormat;
 	}
@@ -485,6 +436,17 @@ public class UserOpenid implements Serializable {
   
   public void setFedId(String fedId) {
     this.fedId = fedId;
+  }
+  public void setCoach(boolean isCoach) {
+    this.isCoach = isCoach;
+  }
+  
+  public boolean isTutorialShowed() {
+    return isTutorialShowed;
+  }
+  
+  public void setTutorialShowed(boolean showed) {
+    this.isTutorialShowed = showed;
   }
 	
 	public String toString() {
@@ -502,6 +464,7 @@ public class UserOpenid implements Serializable {
     setTimeFormat(model.getTimeFormat());
     setTimezone(model.getTimezone());
     setFedId(model.getFedId());
+    setTutorialShowed(model.isTutorialShowed());
   }
 
   public void update(User model) {
@@ -513,19 +476,23 @@ public class UserOpenid implements Serializable {
     setFedId(model.getFederatedIdentity());
   }
 
-  public void getJson(JSONWriter writerJson) throws JSONException {
-    writerJson.key("timeComments").value(getLastCommentTime());
-    writerJson.key("alias").value(getAlias());
-    writerJson.key("dateFormat").value(getDateFormat());
-    writerJson.key("lastName").value(getEmail());
-    writerJson.key("fedId").value(getFedId());
-    writerJson.key("gender").value(getGender());
-    writerJson.key("id").value(getId());
-    writerJson.key("locale").value(getLocale());
-    writerJson.key("measurementSystem").value(getMeasurementSystem());
-    writerJson.key("firstName").value(getNickName());
-    writerJson.key("timeFormat").value(getTimeFormat());
-    writerJson.key("timeZone").value(getTimezone());
-    writerJson.key("uid").value(getUid());
+  @SuppressWarnings("unchecked")
+  public JSONObject getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("timeComments", getLastCommentTime());
+    obj.put("alias", getAlias());
+    obj.put("dateFormat", getDateFormat());
+    obj.put("lastName", getEmail());
+    obj.put("fedId", getFedId());
+    obj.put("gender", getGender());
+    obj.put("id", getId());
+    obj.put("locale", getLocale());
+    obj.put("measurementSystem", getMeasurementSystem());
+    obj.put("firstName", getNickName());
+    obj.put("timeFormat", getTimeFormat());
+    obj.put("timeZone", getTimezone());
+    obj.put("uid", getUid());
+    
+    return obj;
   }
 }
