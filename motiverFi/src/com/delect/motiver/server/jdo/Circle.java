@@ -23,6 +23,8 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
+import org.json.simple.JSONObject;
+
 import com.google.appengine.api.datastore.Key;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
@@ -107,5 +109,15 @@ public class Circle implements Serializable {
   
   public String toString() {
     return "Circle: ["+getTarget()+", "+getFriendId()+", "+getUid()+"]";
+  }
+
+  public Object getJson() {
+    JSONObject obj=new JSONObject();
+    obj.put("id", getId());
+    obj.put("target", getTarget());
+    obj.put("friendId", getFriendId());
+    obj.put("openId", getUid());
+    
+    return obj;
   }
 }
