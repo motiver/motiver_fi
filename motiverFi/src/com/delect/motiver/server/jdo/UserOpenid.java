@@ -142,10 +142,10 @@ public class UserOpenid implements Serializable {
   @Persistent
 	@PrimaryKey
   private String id; //open id
-  private String fedId;
+  
 
   @Persistent
-  private boolean isTutorialShowed;
+  private Boolean tutorialShowed = false;
   
   @NotPersistent
   private boolean isCoach;
@@ -321,15 +321,6 @@ public class UserOpenid implements Serializable {
 			return "";
     }
 	}
-  
-  public String getFedId() {
-    if(fedId != null) {
-      return fedId;
-    }
-    else {
-      return "";
-    }
-  }
 
 	/**
 	 * If user has administrator priviledges
@@ -436,19 +427,16 @@ public class UserOpenid implements Serializable {
 	  this.id = id;
 	}
   
-  public void setFedId(String fedId) {
-    this.fedId = fedId;
-  }
   public void setCoach(boolean isCoach) {
     this.isCoach = isCoach;
   }
   
   public boolean isTutorialShowed() {
-    return isTutorialShowed;
+    return tutorialShowed;
   }
   
   public void setTutorialShowed(boolean showed) {
-    this.isTutorialShowed = showed;
+    this.tutorialShowed = showed;
   }
 	
 	public String toString() {
@@ -465,7 +453,6 @@ public class UserOpenid implements Serializable {
     setNickName(model.getNickName());
     setTimeFormat(model.getTimeFormat());
     setTimezone(model.getTimezone());
-    setFedId(model.getFedId());
     setTutorialShowed(model.isTutorialShowed());
   }
 
@@ -475,7 +462,6 @@ public class UserOpenid implements Serializable {
     setNickName(model.getNickname());
     setEmail(model.getEmail());
     setUid(model.getUserId());
-    setFedId(model.getFederatedIdentity());
   }
 
   @SuppressWarnings("unchecked")
@@ -485,7 +471,6 @@ public class UserOpenid implements Serializable {
     obj.put("alias", getAlias());
     obj.put("dateFormat", getDateFormat());
     obj.put("lastName", getEmail());
-    obj.put("fedId", getFedId());
     obj.put("gender", getGender());
     obj.put("id", getId());
     obj.put("locale", getLocale());

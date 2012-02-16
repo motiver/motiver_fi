@@ -26,7 +26,14 @@
     <target>indexing</target>
     <description>Calculate monthly summary</description>
     <schedule>1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 23:00</schedule>
-    
+  </cron>
+  
+  <cron>
+    <url>/motiver/bs</url>
+    <target>backups</target>
+    <description>Weekly backups</description>
+    <timezone>Europe/Helsinki</timezone>
+    <schedule>every thu 22:00</schedule>
   </cron>
   
 </cronentries>
