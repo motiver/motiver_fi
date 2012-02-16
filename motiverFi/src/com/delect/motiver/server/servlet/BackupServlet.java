@@ -1,7 +1,16 @@
 package com.delect.motiver.server.servlet;
 
+import com.google.appengine.api.files.AppEngineFile;
+import com.google.appengine.api.files.FileService;
+import com.google.appengine.api.files.FileServiceFactory;
+import com.google.appengine.api.files.FileWriteChannel;
+import com.google.appengine.api.files.GSFileOptions.GSFileOptionsBuilder;
+
 import java.io.PrintWriter;
+import java.nio.channels.Channels;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,8 +28,8 @@ import org.json.simple.JSONObject;
 
 import com.delect.motiver.server.PMF;
 import com.delect.motiver.server.jdo.Cardio;
+import com.delect.motiver.server.jdo.Circle;
 import com.delect.motiver.server.jdo.Measurement;
-import com.delect.motiver.server.jdo.Permission;
 import com.delect.motiver.server.jdo.Run;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodJDO;
@@ -30,15 +39,14 @@ import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
-import com.delect.motiver.server.manager.TrainingManager;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 public class BackupServlet extends RemoteServiceServlet {
   
   private static final long serialVersionUID = -3367983932040779238L;
-  
-  private static TrainingManager trainingManager = TrainingManager.getInstance();
+
+  SimpleDateFormat fmt = new SimpleDateFormat("yyyy-MM-dd");
   
   /**
    * Logger for this class
@@ -48,31 +56,30 @@ public class BackupServlet extends RemoteServiceServlet {
   @SuppressWarnings("unchecked")
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
-    response.setContentType("text/plain");
+    response.setContentType("application/json");
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
+
     try {
       PrintWriter writer = response.getWriter();
       
       JSONObject obj = new JSONObject();
       
+
       //users
-      Query q = pm.newQuery(UserOpenid.class);
-      List<UserOpenid> users = (List<UserOpenid>) q.execute();
+      List<UserOpenid> users = getAll(pm, UserOpenid.class);
       JSONArray list = new JSONArray();      
       for(UserOpenid user : users) {
         list.add(user.getJson());
       }
       obj.put("UserOpenid", list);
       
-
       /*
        * TRAINING
        */
       
       //exercise names
-      q = pm.newQuery(ExerciseName.class);
-      List<ExerciseName> names = (List<ExerciseName>) q.execute();
+      List<ExerciseName> names = getAll(pm, ExerciseName.class);
       JSONArray listExerciseName = new JSONArray();      
       for(ExerciseName name : names) {
         listExerciseName.add(name.getJson());
@@ -80,8 +87,7 @@ public class BackupServlet extends RemoteServiceServlet {
       obj.put("ExerciseName", listExerciseName);
       
       //workouts
-      q = pm.newQuery(Workout.class);
-      List<Workout> workouts = (List<Workout>) q.execute();
+      List<Workout> workouts = getAll(pm, Workout.class);
       JSONArray listWorkout = new JSONArray();      
       for(Workout workout : workouts) {
         listWorkout.add(workout.getJson());
@@ -89,8 +95,7 @@ public class BackupServlet extends RemoteServiceServlet {
       obj.put("Workout", listWorkout);
       
       //routines
-      q = pm.newQuery(Routine.class);
-      List<Routine> routines = (List<Routine>) q.execute();
+      List<Routine> routines = getAll(pm, Routine.class);
       JSONArray listRoutine = new JSONArray();      
       for(Routine routine : routines) {
         listRoutine.add(routine.getJson());
@@ -102,8 +107,7 @@ public class BackupServlet extends RemoteServiceServlet {
        */
       
       //food names
-      q = pm.newQuery(FoodName.class);
-      List<FoodName> namesF = (List<FoodName>) q.execute();
+      List<FoodName> namesF = getAll(pm, FoodName.class);
       JSONArray listFoodName = new JSONArray();      
       for(FoodName name : namesF) {
         listFoodName.add(name.getJson());
@@ -111,8 +115,7 @@ public class BackupServlet extends RemoteServiceServlet {
       obj.put("FoodName", listFoodName);
       
       //foodJDO
-      q = pm.newQuery(FoodJDO.class);
-      List<FoodJDO> foods = (List<FoodJDO>) q.execute();
+      List<FoodJDO> foods = getAll(pm, FoodJDO.class);
       JSONArray listFoodJDO = new JSONArray();      
       for(FoodJDO food : foods) {
         listFoodJDO.add(food.getJson());
@@ -120,8 +123,7 @@ public class BackupServlet extends RemoteServiceServlet {
       obj.put("FoodJDO", listFoodJDO);
       
       //mealJDO
-      q = pm.newQuery(MealJDO.class);
-      List<MealJDO> meals = (List<MealJDO>) q.execute();
+      List<MealJDO> meals = getAll(pm, MealJDO.class);
       JSONArray listMealJDO = new JSONArray();      
       for(MealJDO meal : meals) {
         listMealJDO.add(meal.getJson());
@@ -129,8 +131,7 @@ public class BackupServlet extends RemoteServiceServlet {
       obj.put("MealJDO", listMealJDO);
       
       //timeJDO
-      q = pm.newQuery(TimeJDO.class);
-      List<TimeJDO> times = (List<TimeJDO>) q.execute();
+      List<TimeJDO> times = getAll(pm, TimeJDO.class);
       JSONArray listTimeJDO = new JSONArray();      
       for(TimeJDO time : times) {
         listTimeJDO.add(time.getJson());
@@ -142,8 +143,7 @@ public class BackupServlet extends RemoteServiceServlet {
        */
       
       //cardio
-      q = pm.newQuery(Cardio.class);
-      List<Cardio> cardios = (List<Cardio>) q.execute();
+      List<Cardio> cardios = getAll(pm, Cardio.class);
       JSONArray listCardio = new JSONArray();      
       for(Cardio cardio : cardios) {
         listCardio.add(cardio.getJson());
@@ -151,8 +151,7 @@ public class BackupServlet extends RemoteServiceServlet {
       obj.put("Cardio", listCardio);
       
       //run
-      q = pm.newQuery(Run.class);
-      List<Run> runs = (List<Run>) q.execute();
+      List<Run> runs = getAll(pm, Run.class);
       JSONArray listRun = new JSONArray();      
       for(Run run : runs) {
         listRun.add(run.getJson());
@@ -164,8 +163,7 @@ public class BackupServlet extends RemoteServiceServlet {
        */
       
       //measurements
-      q = pm.newQuery(Measurement.class);
-      List<Measurement> measurements = (List<Measurement>) q.execute();
+      List<Measurement> measurements = getAll(pm, Measurement.class);
       JSONArray listMeasurement = new JSONArray();      
       for(Measurement measurement : measurements) {
         listMeasurement.add(measurement.getJson());
@@ -173,15 +171,30 @@ public class BackupServlet extends RemoteServiceServlet {
       obj.put("Measurement", listMeasurement);
       
       //permissions
-      q = pm.newQuery(Permission.class);
-      List<Permission> permissions = (List<Permission>) q.execute();
+      List<Circle> permissions = getAll(pm, Circle.class);
       JSONArray listPermission = new JSONArray();      
-      for(Permission permission : permissions) {
+      for(Circle permission : permissions) {
         listPermission.add(permission.getJson());
       }
       obj.put("Permission", listPermission);
       
-      obj.writeJSONString(writer);
+
+      //save to Google Cloud storage
+      FileService fileService = FileServiceFactory.getFileService();
+      GSFileOptionsBuilder optionsBuilder = new GSFileOptionsBuilder()
+        .setBucket("motiver-backups")
+        .setKey("backup_"+fmt.format(new Date()))
+        .setAcl("project-private")
+        .setMimeType("application/json");
+  
+      // Create new file
+      AppEngineFile writableFile = fileService.createNewGSFile(optionsBuilder.build());
+      FileWriteChannel writeChannel = fileService.openWriteChannel(writableFile, true);
+      PrintWriter out = new PrintWriter(Channels.newWriter(writeChannel, "UTF8"));
+      obj.writeJSONString(out);
+      out.close();
+      writeChannel.closeFinally();
+    
       writer.flush();
       
     } catch (Exception e) {
@@ -196,5 +209,32 @@ public class BackupServlet extends RemoteServiceServlet {
       }
     }
     
+    
+  }
+
+  private List getAll(PersistenceManager pm, Class class1) {
+    
+    List list = new ArrayList();
+    
+    Cursor cursor = null;
+    Map<String, Object> extensionMap = new HashMap<String, Object>();
+    while(true){
+      Query q = pm.newQuery(class1);
+      q.setRange(0, 700);
+      if(cursor != null) {
+        extensionMap.put(JDOCursorHelper.CURSOR_EXTENSION, cursor);
+        q.setExtensions(extensionMap);
+      }
+      List u = (List) q.execute();        
+      cursor = JDOCursorHelper.getCursor(u);
+
+      list.addAll(u);
+      
+      if(u.size() == 0) {
+        break;
+      }
+    }
+    
+    return list;
   }
 }
