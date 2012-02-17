@@ -61,7 +61,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 	}
 	public interface ExerciseHandler {
 		void exerciseRemoved();
-		void nameChanged(String newName);	//when new name is typed
+		void newNameEntered(String newName);	//when new name is typed
 		void query(String query, AsyncCallback<List<ExerciseNameModel>> callback);	//called when user search for exercises (names)
 		void saveData(ExerciseModel mode, boolean nameChanged);
 		void showLastWeights();
@@ -99,11 +99,6 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 
 	@Override
 	public void onBind() {
-		
-//		//if new exercise -> set uid to our
-//		if(exercise.getId() == 0) {
-//			exercise.setUid(AppController.User.getUid());
-//    }
 
 		display.setModel(exercise);
 		if(exercise.getId() != 0) {
@@ -134,7 +129,7 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 				}
 
 				@Override
-				public void nameChanged(String newName) {
+				public void newNameEntered(String newName) {
 					
 					//if presenter already visible -> cancel
 					if(exerciseNameEditorPresenter != null) {

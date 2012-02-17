@@ -77,6 +77,8 @@ public class ExerciseNameEditorView extends ExerciseNameEditorPresenter.Exercise
 			tfName.setMaxLength(40); 
 			tfName.setAllowBlank(false);
 			tfName.setAutoValidate(true);
+			if(model != null)
+			  tfName.setValue(model.getName());
 	    Functions.setWarningMessages(tfName);
 			form.add(tfName, formData); 
 			

@@ -51,7 +51,6 @@ public class FoodPresenter extends Presenter {
 	* Abstract class for view to extend
 	*/
 	public abstract static class FoodDisplay extends Display {
-
 		public abstract void setHandler(FoodHandler foodHandler);
 		public abstract void setModel(FoodModel food);
 		public abstract void setNameComboEnabled(boolean b);
@@ -60,7 +59,7 @@ public class FoodPresenter extends Presenter {
 	public interface FoodHandler {
 		void foodEdited();
 		void foodRemoved();
-		void nameChanged(String newName);	//when new name is typed
+		void newNameEntered(String newName);	//when new name is typed
 		void query(String query, AsyncCallback<List<FoodNameModel>> callback);	//called when user search for foods
 		void saveData(FoodModel food);
 	}
@@ -162,7 +161,7 @@ public class FoodPresenter extends Presenter {
 				}
 
 				@Override
-				public void nameChanged(String newName) {
+				public void newNameEntered(String newName) {
 					
 					//if presenter already visible -> cancel
 					if(foodNameEditorPresenter != null) {
@@ -173,7 +172,7 @@ public class FoodPresenter extends Presenter {
 					display.setNameComboEnabled(false);
 					
 					//create dummy model
-					FoodNameModel model = new FoodNameModel(0L, "");
+					FoodNameModel model = new FoodNameModel(0L, newName);
 					model.setLocale(AppController.User.getLocale());
 					//new name typed -> launch NewFoodNamePresenter
 					foodNameEditorPresenter = new FoodNameEditorPresenter(rpcService, eventBus, (FoodNameEditorDisplay)GWT.create(FoodNameEditorView.class), model);
