@@ -582,11 +582,17 @@ public abstract class Functions {
 	 */
 	public static String getDurationString(long seconds) {
 
-		String str = "0min";
+		String str = "0 min";
 		try {
+      //if seconds
+      if(seconds < 60) {
+        DateTimeFormat fmt = DateTimeFormat.getFormat("s' s'");
+        Date d = new Date(seconds * 1000);
+        str = fmt.format(d, TimeZone.createTimeZone(0));
+      }
 			//if minutes
-			if(seconds < 3600) {
-				DateTimeFormat fmt = DateTimeFormat.getFormat("m' min'");
+      else if(seconds < 3600) {
+				DateTimeFormat fmt = DateTimeFormat.getFormat("m' min'"+((seconds % 60 != 0)? " s' s'" : ""));
 				Date d = new Date(seconds * 1000);
 				str = fmt.format(d, TimeZone.createTimeZone(0));
 			}
@@ -597,7 +603,7 @@ public abstract class Functions {
 				str = fmt.format(d, TimeZone.createTimeZone(0));
 			}
 			else {
-				DateTimeFormat fmt = DateTimeFormat.getFormat("h' h 'm' min'");
+				DateTimeFormat fmt = DateTimeFormat.getFormat("h' h 'm' min'"+((seconds % 60 != 0)? " s' s'" : ""));
 				Date d = new Date(seconds * 1000);
 				str = fmt.format(d, TimeZone.createTimeZone(0));
 			}
@@ -1268,6 +1274,15 @@ public abstract class Functions {
 		return date;
 	}
 	
+	static DateTimeFormat[] fmts = new DateTimeFormat[] {
+	  DateTimeFormat.getFormat("h'h'm'min's's'"),
+	  DateTimeFormat.getFormat("m'min's's'"), 
+    DateTimeFormat.getFormat("h'h'm'min'"),
+    DateTimeFormat.getFormat("m'min'"),
+    DateTimeFormat.getFormat("h'h'"),
+    DateTimeFormat.getFormat("s's'"),
+	};
+	
 	public static MySpinnerField getDurationSpinner() {
 	  
 	  MySpinnerField tfDuration = new MySpinnerField() {
@@ -1281,34 +1296,19 @@ public abstract class Functions {
           return true;
         } catch (IllegalArgumentException e) {
         }
-        //hours and minutes
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("h'h'm'min'");
-          fmt.parse(value);
-            
-          return true;
-        } catch (IllegalArgumentException e) {
+        
+        for(DateTimeFormat fmt : fmts) {
+          try {
+            fmt.parse(value);
+            return true;
+          } catch (IllegalArgumentException e) {
+          }
         }
-        //only hours
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("h'h'");
-          fmt.parse(value);
-            
-          return true;
-        } catch (IllegalArgumentException e) {
-        }
-        //only minutes
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("m'min'");
-          fmt.parse(value);
-            
-          return true;
-        } catch (IllegalArgumentException e) {
-        }
+        
         return false;
       }
     };
-    tfDuration.setBaseChars("0123456789hmin ");
+    tfDuration.setBaseChars("0123456789hmins ");
     tfDuration.setFieldLabel(AppController.Lang.Duration());   
     tfDuration.setAllowBlank(false);   
     tfDuration.setEditable(true);
@@ -1338,38 +1338,17 @@ public abstract class Functions {
           return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
         } catch (IllegalArgumentException e) {
         }
-        //hours and minutes
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("h'h'm'min'");
-          d = fmt.parse(value);
-          d.setDate(1);
-          d.setMonth(0);
-          d.setYear(70);
 
-          return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
-        } catch (IllegalArgumentException e) {
-        }
-        //only hours
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("h'h'");
-          d = fmt.parse(value);
-          d.setDate(1);
-          d.setMonth(0);
-          d.setYear(70);
+        for(DateTimeFormat fmt : fmts) {
+          try {
+            d = fmt.parse(value);
+            d.setDate(1);
+            d.setMonth(0);
+            d.setYear(70);
 
-          return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
-        } catch (IllegalArgumentException e) {
-        }
-        //only minutes
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("m'min'");
-          d = fmt.parse(value);
-          d.setDate(1);
-          d.setMonth(0);
-          d.setYear(70);
-
-          return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
-        } catch (IllegalArgumentException e) {
+            return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
+          } catch (IllegalArgumentException e) {
+          }
         }
         
         return 0;
@@ -1380,18 +1359,12 @@ public abstract class Functions {
         try {
           //if minutes
           if(value.intValue() < 3600) {
-            DateTimeFormat fmt = DateTimeFormat.getFormat("m' min'");
-            Date d = new Date(value.intValue() * 1000);
-            str = fmt.format(d, TimeZone.createTimeZone(0));
-          }
-          //equal hours
-          else if(value.intValue() % 3600 == 0) {
-            DateTimeFormat fmt = DateTimeFormat.getFormat("h' h'");
+            DateTimeFormat fmt = DateTimeFormat.getFormat("m'min' s's'");
             Date d = new Date(value.intValue() * 1000);
             str = fmt.format(d, TimeZone.createTimeZone(0));
           }
           else {
-            DateTimeFormat fmt = DateTimeFormat.getFormat("h' h 'm' min'");
+            DateTimeFormat fmt = DateTimeFormat.getFormat("h'h 'm'min' s's'");
             Date d = new Date(value.intValue() * 1000);
             str = fmt.format(d, TimeZone.createTimeZone(0));
           }
