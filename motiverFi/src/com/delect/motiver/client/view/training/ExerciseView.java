@@ -464,6 +464,15 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
     combo.setHideTrigger(true);
     combo.setTriggerAction(TriggerAction.ALL);
     combo.setValidateOnBlur(false);
+    //save typed value for when adding new name
+    combo.addListener(Events.BeforeSelect, new Listener<FieldEvent>() {
+      @Override
+      public void handleEvent(FieldEvent be) {
+        ComboBox<ExerciseNameModel> cb = ((ComboBox<ExerciseNameModel>)be.getSource());
+        cb.setData("val", combo.getRawValue());
+      }
+    });
+    
     //update model when valid value
     combo.addListener(Events.Valid, new Listener<FieldEvent>() {
 			@SuppressWarnings("unchecked")
@@ -479,8 +488,8 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 						
 						//if user clicked "add new" value
 						if(mo.getId() == -1) {
-							final String str = combo.getRawValue();
-							handler.nameChanged(str.substring(0, str.length()));
+              String val = combo.getData("val");
+              handler.newNameEntered(val);
 						}
 						//value selected from list
 						else if(handler != null) {

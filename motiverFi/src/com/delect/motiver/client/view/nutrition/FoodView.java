@@ -461,13 +461,22 @@ public class FoodView extends FoodPresenter.FoodDisplay {
     combo.setHideTrigger(true);
     combo.setTriggerAction(TriggerAction.ALL);
     combo.setValidateOnBlur(false);
+    //save typed value for when adding new name
+    combo.addListener(Events.BeforeSelect, new Listener<FieldEvent>() {
+      @Override
+      public void handleEvent(FieldEvent be) {
+        ComboBox<FoodNameModel> cb = ((ComboBox<FoodNameModel>)be.getSource());
+        cb.setData("val", combo.getRawValue());
+      }
+    });
+    
     //update model when valid value
     combo.addListener(Events.Valid, new Listener<FieldEvent>() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void handleEvent(FieldEvent be) {
 				try {
-					ComboBox<FoodNameModel> cb = ((ComboBox<FoodNameModel>)be.getSource());
+	        ComboBox<FoodNameModel> cb = ((ComboBox<FoodNameModel>)be.getSource());
 					
 					//if selected something from the list
 					if(cb.getValue() != null) {
@@ -475,8 +484,8 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 						
 						//if user clicked "add new" value
 						if(mo.getId() == -1) {
-							final String str = combo.getRawValue();
-							handler.nameChanged(str.substring(0, str.length()));
+						  String val = combo.getData("val");
+							handler.newNameEntered(val);
 						}
 						//value selected from list
 						else if(handler != null) {

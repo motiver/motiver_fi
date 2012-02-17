@@ -88,7 +88,8 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 	private LayoutContainer panelExercises = new LayoutContainer();
 	private RatingPanel panelRating;
 	private LayoutContainer panelUser = new LayoutContainer();
-	private LayoutContainer panelWorkoutInfo;	//times, rating
+	
+	private LayoutContainer panelWorkoutInfo = new LayoutContainer();
 
 	private Text textDuration = new Text();
 	private WorkoutModel workout = null;
@@ -480,8 +481,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 				//init times, rating, etc...
 				if(workout.getDate() != null) {
 		        
-				  if(panelWorkoutInfo == null) {
-				    panelWorkoutInfo = new LayoutContainer();
+				  if(panelWorkoutInfo.getItemCount() == 0) {
 
 			      HBoxLayout layout3 = new HBoxLayout();
 			      layout3.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);  
