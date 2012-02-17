@@ -204,21 +204,71 @@ public class TrainingManager extends AbstractManager {
     return list;
   }
 
-  public List<Workout> getWorkouts(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
+  public Set<Long> getWorkoutsKeys(Date date, String uid) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts keys ("+uid+", "+date+")");
+    }
+
+    if(date == null) {
+      return null;
+    }
+    
+    //get from cache
+    Set<Long> keys = null;
+    
+    try {    
+      WorkoutSearchParams params = new WorkoutSearchParams(date, uid);
+      
+      //get from cache
+      keys = cache.getWorkouts(params);
+      
+      if(keys == null) {
+        keys = dao.getWorkouts(params);
+        
+
+        //add to cache
+        cache.setWorkouts(params, keys);
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading workouts keys", e);
+      handleException("TrainingManager.getWorkouts", e);
+    }
+  
+    return keys;
+  }
+
+  public List<Workout> getWorkouts(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws Exception {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading workouts ("+uid+", "+dateStart+" - "+dateEnd+")");
     }
 
-    List<Workout> list = new ArrayList<Workout>();
+    //check permissions
+    userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), uid);
+    
+    Set<Long> keys = new HashSet<Long>();
     
     Iterator<Date> i = new DateIterator(dateStart, dateEnd);
     while(i.hasNext())
     {
       final Date date = i.next();
-      list.addAll(getWorkouts(user, date, uid));
+      keys.addAll(getWorkoutsKeys(date, uid));
     }
     
+    List<Workout> list = new ArrayList<Workout>();
+    
+    if(keys.size() > 0) {
+      //get user here, so we can fetch it only once
+      UserOpenid u = userManager.getUser(uid);
+      
+      for(Long key : keys) {
+        Workout w = _getWorkout(key, false);
+        w.setUser(u);
+        list.add(w);
+      }
+    }
     
     return list;
   }
@@ -431,6 +481,10 @@ public class TrainingManager extends AbstractManager {
     return list;
   }
 
+  private Workout _getWorkout(Long key) throws Exception {
+    return _getWorkout(key, true);
+  }
+  
   /**
    * Returns workout based on key
    * Fetchs also user and exercises names
@@ -438,7 +492,7 @@ public class TrainingManager extends AbstractManager {
    * @return
    * @throws Exception
    */
-  private Workout _getWorkout(Long key) throws Exception {
+  private Workout _getWorkout(Long key, boolean getUser) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getWorkout ("+key+")");
@@ -452,7 +506,8 @@ public class TrainingManager extends AbstractManager {
     
     if(jdo == null) {      
       jdo = dao.getWorkout(key);
-      jdo.setUser(userManager.getUser(jdo.getUid()));
+      if(getUser)
+        jdo.setUser(userManager.getUser(jdo.getUid())); 
       
       //find names for each exercise
       for(Exercise f : jdo.getExercises()) {
