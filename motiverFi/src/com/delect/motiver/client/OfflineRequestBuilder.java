@@ -78,7 +78,7 @@ public class OfflineRequestBuilder extends RequestBuilder {
     try {
       //check if we found response from local storage
       if(isCacheable()) {
-        String data = OfflineStorage.getItem(requestData);
+        String data = OfflineStorageManager.getInstance().getItem(requestData);
         if(data != null) {
           
           //save local storage data to requestbuilder (to compare when fetching new data)
