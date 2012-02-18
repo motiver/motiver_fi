@@ -27,7 +27,9 @@ import com.delect.motiver.client.AppController.AppDisplay;
 import com.delect.motiver.client.OfflineRequestBuilder.OfflineRequestBuilderHandler;
 import com.delect.motiver.client.event.InfoMessageEvent;
 import com.delect.motiver.client.event.LoadingEvent;
+import com.delect.motiver.client.event.LoggedOutEvent;
 import com.delect.motiver.client.event.OfflineModeEvent;
+import com.delect.motiver.client.event.handler.LoggedOutEventHandler;
 import com.delect.motiver.client.presenter.InfoMessagePresenter.MessageColor;
 import com.delect.motiver.client.service.MyService;
 import com.delect.motiver.client.service.MyServiceAsync;
@@ -88,7 +90,7 @@ public class Motiver implements EntryPoint {
               eventBus.fireEvent(new LoadingEvent(null));
                 
               //get response from local storage
-              final String res = OfflineStorage.getItem(requestData);
+              final String res = OfflineStorageManager.getInstance().getItem(requestData);
               if(res != null && res.startsWith("//OK")) {
                 return res;
               }
@@ -118,7 +120,7 @@ public class Motiver implements EntryPoint {
 
               //save data to local storage (if OK)
               if(responseData != null && responseData.startsWith("//OK") && builder.isCacheable()) {
-                OfflineStorage.setItem(requestData, responseData);
+                OfflineStorageManager.getInstance().setItem(requestData, responseData);
               }
               
               //set offline mode off (use variable so this event won't fire everytime
@@ -155,9 +157,14 @@ public class Motiver implements EntryPoint {
     LayoutContainer lc = new LayoutContainer();
     RootPanel.get().add(lc);
     appViewer.run(lc);
-	    
-    //check if local storage too big
-    OfflineStorage.checkSize();
+    
+    //listen logged out event and clear local storage
+    eventBus.addHandler(LoggedOutEvent.TYPE, new LoggedOutEventHandler() {
+      @Override
+      public void onLoggedOut(LoggedOutEvent event) {
+        OfflineStorageManager.getInstance().clear();
+      }
+    });
 	}
 	
 	/**
