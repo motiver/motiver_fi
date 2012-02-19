@@ -1,35 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<cronentries>
+<cronentries>  
   <cron>
-    <url>/motiver/ct</url>
-    <description>Common clean up tasks in database</description>
-    <schedule>every mon 11:00</schedule>
-  </cron>
-  
-  <cron>
-    <url>/motiver/ecs</url>
+    <url>/tasks/ecs</url>
     <target>indexing</target>
     <description>Calculate exercise count for each user</description>
     <schedule>every mon 01:00</schedule>
   </cron>
   
   <cron>
-    <url>/motiver/fncs</url>
+    <url>/tasks/fncs</url>
     <target>indexing</target>
     <description>Calculate food name count for each user</description>
     <schedule>every mon 01:00</schedule>
   </cron>
   
   <cron>
-    <url>/motiver/mss</url>
+    <url>/tasks/mss</url>
     <target>indexing</target>
     <description>Calculate monthly summary</description>
     <schedule>1st day of jan,feb,mar,apr,may,jun,jul,aug,sep,oct,nov,dec 23:00</schedule>
   </cron>
   
   <cron>
-    <url>/motiver/bs</url>
+    <url>/tasks/bs</url>
     <target>backups</target>
     <description>Weekly backups</description>
     <timezone>Europe/Helsinki</timezone>

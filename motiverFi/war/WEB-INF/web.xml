@@ -11,14 +11,6 @@
     <servlet-class>com.delect.motiver.server.service.MyServiceImpl</servlet-class>
   </servlet>
   <servlet>
-    <servlet-name>commonTasks</servlet-name>
-    <servlet-class>com.delect.motiver.server.CommonTasksImpl</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>searchServlet</servlet-name>
-    <servlet-class>com.delect.motiver.server.servlet.SearchServlet</servlet-class>
-  </servlet>
-  <servlet>
     <servlet-name>exerciseCountServlet</servlet-name>
     <servlet-class>com.delect.motiver.server.servlet.ExerciseCountServlet</servlet-class>
   </servlet>
@@ -29,26 +21,6 @@
   <servlet>
     <servlet-name>monthlySummaryServlet</servlet-name>
     <servlet-class>com.delect.motiver.server.servlet.MonthlyReportServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>dumpServlet</servlet-name>
-    <servlet-class>com.delect.motiver.server.servlet.DumpServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>blogServlet</servlet-name>
-    <servlet-class>com.delect.motiver.server.servlet.BlogServlet</servlet-class> 
-    <init-param> 
-      <param-name>target</param-name> 
-      <param-value>/app/index.html</param-value> 
-    </init-param> 
-  </servlet>
-  <servlet>
-    <servlet-name>testServlet</servlet-name>
-    <servlet-class>com.delect.motiver.server.servlet.TestServlet</servlet-class>
-  </servlet>
-  <servlet>
-    <servlet-name>nutritionDumpServlet</servlet-name>
-    <servlet-class>com.delect.motiver.server.servlet.NutritionDumpServlet</servlet-class>
   </servlet>
   <servlet>
     <servlet-name>backupServlet</servlet-name>
@@ -62,36 +34,20 @@
     <url-pattern>/motiver/myServiceImpl</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
-    <servlet-name>commonTasks</servlet-name>
-    <url-pattern>/motiver/ct</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>searchServlet</servlet-name>
-    <url-pattern>/search</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
     <servlet-name>exerciseCountServlet</servlet-name>
-    <url-pattern>/motiver/ecs</url-pattern>
+    <url-pattern>/tasks/ecs</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>foodNameCountServlet</servlet-name>
-    <url-pattern>/motiver/fncs</url-pattern>
+    <url-pattern>/tasks/fncs</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>monthlySummaryServlet</servlet-name>
-    <url-pattern>/motiver/mss</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>testServlet</servlet-name>
-    <url-pattern>/motiver/test</url-pattern>
-  </servlet-mapping>
-  <servlet-mapping>
-    <servlet-name>nutritionDumpServlet</servlet-name>
-    <url-pattern>/motiver/nds</url-pattern>
+    <url-pattern>/tasks/mss</url-pattern>
   </servlet-mapping>
   <servlet-mapping>
     <servlet-name>backupServlet</servlet-name>
-    <url-pattern>/motiver/bs</url-pattern>
+    <url-pattern>/tasks/bs</url-pattern>
   </servlet-mapping>
   
   <servlet>
@@ -129,36 +85,5 @@
  <session-config>
  	<session-timeout>30</session-timeout>
  </session-config>
-    
-  <!-- Appstats -->
-<!--   <filter> -->
-<!--         <filter-name>appstats</filter-name> -->
-<!--         <filter-class>com.google.appengine.tools.appstats.AppstatsFilter</filter-class> -->
-<!--         <init-param> -->
-<!--             <param-name>logMessage</param-name> -->
-<!--             <param-value>Appstats available: /appstats/details?time={ID}</param-value> -->
-<!--         </init-param> -->
-<!--     </filter> -->
-<!--     <filter-mapping> -->
-<!--         <filter-name>appstats</filter-name> -->
-<!--         <url-pattern>/*</url-pattern> -->
-<!--     </filter-mapping> -->
-<!--   <servlet> -->
-<!--         <servlet-name>appstats</servlet-name> -->
-<!--         <servlet-class>com.google.appengine.tools.appstats.AppstatsServlet</servlet-class> -->
-<!--     </servlet> -->
-<!--     <servlet-mapping> -->
-<!--         <servlet-name>appstats</servlet-name> -->
-<!--         <url-pattern>/appstats/*</url-pattern> -->
-<!--     </servlet-mapping> -->
-
-<!--     <security-constraint> -->
-<!--         <web-resource-collection> -->
-<!--             <url-pattern>/appstats/*</url-pattern> -->
-<!--         </web-resource-collection> -->
-<!--         <auth-constraint> -->
-<!--             <role-name>admin</role-name> -->
-<!--         </auth-constraint> -->
-<!--     </security-constraint> -->
 
 </web-app>
