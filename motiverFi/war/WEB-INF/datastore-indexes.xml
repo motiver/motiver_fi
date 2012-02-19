@@ -125,4 +125,21 @@
         <property name="values_INTEGER_IDX" direction="asc"/>
     </datastore-index>
     
+    <datastore-index kind="MonthlySummary" ancestor="false" source="manual">
+        <property name="openId" direction="asc"/>
+        <property name="date" direction="asc"/>
+    </datastore-index>
+    
+    <datastore-index kind="MonthlySummaryExercise" ancestor="false" source="manual">
+        <property name="length" direction="asc"/>
+        <property name="nameId" direction="asc"/>
+        <property name="openId" direction="asc"/>
+        <property name="type" direction="asc"/>
+        <property name="value" direction="asc"/>
+    </datastore-index>
+    
+    <datastore-index kind="MonthlySummaryExercise" ancestor="true" source="manual">
+        <property name="exercises_INTEGER_IDX" direction="asc"/>
+    </datastore-index>
+    
 </datastore-indexes>

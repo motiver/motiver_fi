@@ -55,12 +55,11 @@ public abstract class Functions {
 	public interface MessageBoxHandler {
 		void okPressed(String text);
 	}
+
 	public static DateTimeFormat Fmt = DateTimeFormat.getFormat( StringConstants.DATEFORMATS[AppController.User.getDateFormat()] );
-
-
 	public static DateTimeFormat FmtShort = DateTimeFormat.getFormat( StringConstants.DATEFORMATS_SHORT[AppController.User.getDateFormat()] );
-  //	public static DateTimeFormat FmtDay = DateTimeFormat.getFormat( StringConstants.DATEFORMATS[AppController.User.getDateFormat()]+" EEEE" );
-	
+
+
 	/**
 	 * Converts value to correct unit
 	 * @param value : in metric IN GRAMS (for example from database)
