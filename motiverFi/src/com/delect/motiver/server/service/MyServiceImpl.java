@@ -3494,19 +3494,6 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       for(MonthlySummary summary : summaries) {
         MonthlySummaryModel modelClient = MonthlySummary.getClientModel(summary);
         
-        //exercises
-//        List<MonthlySummaryExerciseModel> listExercises = new ArrayList<MonthlySummaryExerciseModel>();
-//        for(MonthlySummaryExercise exercise : summary.getExercises()) {
-//          MonthlySummaryExerciseModel exerciseClient = MonthlySummaryExercise.getClientModel(exercise);
-//          
-//          //get exercise name
-//          ExerciseName exerciseName = pm.getObjectById(ExerciseName.class, exercise.getNameId());
-//          if(exerciseName != null) {
-//            exerciseClient.setExerciseName(ExerciseName.getClientModel(exerciseName));
-//          }
-//          listExercises.add(exerciseClient);
-//        }
-        
         list.add(modelClient);
       }
     } catch (Exception e) {
