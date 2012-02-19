@@ -101,7 +101,7 @@ public interface Lang extends Messages {
 	String ConfirmRemoveLastDayInRoutine();
 	@DefaultMessage("Copy {0}")
 	String Copy(String target);
-	@DefaultMessage("Copy ''{0}'' to {1}")
+	@DefaultMessage("Copy {0} to {1}")
 	String CopyTargetTo(String name, String target);
 	@DefaultMessage("Copy to ''{0}''")
 	String CopyTo(String target);

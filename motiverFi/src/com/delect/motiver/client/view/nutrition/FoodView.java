@@ -111,7 +111,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 				thisContent.layout(true);
 
         if(!popup.isVisible()) {
-          popup.showAt(getAbsoluteLeft()+getWidth()+30, getAbsoluteTop()+5);
+          popup.showAt(getAbsoluteLeft()+getWidth()+35, getAbsoluteTop()+5);
         }
 			}
 		});

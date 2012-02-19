@@ -496,6 +496,42 @@ public class NutritionManager extends AbstractManager {
         t.setUid(user.getUid());
         t.setUser(userManager.getUser(t.getUid()));
         
+        
+        //if existing time -> copy also content
+        if(t.getId() != null) {
+          if(logger.isLoggable(Level.FINER)) {
+            logger.log(Level.FINER, "Copying also times' content");
+          }
+          t.setId(null);
+          
+          //MEALS
+          if(t.getMealsNew() != null) {
+            List<MealJDO> listMeal = addMeals(user, t.getMealsNew(), 0L);
+            if(listMeal != null) {
+              List<Key> listMealKeys = new ArrayList<Key>();
+              for(MealJDO m : listMeal) {
+                listMealKeys.add(m.getKey());
+              }
+              t.setMealsNew(listMeal);
+              t.setMealsKeys(listMealKeys);
+            }
+          }
+          
+          //FOODS
+          if(t.getFoods() != null) {
+            List<FoodJDO> listFood = new ArrayList<FoodJDO>();
+            List<Key> listFoodKeys = new ArrayList<Key>();
+            for(FoodJDO f : t.getFoods()) {
+              f.setId(null);
+              addFood(user, f, 0, 0);
+              
+              listFood.add(f);
+              listFoodKeys.add(f.getKey());
+            }
+            t.setFoods(listFood);
+            t.setFoodsKeys(listFoodKeys);
+          }
+        }
       }
       
       //remove cache
