@@ -1459,5 +1459,24 @@ public abstract class Functions {
     field.getMessages().setNanText(AppController.Lang.FieldNanText());
     field.getMessages().setNegativeText(AppController.Lang.FieldNegativeText());
   }
+
+  /**
+   * Checks whether date are same
+   * @param date
+   * @param value
+   * @return
+   */
+  @SuppressWarnings("deprecation")
+  public static boolean isSameDate(Date date1, Date date2) {
+
+    date1.setHours(0);
+    date1.setMinutes(0);
+    date1.setSeconds(0);
+    date2.setHours(0);
+    date2.setMinutes(0);
+    date2.setSeconds(0);
+    
+    return date1.compareTo(date2) == 0;
+  }
 	
 }

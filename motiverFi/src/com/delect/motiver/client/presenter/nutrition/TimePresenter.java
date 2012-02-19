@@ -157,8 +157,6 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 					foodCopy.setName(food.getName());
 					foodCopy.setAmount(food.getAmount());
 					
-					time.getFoods().add(foodCopy);
-					
           //add new presenter
           addNewFoodPresenter(foodCopy);
 				}
@@ -177,14 +175,12 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 					//create copy
 					MealModel mealCopy = new MealModel();
 					mealCopy.setId(meal.getId());
-//					mealCopy.setUid(time.getUid());
 					mealCopy.setTimeId(time.getId());
 					final Request req = rpcService.addMeal(mealCopy, time.getId(), new MyAsyncCallback<MealModel>() {
 						@Override
 						public void onSuccess(MealModel result) {
 							display.setContentEnabled(true);
 							
-//							result.setUid(time.getUid());
 							result.setTimeId(time.getId());
               
               time.getMeals().add(result);
@@ -451,8 +447,6 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 		foodDummy.setTimeId(time.getId());
 		foodDummy.setUid(time.getUser().getUid());
     
-    time.getFoods().add(foodDummy);
-    
 		//init new foodpresenter
     final FoodPresenter fp = new FoodPresenter(rpcService, eventBus, (FoodDisplay)GWT.create(FoodView.class), foodDummy);
     addNewPresenter(fp);
@@ -511,6 +505,10 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 					else if(target == 2) {							
 						removePresenter(food);
 			    }
+					//added
+					else { 
+				    time.getFoods().add(food);
+					}
 
 					found = true;
 					break;
@@ -544,15 +542,14 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 				//remove list
 				for(int i=0; i < mealfoodPresenters.size(); i++) {
 					Presenter presenter = mealfoodPresenters.get(i);
-					if(presenter != null) {
-						if(presenter instanceof MealsListPresenter) {
-							presenter.stop();
-							mealfoodPresenters.remove(presenter);
-							break;
-						}
+					if(presenter != null && presenter instanceof MealsListPresenter) {
+						presenter.stop();
+						mealfoodPresenters.remove(presenter);
+						break;
 					}
 				}
 				
+				time.getMeals().add(mealUpdated);
 				addNewMealPresenter(mealUpdated);
 				found = true;
 			}

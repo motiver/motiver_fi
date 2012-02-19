@@ -277,6 +277,7 @@ public class NutritionDayPresenter extends Presenter {
         }
         
 				date = event.getDate();
+				display.setDate(date);
 
 				if(commentsPresenter != null) {
 					commentsPresenter.stop();
