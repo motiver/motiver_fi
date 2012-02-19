@@ -98,6 +98,7 @@ public class NutritionDayPresenter extends Presenter {
 		void removeTimes();
 		void timesHidden();
 		void timesVisible();
+    void copyTimes(Date date);
 	}
 	//new time handler
 	public Listener<BaseEvent> NewTimeListener = new Listener<BaseEvent>() {
@@ -234,6 +235,27 @@ public class NutritionDayPresenter extends Presenter {
 				});
 				addRequest(req);
 			}
+      @Override
+      public void copyTimes(final Date date) {
+        display.setContentEnabled(false);
+        
+        //remove times and fire TimeRemovedEvent
+        final TimeModel[] arr = new TimeModel[timePresenters.size()];
+        for(int i=0; i < timePresenters.size(); i++) {
+          arr[i] = timePresenters.get(i).time;
+          arr[i].setDate(Functions.trimDateToDatabase(date, true));
+        }
+        final Request req = rpcService.addTimes(arr, new MyAsyncCallback<TimeModel[]>() {
+          @Override
+          public void onSuccess(TimeModel[] result) {   
+            display.setContentEnabled(true);
+            //fire event
+            final DateChangedEvent event = new DateChangedEvent(date);
+            fireEvent(event);
+          }
+        });
+        addRequest(req);
+      }
 			@Override
 			public void timesHidden() {
 				unbindPresenters();

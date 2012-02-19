@@ -450,6 +450,9 @@ public class TimePresenter extends Presenter implements Comparable<TimePresenter
 		final FoodModel foodDummy = new FoodModel(new FoodNameModel(0L, ""));
 		foodDummy.setTimeId(time.getId());
 		foodDummy.setUid(time.getUser().getUid());
+    
+    time.getFoods().add(foodDummy);
+    
 		//init new foodpresenter
     final FoodPresenter fp = new FoodPresenter(rpcService, eventBus, (FoodDisplay)GWT.create(FoodView.class), foodDummy);
     addNewPresenter(fp);

@@ -95,6 +95,24 @@ public class TimeJDO implements Serializable, Comparable<TimeJDO> {
 		modelServer.setId(model.getId());
     if(model.getUser() != null)
       modelServer.setUid(model.getUser().getUid());
+    
+    //meals
+    if(model.getMeals() != null) {
+      List<MealJDO> meals = new ArrayList<MealJDO>();
+      for(MealModel m : model.getMeals()) {
+        meals.add(MealJDO.getServerModel(m));
+      }
+      modelServer.setMealsNew(meals);
+    }
+    
+    //foods
+    if(model.getFoods() != null) {
+      List<FoodJDO> foods = new ArrayList<FoodJDO>();
+      for(FoodModel m : model.getFoods()) {
+        foods.add(FoodJDO.getServerModel(m));
+      }
+      modelServer.setFoods(foods);
+    }
 		
 		return modelServer;
 	}

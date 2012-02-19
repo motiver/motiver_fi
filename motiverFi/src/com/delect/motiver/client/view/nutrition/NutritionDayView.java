@@ -39,6 +39,7 @@ import com.extjs.gxt.ui.client.widget.Document;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Text;
+import com.extjs.gxt.ui.client.widget.form.DateField;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
@@ -53,6 +54,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 
 	private MessageBox box = null;
 	private MyButton btnShowFoods = new MyButton();
+  MyButton btnCopyTimes = new MyButton();
 	private int floatingPosition;
 	private boolean foodsPermission = true;
 	private NutritionDayHandler handler;
@@ -206,6 +208,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 			}
 		});
 		panelButtonsBottom.add(btnAdd);
+		
 		//remove all times link
 		MyButton btnRemoveAll = new MyButton();
 		btnRemoveAll.setStyleAttribute("margin-left", "5px");
@@ -226,6 +229,31 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 			}
 		});
 		panelButtonsBottom.add(btnRemoveAll);
+    
+    //copy times to another day
+    final DateField tfDate = Functions.getDateField(new Date());
+    tfDate.setStyleAttribute("margin-left", "50px");
+    tfDate.setStyleAttribute("margin-top", "2px");
+    tfDate.addListener(Events.Valid, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        btnCopyTimes.setText(AppController.Lang.CopyTargetTo(AppController.Lang.Times().toLowerCase(), Functions.getDateString(tfDate.getValue(), false, false, true)));
+      }
+    });
+    panelButtonsBottom.add(tfDate);
+    
+    btnCopyTimes.setStyleAttribute("margin-left", "15px");
+    btnCopyTimes.setText(AppController.Lang.CopyTargetTo(AppController.Lang.Times().toLowerCase(), Functions.getDateString(tfDate.getValue(), false, false, true)));
+    btnCopyTimes.setScale(ButtonScale.MEDIUM);
+    btnCopyTimes.setColor(MyButton.Style.RED);
+    btnCopyTimes.addListener(Events.OnClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        handler.copyTimes(tfDate.getValue());
+      }
+    });
+    panelButtonsBottom.add(btnCopyTimes);
+    
 		panelData.add(panelButtonsBottom, new RowData(-1, -1, new Margins(10, 0, 10, 10)));
 		//call handler when panel expands/collapses
 		panelData.addListener(Events.Expand, new Listener<BaseEvent>() {
