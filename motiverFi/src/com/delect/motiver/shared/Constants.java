@@ -143,6 +143,11 @@ public interface Constants {
 	 * <br>milliseconds
 	 */
 	public static final int DELAY_SEARCH = 750;
+  
+  /**
+   * How soon exercise is updated after value has changed (milliseconds)
+   */
+  public static final int DELAY_MODEL_UPDATE = 2000;
 
   //ERROR CODES
   public static final int ERROR_CANT_CONNECT_FACEBOOK = 95;
