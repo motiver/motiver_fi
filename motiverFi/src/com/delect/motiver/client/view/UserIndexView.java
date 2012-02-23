@@ -113,8 +113,7 @@ public class UserIndexView extends UserIndexPresenter.UserIndexDisplay {
 		
 		//footer
 		footer.setId("footer");
-		footer.add(new Html("Motiver &#169; 2012&nbsp;&nbsp;|&nbsp;&nbsp;"+Motiver.VERSION
-		    +" | <a class='link' href='http://dev.motiver-app.appspot.com/'>"+AppController.Lang.ExpirementalVersion()+"</a>"));
+		footer.add(new Html("Motiver &#169; 2012&nbsp;&nbsp;|&nbsp;&nbsp;"+Motiver.VERSION));
 		footer.layout();
 		this.add(footer);
 		
