@@ -39,7 +39,6 @@ import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.FoodNameModel;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.GuideValueModel;
 import com.delect.motiver.shared.MealModel;
 import com.delect.motiver.shared.MeasurementModel;
@@ -49,6 +48,7 @@ import com.delect.motiver.shared.RunModel;
 import com.delect.motiver.shared.RunValueModel;
 import com.delect.motiver.shared.TimeModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * Interface for fetching old data from xlGain.com
@@ -138,7 +138,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=6&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=6&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -175,7 +175,7 @@ public class OldDataFetchPresenter extends Presenter {
 										if(t1.length() == 8) {
 											t1 = t1.substring(0, 5);
 							      }
-										final double time = Functions.getTimeToSeconds(t1);
+										final double time = CommonUtils.getTimeToSeconds(t1);
 										ex.getDate().setHours((int) (time / 3600));
 										ex.getDate().setMinutes((int) ((time % 3600) / 60));
 										ex.setDuration((long) objVal.get("du").isNumber().doubleValue());
@@ -247,7 +247,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=3&m=1&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=3&m=1&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -327,7 +327,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=8&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=8&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -423,7 +423,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=5&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=5&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -528,7 +528,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=2&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=2&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -610,7 +610,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=1&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=1&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -690,7 +690,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=7&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=7&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -729,7 +729,7 @@ public class OldDataFetchPresenter extends Presenter {
 										if(t1.length() == 8) {
 											t1 = t1.substring(0, 5);
 							      }
-										final double time = Functions.getTimeToSeconds(t1);
+										final double time = CommonUtils.getTimeToSeconds(t1);
 										ex.getDate().setHours((int) (time / 3600));
 										ex.getDate().setMinutes((int) ((time % 3600) / 60));
 										ex.setDuration((long) objVal.get("du").isNumber().doubleValue());
@@ -794,7 +794,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=4&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=4&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -820,7 +820,7 @@ public class OldDataFetchPresenter extends Presenter {
 								if(t1.length() == 8) {
 									t1 = t1.substring(0, 5);
 					      }
-								mTime.setTime(Functions.getTimeToSeconds(t1));
+								mTime.setTime(CommonUtils.getTimeToSeconds(t1));
 								
 								//foods
 								List<FoodModel> foods = new ArrayList<FoodModel>();
@@ -946,7 +946,7 @@ public class OldDataFetchPresenter extends Presenter {
     ServerConnection con = new ServerConnection();
     //workouts
     try {
-			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=0&i=" + index + "&user=" + user + "&pass=" + Functions.md5(pass), new ResponseHandler() {
+			con.connect("http://www.xlgain.com/feed_jsonp/get_all.php?t=0&i=" + index + "&user=" + user + "&pass=" + CommonUtils.md5(pass), new ResponseHandler() {
 
 				@Override
 				public void loadError(Throwable throwable) {
@@ -1096,12 +1096,12 @@ public class OldDataFetchPresenter extends Presenter {
 					if(t1.length() == 8) {
 						t1 = t1.substring(0, 5);
 		      }
-					workout.setTimeStart(Functions.getTimeToSeconds(t1));
+					workout.setTimeStart(CommonUtils.getTimeToSeconds(t1));
 					String t2 = obj.get("t2").isString().stringValue();
 					if(t2.length() == 8) {
 						t2 = t2.substring(0, 5);
 		      }
-					workout.setTimeEnd(Functions.getTimeToSeconds(t2));
+					workout.setTimeEnd(CommonUtils.getTimeToSeconds(t2));
 				} catch (Exception e) {
 					Motiver.showException(e);
 				}

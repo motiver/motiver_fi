@@ -28,8 +28,6 @@ import org.json.simple.JSONObject;
 
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
-import com.google.gwt.dev.json.JsonArray;
-
 import com.delect.motiver.shared.CardioModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)

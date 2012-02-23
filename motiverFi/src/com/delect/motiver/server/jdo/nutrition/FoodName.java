@@ -28,7 +28,6 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.delect.motiver.server.jdo.MicroNutrient;
-import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.shared.FoodNameModel;
 import com.delect.motiver.shared.MicroNutrientModel;
 

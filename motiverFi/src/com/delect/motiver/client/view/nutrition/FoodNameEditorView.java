@@ -27,8 +27,8 @@ import com.delect.motiver.client.presenter.nutrition.FoodNameEditorPresenter;
 import com.delect.motiver.client.presenter.nutrition.FoodNameEditorPresenter.FoodNameEditorHandler;
 import com.delect.motiver.client.view.MySpinnerField;
 import com.delect.motiver.shared.FoodNameModel;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MicroNutrientModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -108,7 +108,7 @@ public class FoodNameEditorView extends FoodNameEditorPresenter.FoodNameEditorDi
 			tfName.setValue(model.getName());
 			tfName.setMaxLength(50); 
 			tfName.setAllowBlank(false);
-	    Functions.setWarningMessages(tfName);
+	    CommonUtils.setWarningMessages(tfName);
 			form.add(tfName, formData); 
 			//energy
 			final MySpinnerField tfEnergy = getSpinnerMacronutrients(AppController.Lang.Energy(), model.getEnergy());

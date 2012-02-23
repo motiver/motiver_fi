@@ -33,8 +33,8 @@ import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.FoodNameModel;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 
 import com.extjs.gxt.ui.client.core.XTemplate;
 import com.extjs.gxt.ui.client.data.BaseListLoadResult;
@@ -198,7 +198,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 	  
     popup.removeAll();
     if(e > 0) {
-      popup.add(Functions.getTotalPanelFlow(e, p, c, f));
+      popup.add(CommonUtils.getTotalPanelFlow(e, p, c, f));
     }
     popup.layout();
   }
@@ -239,7 +239,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
         
         //set drag panel
         String name = (food.getName() != null)? food.getName().getName() : "";
-        String html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
+        String html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
         event.getStatus().update(html);    
       }
     };
@@ -252,7 +252,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
       @Override
       public void handleEvent(BaseEvent be) {
         //ask for confirm
-        box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisFood().toLowerCase()), new MessageBoxHandler() {
+        box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisFood().toLowerCase()), new MessageBoxHandler() {
           @Override
           public void okPressed(String text) {
             handler.foodRemoved();

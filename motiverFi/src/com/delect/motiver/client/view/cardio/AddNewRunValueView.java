@@ -26,9 +26,9 @@ import com.delect.motiver.client.presenter.cardio.AddNewRunValuePresenter.AddNew
 import com.delect.motiver.client.view.MySpinnerField;
 import com.delect.motiver.client.view.TimeSelectFieldView;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.RunModel;
 import com.delect.motiver.shared.RunValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -88,7 +88,7 @@ public class AddNewRunValueView extends AddNewRunValuePresenter.AddNewRunValueDi
 		cbName.setTriggerAction(TriggerAction.ALL);
 		simple.add(cbName, formData);
 		//date
-    final DateField tfDate = Functions.getDateField(date);
+    final DateField tfDate = CommonUtils.getDateField(date);
     simple.add(tfDate, formData); 
 		//time
 		final TimeSelectFieldView tfTime = new TimeSelectFieldView(0, null);
@@ -96,17 +96,17 @@ public class AddNewRunValueView extends AddNewRunValuePresenter.AddNewRunValueDi
 		simple.add(tfTime);
 		
 		//duration
-		final MySpinnerField tfDuration = Functions.getDurationSpinner();
+		final MySpinnerField tfDuration = CommonUtils.getDurationSpinner();
 		simple.add(tfDuration, formData);
     //pulse
-    final SpinnerField tfPulse = Functions.getPulseSpinner();
+    final SpinnerField tfPulse = CommonUtils.getPulseSpinner();
     simple.add(tfPulse, formData);
     //pulse max
-    final SpinnerField tfPulseMax = Functions.getPulseSpinner();
+    final SpinnerField tfPulseMax = CommonUtils.getPulseSpinner();
     tfPulseMax.setFieldLabel(AppController.Lang.MaxPulse());
     simple.add(tfPulseMax, formData);
     //calories
-    final SpinnerField tfCalories = Functions.getCaloriesSpinner();
+    final SpinnerField tfCalories = CommonUtils.getCaloriesSpinner();
     simple.add(tfCalories, formData);
     
 		//info
@@ -131,10 +131,10 @@ public class AddNewRunValueView extends AddNewRunValuePresenter.AddNewRunValueDi
 						final int calories = (int) tfCalories.getValue().doubleValue();
 						//date and time
 						Date date = tfDate.getValue();
-						final double time = Functions.getTimeToSeconds(tfTime.getValue());
+						final double time = CommonUtils.getTimeToSeconds(tfTime.getValue());
 						date.setHours((int) (time / 3600));
 						date.setMinutes((int) ((time % 3600) / 60));
-						date = Functions.trimDateToDatabase(date, false);
+						date = CommonUtils.trimDateToDatabase(date, false);
 						final String info = tfInfo.getValue();
 						final long duration = tfDuration.getValue().intValue();
 					

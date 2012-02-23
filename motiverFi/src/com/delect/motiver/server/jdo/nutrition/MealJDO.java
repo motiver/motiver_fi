@@ -31,7 +31,6 @@ import org.json.simple.JSONObject;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.KeyFactory;
 
-import com.delect.motiver.server.jdo.MicroNutrient;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.MealModel;

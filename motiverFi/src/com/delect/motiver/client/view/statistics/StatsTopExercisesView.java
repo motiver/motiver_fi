@@ -24,7 +24,7 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.statistics.StatsTopExercisesPresenter;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseNameModel;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.charts.client.Chart;
 import com.extjs.gxt.charts.client.model.ChartModel;
@@ -96,7 +96,7 @@ public class StatsTopExercisesView extends StatsTopExercisesPresenter.StatsTopEx
 			int i = 0;
 			for(ExerciseNameModel m : exercises) {
 				try {
-					list.add(0, "    " + Functions.getExerciseName(m));
+					list.add(0, "    " + CommonUtils.getExerciseName(m));
 					 
 					int count = Integer.parseInt(m.get("count").toString());
 					if(count > maxCount) {

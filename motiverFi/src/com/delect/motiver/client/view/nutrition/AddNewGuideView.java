@@ -30,8 +30,8 @@ import com.delect.motiver.client.presenter.nutrition.AddNewGuidePresenter;
 import com.delect.motiver.client.presenter.nutrition.AddNewGuidePresenter.AddNewGuideHandler;
 import com.delect.motiver.client.view.MySpinnerField;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.GuideValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -115,7 +115,7 @@ public class AddNewGuideView extends AddNewGuidePresenter.AddNewGuideDisplay {
 		tfName.setMinLength(Constants.LIMIT_NAME_MIN);
 		tfName.setMaxLength(Constants.LIMIT_NAME_MAX);
 		tfName.setAllowBlank(false);
-    Functions.setWarningMessages(tfName);
+    CommonUtils.setWarningMessages(tfName);
 		simple.add(tfName, formData);
 	    
     //start date
@@ -275,8 +275,8 @@ public class AddNewGuideView extends AddNewGuidePresenter.AddNewGuideDisplay {
 						value.setName(tfName.getValue());
 						Date d1 = dfDate1.getValue();
 						Date d2 = dfDate2.getValue();
-						d1 = Functions.trimDateToDatabase(d1, true);
-						d2 = Functions.trimDateToDatabase(d2, true);
+						d1 = CommonUtils.trimDateToDatabase(d1, true);
+						d2 = CommonUtils.trimDateToDatabase(d2, true);
 						value.setDates(d1, d2);
 						value.setPercent(cbIsPercent.getValue());
 						

@@ -28,7 +28,7 @@ import com.delect.motiver.client.presenter.statistics.StatsExerciseHistoryPresen
 import com.delect.motiver.client.view.CustomListener;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseNameModel;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.charts.client.Chart;
 import com.extjs.gxt.charts.client.model.ChartModel;
@@ -121,7 +121,7 @@ public class StatsExerciseHistoryView extends StatsExerciseHistoryPresenter.Stat
 			int i = 0;
 			for(ExerciseNameModel m : exercises) {
 				try {
-					list.add(0, Functions.getExerciseName(m));
+					list.add(0, CommonUtils.getExerciseName(m));
 					 
 					int count = Integer.parseInt(m.get("count").toString());
 					if(count > maxCount) {
@@ -184,14 +184,14 @@ public class StatsExerciseHistoryView extends StatsExerciseHistoryPresenter.Stat
 
 			@Override
 			public String getStringValue(ExerciseNameModel value) {
-				return Functions.getExerciseName(value);
+				return CommonUtils.getExerciseName(value);
 			}
 		});
 		//set fullname to "fn" so we see target correctly
     combo.getView().setModelProcessor(new ModelProcessor<ExerciseNameModel>() {
 			@Override
 			public ExerciseNameModel prepareData(ExerciseNameModel model) {
-				model.set("fn", Functions.getExerciseName(model));
+				model.set("fn", CommonUtils.getExerciseName(model));
 				return model;
 			}
     });

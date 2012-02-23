@@ -19,7 +19,7 @@ import com.google.gwt.user.client.ui.Widget;
 import com.delect.motiver.client.presenter.training.TrainingDayPresenter;
 import com.delect.motiver.client.presenter.training.TrainingDayPresenter.TodayTrainingHandler;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.ComponentEvent;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -33,7 +33,7 @@ public class TrainingDayView extends TrainingDayPresenter.TrainingDayDisplay {
 		@Override
 		public void handleEvent(ComponentEvent ce) {
 			//if valid key comco
-			if(Functions.isValidKeyCombo(ce)) {
+			if(CommonUtils.isValidKeyCombo(ce)) {
 				//if enough time elapsed
 				if(System.currentTimeMillis() - timeLastKeyEvent < Constants.DELAY_KEY_EVENTS) {
 					return;

@@ -40,7 +40,7 @@ import com.delect.motiver.client.view.ShowMoreView;
 import com.delect.motiver.client.view.blog.BlogDayView;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * Shows activity feed from single user
@@ -97,7 +97,7 @@ public class ActivityFeedPresenter extends Presenter {
 			@Override
 			public void workoutSelected(WorkoutSelectedEvent event) {
 				Date d = event.getWorkout().getDate();
-				d = Functions.getDateGmt(d);
+				d = CommonUtils.getDateGmt(d);
 				
 				//open correct day
 				History.newItem("user/training/" + (d.getTime() / 1000));
@@ -252,7 +252,7 @@ public class ActivityFeedPresenter extends Presenter {
 		if(index == 0) {
 		  Motiver.setNextCallCacheable(true);
 		}
-		final Request req = rpcService.getBlogData(index, Constants.LIMIT_BLOG_DAYS, 0, null, Functions.trimDateToDatabase(dateEnd, true), String.valueOf(uid), false, new MyAsyncCallback<List<BlogData>>() {
+		final Request req = rpcService.getBlogData(index, Constants.LIMIT_BLOG_DAYS, 0, null, CommonUtils.trimDateToDatabase(dateEnd, true), String.valueOf(uid), false, new MyAsyncCallback<List<BlogData>>() {
 			@Override
 			public void onSuccess(List<BlogData> result) {
 				//show data

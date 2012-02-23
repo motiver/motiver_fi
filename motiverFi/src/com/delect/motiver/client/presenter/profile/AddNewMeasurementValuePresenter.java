@@ -23,9 +23,9 @@ import com.delect.motiver.client.event.MeasurementValueCreatedEvent;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MeasurementModel;
 import com.delect.motiver.shared.MeasurementValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * Shows window where user can add new guide value
@@ -111,7 +111,7 @@ public class AddNewMeasurementValuePresenter extends Presenter {
 
 							//set date
 							MeasurementValueModel value = result;
-							value.setDate(Functions.getDateGmt(value.getDate()));
+							value.setDate(CommonUtils.getDateGmt(value.getDate()));
 							
 							if(result != null) {
 								eventBus.fireEvent(new MeasurementValueCreatedEvent(value));

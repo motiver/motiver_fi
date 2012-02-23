@@ -21,7 +21,7 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.ShortcutKeysPresenter;
 import com.delect.motiver.client.presenter.ShortcutKeysPresenter.ShortcutKeysHandler;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -49,7 +49,7 @@ public class ShortcutKeysView extends ShortcutKeysPresenter.ShortcutKeysDisplay 
 			
 			try {
 				//if valid key comco
-				if(Functions.isValidKeyCombo(ce)) {
+				if(CommonUtils.isValidKeyCombo(ce)) {
 				
 					//if enough time elapsed
 					if(System.currentTimeMillis() - timeLastKeyEvent < Constants.DELAY_KEY_EVENTS) {

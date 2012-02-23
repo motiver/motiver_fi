@@ -19,8 +19,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.nutrition.MicroNutrientLinkPresenter;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MicroNutrientModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.Text;
@@ -56,7 +56,7 @@ public class MicroNutrientLinkView extends MicroNutrientLinkPresenter.MicroNutri
 			this.add(name, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 			
 			//value
-			Text val = new Text(Functions.convertNutritionValueFromDB(model.getValue() / 1000));
+			Text val = new Text(CommonUtils.convertNutritionValueFromDB(model.getValue() / 1000));
 			this.add(val, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 
 		} catch (Exception e) {

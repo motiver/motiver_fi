@@ -17,7 +17,7 @@ package com.delect.motiver.client.view;
 import com.google.gwt.user.client.Element;
 import com.google.gwt.user.client.Event;
 
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.DomEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -97,7 +97,7 @@ public class MyHeader extends Header {
 			tf.addStyleName("x-panel-header-text");
 			tf.setStyleAttribute("margin-top", "-4px");
 			tf.setMaxLength(50);
-      Functions.setWarningMessages(tf);
+      CommonUtils.setWarningMessages(tf);
 			//fire onclick event on textfield when header is clicked
 			this.addListener(Events.OnClick, new Listener<DomEvent>() {
         public void handleEvent(DomEvent be) {

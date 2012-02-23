@@ -59,9 +59,9 @@ import com.delect.motiver.client.view.training.EmptyTrainingDayView;
 import com.delect.motiver.client.view.training.RoutinesListView;
 import com.delect.motiver.client.view.training.WorkoutView;
 import com.delect.motiver.client.view.training.WorkoutsListView;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -186,7 +186,7 @@ public class TrainingDayPresenter extends Presenter {
 				//if this date
 				if(event.getWorkout() != null) {
 					if(event.getWorkout().getDate() != null) {
-						if(Functions.Fmt.format(event.getWorkout().getDate()).equals( Functions.Fmt.format(date) )) {
+						if(CommonUtils.Fmt.format(event.getWorkout().getDate()).equals( CommonUtils.Fmt.format(date) )) {
 							WorkoutPresenter workout = new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), event.getWorkout());
 							addNewPresenter(workout);
 						}
@@ -231,7 +231,7 @@ public class TrainingDayPresenter extends Presenter {
 			public void onCancel(WorkoutSelectCancelledEvent event) {
 				//unbind list IF this date
 				if(event.getDate() != null) {
-					if(Functions.Fmt.format(event.getDate()).equals(Functions.Fmt.format(date))) {
+					if(CommonUtils.Fmt.format(event.getDate()).equals(CommonUtils.Fmt.format(date))) {
 						if(workoutsListPresenter != null) {
 							workoutsListPresenter.stop();
 			      }
@@ -247,7 +247,7 @@ public class TrainingDayPresenter extends Presenter {
 			public void onCancel(RoutineSelectCancelledEvent event) {
 				//unbind list IF this date
 				if(event.getDate() != null) {
-					if(Functions.Fmt.format(event.getDate()).equals(Functions.Fmt.format(date))) {
+					if(CommonUtils.Fmt.format(event.getDate()).equals(CommonUtils.Fmt.format(date))) {
 						if(routinesListPresenter != null) {
 							routinesListPresenter.stop();
 			      }
@@ -350,7 +350,7 @@ public class TrainingDayPresenter extends Presenter {
 		
     //fetch workouts for given day
     Motiver.setNextCallCacheable(true);
-		final Request req = rpcService.getWorkoutsInCalendar(uid, Functions.trimDateToDatabase(date, true), Functions.trimDateToDatabase(date, true), new MyAsyncCallback<List<WorkoutModel[]>>() {
+		final Request req = rpcService.getWorkoutsInCalendar(uid, CommonUtils.trimDateToDatabase(date, true), CommonUtils.trimDateToDatabase(date, true), new MyAsyncCallback<List<WorkoutModel[]>>() {
 			@Override
 			public void onSuccess(List<WorkoutModel[]> result) {
 			  //convert to list

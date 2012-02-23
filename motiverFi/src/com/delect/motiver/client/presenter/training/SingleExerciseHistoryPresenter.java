@@ -27,15 +27,10 @@ import com.delect.motiver.client.MyAsyncCallback;
 import com.delect.motiver.client.presenter.EmptyPresenter;
 import com.delect.motiver.client.presenter.PopupPresenter;
 import com.delect.motiver.client.presenter.EmptyPresenter.EmptyDisplay;
-import com.delect.motiver.client.presenter.PopupPresenter.PopupDisplay;
-import com.delect.motiver.client.presenter.PopupPresenter.PopupHandler;
-import com.delect.motiver.client.presenter.training.WorkoutPresenter.WorkoutDisplay;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
-import com.delect.motiver.client.view.PopupView;
-import com.delect.motiver.client.view.training.WorkoutView;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.WorkoutModel;
 

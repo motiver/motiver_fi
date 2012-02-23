@@ -35,8 +35,8 @@ import com.delect.motiver.client.view.SmallNotePanelDisplay;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 
 import com.extjs.gxt.ui.client.Style.SelectionMode;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
@@ -242,7 +242,7 @@ public class CardioView extends CardioPresenter.CardioDisplay {
 		column.setRenderer(new GridCellRenderer<CardioValueModel>() {
 			@Override
 			public Object render(CardioValueModel model, String property, ColumnData config, int rowIndex, int colIndex, ListStore<CardioValueModel> store, Grid<CardioValueModel> grid) {
-				return Functions.getDateTimeString(model.getDate(), false, true);
+				return CommonUtils.getDateTimeString(model.getDate(), false, true);
 			}
     });
 		column.setMenuDisabled(true); 
@@ -254,7 +254,7 @@ public class CardioView extends CardioPresenter.CardioDisplay {
 			@Override
 			public Object render(CardioValueModel model, String property, ColumnData config, int rowIndex, int colIndex, ListStore<CardioValueModel> store, Grid<CardioValueModel> grid) {
 				long value = model.getDuration();
-				return Functions.getDurationString(value);
+				return CommonUtils.getDurationString(value);
 			}
     });
     column.setMenuDisabled(true);
@@ -374,7 +374,7 @@ public class CardioView extends CardioPresenter.CardioDisplay {
               }
 									
               //ask for confirm
-              box = Functions.getMessageBoxPrompt(cardio.getNameClient(), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxPrompt(cardio.getNameClient(), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   if(!cardio.getNameClient().equals( text )) {
@@ -398,7 +398,7 @@ public class CardioView extends CardioPresenter.CardioDisplay {
             public void handleEvent(BaseEvent be) {
               setData("btnClick", true);
               //ask for confirm
-              box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisCardio().toLowerCase()), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisCardio().toLowerCase()), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   handler.cardioRemoved();
@@ -424,7 +424,7 @@ public class CardioView extends CardioPresenter.CardioDisplay {
 		if(grid.getSelectionModel().getSelectedItems().size() > 0) {
 
 			//ask for confirm
-			box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.SelectedValues().toLowerCase()), new MessageBoxHandler() {
+			box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.SelectedValues().toLowerCase()), new MessageBoxHandler() {
 				@Override
 				public void okPressed(String text) {
 					try {						

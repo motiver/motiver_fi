@@ -23,8 +23,8 @@ import com.delect.motiver.client.presenter.nutrition.NutritionDayLinkPresenter;
 import com.delect.motiver.client.presenter.nutrition.NutritionDayLinkPresenter.NutritionDayLinkHandler;
 import com.delect.motiver.client.res.MyResources;
 import com.delect.motiver.client.view.CustomListener;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.NutritionDayModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -69,7 +69,7 @@ public class NutritionDayLinkView extends NutritionDayLinkPresenter.NutritionDay
 			Image icon = new Image(MyResources.INSTANCE.iconNutritionDay());
 			this.add(icon, new HBoxLayoutData(new Margins(0, 20, 0, 0)));	
 
-			LayoutContainer c = Functions.getTotalPanel(false, nutritionDay.getEnergy(), nutritionDay.getProtein(), nutritionDay.getCarb(), nutritionDay.getFet(), null);
+			LayoutContainer c = CommonUtils.getTotalPanel(false, nutritionDay.getEnergy(), nutritionDay.getProtein(), nutritionDay.getCarb(), nutritionDay.getFet(), null);
 			c.setHeight(30);
 			this.add(c, new HBoxLayoutData(new Margins(0)));
 						

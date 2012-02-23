@@ -29,7 +29,7 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.DateWeekSelectorPresenter;
 import com.delect.motiver.client.presenter.DateWeekSelectorPresenter.DateWeekSelectorHandler;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -389,7 +389,7 @@ public class DateWeekSelectorView extends DateWeekSelectorPresenter.DateWeekSele
 				
 				//add day
 				HTML l = new HTML(dStr);
-				l.setTitle(AppController.Lang.ShowDate() + ": " + Functions.getDateString(d, true, false));
+				l.setTitle(AppController.Lang.ShowDate() + ": " + CommonUtils.getDateString(d, true, false));
 				
 				//styles
 				//if selected

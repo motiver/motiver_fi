@@ -46,8 +46,8 @@ import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.training.RoutineView;
 import com.delect.motiver.client.view.training.RoutinesListSearchView;
 import com.delect.motiver.client.view.training.RoutinesListSubView;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.RoutineModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -317,7 +317,7 @@ public class RoutinesListPresenter extends Presenter {
 			
 			//set date
 			for(RoutineModel model : routines)
-      model.setDate(Functions.trimDateToDatabase(date, true));
+      model.setDate(CommonUtils.trimDateToDatabase(date, true));
 			
 			//add routine
 			rpcService.addRoutines(routines, new MyAsyncCallback<List<RoutineModel>>() {
@@ -333,7 +333,7 @@ public class RoutinesListPresenter extends Presenter {
 					//TODO kaipaa korjausta
 					if(routines.size() > 0) {
 						RoutineModel routine = routines.get(0);
-						routine.setDate(Functions.trimDateToDatabase(date, true));
+						routine.setDate(CommonUtils.trimDateToDatabase(date, true));
 					
 						//fire event
 						eventBus.fireEvent(new RoutineCreatedEvent(routine));

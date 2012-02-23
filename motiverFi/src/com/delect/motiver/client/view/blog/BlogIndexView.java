@@ -16,7 +16,6 @@ package com.delect.motiver.client.view.blog;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.blog.BlogIndexPresenter;
 

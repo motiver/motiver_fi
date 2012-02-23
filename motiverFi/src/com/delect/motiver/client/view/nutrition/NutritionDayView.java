@@ -25,8 +25,8 @@ import com.delect.motiver.client.presenter.nutrition.NutritionDayPresenter;
 import com.delect.motiver.client.presenter.nutrition.NutritionDayPresenter.NutritionDayHandler;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -63,7 +63,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
     public void handleEvent(ComponentEvent ce) {
 
 			//if valid key comco
-			if(Functions.isValidKeyCombo(ce)) {
+			if(CommonUtils.isValidKeyCombo(ce)) {
 				//if enough time elapsed
 				if(System.currentTimeMillis() - timeLastKeyEvent < Constants.DELAY_KEY_EVENTS) {
 					return;
@@ -96,7 +96,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
   private Date date;
   
   MyButton btnCopyTimes = new MyButton();
-  final DateField tfDate = Functions.getDateField(new Date());
+  final DateField tfDate = CommonUtils.getDateField(new Date());
 
 	public NutritionDayView() {
 
@@ -219,7 +219,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 			@Override
 			public void handleEvent(BaseEvent be) {
 				//ask for confirm
-				box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.AllTimes().toLowerCase()), new MessageBoxHandler() {
+				box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.AllTimes().toLowerCase()), new MessageBoxHandler() {
 					@Override
 					public void okPressed(String text) {
 						handler.removeTimes();
@@ -236,16 +236,16 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
     tfDate.addListener(Events.Valid, new Listener<BaseEvent>() {
       @Override
       public void handleEvent(BaseEvent be) {
-        btnCopyTimes.setText(AppController.Lang.CopyTargetTo(AppController.Lang.Foods().toLowerCase(), Functions.getDateString(tfDate.getValue(), false, false, true)));
+        btnCopyTimes.setText(AppController.Lang.CopyTargetTo(AppController.Lang.Foods().toLowerCase(), CommonUtils.getDateString(tfDate.getValue(), false, false, true)));
         
         //disable button if current day
-        btnCopyTimes.setEnabled(!Functions.isSameDate(date, tfDate.getValue()));
+        btnCopyTimes.setEnabled(!CommonUtils.isSameDate(date, tfDate.getValue()));
       }
     });
     panelButtonsBottom.add(tfDate);
     
     btnCopyTimes.setStyleAttribute("margin-left", "15px");
-    btnCopyTimes.setText(AppController.Lang.CopyTargetTo(AppController.Lang.Foods().toLowerCase(), Functions.getDateString(tfDate.getValue(), false, false, true)));
+    btnCopyTimes.setText(AppController.Lang.CopyTargetTo(AppController.Lang.Foods().toLowerCase(), CommonUtils.getDateString(tfDate.getValue(), false, false, true)));
     btnCopyTimes.setScale(ButtonScale.MEDIUM);
     btnCopyTimes.addListener(Events.OnClick, new Listener<BaseEvent>() {
       @Override
@@ -396,7 +396,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 		textTitle.setText(AppController.Lang.Foods());
 		
     //disable copy button if current day
-    btnCopyTimes.setEnabled(!Functions.isSameDate(date, tfDate.getValue()));
+    btnCopyTimes.setEnabled(!CommonUtils.isSameDate(date, tfDate.getValue()));
 	}
 
 	@Override

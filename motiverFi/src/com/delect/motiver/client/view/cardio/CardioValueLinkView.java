@@ -27,8 +27,8 @@ import com.delect.motiver.client.view.CustomListener;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.shared.CardioValueModel;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -128,7 +128,7 @@ public class CardioValueLinkView extends CardioValueLinkPresenter.CardioValueLin
 			
 			//name
 			if(cardioValue.getName() != null) {
-				Text textName = new Text(cardioValue.getName().getNameClient() + ": " + Functions.getDurationString( cardioValue.getDuration()));
+				Text textName = new Text(cardioValue.getName().getNameClient() + ": " + CommonUtils.getDurationString( cardioValue.getDuration()));
 				thisContent.add(textName, new HBoxLayoutData(new Margins(0)));
 			}
 
@@ -154,7 +154,7 @@ public class CardioValueLinkView extends CardioValueLinkPresenter.CardioValueLin
 					public void handleEvent(BaseEvent be) {
 						setData("btnClick", true);
 						//ask for confirm
-						box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisValue().toLowerCase()), new MessageBoxHandler() {
+						box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisValue().toLowerCase()), new MessageBoxHandler() {
 							@Override
 							public void okPressed(String text) {
 								handler.valueRemoved();

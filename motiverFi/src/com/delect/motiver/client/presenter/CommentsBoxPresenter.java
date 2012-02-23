@@ -39,13 +39,13 @@ import com.delect.motiver.client.view.ShowMoreView;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CommentModel;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MealModel;
 import com.delect.motiver.shared.MeasurementModel;
 import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.RunModel;
 import com.delect.motiver.shared.UserModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -378,7 +378,7 @@ public class CommentsBoxPresenter extends Presenter {
 	protected void sendNewComment(final String text, final boolean publishOnFacebook) {
 		
 		final CommentModel model = new CommentModel();
-		model.setDate(Functions.trimDateToDatabase(new Date(), false));
+		model.setDate(CommonUtils.trimDateToDatabase(new Date(), false));
 		model.setTarget(target);
 		model.setText(text);
 		model.setUserTarget(new UserModel(uid));

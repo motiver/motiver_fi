@@ -37,8 +37,8 @@ import com.delect.motiver.client.view.widget.NameInputWidget;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.MeasurementModel;
 import com.delect.motiver.shared.MeasurementValueModel;
 
@@ -301,7 +301,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 						//value
 						MeasurementValueModel value = values.get(0);
 						Text textValue = new Text();
-						textValue.setText(Functions.getDateString(value.getDate(), true, true) + ": " + value.getValue() + measurement.getUnit());
+						textValue.setText(CommonUtils.getDateString(value.getDate(), true, true) + ": " + value.getValue() + measurement.getUnit());
 						panelSingleValue.add(textValue);
 						
 						panelDataOld.add(panelSingleValue, new RowData(-1, -1, new Margins(100, 0, 100, 0)));
@@ -399,7 +399,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
           } else {
             Dot dot = new Dot();
             dot.setValue(value);
-            dot.setTooltip(value.doubleValue() + measurement.getUnit() + " (" + Functions.getDateString(((MeasurementValueModel)m).getDate(), true, true) + ")");
+            dot.setTooltip(value.doubleValue() + measurement.getUnit() + " (" + CommonUtils.getDateString(((MeasurementValueModel)m).getDate(), true, true) + ")");
             chart.addDots(dot);
             maxYValue = first ? value.doubleValue() : Math.max(maxYValue, value.doubleValue());
             minYValue = first ? value.doubleValue() : Math.min(minYValue, value.doubleValue());
@@ -417,7 +417,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 				try {					
 					if(store.getModels().size() * 43 <= (getWidth() - 25)) {
 						MeasurementValueModel measurement = (MeasurementValueModel)model;
-						return Functions.getDateString(measurement.getDate(), false, true, true);
+						return CommonUtils.getDateString(measurement.getDate(), false, true, true);
 					}
 					
 				} catch (Exception e) {
@@ -450,7 +450,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 		tfUnit.setStyleAttribute("margin-left", "10px");
 		tfUnit.setMaxLength(5);
 		tfUnit.setAutoValidate(true);
-    Functions.setWarningMessages(tfUnit);
+    CommonUtils.setWarningMessages(tfUnit);
 		tfUnit.addListener(Events.Valid, new Listener<BaseEvent>() {
 			@Override
 			public void handleEvent(BaseEvent be) {
@@ -466,7 +466,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 		//target
 		lcTop.add(new Label(AppController.Lang.Goal() + ":&nbsp;"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 		dfMeas = new DateField();
-		DateTimePropertyEditor pr = new DateTimePropertyEditor(Functions.FmtShort);
+		DateTimePropertyEditor pr = new DateTimePropertyEditor(CommonUtils.FmtShort);
 		dfMeas.setPropertyEditor(pr);
 		dfMeas.setMinValue(new Date());
 		dfMeas.setFieldLabel(AppController.Lang.Date());
@@ -538,11 +538,11 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 		//columns
 		List<ColumnConfig> configs = new ArrayList<ColumnConfig>();
 		ColumnConfig column = new ColumnConfig("d", AppController.Lang.Date(), 200);  
-    column.setDateTimeFormat(Functions.Fmt); 
+    column.setDateTimeFormat(CommonUtils.Fmt); 
 		column.setRenderer(new GridCellRenderer<MeasurementValueModel>() {
 			@Override
 			public Object render(MeasurementValueModel model, String property, ColumnData config, int rowIndex, int colIndex, ListStore<MeasurementValueModel> store, Grid<MeasurementValueModel> grid) {
-				return Functions.getDateString(model.getDate(), false, true);
+				return CommonUtils.getDateString(model.getDate(), false, true);
 			}
     });
     column.setMenuDisabled(true); 
@@ -641,7 +641,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
                 box.close();
               }
               //ask for confirm
-              box = Functions.getMessageBoxPrompt(measurement.getNameClient(), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxPrompt(measurement.getNameClient(), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   if(!measurement.getNameClient().equals( text )) {
@@ -665,7 +665,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
             public void handleEvent(BaseEvent be) {
               setData("btnClick", true);
               //ask for confirm
-              box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisMeasurement().toLowerCase()), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisMeasurement().toLowerCase()), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   handler.measurementRemoved();
@@ -691,7 +691,7 @@ public class MeasurementView extends MeasurementPresenter.MeasurementDisplay {
 		if(grid.getSelectionModel().getSelectedItems().size() > 0) {
 			
 			//ask for confirm
-			box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.SelectedValues().toLowerCase()), new MessageBoxHandler() {
+			box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.SelectedValues().toLowerCase()), new MessageBoxHandler() {
 				@Override
 				public void okPressed(String text) {
 						

@@ -22,7 +22,7 @@ import com.delect.motiver.client.presenter.nutrition.EmptyNutritionDayPresenter.
 import com.delect.motiver.client.view.TimeSelectFieldView;
 import com.delect.motiver.client.view.TimeSelectFieldView.TimeSelectFieldHandler;
 import com.delect.motiver.client.view.widget.MyButton;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -189,12 +189,12 @@ public class EmptyNutritionDayView extends EmptyNutritionDayPresenter.EmptyNutri
 				
 				//get times
 			  int[] times = new int[] {
-          Functions.getTimeToSeconds(fieldT1.getValue()),
-          Functions.getTimeToSeconds(fieldT2.getValue()),
-          Functions.getTimeToSeconds(fieldT3.getValue()),
-          Functions.getTimeToSeconds(fieldT4.getValue()),
-          Functions.getTimeToSeconds(fieldT5.getValue()),
-          Functions.getTimeToSeconds(fieldT6.getValue())
+          CommonUtils.getTimeToSeconds(fieldT1.getValue()),
+          CommonUtils.getTimeToSeconds(fieldT2.getValue()),
+          CommonUtils.getTimeToSeconds(fieldT3.getValue()),
+          CommonUtils.getTimeToSeconds(fieldT4.getValue()),
+          CommonUtils.getTimeToSeconds(fieldT5.getValue()),
+          CommonUtils.getTimeToSeconds(fieldT6.getValue())
 				};
 				
 				handler.addTimeTemplate(times);
@@ -212,11 +212,11 @@ public class EmptyNutritionDayView extends EmptyNutritionDayPresenter.EmptyNutri
 				
 				//get times
 			  int[] times = new int[] {
-          Functions.getTimeToSeconds(fieldR1.getValue()),
-          Functions.getTimeToSeconds(fieldR2.getValue()),
-          Functions.getTimeToSeconds(fieldR3.getValue()),
-          Functions.getTimeToSeconds(fieldR4.getValue()),
-          Functions.getTimeToSeconds(fieldR5.getValue())
+          CommonUtils.getTimeToSeconds(fieldR1.getValue()),
+          CommonUtils.getTimeToSeconds(fieldR2.getValue()),
+          CommonUtils.getTimeToSeconds(fieldR3.getValue()),
+          CommonUtils.getTimeToSeconds(fieldR4.getValue()),
+          CommonUtils.getTimeToSeconds(fieldR5.getValue())
 				};
 				
 				handler.addTimeTemplate(times);
