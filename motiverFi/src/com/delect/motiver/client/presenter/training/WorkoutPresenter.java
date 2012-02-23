@@ -22,6 +22,7 @@ import java.util.List;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
+import com.google.gwt.user.client.Timer;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
@@ -114,6 +115,8 @@ public class WorkoutPresenter extends Presenter {
 	protected WorkoutDisplay display;
 	
 	protected WorkoutModel workout;
+
+  protected Timer timerUpdate;
 
 	/**
 	 * Shows single workout
@@ -266,8 +269,19 @@ public class WorkoutPresenter extends Presenter {
 				//edited old value
 				else {
 					workout = model;
-					final Request req = rpcService.updateWorkout(workout, MyAsyncCallback.EmptyCallback);
-					addRequest(req);
+					
+			    if(timerUpdate != null)
+			      timerUpdate.cancel();
+			    
+			    timerUpdate = new Timer() {
+
+			      @Override
+			      public void run() {
+			        
+    			    rpcService.updateWorkout(workout, MyAsyncCallback.EmptyCallback);
+			      }
+			    };
+			    timerUpdate.schedule(Constants.DELAY_MODEL_UPDATE);
 				}
 			}
 			@Override

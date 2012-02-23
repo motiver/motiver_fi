@@ -20,6 +20,7 @@ import java.util.List;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import com.delect.motiver.client.AppController;
@@ -71,6 +72,8 @@ public class FoodPresenter extends Presenter {
 	private String lastQuery = "";
 	
 	protected FoodModel food;
+
+  private Timer timerUpdate;
 
 	public FoodPresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, FoodDisplay display, FoodModel food) {
 		super(rpcService, eventBus);
@@ -292,23 +295,35 @@ public class FoodPresenter extends Presenter {
 	 * Fires FoodUpdatedEvent
 	 */
 	protected void updateFood() {
-	  
-		final Request req = rpcService.updateFood(food, new MyAsyncCallback<FoodModel>() {
-			@Override
-			public void onSuccess(FoodModel result) {
+    
+    if(timerUpdate != null)
+      timerUpdate.cancel();
 
-				//update model
-				if(result != null) {
-					food.setName(result.getName());
-					food.setAmount(result.getAmount());
-					display.setModel(food);
-					
-				}
-			}
-		});
-		addRequest(req);
-		
-		fireEvent(new FoodUpdatedEvent(food));
+    food.setName(food.getName());
+    
+    timerUpdate = new Timer() {
+
+      @Override
+      public void run() {
+        
+    		rpcService.updateFood(food, new MyAsyncCallback<FoodModel>() {
+    			@Override
+    			public void onSuccess(FoodModel result) {
+    
+    				//update model
+    				if(result != null) {
+    					food.setName(result.getName());
+    					food.setAmount(result.getAmount());
+    					display.setModel(food);
+    					
+    				}
+    			}
+    		});
+      }
+    };
+    timerUpdate.schedule(Constants.DELAY_MODEL_UPDATE);
+    
+    fireEvent(new FoodUpdatedEvent(food));
 	}
 
 }
