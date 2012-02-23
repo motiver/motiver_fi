@@ -150,8 +150,9 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
                   final long nameId = e.getNameId();
     
                   if(nameId > 0) {
-                    
-                    ExerciseInfo info = WorkoutUtils.parseExercise(e);
+
+                    ExerciseInfo info = new ExerciseInfo(e.getSets(), e.getReps(), e.getWeights());
+                    WorkoutUtils.parseExercise(info);
                     
                     if(!info.isOk()) {
                       continue;
