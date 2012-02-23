@@ -24,7 +24,7 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.DatesSelectorPresenter;
 import com.delect.motiver.client.presenter.DatesSelectorPresenter.DatesSelectorHandler;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -168,7 +168,7 @@ public class DatesSelectorView extends DatesSelectorPresenter.DatesSelectorDispl
 			public void handleEvent(BaseEvent be) {
 				//this week
 				Date d = new Date();
-				Date d1 = new Date(Functions.findPreviousMonday(d.getTime() / 1000) * 1000 );
+				Date d1 = new Date(CommonUtils.findPreviousMonday(d.getTime() / 1000) * 1000 );
 				Date d2 = new Date((d1.getTime() / 1000 + 3600 * 24 * 6) * 1000);
 				datesChanged(d1, d2);
 			}
@@ -230,8 +230,8 @@ public class DatesSelectorView extends DatesSelectorPresenter.DatesSelectorDispl
 		this.dateEnd = dateEnd;
 		
 		//update labels
-		labelDate1.setText(Functions.getDateString(dateStart, false, false));
-		labelDate2.setText(Functions.getDateString(dateEnd, false, false));
+		labelDate1.setText(CommonUtils.getDateString(dateStart, false, false));
+		labelDate2.setText(CommonUtils.getDateString(dateEnd, false, false));
 		
 		checkSelected();
 	}
@@ -264,7 +264,7 @@ public class DatesSelectorView extends DatesSelectorPresenter.DatesSelectorDispl
 		
 		//this week
 		d1 = new Date();
-		d1 = new Date(Functions.findPreviousMonday(d1.getTime() / 1000) * 1000 );
+		d1 = new Date(CommonUtils.findPreviousMonday(d1.getTime() / 1000) * 1000 );
 		d2 = new Date((d1.getTime() / 1000 + 3600 * 24 * 6) * 1000);
 		final DateTimeFormat fmt = DateTimeFormat.getFormat("yyyy-MM-dd");
 		if(fmt.format(d1).equals(fmt.format(dateStart)) && fmt.format(d2).equals(fmt.format(dateEnd))) {
@@ -352,8 +352,8 @@ public class DatesSelectorView extends DatesSelectorPresenter.DatesSelectorDispl
 				}
 
 				//update labels
-				labelDate1.setText(Functions.getDateString(dateStart, false, false));
-				labelDate2.setText(Functions.getDateString(dateEnd, false, false));
+				labelDate1.setText(CommonUtils.getDateString(dateStart, false, false));
+				labelDate2.setText(CommonUtils.getDateString(dateEnd, false, false));
 				
 				if(handler != null) {
 					handler.datesChanged(dateStart, dateEnd);

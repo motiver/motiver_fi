@@ -16,7 +16,7 @@ package com.delect.motiver.client.view.widget;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -95,7 +95,7 @@ public class NameInputWidget extends LayoutContainer {
         textName.setAllowBlank(false);
         textName.setAutoValidate(true);
         textName.setValidateOnBlur(false);
-        Functions.setWarningMessages(textName);
+        CommonUtils.setWarningMessages(textName);
         textName.addListener(Events.Valid, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {

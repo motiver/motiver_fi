@@ -27,8 +27,8 @@ import com.delect.motiver.client.res.MyResources;
 import com.delect.motiver.client.view.CustomListener;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -175,7 +175,7 @@ public class WorkoutLinkView extends WorkoutLinkPresenter.WorkoutLinkDisplay {
 					public void handleEvent(BaseEvent be) {
 						setData("btnClick", true);
 						//ask for confirm
-						box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisWorkout().toLowerCase()), new MessageBoxHandler() {
+						box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisWorkout().toLowerCase()), new MessageBoxHandler() {
 							@Override
 							public void okPressed(String text) {
 								handler.workoutRemoved();
@@ -192,7 +192,7 @@ public class WorkoutLinkView extends WorkoutLinkPresenter.WorkoutLinkDisplay {
       }
 			//date (if set)
       else if(workout.getDate() != null) {
-				Text textDate = new Text(Functions.getDateString(workout.getDate(), true, true));
+				Text textDate = new Text(CommonUtils.getDateString(workout.getDate(), true, true));
 				textDate.setStyleName("label-date");
 				this.add(textDate, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 			}

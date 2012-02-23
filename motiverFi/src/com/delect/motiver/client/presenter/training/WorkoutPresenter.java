@@ -22,6 +22,7 @@ import java.util.List;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
+import com.google.gwt.user.client.Timer;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
@@ -36,6 +37,8 @@ import com.delect.motiver.client.presenter.CommentsBoxPresenter;
 import com.delect.motiver.client.presenter.CommentsBoxPresenter.CommentsBoxDisplay;
 import com.delect.motiver.client.presenter.EmptyPresenter;
 import com.delect.motiver.client.presenter.EmptyPresenter.EmptyDisplay;
+import com.delect.motiver.client.presenter.PopupPresenter;
+import com.delect.motiver.client.presenter.PopupPresenter.PopupDisplay;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.presenter.UserPresenter;
 import com.delect.motiver.client.presenter.UserPresenter.UserDisplay;
@@ -45,14 +48,17 @@ import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.CommentsBoxView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
+import com.delect.motiver.client.view.PopupView;
 import com.delect.motiver.client.view.UserView;
 import com.delect.motiver.client.view.training.EmptyWorkoutView;
 import com.delect.motiver.client.view.training.ExerciseView;
+import com.delect.motiver.client.view.training.WorkoutView;
+import com.delect.motiver.client.view.widget.PopupSize;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -63,6 +69,8 @@ import com.extjs.gxt.ui.client.widget.LayoutContainer;
  */
 public class WorkoutPresenter extends Presenter {
 
+  static PopupSize POPUP_WORKOUT = new PopupSize(800,500);
+  
 	/**
 	* Abstract class for view to extend
 	*/
@@ -89,6 +97,7 @@ public class WorkoutPresenter extends Presenter {
 		void saveData(WorkoutModel model);
 		void workoutMoved(Date newDate);
 		void workoutRemoved();
+    void openNewWindow();
 	}
 	//new exercise listener
 	public Listener<BaseEvent> NewExerciseListener = new Listener<BaseEvent>() {
@@ -106,6 +115,8 @@ public class WorkoutPresenter extends Presenter {
 	protected WorkoutDisplay display;
 	
 	protected WorkoutModel workout;
+
+  protected Timer timerUpdate;
 
 	/**
 	 * Shows single workout
@@ -125,7 +136,6 @@ public class WorkoutPresenter extends Presenter {
 	public Display getView() {
 		return display;
 	}
-
 
 	@Override
 	public void onBind() {
@@ -259,8 +269,19 @@ public class WorkoutPresenter extends Presenter {
 				//edited old value
 				else {
 					workout = model;
-					final Request req = rpcService.updateWorkout(workout, MyAsyncCallback.EmptyCallback);
-					addRequest(req);
+					
+			    if(timerUpdate != null)
+			      timerUpdate.cancel();
+			    
+			    timerUpdate = new Timer() {
+
+			      @Override
+			      public void run() {
+			        
+    			    rpcService.updateWorkout(workout, MyAsyncCallback.EmptyCallback);
+			      }
+			    };
+			    timerUpdate.schedule(Constants.DELAY_MODEL_UPDATE);
 				}
 			}
 			@Override
@@ -268,7 +289,7 @@ public class WorkoutPresenter extends Presenter {
 				try {
 					display.getBaseContainer().setEnabled(false);
 
-					workout.setDate(Functions.trimDateToDatabase(newDate, true));
+					workout.setDate(CommonUtils.trimDateToDatabase(newDate, true));
 					rpcService.updateWorkout(workout, new MyAsyncCallback<Boolean>() {
 						@Override
 						public void onSuccess(Boolean result) {
@@ -303,6 +324,11 @@ public class WorkoutPresenter extends Presenter {
 					}
 				});
 			}
+      @Override
+      public void openNewWindow() {
+        PopupPresenter p = WorkoutPresenter.getWorkoutPopup(rpcService, eventBus, workout);
+        p.run(display.getBodyContainer());
+      }
 		});
 		//EVENT: exercise removed
 		addEventHandler(ExerciseRemovedEvent.TYPE, new ExerciseRemovedEventHandler() {
@@ -313,7 +339,7 @@ public class WorkoutPresenter extends Presenter {
 		});
 	}
 
-	@Override
+  @Override
 	public void onRun() {
 
     if(workout.getId() != 0) {
@@ -531,5 +557,18 @@ public class WorkoutPresenter extends Presenter {
 		display.setContentEnabled(true);
 	
 	}
+
+	/**
+	 * Returns popup presenter for workout
+	 * @param rpcService
+	 * @param eventBus
+	 * @param workout
+	 * @return
+	 */
+  protected static PopupPresenter getWorkoutPopup(MyServiceAsync rpcService, SimpleEventBus eventBus, WorkoutModel workout) {
+    PopupPresenter p = new PopupPresenter(rpcService, eventBus, (PopupDisplay)GWT.create(PopupView.class), new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), workout), POPUP_WORKOUT);
+    p.setTitle(CommonUtils.getDateString(workout.getDate(), true, false));
+    return p;
+  }
 
 }

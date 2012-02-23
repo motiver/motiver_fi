@@ -28,8 +28,8 @@ import com.delect.motiver.client.view.widget.NameInputWidget;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
 import com.delect.motiver.shared.FoodModel;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.MealModel;
 
 import com.extjs.gxt.ui.client.dnd.DragSource;
@@ -88,7 +88,7 @@ public class MealView extends MealPresenter.MealDisplay {
 				public void onKeyPress(ComponentEvent ce) {
 
 					//if valid key comco
-					if(Functions.isValidKeyCombo(ce)) {
+					if(CommonUtils.isValidKeyCombo(ce)) {
             switch(ce.getKeyCode()) {
             //shift + F
           		case 70:
@@ -208,7 +208,7 @@ public class MealView extends MealPresenter.MealDisplay {
 						panelBase.addStyleName("panel-highlight");
 						
 						String name = (((FoodModel)dragged).getName() != null)? ((FoodModel)dragged).getName().getName() : "";
-						String html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(name, meal.getName()));
+						String html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(name, meal.getName()));
 						event.getStatus().update(html);  
 					}
 					
@@ -225,7 +225,7 @@ public class MealView extends MealPresenter.MealDisplay {
 						
 						//change drag panel
 						String name = (((FoodModel)dragged).getName() != null)? ((FoodModel)dragged).getName().getName() : "";
-						String html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
+						String html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
 						event.getStatus().update(html);  
 					} 
 					
@@ -318,7 +318,7 @@ public class MealView extends MealPresenter.MealDisplay {
                 box.close();
               }
               //ask for confirm
-              box = Functions.getMessageBoxPrompt(meal.getName(), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxPrompt(meal.getName(), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   if(!meal.getName().equals( text )) {
@@ -346,7 +346,7 @@ public class MealView extends MealPresenter.MealDisplay {
               event.setData(meal); 
     							
               //set drag panel
-              String html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(meal.getName(), ".."));
+              String html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(meal.getName(), ".."));
               event.getStatus().update(html);      
             }
 					};
@@ -358,7 +358,7 @@ public class MealView extends MealPresenter.MealDisplay {
             @Override
             public void handleEvent(BaseEvent be) {
               //ask for confirm
-              box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisMeal().toLowerCase()), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisMeal().toLowerCase()), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   handler.mealRemoved();
@@ -385,7 +385,7 @@ public class MealView extends MealPresenter.MealDisplay {
 			if(meal.getTimeId() == 0) {
 				panelTotals.removeAll();
 				panelTotals.add(new Text(AppController.Lang.MealsStats() + ":"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-				panelTotals.add(Functions.getTotalPanel(meal.getEnergy(), meal.getProtein(), meal.getCarb(), meal.getFet()));
+				panelTotals.add(CommonUtils.getTotalPanel(meal.getEnergy(), meal.getProtein(), meal.getCarb(), meal.getFet()));
 				panelTotals.layout();
 			}
 			

@@ -42,8 +42,8 @@ import com.delect.motiver.client.view.widget.NameInputWidget;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -88,7 +88,8 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 	private LayoutContainer panelExercises = new LayoutContainer();
 	private RatingPanel panelRating;
 	private LayoutContainer panelUser = new LayoutContainer();
-	private LayoutContainer panelWorkoutInfo = new LayoutContainer();	//times, rating
+	
+	private LayoutContainer panelWorkoutInfo = new LayoutContainer();
 
 	private Text textDuration = new Text();
 	private WorkoutModel workout = null;
@@ -104,7 +105,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 			panelBase.setCollapsible(false);
 			
 			this.add(panelBase);
-
+      
 			//listener for shift + key
 			panelBase.addListener(Events.OnMouseOver, new Listener<BaseEvent>() {
 				@Override
@@ -117,7 +118,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 				public void onKeyPress(ComponentEvent ce) {
 
 					//if valid key comco
-					if(Functions.isValidKeyCombo(ce)) {
+					if(CommonUtils.isValidKeyCombo(ce)) {
             switch(ce.getKeyCode()) {
             //shift + E
 			        		case 69:
@@ -145,6 +146,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
     }
 		
 		panelBase.getPanelData().removeAll();
+    panelBase.getPanelButtons().removeAll();
 
 		try {
 			//if no model -> ask for name
@@ -175,13 +177,10 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 				panelUser.setStyleAttribute("margin", "20px 20px 0 20px");
 				panelUser.setVisible(false);
 				this.insert(panelUser, 0);
+
+        initTitlePanel();
 				
 				//workout info
-				HBoxLayout layout3 = new HBoxLayout();
-				layout3.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);  
-        panelWorkoutInfo.setLayout(layout3);
-        panelWorkoutInfo.setHeight(45);
-				panelWorkoutInfo.setStyleName("panel-workout-info");
 				panelBase.getPanelData().add(panelWorkoutInfo, new RowData(-1, -1, new Margins(0, 0, 5, 0)));
 				
 				//exercises
@@ -191,8 +190,6 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 				panelBase.getPanelData().add(panelComments, new RowData(-1, -1, new Margins(10)));
 				
 				panelExercises.setLayout(new RowLayout()); 
-
-				initTitlePanel();
 			}
 			
 		} catch (Exception e) {
@@ -343,7 +340,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 				
 				if(workout.getUser().equals(AppController.User)) {
 					
-					//add food
+					//add exercise
 					panelBase.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Exercise().toLowerCase()), 
           new Listener<BaseEvent>() {
             @Override
@@ -427,17 +424,27 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
               }
             });
 					}
+          
+          //open in new window
+          panelBase.addHeaderImageButton(AppController.Lang.OpenInNewWindow(), MyResources.INSTANCE.iconBtnNewWindow(), 
+              new Listener<BaseEvent>() {
+            @Override
+            public void handleEvent(BaseEvent be) {
+              if(handler != null)
+                handler.openNewWindow();
+            }
+          });
 					
 					//rename workout
 					panelBase.addHeaderImageButton(AppController.Lang.Rename(), MyResources.INSTANCE.iconBtnRename(), 
-          new Listener<BaseEvent>() {
+					    new Listener<BaseEvent>() {
             @Override
             public void handleEvent(BaseEvent be) {
               if(box != null && box.isVisible()) {
                 box.close();
               }
               //ask for confirm
-              box = Functions.getMessageBoxPrompt(workout.getName(), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxPrompt(workout.getName(), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   if(!workout.getName().equals( text )) {
@@ -460,7 +467,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
             @Override
             public void handleEvent(BaseEvent be) {
               //ask for confirm
-              box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisWorkout().toLowerCase()), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisWorkout().toLowerCase()), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   handler.workoutRemoved();
@@ -474,91 +481,100 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 				//init times, rating, etc...
 				if(workout.getDate() != null) {
 		        
-					//times
-					panelWorkoutInfo.add(new Text(AppController.Lang.Time() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-					
-					if(workout.getUser().equals(AppController.User)) {
-						TimeSelectFieldView tfStart = new TimeSelectFieldView((int) workout.getTimeStart(), new TimeSelectFieldHandler() {
-							@Override
-							public void timeChanged(int time) {
-								workout.setTimeStart(time);
-								
-								setDuration();
-								
-								handler.saveData(workout);
-							}
-						});
-						tfStart.setAllowBlank(true);
-            panelWorkoutInfo.add(tfStart, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-            panelWorkoutInfo.add(new Text("-"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-						TimeSelectFieldView tfEnd = new TimeSelectFieldView((int) workout.getTimeEnd(), new TimeSelectFieldHandler() {
-							@Override
-							public void timeChanged(int time) {
-								workout.setTimeEnd(time);
+				  if(panelWorkoutInfo.getItemCount() == 0) {
 
-								setDuration();
-								
-								handler.saveData(workout);
-							}
-						});
-						tfEnd.setAllowBlank(true);
-            panelWorkoutInfo.add(tfEnd, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-					}
-					//show just text
-					else {
-            panelWorkoutInfo.add(new Text(Functions.getTimeToString((int) workout.getTimeStart())), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-            panelWorkoutInfo.add(new Text("-"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-            panelWorkoutInfo.add(new Text(Functions.getTimeToString((int) workout.getTimeEnd())), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-					}
-					
-					//duration
-					textDuration.setStyleName("label-duration");
-					panelWorkoutInfo.add(textDuration, new HBoxLayoutData(new Margins(0, 5, 0, 5)));
-					setDuration();
-					
-          //spacer
-          HBoxLayoutData flex2 = new HBoxLayoutData(new Margins(0, 5, 0, 0));  
-          flex2.setFlex(1);  
-          panelWorkoutInfo.add(new Text(), flex2);
-			        
-          //rating
-          panelRating = new RatingPanel(workout.getRating(), new RatingPanelHandler() {
-						@Override
-						public void ratingChanged(int rating) {
-							workout.setRating(rating);
-							
-							handler.saveData(workout);
-						}
-					});
-          panelRating.setEnabled(workout.getUser().equals(AppController.User));
-          panelWorkoutInfo.add(panelRating, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
-					
-          //done
-					imgDone.setVisible(workout.getDone());
-					imgDoneNot.setVisible(!workout.getDone());
-					LayoutContainer lcDone = new LayoutContainer();
-					if(workout.getUser().equals(AppController.User)) {
-						//tooltip and click listener
-						imgDoneNot.setTitle(AppController.Lang.MarkAsDone());
-						final ClickHandler handlerClick = new ClickHandler() {
-							@Override
-							public void onClick(ClickEvent event) {	
-								workout.setDone( !workout.getDone() );
-								
-								//change images
-								imgDone.setVisible(workout.getDone());
-								imgDoneNot.setVisible(!workout.getDone());
-								
-								handler.saveData(workout);
-							}
-						};
-						imgDone.addClickHandler(handlerClick);
-						imgDoneNot.addClickHandler(handlerClick);
-						lcDone.setStyleAttribute("cursor", "pointer");
-					}
-					lcDone.add(imgDone);
-					lcDone.add(imgDoneNot);
-					panelWorkoutInfo.add(lcDone, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+			      HBoxLayout layout3 = new HBoxLayout();
+			      layout3.setHBoxLayoutAlign(HBoxLayoutAlign.MIDDLE);  
+			      panelWorkoutInfo.setLayout(layout3);
+			      panelWorkoutInfo.setHeight(45);
+			      panelWorkoutInfo.setStyleName("panel-workout-info");
+				    
+	          //times
+	          panelWorkoutInfo.add(new Text(AppController.Lang.Time() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	          
+	          if(workout.getUser().equals(AppController.User)) {
+	            TimeSelectFieldView tfStart = new TimeSelectFieldView((int) workout.getTimeStart(), new TimeSelectFieldHandler() {
+	              @Override
+	              public void timeChanged(int time) {
+	                workout.setTimeStart(time);
+	                
+	                setDuration();
+	                
+	                handler.saveData(workout);
+	              }
+	            });
+	            tfStart.setAllowBlank(true);
+	            panelWorkoutInfo.add(tfStart, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	            panelWorkoutInfo.add(new Text("-"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	            TimeSelectFieldView tfEnd = new TimeSelectFieldView((int) workout.getTimeEnd(), new TimeSelectFieldHandler() {
+	              @Override
+	              public void timeChanged(int time) {
+	                workout.setTimeEnd(time);
+
+	                setDuration();
+	                
+	                handler.saveData(workout);
+	              }
+	            });
+	            tfEnd.setAllowBlank(true);
+	            panelWorkoutInfo.add(tfEnd, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	          }
+	          //show just text
+	          else {
+	            panelWorkoutInfo.add(new Text(CommonUtils.getTimeToString((int) workout.getTimeStart())), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	            panelWorkoutInfo.add(new Text("-"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	            panelWorkoutInfo.add(new Text(CommonUtils.getTimeToString((int) workout.getTimeEnd())), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	          }
+	          
+	          //duration
+	          textDuration.setStyleName("label-duration");
+	          panelWorkoutInfo.add(textDuration, new HBoxLayoutData(new Margins(0, 5, 0, 5)));
+	          setDuration();
+	          
+	          //spacer
+	          HBoxLayoutData flex2 = new HBoxLayoutData(new Margins(0, 5, 0, 0));  
+	          flex2.setFlex(1);  
+	          panelWorkoutInfo.add(new Text(), flex2);
+	              
+	          //rating
+	          panelRating = new RatingPanel(workout.getRating(), new RatingPanelHandler() {
+	            @Override
+	            public void ratingChanged(int rating) {
+	              workout.setRating(rating);
+	              
+	              handler.saveData(workout);
+	            }
+	          });
+	          panelRating.setEnabled(workout.getUser().equals(AppController.User));
+	          panelWorkoutInfo.add(panelRating, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
+	          
+	          //done
+	          imgDone.setVisible(workout.getDone());
+	          imgDoneNot.setVisible(!workout.getDone());
+	          LayoutContainer lcDone = new LayoutContainer();
+	          if(workout.getUser().equals(AppController.User)) {
+	            //tooltip and click listener
+	            imgDoneNot.setTitle(AppController.Lang.MarkAsDone());
+	            final ClickHandler handlerClick = new ClickHandler() {
+	              @Override
+	              public void onClick(ClickEvent event) { 
+	                workout.setDone( !workout.getDone() );
+	                
+	                //change images
+	                imgDone.setVisible(workout.getDone());
+	                imgDoneNot.setVisible(!workout.getDone());
+	                
+	                handler.saveData(workout);
+	              }
+	            };
+	            imgDone.addClickHandler(handlerClick);
+	            imgDoneNot.addClickHandler(handlerClick);
+	            lcDone.setStyleAttribute("cursor", "pointer");
+	          }
+	          lcDone.add(imgDone);
+	          lcDone.add(imgDoneNot);
+	          panelWorkoutInfo.add(lcDone, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+				  }
 			        
           panelWorkoutInfo.layout();
 				}
@@ -580,7 +596,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 		try {
 			//set duration
 			if(workout.getTimeStart() > 0 && workout.getTimeEnd() > 0 && workout.getTimeEnd() > workout.getTimeStart()) {
-				textDuration.setText( Functions.getDurationString(workout.getTimeEnd() - workout.getTimeStart()) );
+				textDuration.setText( CommonUtils.getDurationString(workout.getTimeEnd() - workout.getTimeStart()) );
       }
 			else {
 				textDuration.setText("");

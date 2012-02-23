@@ -24,8 +24,8 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.nutrition.TimePresenter;
 import com.delect.motiver.client.presenter.nutrition.TimePresenter.TimeHandler;
 import com.delect.motiver.client.res.MyResources;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.TimeModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -121,7 +121,7 @@ public class TimeView extends TimePresenter.TimeDisplay {
 	private void checkIfCurrentTime() {
 		Date d = new Date();
 		//today
-		if(Functions.Fmt.format(d).equals(Functions.Fmt.format(time.getDate()))) {
+		if(CommonUtils.Fmt.format(d).equals(CommonUtils.Fmt.format(time.getDate()))) {
 			long curr = d.getHours() * 3600 + d.getMinutes() * 60;
 
 			//-10min ... +10min
@@ -146,7 +146,7 @@ public class TimeView extends TimePresenter.TimeDisplay {
 			panelHeader.add(img, new HBoxLayoutData(new Margins(0, 10, 0, 0)));
 
 			//init time label
-			Text textTitle = new Text(Functions.getTimeToString(time.getTime()));
+			Text textTitle = new Text(CommonUtils.getTimeToString(time.getTime()));
 			textTitle.setStyleName("label-title-big");
 			panelHeader.add(textTitle);
 						
@@ -163,7 +163,7 @@ public class TimeView extends TimePresenter.TimeDisplay {
 		try {
 			panelTotals.removeAll();
 			panelTotals.add(new Text(AppController.Lang.TimesStats() + ":"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-			panelTotals.add(Functions.getTotalPanel(time.getEnergy(), time.getProtein(), time.getCarb(), time.getFet()));
+			panelTotals.add(CommonUtils.getTotalPanel(time.getEnergy(), time.getProtein(), time.getCarb(), time.getFet()));
 			panelTotals.layout();
 			
 		} catch (Exception e) {

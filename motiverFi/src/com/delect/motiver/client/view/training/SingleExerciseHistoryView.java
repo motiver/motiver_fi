@@ -24,8 +24,10 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.training.SingleExerciseHistoryPresenter;
+import com.delect.motiver.client.presenter.training.SingleExerciseHistoryPresenter.SingleExerciseHistoryHandler;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
+import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.SelectionMode;
@@ -33,12 +35,18 @@ import com.extjs.gxt.ui.client.Style.SortDir;
 import com.extjs.gxt.ui.client.data.BasePagingLoader;
 import com.extjs.gxt.ui.client.data.PagingLoadResult;
 import com.extjs.gxt.ui.client.data.PagingModelMemoryProxy;
+import com.extjs.gxt.ui.client.event.BaseEvent;
+import com.extjs.gxt.ui.client.event.Events;
+import com.extjs.gxt.ui.client.event.GridEvent;
+import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.store.ListStore;
 import com.extjs.gxt.ui.client.store.Store;
 import com.extjs.gxt.ui.client.store.StoreSorter;
 import com.extjs.gxt.ui.client.widget.grid.ColumnConfig;
+import com.extjs.gxt.ui.client.widget.grid.ColumnData;
 import com.extjs.gxt.ui.client.widget.grid.ColumnModel;
 import com.extjs.gxt.ui.client.widget.grid.Grid;
+import com.extjs.gxt.ui.client.widget.grid.GridCellRenderer;
 import com.extjs.gxt.ui.client.widget.grid.GridSelectionModel;
 import com.extjs.gxt.ui.client.widget.toolbar.PagingToolBar;
 
@@ -185,9 +193,7 @@ public class SingleExerciseHistoryView extends SingleExerciseHistoryPresenter.Si
 	
 	//grid
 	private List<ExerciseModel> values;
-	
-	
-	
+  private SingleExerciseHistoryHandler handler;	
 
 	@Override
 	public Widget asWidget() {
@@ -233,12 +239,29 @@ public class SingleExerciseHistoryView extends SingleExerciseHistoryPresenter.Si
     column = new ColumnConfig("r", AppController.Lang.Reps(), 150);
     column.setMenuDisabled(true);  
     column.setSortable(true);
-    configs.add(column);   
+    configs.add(column);
     //weights
     column = new ColumnConfig("w", AppController.Lang.Weights(), 200);
     column.setMenuDisabled(true);  
     column.setSortable(true);
-    configs.add(column);  
+    configs.add(column);
+    //workout
+    column = new ColumnConfig("wo", AppController.Lang.Workout(), 200);
+    column.setMenuDisabled(true);  
+    column.setSortable(true);
+    column.setRenderer(new GridCellRenderer<ExerciseModel>() {
+      @Override
+      public Object render(ExerciseModel model, String property, ColumnData config, int rowIndex,
+          int colIndex, ListStore<ExerciseModel> store, Grid<ExerciseModel> grid) {
+        WorkoutModel w = model.getWorkout();
+
+        return "<span " + 
+          "class='link'>" + 
+          ((w != null) ? w.getName() : null) + 
+          "</span>";
+      }
+    });
+    configs.add(column);
 
     toolBar = new PagingToolBar(Constants.LIMIT_LIST_RECORDS*3);
 	    
@@ -273,6 +296,24 @@ public class SingleExerciseHistoryView extends SingleExerciseHistoryPresenter.Si
 		grid.setAutoExpandColumn("w");
 		grid.setColumnResize(false);
 		grid.setAutoHeight(true);
+		grid.addListener(Events.CellClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        GridEvent ge = (GridEvent)be;
+        ExerciseModel e = store.getAt(ge.getRowIndex());
+        if(e != null
+            && handler != null
+            && ge.getColIndex() == 4) {
+          handler.onSelected(e);
+        }
+          
+      }
+		});
 	}
+
+  @Override
+  public void setHandler(SingleExerciseHistoryHandler handler) {
+    this.handler = handler;
+  }
 	
 }

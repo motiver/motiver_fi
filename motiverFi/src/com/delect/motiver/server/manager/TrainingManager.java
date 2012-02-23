@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -19,20 +20,15 @@ import com.delect.motiver.server.dao.TrainingDAO;
 import com.delect.motiver.server.dao.helper.RoutineSearchParams;
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
-import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
+import com.delect.motiver.server.manager.helpers.NameCountWrapper;
 import com.delect.motiver.server.util.DateIterator;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 import com.delect.motiver.shared.exception.ConnectionException;
-import com.google.appengine.api.backends.BackendServiceFactory;
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.TaskOptions.Method;
 import com.prodeagle.java.counters.Counter;
 
 public class TrainingManager extends AbstractManager {
@@ -105,7 +101,7 @@ public class TrainingManager extends AbstractManager {
       
         //update cache
         if(workout.getDate() != null) {
-          cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+          cache.setWorkouts(new WorkoutSearchParams(workout.getDate(), workout.getUid()), null);  //clear day's cache
         }
         if(workout.getRoutineId() != null) {
           cache.removeRoutine(workout.getRoutineId());
@@ -147,7 +143,7 @@ public class TrainingManager extends AbstractManager {
 
         //update cache
         if(workout.getDate() != null) {
-          cache.setWorkouts(workout.getUid(), workout.getDate(), null);  //clear day's cache
+          cache.setWorkouts(new WorkoutSearchParams(workout.getDate(), workout.getUid()), null);  //clear day's cache
         }
         if(workout.getRoutineId() != null) {
           cache.removeRoutine(workout.getRoutineId());
@@ -182,21 +178,24 @@ public class TrainingManager extends AbstractManager {
     List<Workout> list = null;
     
     try {    
-      //get from cache
-      list = cache.getWorkouts(uid, date);
+      WorkoutSearchParams params = new WorkoutSearchParams(date, uid);
       
-      if(list == null) {
-        WorkoutSearchParams params = new WorkoutSearchParams(date, uid);
-        List<Long> keys = dao.getWorkouts(params);
+      //get from cache
+      Set<Long> keys = cache.getWorkouts(params);
+      
+      if(keys == null) {
+        keys = dao.getWorkouts(params);
         
-        list = new ArrayList<Workout>();
-        for(Long key : keys) {
-          list.add(_getWorkout(key));
-        }
 
         //add to cache
-        cache.setWorkouts(uid, date, list);
+        cache.setWorkouts(params, keys);
       }
+      
+      list = new ArrayList<Workout>();
+      for(Long key : keys) {
+        list.add(_getWorkout(key));
+      }
+      
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error loading workouts", e);
       handleException("TrainingManager.getWorkouts", e);
@@ -205,21 +204,71 @@ public class TrainingManager extends AbstractManager {
     return list;
   }
 
-  public List<Workout> getWorkouts(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws ConnectionException {
+  public Set<Long> getWorkoutsKeys(Date date, String uid) throws ConnectionException {
+
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loading workouts keys ("+uid+", "+date+")");
+    }
+
+    if(date == null) {
+      return null;
+    }
+    
+    //get from cache
+    Set<Long> keys = null;
+    
+    try {    
+      WorkoutSearchParams params = new WorkoutSearchParams(date, uid);
+      
+      //get from cache
+      keys = cache.getWorkouts(params);
+      
+      if(keys == null) {
+        keys = dao.getWorkouts(params);
+        
+
+        //add to cache
+        cache.setWorkouts(params, keys);
+      }
+      
+    } catch (Exception e) {
+      logger.log(Level.SEVERE, "Error loading workouts keys", e);
+      handleException("TrainingManager.getWorkouts", e);
+    }
+  
+    return keys;
+  }
+
+  public List<Workout> getWorkouts(UserOpenid user, Date dateStart, Date dateEnd, String uid) throws Exception {
 
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Loading workouts ("+uid+", "+dateStart+" - "+dateEnd+")");
     }
 
-    List<Workout> list = new ArrayList<Workout>();
+    //check permissions
+    userManager.checkPermission(Permission.READ_TRAINING, user.getUid(), uid);
+    
+    Set<Long> keys = new HashSet<Long>();
     
     Iterator<Date> i = new DateIterator(dateStart, dateEnd);
     while(i.hasNext())
     {
       final Date date = i.next();
-      list.addAll(getWorkouts(user, date, uid));
+      keys.addAll(getWorkoutsKeys(date, uid));
     }
     
+    List<Workout> list = new ArrayList<Workout>();
+    
+    if(keys.size() > 0) {
+      //get user here, so we can fetch it only once
+      UserOpenid u = userManager.getUser(uid);
+      
+      for(Long key : keys) {
+        Workout w = _getWorkout(key, false);
+        w.setUser(u);
+        list.add(w);
+      }
+    }
     
     return list;
   }
@@ -240,7 +289,7 @@ public class TrainingManager extends AbstractManager {
       params.offset = offset;
       params.limit = Constants.LIMIT_WORKOUTS;
       params.uid = uid;
-      List<Long> keys = dao.getWorkouts(params);
+      Set<Long> keys = dao.getWorkouts(params);
       
       for(Long key : keys) {
         
@@ -319,7 +368,7 @@ public class TrainingManager extends AbstractManager {
       int i = 0;
       while(list.size() < Constants.LIMIT_WORKOUTS) {
         params.offset = i;
-        List<Long> keys = dao.getWorkouts(params);
+        Set<Long> keys = dao.getWorkouts(params);
         
         for(Long key : keys) {
           
@@ -432,6 +481,10 @@ public class TrainingManager extends AbstractManager {
     return list;
   }
 
+  private Workout _getWorkout(Long key) throws Exception {
+    return _getWorkout(key, true);
+  }
+  
   /**
    * Returns workout based on key
    * Fetchs also user and exercises names
@@ -439,7 +492,7 @@ public class TrainingManager extends AbstractManager {
    * @return
    * @throws Exception
    */
-  private Workout _getWorkout(Long key) throws Exception {
+  private Workout _getWorkout(Long key, boolean getUser) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getWorkout ("+key+")");
@@ -453,7 +506,6 @@ public class TrainingManager extends AbstractManager {
     
     if(jdo == null) {      
       jdo = dao.getWorkout(key);
-      jdo.setUser(userManager.getUser(jdo.getUid()));
       
       //find names for each exercise
       for(Exercise f : jdo.getExercises()) {
@@ -464,6 +516,9 @@ public class TrainingManager extends AbstractManager {
       
       cache.addWorkout(jdo);
     }
+    
+    if(jdo != null && getUser)
+      jdo.setUser(userManager.getUser(jdo.getUid())); 
     
     //sort exercises
     if(jdo != null) {
@@ -488,10 +543,8 @@ public class TrainingManager extends AbstractManager {
     if(jdo == null) {
       jdo = dao.getRoutine(routineId);
       
-      jdo.setUser(userManager.getUser(jdo.getUid()));
-      
       //get workouts
-      List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routineId));
+      Set<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routineId));
       ArrayList<Workout> list = new ArrayList<Workout>();
       for(Long key : keys) {
         list.add(_getWorkout(key));
@@ -501,6 +554,9 @@ public class TrainingManager extends AbstractManager {
       cache.addRoutine(jdo);
     }
     
+    if(jdo != null)
+      jdo.setUser(userManager.getUser(jdo.getUid()));
+    
     return jdo;
   }
 
@@ -509,63 +565,42 @@ public class TrainingManager extends AbstractManager {
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getExerciseName ("+key+")");
     }
-
-
-    //check if food names are found from cache
-    Map<Long, ExerciseName> mapAll = cache.getExerciseNames();
     
-    //if cache is empty -> add backend task for loading names to cache
-    if(mapAll == null) {
-      
-      //add task
-      try {
-        Queue queue = QueueFactory.getQueue("load-names-queue");
-        TaskOptions opt = TaskOptions.Builder.withUrl("/tasks/load_names");
-        queue.add(opt.param("target", "exercisename")
-            .method(Method.GET)
-            .header("Host", BackendServiceFactory.getBackendService().getBackendAddress("tasks", 0)));
-      } catch (Exception e) {
-        logger.log(Level.WARNING, "Error adding new task", e);
-      }
-      
-      //get name by key
-      return dao.getExerciseName(key);
-    }
-    //are found from cache
-    else {
-      
-      Counter.increment("Cache.ExerciseName");
-      
-      Map<Long, ExerciseName> names = _getExerciseNames();
-      
-      if(names != null) {
-        return names.get(key);
-      }
+    if(key == null || key == 0) {
+      return null;
     }
     
-    return null;
+    ExerciseName jdo = cache.getExerciseName(key);
+    
+    if(jdo == null) {      
+      jdo = dao.getExerciseName(key);
+
+      cache.addExerciseName(jdo);
+    }
+    
+    return jdo;
   }
 
-  private Map<Long, ExerciseName> _getExerciseNames() throws Exception {
+  private Map<Long, String> _getExerciseNames(String locale) throws Exception {
 
     if(logger.isLoggable(Level.FINER)) {
       logger.log(Level.FINER, "_getExerciseNames");
     }
 
     //load from cache
-    Map<Long, ExerciseName> mapAll = cache.getExerciseNames();
+    Map<Long, String> mapAll = cache.getExerciseNames(locale);
     
     if(mapAll == null) {
-      List<ExerciseName> list = dao.getExerciseNames();
+      List<ExerciseName> list = dao.getExerciseNames(locale);
 
       //create map
-      mapAll = new HashMap<Long, ExerciseName>();      
+      mapAll = new HashMap<Long, String>();      
       for(ExerciseName name : list) {
-        mapAll.put(name.getId(), name);
+        mapAll.put(name.getId(), name.getName());
       }
       
       //save to cache
-      cache.setExerciseNames(mapAll);
+      cache.setExerciseNames(locale, mapAll);
     }
     
     return mapAll;
@@ -595,7 +630,7 @@ public class TrainingManager extends AbstractManager {
 
         //remove cache
         if(w.getDate() != null) {
-          cache.setWorkouts(w.getUid(), w.getDate(), null);
+          cache.setWorkouts(new WorkoutSearchParams(w.getDate(), w.getUid()), null);
         }
         cache.removeWorkout(w.getId());
 
@@ -640,7 +675,7 @@ public class TrainingManager extends AbstractManager {
         
         //remove workouts
         //TODO doesn't remove from cache
-        List<Long> keysW = dao.getWorkouts(new WorkoutSearchParams(w.getId()));
+        Set<Long> keysW = dao.getWorkouts(new WorkoutSearchParams(w.getId()));
         Long[] keysW2 = keysW.toArray(new Long[0]);
         dao.removeWorkouts(keysW2);
         
@@ -729,7 +764,7 @@ public class TrainingManager extends AbstractManager {
         
         //remove cache
         if(clone.getDate() != null) {
-          cache.setWorkouts(user.getUid(), clone.getDate(), null);
+          cache.setWorkouts(new WorkoutSearchParams(clone.getDate(), user.getUid()), null);
         }
       }
 
@@ -825,7 +860,7 @@ public class TrainingManager extends AbstractManager {
               wClone.setDate(dateNew);
               
               //clear cache
-              cache.setWorkouts(user.getUid(), dateNew, null);
+              cache.setWorkouts(new WorkoutSearchParams(dateNew, user.getUid()), null);
             }
             
             wClone.setUid(user.getUid());
@@ -847,7 +882,7 @@ public class TrainingManager extends AbstractManager {
         jdo.setUser(userManager.getUser(jdo.getUid()));
         
         //get workouts
-        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(jdo.getId()));
+        Set<Long> keys = dao.getWorkouts(new WorkoutSearchParams(jdo.getId()));
         ArrayList<Workout> list = new ArrayList<Workout>();
         for(Long key : keys) {
           list.add(_getWorkout(key));
@@ -881,7 +916,7 @@ public class TrainingManager extends AbstractManager {
     try {
       
       //load from cache
-      Map<Long, ExerciseName> mapAll = _getExerciseNames();
+      Map<Long, String> mapAll = _getExerciseNames(user.getLocale());
       
       if(mapAll != null) {
       
@@ -905,75 +940,67 @@ public class TrainingManager extends AbstractManager {
         }
         
         //search
-        List<ExerciseName> result = new ArrayList<ExerciseName>();
+        List<NameCountWrapper> result = new ArrayList<NameCountWrapper>();
 
-        String locale = user.getLocale();
-        for(ExerciseName n : mapAll.values()) {
+        for(Entry<Long, String> entry : mapAll.entrySet()) {
           
-          //if correct locale
-          if(n.getLocale().equals(locale)) {
-            String name = n.getName();
-            int target = n.getTarget();
-            
-            //strip special characters
-            name = name.replace("(", "");
-            name = name.replace(")", "");
-            name = name.replace(",", "");
-            
-            //filter by query (add count variable)
-            int count = 0;
-            for(String s : arr) {
-              //if word long enough
-              if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
-                //exact match
-                if(name.toLowerCase().equals( s )) {
-                  count += 3;
-                }
-                //partial match
-                else if(name.toLowerCase().contains( s )) {
-                  count++;
-                }
+          Long id = entry.getKey();
+          String name = entry.getValue();
+          
+          //strip special characters
+          name = name.replace("(", "");
+          name = name.replace(")", "");
+          name = name.replace(",", "");
+          
+          //filter by query (add count variable)
+          int count = 0;
+          for(String s : arr) {
+            //if word long enough
+            if(s.length() >= Constants.LIMIT_MIN_QUERY_WORD) {
+              //exact match
+              if(name.toLowerCase().equals( s )) {
+                count += 3;
+              }
+              //partial match
+              else if(name.toLowerCase().contains( s )) {
+                count++;
               }
             }
-            
-            //if targets matches
-            if(targets.contains(target)) {
-              count += 3;
-            }
-            
-            logger.info(" count: "+count);
+          }
+          
+          logger.info(" count: "+count);
 
-            //if found
-            if(count > 0) {
-    
-              int countUse = 0;
-              try {
-                countUse = cache.getExerciseNameCount(user, n.getId());
+          //if found
+          if(count > 0) {
+  
+            int countUse = 0;
+            try {
+              countUse = cache.getExerciseNameCount(user, id);
+              
+              if(countUse == -1) {
+                countUse = dao.getExerciseNameCount(user, id);
                 
-                if(countUse == -1) {
-                  countUse = dao.getExerciseNameCount(user, n.getId());
-                  
-                  cache.setExerciseNameCount(user, n.getId(), countUse);
-                }
-                
-              } catch (Exception e) {
-                logger.log(Level.SEVERE, "Error fetching exercise name count", e);
+                cache.setExerciseNameCount(user, id, countUse);
               }
               
-              n.setCount(count, countUse);
-              result.add(n);
+            } catch (Exception e) {
+              logger.log(Level.SEVERE, "Error fetching exercise name count", e);
             }
+            
+            NameCountWrapper n = new NameCountWrapper(id, count, countUse);
+            result.add(n);
           }
         }
         
         //sort array based on count
-        Collections.sort(result);
+        Collections.sort(result, NameCountWrapper.COUNT_COMPARATOR);
         
         //convert to client model
         for(int i=0; i < result.size() && i < limit; i++) {
-          ExerciseName n = result.get(i);
-          if(n.getCountQuery() > 0) {
-            list.add(n);
+          NameCountWrapper n = result.get(i);
+          if(n.countQuery > 0) {
+            //fetch correct name
+            list.add(_getExerciseName(n.id));
           }
           else {
             break;
@@ -1006,36 +1033,31 @@ public class TrainingManager extends AbstractManager {
     
     List<ExerciseName> list = new ArrayList<ExerciseName>(); 
 
-    try {
-      
-      //load from cache
-      Map<Long, ExerciseName> mapAll = _getExerciseNames();
-      
+    try {      
       for(ExerciseName name : names) {   
+
+        ExerciseName nameOld = _getExerciseName(name.getId());
         
         //add if not found
-        if(!mapAll.containsValue(name.getId())) {
+        if(nameOld == null) {
           name.setUid(user.getUid());
           
           dao.addExerciseName(name);
-          
-          //update "cache" array
-          mapAll.put(name.getId(), name);
         }
         //otherwise update (if name we have added)
         else {
-          ExerciseName nameOld = mapAll.get(name.getId());
-          if(nameOld != null && user.getUid().equals(nameOld.getUid())) {
+          if(nameOld != null 
+              && (user.getUid().equals(nameOld.getUid()) || user.isAdmin()) ) {
             nameOld.update(name, false);
             dao.updateExerciseName(nameOld);
           }
         }
         
+        //update "cache" array
+        cache.addExerciseName(name);
+        
         list.add(name);
       }
-
-      //save to cache
-      cache.setExerciseNames(mapAll);
 
     } catch (Exception e) {
       logger.log(Level.SEVERE, "Error adding exercise names", e);
@@ -1060,7 +1082,7 @@ public class TrainingManager extends AbstractManager {
       String[] arr = query.split(" ");
 
       //load from cache
-      List<Long> keysAll = dao.getWorkouts(WorkoutSearchParams.all());
+      Set<Long> keysAll = dao.getWorkouts(WorkoutSearchParams.all());
 
       int i = 0;
       for(Long key : keysAll) {
@@ -1194,9 +1216,9 @@ public class TrainingManager extends AbstractManager {
 
       //remove from cache (also old date if moved)
       if(workout.getDate() != null) {
-        cache.setWorkouts(workout.getUid(), workout.getDate(), null);
+        cache.setWorkouts(new WorkoutSearchParams(workout.getDate(), workout.getUid()), null);
         if(!dOld.equals(workout.getDate())) {
-          cache.setWorkouts(workout.getUid(), dOld, null);
+          cache.setWorkouts(new WorkoutSearchParams(dOld, workout.getUid()), null);
         }
       }
       cache.removeWorkout(workout.getId());
@@ -1235,7 +1257,7 @@ public class TrainingManager extends AbstractManager {
       if(oldDays > routine.getDays()) {
         
         //get workouts
-        List<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routine.getId(), oldDays));
+        Set<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routine.getId(), oldDays));
         ArrayList<Workout> list = new ArrayList<Workout>();
         for(Long key : keys) {
           list.add(_getWorkout(key));

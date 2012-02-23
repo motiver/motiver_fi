@@ -22,7 +22,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.delect.motiver.client.presenter.blog.BlogDayPresenter;
 import com.delect.motiver.client.view.CustomListener;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.Orientation;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -77,13 +77,13 @@ public class BlogDayView extends BlogDayPresenter.BlogDayDisplay {
 			textIcon.setText(DateTimeFormat.getFormat("EE").format(date, tz).toLowerCase());			
 			//if today
 			final Date today = new Date();
-			if(date != null && Functions.Fmt.format(today).equals(Functions.Fmt.format(date, tz))) {
+			if(date != null && CommonUtils.Fmt.format(today).equals(CommonUtils.Fmt.format(date, tz))) {
 				textIcon.addStyleName("icon-date-today");
 				textTitle.setStyleAttribute("color", "#ff6600");
 			}
 			
 			//date
-			textTitle.setText(Functions.getDateString(date, false, true));
+			textTitle.setText(CommonUtils.getDateString(date, false, true));
 			textTitle.setStyleName("label-blog-date");
 			panelDate.add(textTitle, new RowData(-1, -1, new Margins(7, 0, 0, 10)));
 			
@@ -126,7 +126,7 @@ public class BlogDayView extends BlogDayPresenter.BlogDayDisplay {
 				}
       });
       //title
-			textTitle.setText(Functions.getDateString(date, true, true));
+			textTitle.setText(CommonUtils.getDateString(date, true, true));
       textTitle.setStyleName("label-title-big");
       panelHeader.add(textTitle, new HBoxLayoutData(new Margins(0, 0, 0, 20)));
 	        

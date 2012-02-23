@@ -25,8 +25,8 @@ import com.delect.motiver.client.presenter.nutrition.NutritionDayPresenter;
 import com.delect.motiver.client.presenter.nutrition.NutritionDayPresenter.NutritionDayHandler;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -39,6 +39,7 @@ import com.extjs.gxt.ui.client.widget.Document;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Text;
+import com.extjs.gxt.ui.client.widget.form.DateField;
 import com.extjs.gxt.ui.client.widget.layout.RowData;
 import com.extjs.gxt.ui.client.widget.layout.RowLayout;
 
@@ -62,7 +63,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
     public void handleEvent(ComponentEvent ce) {
 
 			//if valid key comco
-			if(Functions.isValidKeyCombo(ce)) {
+			if(CommonUtils.isValidKeyCombo(ce)) {
 				//if enough time elapsed
 				if(System.currentTimeMillis() - timeLastKeyEvent < Constants.DELAY_KEY_EVENTS) {
 					return;
@@ -79,22 +80,23 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
       }
 		}
 	};
+
+  private ContentPanel panelData = new ContentPanel();
+  private ContentPanel panelDetailed = new ContentPanel();
 	private HorizontalPanel panelButtonsBottom = new HorizontalPanel();
 	private LayoutContainer panelComments = new LayoutContainer();
-
-	//panels
 	private LayoutContainer panelContent = new LayoutContainer();
-	private ContentPanel panelData = new ContentPanel();
-	private ContentPanel panelDetailed = new ContentPanel();
-	
 	private LayoutContainer panelFoods = new LayoutContainer();
 	private LayoutContainer panelGuide = new LayoutContainer();
 	private LayoutContainer panelTotals = new LayoutContainer();
-
 	private LayoutContainer panelTotalsDuplicate = new LayoutContainer();
-	//widgets
+	
 	private Text textTitle = new Text();
 	private long timeLastKeyEvent = 0;
+  private Date date;
+  
+  MyButton btnCopyTimes = new MyButton();
+  final DateField tfDate = CommonUtils.getDateField(new Date());
 
 	public NutritionDayView() {
 
@@ -206,6 +208,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 			}
 		});
 		panelButtonsBottom.add(btnAdd);
+		
 		//remove all times link
 		MyButton btnRemoveAll = new MyButton();
 		btnRemoveAll.setStyleAttribute("margin-left", "5px");
@@ -216,7 +219,7 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 			@Override
 			public void handleEvent(BaseEvent be) {
 				//ask for confirm
-				box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.AllTimes().toLowerCase()), new MessageBoxHandler() {
+				box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.AllTimes().toLowerCase()), new MessageBoxHandler() {
 					@Override
 					public void okPressed(String text) {
 						handler.removeTimes();
@@ -226,6 +229,32 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 			}
 		});
 		panelButtonsBottom.add(btnRemoveAll);
+    
+    //copy times to another day
+    tfDate.setStyleAttribute("margin-left", "75px");
+    tfDate.setStyleAttribute("margin-top", "2px");
+    tfDate.addListener(Events.Valid, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        btnCopyTimes.setText(AppController.Lang.CopyTargetTo(AppController.Lang.Foods().toLowerCase(), CommonUtils.getDateString(tfDate.getValue(), false, false, true)));
+        
+        //disable button if current day
+        btnCopyTimes.setEnabled(!CommonUtils.isSameDate(date, tfDate.getValue()));
+      }
+    });
+    panelButtonsBottom.add(tfDate);
+    
+    btnCopyTimes.setStyleAttribute("margin-left", "15px");
+    btnCopyTimes.setText(AppController.Lang.CopyTargetTo(AppController.Lang.Foods().toLowerCase(), CommonUtils.getDateString(tfDate.getValue(), false, false, true)));
+    btnCopyTimes.setScale(ButtonScale.MEDIUM);
+    btnCopyTimes.addListener(Events.OnClick, new Listener<BaseEvent>() {
+      @Override
+      public void handleEvent(BaseEvent be) {
+        handler.copyTimes(tfDate.getValue());
+      }
+    });
+    panelButtonsBottom.add(btnCopyTimes);
+    
 		panelData.add(panelButtonsBottom, new RowData(-1, -1, new Margins(10, 0, 10, 10)));
 		//call handler when panel expands/collapses
 		panelData.addListener(Events.Expand, new Listener<BaseEvent>() {
@@ -363,7 +392,11 @@ public class NutritionDayView extends NutritionDayPresenter.NutritionDayDisplay 
 
 	@Override
 	public void setDate(Date date) {
+	  this.date = date;
 		textTitle.setText(AppController.Lang.Foods());
+		
+    //disable copy button if current day
+    btnCopyTimes.setEnabled(!CommonUtils.isSameDate(date, tfDate.getValue()));
 	}
 
 	@Override

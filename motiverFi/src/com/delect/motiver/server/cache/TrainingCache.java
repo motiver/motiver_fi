@@ -1,13 +1,8 @@
 package com.delect.motiver.server.cache;
 
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -16,6 +11,7 @@ import net.sf.jsr107cache.CacheException;
 import net.sf.jsr107cache.CacheFactory;
 import net.sf.jsr107cache.CacheManager;
 
+import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
@@ -28,15 +24,14 @@ public class TrainingCache {
 
   private final static boolean CACHE_ON = true;
 
-  private final static String PREFIX_WORKOUTS = "tc_ws";
+  private final static String PREFIX_WORKOUTS = "tc_ws2";
   private final static String PREFIX_WORKOUT = "tc_w";
   private final static String PREFIX_ROUTINE = "tc_r";
-  private final static String PREFIX_EXERCISE_NAMES = "tc_en";
+  private final static String PREFIX_EXERCISE_NAME = "tc_en1_";
+  private final static String PREFIX_EXERCISE_NAMES = "tc_en2_";
   private final static String PREFIX_EXERCISE_NAME_COUNT = "tc_en_c";
   
   private final static int CACHE_EXPIRE_SECONDS = 604800;
-  
-  private SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
   
   /**
    * Logger for this class
@@ -66,7 +61,7 @@ public class TrainingCache {
   }
 
   @SuppressWarnings("unchecked")
-  public List<Workout> getWorkouts(String uid, Date date) {
+  public Set<Long> getWorkouts(WorkoutSearchParams params) {
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -75,56 +70,35 @@ public class TrainingCache {
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_WORKOUTS);
     builder.append("_");
-    builder.append(uid);
-    builder.append("_");
-    builder.append(fmt.format(date));
-    builder.append("_");
+    params.getCacheKey(builder);
     
     Object obj = cache.get(builder.toString());
 
-    List<Workout> workouts = null;
+    Set<Long> workouts = null;
     
-    if(obj instanceof Map) {
-      workouts = new ArrayList<Workout>();
-      Map<Long, Workout> map = (Map<Long, Workout>)obj;
-      
-      Collection<Workout> c = map.values();
-      Iterator<Workout> itr = c.iterator();
-      while(itr.hasNext()) {
-        workouts.add(itr.next());
-      }
+    if(obj instanceof Set) {
+      workouts = (Set<Long>)obj;
     }
     
     if(logger.isLoggable(Level.FINE)) {
-      logger.log(Level.FINE, "Loaded workouts ("+uid+", "+date+"): "+workouts);
+      logger.log(Level.FINE, "Loaded workouts ("+params.uid+", "+params.date+"): "+workouts);
     }
     
     return workouts;
   }
 
-  public void setWorkouts(String uid, Date date, List<Workout> list) {
+  public void setWorkouts(WorkoutSearchParams params, Set<Long> workouts) {
     
     if(cache == null || !CACHE_ON) {
       return;
-    }
-    
-    Map<Long, Workout> map = null;
-    if(list != null) {
-      map = new HashMap<Long, Workout>();
-      for(Workout w : list) {
-        map.put(w.getId(), w);
-      }
     }
 
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_WORKOUTS);
     builder.append("_");
-    builder.append(uid);
-    builder.append("_");
-    builder.append(fmt.format(date));
-    builder.append("_");
+    params.getCacheKey(builder);
     
-    cache.put(builder.toString(), map);
+    cache.put(builder.toString(), workouts);
   }
 
   public Workout getWorkout(Long workoutId) {
@@ -208,7 +182,7 @@ public class TrainingCache {
   }
   
   @SuppressWarnings("unchecked")
-  public Map<Long, ExerciseName> getExerciseNames() {
+  public Map<Long, String> getExerciseNames(String locale) {
     
     if(cache == null || !CACHE_ON) {
       return null;
@@ -216,16 +190,18 @@ public class TrainingCache {
     
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAMES);
+    builder.append(locale);
+    builder.append("_");
     Object obj = cache.get(builder.toString());
 
-    Map<Long, ExerciseName> names = null;
+    Map<Long, String> names = null;
     
     if(obj instanceof Map) {
 
       //prodeagle counter
       Counter.increment("Cache.ExerciseNames");
       
-      names = (Map<Long, ExerciseName>)obj;
+      names = (Map<Long, String>)obj;
     }
     
     if(logger.isLoggable(Level.FINE)) {
@@ -235,7 +211,7 @@ public class TrainingCache {
     return names;
   }
   
-  public void setExerciseNames(Map<Long, ExerciseName> map) {
+  public void setExerciseNames(String locale, Map<Long, String> map) {
     
     if(cache == null || !CACHE_ON) {
       return;
@@ -247,6 +223,8 @@ public class TrainingCache {
 
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAMES);
+    builder.append(locale);
+    builder.append("_");
     
     cache.put(builder.toString(), map);
     
@@ -338,5 +316,57 @@ public class TrainingCache {
     builder.append(routine.getId());
     cache.put(builder.toString(), routine);
     
+  }
+
+  public ExerciseName getExerciseName(Long key) {
+    
+    if(cache == null || !CACHE_ON) {
+      return null;
+    }
+    
+    //workout
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_EXERCISE_NAME);
+    builder.append(key);
+    Object obj = cache.get(builder.toString());
+    
+    ExerciseName t = null;
+    if(obj != null && obj instanceof ExerciseName) {
+
+      //prodeagle counter
+      Counter.increment("Cache.ExerciseName");
+      
+      t = (ExerciseName)obj;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Loaded exercise name ("+key+"): "+t);
+    }
+    
+    return t;
+  }
+
+  public void addExerciseName(ExerciseName jdo) {
+    
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
+    if(logger.isLoggable(Level.FINE)) {
+      logger.log(Level.FINE, "Saving single exercise name: "+jdo);
+    }
+    
+    //exercise name
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_EXERCISE_NAME);
+    builder.append(jdo.getId());
+    cache.put(builder.toString(), jdo);
+    
+    //add to "search" cache
+    Map<Long, String> map = getExerciseNames(jdo.getLocale());
+    if(map == null)
+      map = new HashMap<Long, String>();
+    map.put(jdo.getId(), jdo.getName());
+    this.setExerciseNames(jdo.getLocale(), map);
   }
 }

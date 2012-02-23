@@ -57,10 +57,10 @@ import com.delect.motiver.client.view.training.WorkoutLinkView;
 import com.delect.motiver.client.view.training.WorkoutView;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioValueModel;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MeasurementValueModel;
 import com.delect.motiver.shared.RunValueModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -294,12 +294,12 @@ public class BlogDayPresenter extends Presenter {
 				//if only link
 				if(showOnlyLinks) {
 					//set date
-					data.getNutrition().setDate(Functions.getDateGmt(data.getDate()));
+					data.getNutrition().setDate(CommonUtils.getDateGmt(data.getDate()));
 					final NutritionDayLinkPresenter wp = new NutritionDayLinkPresenter(rpcService, eventBus, (NutritionDayLinkDisplay)GWT.create(NutritionDayLinkView.class), data.getNutrition());
 					addNewPresenter(wp);
 				}
 				else {
-					final NutritionDayPresenter wp = new NutritionDayPresenter(rpcService, eventBus, (NutritionDayDisplay)GWT.create(NutritionDayView.class), data.getUser().getUid(), Functions.getDateGmt(data.getDate()), data.getNutrition());
+					final NutritionDayPresenter wp = new NutritionDayPresenter(rpcService, eventBus, (NutritionDayDisplay)GWT.create(NutritionDayView.class), data.getUser().getUid(), CommonUtils.getDateGmt(data.getDate()), data.getNutrition());
 					addNewPresenter(wp);
 				}
 			}

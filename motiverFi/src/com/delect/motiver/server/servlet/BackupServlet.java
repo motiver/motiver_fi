@@ -59,12 +59,13 @@ public class BackupServlet extends RemoteServiceServlet {
     response.setContentType("application/json");
     
     PersistenceManager pm =  PMF.get().getPersistenceManager();
-    
+
     try {
       PrintWriter writer = response.getWriter();
       
       JSONObject obj = new JSONObject();
       
+
       //users
       List<UserOpenid> users = getAll(pm, UserOpenid.class);
       JSONArray list = new JSONArray();      

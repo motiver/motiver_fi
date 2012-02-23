@@ -20,6 +20,7 @@ import java.util.List;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 import com.delect.motiver.client.AppController;
@@ -51,7 +52,6 @@ public class FoodPresenter extends Presenter {
 	* Abstract class for view to extend
 	*/
 	public abstract static class FoodDisplay extends Display {
-
 		public abstract void setHandler(FoodHandler foodHandler);
 		public abstract void setModel(FoodModel food);
 		public abstract void setNameComboEnabled(boolean b);
@@ -60,7 +60,7 @@ public class FoodPresenter extends Presenter {
 	public interface FoodHandler {
 		void foodEdited();
 		void foodRemoved();
-		void nameChanged(String newName);	//when new name is typed
+		void newNameEntered(String newName);	//when new name is typed
 		void query(String query, AsyncCallback<List<FoodNameModel>> callback);	//called when user search for foods
 		void saveData(FoodModel food);
 	}
@@ -72,6 +72,8 @@ public class FoodPresenter extends Presenter {
 	private String lastQuery = "";
 	
 	protected FoodModel food;
+
+  private Timer timerUpdate;
 
 	public FoodPresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, FoodDisplay display, FoodModel food) {
 		super(rpcService, eventBus);
@@ -162,7 +164,7 @@ public class FoodPresenter extends Presenter {
 				}
 
 				@Override
-				public void nameChanged(String newName) {
+				public void newNameEntered(String newName) {
 					
 					//if presenter already visible -> cancel
 					if(foodNameEditorPresenter != null) {
@@ -173,7 +175,7 @@ public class FoodPresenter extends Presenter {
 					display.setNameComboEnabled(false);
 					
 					//create dummy model
-					FoodNameModel model = new FoodNameModel(0L, "");
+					FoodNameModel model = new FoodNameModel(0L, newName);
 					model.setLocale(AppController.User.getLocale());
 					//new name typed -> launch NewFoodNamePresenter
 					foodNameEditorPresenter = new FoodNameEditorPresenter(rpcService, eventBus, (FoodNameEditorDisplay)GWT.create(FoodNameEditorView.class), model);
@@ -293,23 +295,35 @@ public class FoodPresenter extends Presenter {
 	 * Fires FoodUpdatedEvent
 	 */
 	protected void updateFood() {
-	  
-		final Request req = rpcService.updateFood(food, new MyAsyncCallback<FoodModel>() {
-			@Override
-			public void onSuccess(FoodModel result) {
+    
+    if(timerUpdate != null)
+      timerUpdate.cancel();
 
-				//update model
-				if(result != null) {
-					food.setName(result.getName());
-					food.setAmount(result.getAmount());
-					display.setModel(food);
-					
-				}
-			}
-		});
-		addRequest(req);
-		
-		fireEvent(new FoodUpdatedEvent(food));
+    food.setName(food.getName());
+    
+    timerUpdate = new Timer() {
+
+      @Override
+      public void run() {
+        
+    		rpcService.updateFood(food, new MyAsyncCallback<FoodModel>() {
+    			@Override
+    			public void onSuccess(FoodModel result) {
+    
+    				//update model
+    				if(result != null) {
+    					food.setName(result.getName());
+    					food.setAmount(result.getAmount());
+    					display.setModel(food);
+    					
+    				}
+    			}
+    		});
+      }
+    };
+    timerUpdate.schedule(Constants.DELAY_MODEL_UPDATE);
+    
+    fireEvent(new FoodUpdatedEvent(food));
 	}
 
 }

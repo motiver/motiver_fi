@@ -27,14 +27,14 @@ public interface Constants {
 //    public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR ONLINE TESTING (change also API_KEY in index.html & blog.html!!!)
-//  public static final String URL_APP = "http://v2-0.motiver-app.appspot.com/";
-//  public static final String URL_APP_STATIC = "http://v2-0.motiver-app.appspot.com/";
-//  public static final String URL_APP_CURR = "v2-0.motiver-app.appspot.com";
+  public static final String URL_APP = "http://dev.motiver-app.appspot.com/";
+  public static final String URL_APP_STATIC = "http://dev.motiver-app.appspot.com/";
+  public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR RELEASE (change also API_KEY in index.html & blog.html!!!)
-    public static final String URL_APP = "http://www.motiver.fi/";
-    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
-    public static final String URL_APP_CURR = Window.Location.getHostName();
+//    public static final String URL_APP = "http://www.motiver.fi/";
+//    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
+//    public static final String URL_APP_CURR = Window.Location.getHostName();
   
 	/**
 	 * Default value for how many days after today are shown
@@ -143,6 +143,11 @@ public interface Constants {
 	 * <br>milliseconds
 	 */
 	public static final int DELAY_SEARCH = 750;
+  
+  /**
+   * How soon exercise is updated after value has changed (milliseconds)
+   */
+  public static final int DELAY_MODEL_UPDATE = 2000;
 
   //ERROR CODES
   public static final int ERROR_CANT_CONNECT_FACEBOOK = 95;

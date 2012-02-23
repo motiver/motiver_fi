@@ -47,9 +47,9 @@ import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
 import com.delect.motiver.client.view.cardio.AddNewRunValueView;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.RunModel;
 import com.delect.motiver.shared.RunValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -366,7 +366,7 @@ public class RunPresenter extends Presenter {
     }
 
     Motiver.setNextCallCacheable(true);
-		final Request req = rpcService.getRunValues(run, Functions.trimDateToDatabase(dateStart, true), Functions.trimDateToDatabase(dateEnd, true), callback);
+		final Request req = rpcService.getRunValues(run, CommonUtils.trimDateToDatabase(dateStart, true), CommonUtils.trimDateToDatabase(dateEnd, true), callback);
 		addRequest(req);
 	}
 

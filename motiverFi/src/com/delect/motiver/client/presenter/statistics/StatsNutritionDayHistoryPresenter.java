@@ -32,8 +32,8 @@ import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
 import com.delect.motiver.shared.BlogData;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.NutritionDayModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -118,7 +118,7 @@ public class StatsNutritionDayHistoryPresenter extends Presenter {
 		emptyPresenter.run(display.getBodyContainer());
 		
     //get days
-		rpcService.getBlogData(0, 100, 2, Functions.trimDateToDatabase(dateStart, true), Functions.trimDateToDatabase(dateEnd, true), String.valueOf(AppController.User.getUid()), false, new MyAsyncCallback<List<BlogData>>() {
+		rpcService.getBlogData(0, 100, 2, CommonUtils.trimDateToDatabase(dateStart, true), CommonUtils.trimDateToDatabase(dateEnd, true), String.valueOf(AppController.User.getUid()), false, new MyAsyncCallback<List<BlogData>>() {
 			@Override
 			public void onSuccess(List<BlogData> list) {
 				

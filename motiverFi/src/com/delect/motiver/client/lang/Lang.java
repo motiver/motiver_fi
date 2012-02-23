@@ -101,7 +101,7 @@ public interface Lang extends Messages {
 	String ConfirmRemoveLastDayInRoutine();
 	@DefaultMessage("Copy {0}")
 	String Copy(String target);
-	@DefaultMessage("Copy ''{0}'' to {1}")
+	@DefaultMessage("Copy {0} to {1}")
 	String CopyTargetTo(String name, String target);
 	@DefaultMessage("Copy to ''{0}''")
 	String CopyTo(String target);
@@ -677,7 +677,9 @@ public interface Lang extends Messages {
   String FieldNanText();
   @DefaultMessage("The value must be greater or equal to 0")
   String FieldNegativeText();
-  
+
+  @DefaultMessage("Open in new window")
+  String OpenInNewWindow();
   @DefaultMessage("Click to try the experimental version of Motiver")
   String ExpirementalVersion();
   @DefaultMessage("Previous")
@@ -690,4 +692,9 @@ public interface Lang extends Messages {
   String TrainingSection();
   @DefaultMessage("Nutrition section")
   String NutritionSection();
+  
+  @DefaultMessage("Thank you")
+  String ThankYou();
+  @DefaultMessage("We appreciate that you informed us about the problems using Motiver. We''re looking in to this as soon as possible!")
+  String ThankYouForReporting();
  }

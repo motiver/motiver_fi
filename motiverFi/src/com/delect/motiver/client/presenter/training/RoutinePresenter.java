@@ -34,9 +34,6 @@ import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogD
 import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
 import com.delect.motiver.client.presenter.EmptyPresenter;
 import com.delect.motiver.client.presenter.EmptyPresenter.EmptyDisplay;
-import com.delect.motiver.client.presenter.InfoMessagePresenter;
-import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageDisplay;
-import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageHandler;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.presenter.ShowMorePresenter;
 import com.delect.motiver.client.presenter.ShowMorePresenter.ShowMoreDisplay;
@@ -49,7 +46,6 @@ import com.delect.motiver.client.view.CommentsBoxView;
 import com.delect.motiver.client.view.ConfirmDialogView;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
-import com.delect.motiver.client.view.InfoMessageView;
 import com.delect.motiver.client.view.ShowMoreView;
 import com.delect.motiver.client.view.UserView;
 import com.delect.motiver.client.view.training.RoutineDayView;

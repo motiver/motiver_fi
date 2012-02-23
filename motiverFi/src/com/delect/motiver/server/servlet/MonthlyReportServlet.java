@@ -43,6 +43,8 @@ import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.training.Exercise;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.service.MyServiceImpl;
+import com.delect.motiver.shared.util.WorkoutUtils;
+import com.delect.motiver.shared.util.WorkoutUtils.ExerciseInfo;
 import com.google.appengine.api.datastore.Cursor;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
@@ -55,7 +57,7 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
 
   private static final long serialVersionUID = 5384098111620397L;
   
-  @SuppressWarnings("unchecked")
+  @SuppressWarnings({"unchecked", "deprecation"})
   @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response) {
     
@@ -123,10 +125,8 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
             response.getWriter().write("<tr><td>nameId"+
                 "<td>Sets"+
                 "<td>reps string"+
-                "<td>repsTrimmed"+
                 "<td><b>reps</b>"+
                 "<td>weights string"+
-                "<td>weightsTrimmed"+
                 "<td><b>weights</b>"+
                 "<td>max"+
                 "<td>length"+
@@ -150,74 +150,35 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
                   final long nameId = e.getNameId();
     
                   if(nameId > 0) {
-                    final int sets = e.getSets();
-                    final String reps = e.getReps();
-                    final String weights = e.getWeights();
-                    //remove everything except numbers
-                    final String repsTrimmed = reps.replaceAll("[a-zA-Z]{1,}[.]", "").replaceAll("\\(.*\\)", "").replaceAll("[^0-9x.+,-]", "");
-                    final String weightsTrimmed = weights.replaceAll("[a-zA-Z]{1,}[.]", "").replaceAll("\\(.*\\)", "").replaceAll("[^0-9x.+,-]", "");
-                  
-                    //parse strings
-                    double[] re = parseReps(sets, repsTrimmed);
-                    double[] we = parseWeights(sets, weightsTrimmed);
+
+                    ExerciseInfo info = new ExerciseInfo(e.getSets(), e.getReps(), e.getWeights());
+                    WorkoutUtils.parseExercise(info);
                     
-                    //if no reps found -> jump to next exercise
-                    if(re.length == 0) {
+                    if(!info.isOk()) {
                       continue;
                     }
                     
-                    //find which group it belongs
-                    double max = -1;
-                    double work = 0;   //how good/bad the sets were
-                    int length = 2;   //how many sets
-                    if(re.length == we.length) {
-                      for(int i = 0; i < re.length; i++) {
-                        //if only one rep
-                        if(re[i] == 1) {
-                          //if max
-                          if(we[i] > max) {
-                            max = we[i];
-                          }                      
-                        }
-                        
-                        //calculate work
-                        double factor = (sets < 5)? 1 - (sets * 0.1) : 0.5;
-                        // (weights*weights) * (reps + 10) * factor
-                        work += (we[i]*we[i]) * (re[i]+10) * factor;
-                        
-                        //calculate length (2-4, 5-12 tai 12-...)
-                        //2-4
-                        if(re[i] >= 2 && re[i] <  5) {
-                          length = 0;
-                        }
-                        //5-12
-                        else if(length != 0 && re[i] >= 5 && re[i] <  13) {
-                          length = 1;
-                        }
-                        
-                      }
-                    }
+                    double[] re = info.reps;
+                    double[] we = info.weights;
                     
                     response.getWriter().write("<tr><td>"+nameId+
-                        "<td>"+sets+
-                        "<td>"+reps+
-                        "<td>"+repsTrimmed+
+                        "<td>"+e.getSets()+
+                        "<td>"+e.getReps()+
                         "<td><b>"+((re.length == we.length)? Arrays.toString(re) : "ERR")+"</b>"+
-                        "<td>"+weights+
-                        "<td>"+weightsTrimmed+
+                        "<td>"+e.getWeights()+
                         "<td><b>"+((re.length == we.length)? Arrays.toString(we) : "ERR")+"</b>"+
-                        "<td>"+max+
-                        "<td>"+length+
-                        "<td>"+work+
+                        "<td>"+info.max+
+                        "<td>"+info.sets+
+                        "<td>"+info.work+
                         "</td></tr>");
 
                     //create model
-                    MonthlySummaryExercise modelE = new MonthlySummaryExercise(0, max);
-                    modelE.setReps(reps);
-                    modelE.setSets(sets);
-                    modelE.setWeights(weights);
+                    MonthlySummaryExercise modelE = new MonthlySummaryExercise(0, info.max);
+                    modelE.setReps(e.getReps());
+                    modelE.setSets(e.getSets());
+                    modelE.setWeights(e.getWeights());
                     modelE.setWorkoutDate(w.getDate());
-                    modelE.setLength(length);
+                    modelE.setLength(info.sets);
                     modelE.setNameId(e.getNameId());
                     modelE.setUid(user.getUid());
                     
@@ -225,10 +186,10 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
                     cal.setTime(w.getDate());
                     
                     //if max found
-                    if(max > 0) {
+                    if(info.max > 0) {
                       //save max
                       if(tableMax.containsKey(nameId)) {
-                        if(tableMax.get(nameId).getValue() < max) {
+                        if(tableMax.get(nameId).getValue() < info.max) {
                           tableMax.put(nameId, modelE);
                         }
                       }
@@ -238,20 +199,20 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
                     }
                     //save best exercises
                     else {
-                      modelE.setType(1, work);
+                      modelE.setType(1, info.work);
                       
                       boolean found = false;
-                      if(tableBest.containsKey(nameId+"_"+length)) {
+                      if(tableBest.containsKey(nameId+"_"+info.sets)) {
                         //if lower value and same length
-                        if(tableBest.get(nameId+"_"+length).getValue() < work) {
-                          tableBest.put(nameId+"_"+length, modelE);
+                        if(tableBest.get(nameId+"_"+info.sets).getValue() < info.work) {
+                          tableBest.put(nameId+"_"+info.sets, modelE);
                           found = true;
                         }
                       }
                       
                       //if not found -> insert new
                       if(!found) {
-                        tableBest.put(nameId+"_"+length, modelE);
+                        tableBest.put(nameId+"_"+info.sets, modelE);
                       }
                     }
                   }
@@ -287,9 +248,7 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
                   "<td>"+
                   "<td>"+
                   "<td>"+
-                  "<td>"+
                   "<td>"+modelE.getValue()+
-                  "<td>"+
                   "</td></tr>");
             }
             
@@ -313,7 +272,6 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
               list.add(modelE);
               
               response.getWriter().write("<tr><td>"+nameId+
-                  "<td>"+
                   "<td>"+
                   "<td>"+
                   "<td>"+
@@ -353,224 +311,6 @@ public class MonthlyReportServlet extends RemoteServiceServlet {
         pm.close();
       } 
     }
-  }
-  
-  /**
-   * Parses reps value and return reps
-   * @param reps
-   * @param sets
-   * @return reps
-   */
-  private static double[] parseReps(int sets, String reps) {
-
-    //split reps
-    String[] reps_arr = reps.split(",");
-    
-    double[] repsArray = new double[50];
-    
-    //go through each value
-    int c = 0;
-    for(int i=0; i < reps_arr.length; i++) {
-      try {
-        String rep = reps_arr[i];
-        
-        //remove spaces
-        rep = rep.replace(" ", "");
-        
-        if(rep.length() > 0) {
-          //if numeric
-          boolean isNumeric = false;
-          double nro = 0;
-          try {
-            nro = Double.parseDouble(rep);
-            isNumeric = true;
-          } catch (NumberFormatException e) {
-          }
-          
-          //single number
-          if(isNumeric) {
-            //if single rep found -> use this value for rest of sets
-            if(reps_arr.length == 1) {
-              for(int k = 0; k < sets ; k++) {
-                repsArray[c] = nro;
-                c++; 
-              }
-            }
-            else {
-              repsArray[c] = nro;
-              c++; 
-            }
-          }
-          //if 2+1 (=3)
-          else if(rep.matches("([0-9]*)([+]{1}([0-9]*))*")) {
-            String[] arr = rep.split("\\+");
-            repsArray[c] = Double.parseDouble(arr[0]);
-            c++;
-          }
-          //if 3x10
-          else if(rep.matches("([0-9]*)x([0-9]*)")) {
-            String[] arr = rep.split("x");
-            double s = Double.parseDouble(arr[0]);
-            double r = Double.parseDouble(arr[1]);
-            //add each sub set
-            for(int j = 0; j < s; j++) {
-              repsArray[c] = r;
-              c++;
-            }
-          }
-          //if 6-10 (means for example 6,7,8,9,10)
-          else if(rep.matches("([0-9]*)-([0-9]*)")) {
-            String[] arr = rep.split("-");
-            //get total reps
-            double first_rep = Double.parseDouble(arr[0]);
-            double last_rep = Double.parseDouble(arr[1]);
-            int sets_count = (sets - (reps_arr.length) + 1);
-            //check each set
-            //if increasing
-            if(last_rep > first_rep) {
-              for(double j=first_rep; j <= last_rep; j += ((last_rep - first_rep) / (sets_count - 1))) {
-                repsArray[c] = j;
-                c++;
-              }
-            }
-            //decreasing
-            else {
-              for(double j=first_rep; j >= last_rep; j -= ((first_rep - last_rep) / (sets_count - 1))) {
-                repsArray[c] = j;
-                c++;
-              }
-            }
-          }
-        }
-      } catch (Exception e) {
-      }
-    }
-    
-    //trim array
-    double[] repsArrayTrim = new double[c];
-    try {
-      for(int i = 0; i < c; i++) {
-        repsArrayTrim[i] = repsArray[i];
-      }
-    }
-    catch(Exception e) {}
-    
-    return repsArrayTrim;
-  }
-  
-  /**
-   * Parses reps value and return reps
-   * @param reps
-   * @param sets
-   * @return reps
-   */
-  private static double[] parseWeights(int sets, String weights) {
-
-    //if empty -> no weights
-    if(weights.length() == 0) {
-      weights = "0";
-    }
-    
-    //split reps
-    String[] weights_arr = weights.split(",");
-    
-    double[] weightsArray = new double[20];
-    
-    //go through each value
-    int c = 0;
-    for(int i=0; i < weights_arr.length; i++) {
-      try {
-        String rep = weights_arr[i];
-        
-        //remove spaces
-        rep = rep.replace(" ", "");
-        
-        if(rep.length() > 0) {
-          //if numeric
-          boolean isNumeric = false;
-          double nro = 0;
-          try {
-            nro = Double.parseDouble(rep);
-            isNumeric = true;
-          } catch (NumberFormatException e) {
-          }
-          
-          //single number
-          if(isNumeric) {
-            //if single rep found -> use this value for rest of sets
-            if(weights_arr.length == 1) {
-              for(int k = 0; k < sets ; k++) {
-                weightsArray[c] = nro;
-                c++; 
-              }
-            }
-            else {
-              weightsArray[c] = nro;
-              c++; 
-            }
-          }
-          //if 2+1 (=3)
-          else if(rep.matches("([0-9.]*)([+]{1}([0-9.]*))*")) {
-            String[] arr = rep.split("\\+");
-            //use only first weight
-            weightsArray[c] = Double.parseDouble(arr[0]);
-            c++;
-          }
-          //if 3x10
-          else if(rep.matches("([0-9.]*)x([0-9.]*)")) {
-            String[] arr = rep.split("x");
-            double s = Double.parseDouble(arr[0]);
-            double w = Double.parseDouble(arr[1]);
-            //if weights are smaller than times (probably other way)
-            if(w < s) {
-              double wTemp = w;
-              w = s;
-              s = wTemp;
-            }
-            //add each sub set
-            for(int j = 0; j < s; j++) {
-              weightsArray[c] = w;
-              c++;
-            }
-          }
-          //if 6-10 (means for example 6,7,8,9,10)
-          else if(rep.matches("([0-9.]*)-([0-9.]*)")) {
-            String[] arr = rep.split("-");
-            //get total reps
-            double first_rep = Double.parseDouble(arr[0]);
-            double last_rep = Double.parseDouble(arr[1]);
-            int sets_count = (sets - (weights_arr.length) + 1);
-            //check each set
-            //if increasing
-            if(last_rep > first_rep) {
-              for(double j=first_rep; j <= last_rep; j += ((last_rep - first_rep) / (sets_count - 1))) {
-                weightsArray[c] = j;
-                c++;
-              }
-            }
-            //decreasing
-            else {
-              for(double j=first_rep; j >= last_rep; j -= ((first_rep - last_rep) / (sets_count - 1))) {
-                weightsArray[c] = j;
-                c++;
-              }
-            }
-          }
-        }
-      } catch (Exception e) {
-      }
-    }
-    
-    //trim array
-    double[] repsArrayTrim = new double[c];
-    try {
-      for(int i = 0; i < c; i++) {
-        repsArrayTrim[i] = weightsArray[i];
-      }
-    }
-    catch(Exception e) {}
-    
-    return repsArrayTrim;
   }
 
 

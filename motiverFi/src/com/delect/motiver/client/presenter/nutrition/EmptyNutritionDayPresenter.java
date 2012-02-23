@@ -24,8 +24,8 @@ import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.TimeModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 public class EmptyNutritionDayPresenter extends Presenter {
 
@@ -72,7 +72,7 @@ public class EmptyNutritionDayPresenter extends Presenter {
 				//add times
 				TimeModel[] timeModels = new TimeModel[times.length];
 				for(int i=0; i < times.length; i++) {
-          timeModels[i] = new TimeModel(Functions.trimDateToDatabase(date, true), times[i]);
+          timeModels[i] = new TimeModel(CommonUtils.trimDateToDatabase(date, true), times[i]);
 		    }
 
 				rpcService.addTimes(timeModels, new MyAsyncCallback<TimeModel[]>() {

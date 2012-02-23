@@ -1,8 +1,5 @@
 package com.delect.motiver.server.dao.helper;
 
-import java.util.Date;
-
-import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.Permission;
 
 public class CircleSearchParams {

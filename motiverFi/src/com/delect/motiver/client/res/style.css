@@ -525,13 +525,13 @@ padding: 5px;
 }
 .panel-calendarweek-day, .panel-calendarweek-day-left, .panel-calendarweek-day-right, .panel-calendarweek-day-workout, .panel-calendarweek-day-sel  {
 background: #e7e7e7;
-background: literal("-moz-linear-gradient(top, #e7e7e7 0%, #e7e7e7 3%, #efefef 5%, #f8f8f8 10%, #fdfdfd 15%, #fdfdfd 26%, #f9f9f9 36%, #efefef 54%, #e8e8e8 56%, #f2f2f2 100%)");
-background: literal("-webkit-gradient(linear, left top, left bottom, color-stop(0%,#e7e7e7), color-stop(3%,#e7e7e7), color-stop(5%,#efefef), color-stop(10%,#f8f8f8), color-stop(15%,#fdfdfd), color-stop(26%,#fdfdfd), color-stop(36%,#f9f9f9), color-stop(54%,#efefef), color-stop(56%,#e8e8e8), color-stop(100%,#f2f2f2))");
-background: literal("-webkit-linear-gradient(top, #e7e7e7 0%,#e7e7e7 3%,#efefef 5%,#f8f8f8 10%,#fdfdfd 15%,#fdfdfd 26%,#f9f9f9 36%,#efefef 54%,#e8e8e8 56%,#f2f2f2 100%)");
-background: literal("-o-linear-gradient(top, #e7e7e7 0%,#e7e7e7 3%,#efefef 5%,#f8f8f8 10%,#fdfdfd 15%,#fdfdfd 26%,#f9f9f9 36%,#efefef 54%,#e8e8e8 56%,#f2f2f2 100%)");
-background: literal("-ms-linear-gradient(top, #e7e7e7 0%,#e7e7e7 3%,#efefef 5%,#f8f8f8 10%,#fdfdfd 15%,#fdfdfd 26%,#f9f9f9 36%,#efefef 54%,#e8e8e8 56%,#f2f2f2 100%)");
-background: literal("linear-gradient(top, #e7e7e7 0%,#e7e7e7 3%,#efefef 5%,#f8f8f8 10%,#fdfdfd 15%,#fdfdfd 26%,#f9f9f9 36%,#efefef 54%,#e8e8e8 56%,#f2f2f2 100%)");
-border: solid 1px #cfcfcf;
+background: literal("-moz-linear-gradient(top, #eaeaea 0%, #eaeaea 3%, #efefef 5%, #f8f8f8 10%, #f8f8f8 15%, #f8f8f8 26%, #f8f8f8 36%, #efefef 54%, #e8e8e8 56%, #f2f2f2 100%)");
+background: literal("-webkit-gradient(linear, left top, left bottom, color-stop(0%,#e7e7e7), color-stop(3%,#e7e7e7), color-stop(5%,#efefef), color-stop(10%,#f8f8f8), color-stop(15%,#f8f8f8), color-stop(26%,#f8f8f8), color-stop(36%,#f8f8f8), color-stop(54%,#efefef), color-stop(56%,#e8e8e8), color-stop(100%,#f2f2f2))");
+background: literal("-webkit-linear-gradient(top, #e7e7e7 0%,#e7e7e7 3%,#efefef 5%,#f8f8f8 10%,#f8f8f8 15%,#f8f8f8 26%,#f8f8f8 36%,#efefef 54%,#e8e8e8 56%,#f2f2f2 100%)");
+background: literal("-o-linear-gradient(top, #e7e7e7 0%,#e7e7e7 3%,#efefef 5%,#f8f8f8 10%,#f8f8f8 15%,#f8f8f8 26%,#f8f8f8 36%,#efefef 54%,#e8e8e8 56%,#f2f2f2 100%)");
+background: literal("-ms-linear-gradient(top, #e7e7e7 0%,#e7e7e7 3%,#efefef 5%,#f8f8f8 10%,#f8f8f8 15%,#f8f8f8 26%,#f8f8f8 36%,#efefef 54%,#e8e8e8 56%,#f2f2f2 100%)");
+background: literal("linear-gradient(top, #e7e7e7 0%,#e7e7e7 3%,#efefef 5%,#f8f8f8 10%,#f8f8f8 15%,#f8f8f8 26%,#f8f8f8 36%,#efefef 54%,#e8e8e8 56%,#f2f2f2 100%)");
+border: solid 1px #ddd;
 cursor:pointer;
 color:#818181;
 font-size: 12px;
@@ -540,6 +540,17 @@ text-align: center;
 vertical-align: middle;
 height: 45px;
 width: 100%;
+filter: literal("alpha(opacity=70)");
+-moz-opacity:0.7;
+-khtml-opacity: 0.7;
+opacity: 0.7;
+}
+.panel-calendarweek-day:hover, .panel-calendarweek-day-left:hover, .panel-calendarweek-day-right:hover, .panel-calendarweek-day-workout:hover, .panel-calendarweek-day-sel:hover  {
+filter: literal("alpha(opacity=70)");
+-moz-opacity:1.0;
+-khtml-opacity: 1.0;
+opacity:1.0;
+box-shadow: 0 0 5px #ddd;
 }
 .panel-calendarweek-day div, .panel-calendarweek-day-left div, .panel-calendarweek-day-right div, .panel-calendarweek-day-workout div, .panel-calendarweek-day-sel div {
 padding-top: 4px;	
@@ -561,6 +572,11 @@ background: literal("linear-gradient(top, #f1864e 0%,#ff820c 5%,#fe701e 28%,#f86
 font-weight:bold;
 color:#fff;
 border-color: #ee6c20;
+box-shadow: 0 0 5px #FF6600;
+filter: literal("alpha(opacity=100)");
+-moz-opacity:1.0;
+-khtml-opacity: 1.0;
+opacity: 1;
 }
 .panel-calendarweek-day-workout {
 border-bottom: solid 2px #f60;

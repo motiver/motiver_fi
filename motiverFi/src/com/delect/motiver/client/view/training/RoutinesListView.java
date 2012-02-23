@@ -26,7 +26,7 @@ import com.delect.motiver.client.view.widget.ButtonsPanel.ButtonTarget;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.client.view.widget.MyButton.Style;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -79,7 +79,7 @@ public class RoutinesListView extends RoutinesListPresenter.RoutinesListDisplay 
     panelSearchSub.setHeight(28);
 		tfSearch.setEmptyText(AppController.Lang.EnterKeywordToSearchForRoutines());
 		tfSearch.setMinLength(Constants.LIMIT_MIN_QUERY_WORD);
-		Functions.setWarningMessages(tfSearch);
+		CommonUtils.setWarningMessages(tfSearch);
 		tfSearch.setAutoValidate(true);
 		tfSearch.setValidationDelay(Constants.DELAY_SEARCH);
 		tfSearch.addListener(Events.Valid, new Listener<BaseEvent>() {
@@ -189,7 +189,7 @@ public class RoutinesListView extends RoutinesListPresenter.RoutinesListDisplay 
 	@Override
 	public void setMoveToDateButtonVisible(boolean visible, Date date) {
     if(visible) {
-      String text = (date != null)? AppController.Lang.MoveTo(Functions.getDateString(date, true, false)) : "";
+      String text = (date != null)? AppController.Lang.MoveTo(CommonUtils.getDateString(date, true, false)) : "";
       MyButton btn = panelButtons.addButton(ButtonTarget.MoveToDate, Style.GREEN, text);
       btn.addListener(Events.OnClick, new Listener<BaseEvent>() {
         @Override
@@ -206,7 +206,7 @@ public class RoutinesListView extends RoutinesListPresenter.RoutinesListDisplay 
 	@Override
 	public void setQuickSelectionButtonVisible(boolean visible, Date date) {
     if(visible) {
-      String text = (date != null)? AppController.Lang.MoveTo(Functions.getDateString(date, true, false)) : "";
+      String text = (date != null)? AppController.Lang.MoveTo(CommonUtils.getDateString(date, true, false)) : "";
       MyButton btn = panelButtons.addButton(ButtonTarget.QuickSelection, Style.GREEN, text);
       btn.addListener(Events.OnClick, new Listener<BaseEvent>() {
         @Override

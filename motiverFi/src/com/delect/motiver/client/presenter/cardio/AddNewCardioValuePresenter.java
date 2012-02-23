@@ -30,7 +30,7 @@ import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * Shows window where user can add new cardio value
@@ -131,7 +131,7 @@ public class AddNewCardioValuePresenter extends Presenter {
 							stop();
 
 							//set date
-							m.setDate(Functions.getDateGmt(m.getDate()));
+							m.setDate(CommonUtils.getDateGmt(m.getDate()));
 							
 							eventBus.fireEvent(new CardioValueCreatedEvent(m));
 							

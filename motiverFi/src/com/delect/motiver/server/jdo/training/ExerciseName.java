@@ -22,7 +22,6 @@ import javax.jdo.annotations.PersistenceCapable;
 import javax.jdo.annotations.Persistent;
 import javax.jdo.annotations.PrimaryKey;
 
-import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import com.google.appengine.api.datastore.Key;
@@ -30,7 +29,7 @@ import com.google.appengine.api.datastore.KeyFactory;
 import com.delect.motiver.shared.ExerciseNameModel;
 
 @PersistenceCapable(identityType = IdentityType.APPLICATION)
-public class ExerciseName implements Serializable, Comparable<ExerciseName> {
+public class ExerciseName implements Serializable {
 	
 	/**
    * 
@@ -122,20 +121,6 @@ public class ExerciseName implements Serializable, Comparable<ExerciseName> {
 	public ExerciseName(String name, Integer target) {
 		this.name = name;
 		this.target = target;
-	}
-	
-	@Override
-	public int compareTo(ExerciseName compare) {
-		int count = getCountQuery();
-		int count2 = compare.getCountQuery();
-		
-		//if equal count -> compare also use count
-		if(count == count2) {
-			return compare.getCountUse() - getCountUse();
-		}
-		else {
-			return count2 - count;
-    }
 	}
 
 	/**

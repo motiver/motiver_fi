@@ -49,7 +49,7 @@ import com.delect.motiver.client.view.cardio.AddNewCardioValueView;
 import com.delect.motiver.shared.CardioModel;
 import com.delect.motiver.shared.CardioValueModel;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -365,7 +365,7 @@ public class CardioPresenter extends Presenter {
     }
     
     Motiver.setNextCallCacheable(true);
-		final Request req = rpcService.getCardioValues(cardio, Functions.trimDateToDatabase(dateStart, true), Functions.trimDateToDatabase(dateEnd, true), callback);
+		final Request req = rpcService.getCardioValues(cardio, CommonUtils.trimDateToDatabase(dateStart, true), CommonUtils.trimDateToDatabase(dateEnd, true), callback);
 		addRequest(req);
 	}
 

@@ -24,8 +24,8 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.statistics.StatsNutritionDayHistoryPresenter;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.NutritionDayModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.charts.client.Chart;
 import com.extjs.gxt.charts.client.model.ChartModel;
@@ -102,7 +102,7 @@ public class StatsNutritionDayHistoryView extends StatsNutritionDayHistoryPresen
 				//value
 				NutritionDayModel model = values.get(0);
 				Text textValue = new Text();
-				textValue.setText(Functions.getDateString(model.getDate(), true, true) + ": " +
+				textValue.setText(CommonUtils.getDateString(model.getDate(), true, true) + ": " +
         "<b>" + AppController.Lang.Energy() + ":</b> " + (int)model.getEnergy() + "kcal | " +
         "<b>" + AppController.Lang.Protein() + ":</b> " + (int)model.getProtein() + "g | " +
         "<b>" + AppController.Lang.Carbohydrates() + ":</b> " + (int)model.getCarb() + "g | " +
@@ -227,7 +227,7 @@ public class StatsNutritionDayHistoryView extends StatsNutritionDayHistoryPresen
           } else {
             Dot dot = new Dot();
             dot.setValue(value);
-            dot.setTooltip(AppController.Lang.Protein() + ": " + value.intValue() + "g (" + Functions.getDateString(((NutritionDayModel)m).getDate(), true, true) + ")");
+            dot.setTooltip(AppController.Lang.Protein() + ": " + value.intValue() + "g (" + CommonUtils.getDateString(((NutritionDayModel)m).getDate(), true, true) + ")");
             chart.addDots(dot);
             maxYValue = first ? value.doubleValue() : Math.max(maxYValue, value.doubleValue());
             minYValue = first ? value.doubleValue() : Math.min(minYValue, value.doubleValue());
@@ -273,7 +273,7 @@ public class StatsNutritionDayHistoryView extends StatsNutritionDayHistoryPresen
           } else {
             Dot dot = new Dot();
             dot.setValue(value);
-            dot.setTooltip(AppController.Lang.Carbohydrates() + ": " + value.intValue() + "g (" + Functions.getDateString(((NutritionDayModel)m).getDate(), true, true) + ")");
+            dot.setTooltip(AppController.Lang.Carbohydrates() + ": " + value.intValue() + "g (" + CommonUtils.getDateString(((NutritionDayModel)m).getDate(), true, true) + ")");
             chart.addDots(dot);
             //	    	        chart.addValues(n);
             maxYValue = first ? value.doubleValue() : Math.max(maxYValue, value.doubleValue());
@@ -320,7 +320,7 @@ public class StatsNutritionDayHistoryView extends StatsNutritionDayHistoryPresen
           } else {
             Dot dot = new Dot();
             dot.setValue(value);
-            dot.setTooltip(AppController.Lang.Fet() + ": " + value.intValue() + "g (" + Functions.getDateString(((NutritionDayModel)m).getDate(), true, true) + ")");
+            dot.setTooltip(AppController.Lang.Fet() + ": " + value.intValue() + "g (" + CommonUtils.getDateString(((NutritionDayModel)m).getDate(), true, true) + ")");
             chart.addDots(dot);
             //	    	        chart.addValues(n);
             maxYValue = first ? value.doubleValue() : Math.max(maxYValue, value.doubleValue());
@@ -366,7 +366,7 @@ public class StatsNutritionDayHistoryView extends StatsNutritionDayHistoryPresen
           } else {
             Dot dot = new Dot();
             dot.setValue(n);
-            dot.setTooltip(AppController.Lang.Energy() + ": " + n.intValue() + "kcal (" + Functions.getDateString(((NutritionDayModel)m).getDate(), true, true) + ")");
+            dot.setTooltip(AppController.Lang.Energy() + ": " + n.intValue() + "kcal (" + CommonUtils.getDateString(((NutritionDayModel)m).getDate(), true, true) + ")");
             chart.addDots(dot);
             //	    	        chart.addValues(n);
             maxYValue = first ? n.doubleValue() : Math.max(maxYValue, n.doubleValue());
@@ -386,7 +386,7 @@ public class StatsNutritionDayHistoryView extends StatsNutritionDayHistoryPresen
 					//don't show labels if too many values
 					if(store.getModels().size() * 43 <= (getWidth() - 25)) {
 						NutritionDayModel m = (NutritionDayModel)model;
-						return Functions.getDateString(m.getDate(), false, true, true);
+						return CommonUtils.getDateString(m.getDate(), false, true, true);
 					}
 					
 				} catch (Exception e) {

@@ -33,8 +33,8 @@ import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.FoodModel;
 import com.delect.motiver.shared.FoodNameModel;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 
 import com.extjs.gxt.ui.client.core.XTemplate;
 import com.extjs.gxt.ui.client.data.BaseListLoadResult;
@@ -111,7 +111,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 				thisContent.layout(true);
 
         if(!popup.isVisible()) {
-          popup.showAt(getAbsoluteLeft()+getWidth()+30, getAbsoluteTop()+5);
+          popup.showAt(getAbsoluteLeft()+getWidth()+35, getAbsoluteTop()+5);
         }
 			}
 		});
@@ -198,7 +198,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 	  
     popup.removeAll();
     if(e > 0) {
-      popup.add(Functions.getTotalPanelFlow(e, p, c, f));
+      popup.add(CommonUtils.getTotalPanelFlow(e, p, c, f));
     }
     popup.layout();
   }
@@ -239,7 +239,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
         
         //set drag panel
         String name = (food.getName() != null)? food.getName().getName() : "";
-        String html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
+        String html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
         event.getStatus().update(html);    
       }
     };
@@ -252,7 +252,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
       @Override
       public void handleEvent(BaseEvent be) {
         //ask for confirm
-        box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisFood().toLowerCase()), new MessageBoxHandler() {
+        box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisFood().toLowerCase()), new MessageBoxHandler() {
           @Override
           public void okPressed(String text) {
             handler.foodRemoved();
@@ -309,7 +309,7 @@ public class FoodView extends FoodPresenter.FoodDisplay {
       };
       
       //save value when valid
-      spinAmount.addListener(Events.Change, new Listener<BaseEvent>() {
+      spinAmount.addListener(Events.Valid, new Listener<BaseEvent>() {
         @Override
         public void handleEvent(BaseEvent be) {
           if(handler != null && spinAmount.getValue() != null && spinAmount.isValid() && Double.compare(spinAmount.getValue().doubleValue(), food.getAmount()) != 0) {
@@ -461,13 +461,22 @@ public class FoodView extends FoodPresenter.FoodDisplay {
     combo.setHideTrigger(true);
     combo.setTriggerAction(TriggerAction.ALL);
     combo.setValidateOnBlur(false);
+    //save typed value for when adding new name
+    combo.addListener(Events.BeforeSelect, new Listener<FieldEvent>() {
+      @Override
+      public void handleEvent(FieldEvent be) {
+        ComboBox<FoodNameModel> cb = ((ComboBox<FoodNameModel>)be.getSource());
+        cb.setData("val", combo.getRawValue());
+      }
+    });
+    
     //update model when valid value
     combo.addListener(Events.Valid, new Listener<FieldEvent>() {
 			@SuppressWarnings("unchecked")
 			@Override
 			public void handleEvent(FieldEvent be) {
 				try {
-					ComboBox<FoodNameModel> cb = ((ComboBox<FoodNameModel>)be.getSource());
+	        ComboBox<FoodNameModel> cb = ((ComboBox<FoodNameModel>)be.getSource());
 					
 					//if selected something from the list
 					if(cb.getValue() != null) {
@@ -475,8 +484,8 @@ public class FoodView extends FoodPresenter.FoodDisplay {
 						
 						//if user clicked "add new" value
 						if(mo.getId() == -1) {
-							final String str = combo.getRawValue();
-							handler.nameChanged(str.substring(0, str.length()));
+						  String val = combo.getData("val");
+							handler.newNameEntered(val);
 						}
 						//value selected from list
 						else if(handler != null) {

@@ -42,7 +42,7 @@ import com.delect.motiver.client.view.cardio.TodayCardioView;
 import com.delect.motiver.client.view.training.RoutinesListView;
 import com.delect.motiver.client.view.training.TrainingDayView;
 import com.delect.motiver.client.view.training.WorkoutsListView;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * 
@@ -163,7 +163,7 @@ public class TrainingPagePresenter extends Presenter {
 	    
     //today's workouts
     notePanelToday.run(display.getBaseContainer());
-    notePanelToday.setTitle(Functions.getDateString(date, true, false));
+    notePanelToday.setTitle(CommonUtils.getDateString(date, true, false));
     notePanelToday.addNewPresenter(todayTrainingPresenter);
     notePanelToday.getView().setId("panel-note1");
     notePanelToday.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Workout().toLowerCase()), todayTrainingPresenter.NewWorkoutListener);
@@ -225,7 +225,7 @@ public class TrainingPagePresenter extends Presenter {
 		History.newItem("user/training/" + (date.getTime() / 1000), false);
 		
 		//title
-    notePanelToday.setTitle(Functions.getDateString(date, true, false));
+    notePanelToday.setTitle(CommonUtils.getDateString(date, true, false));
 	}
 
 }

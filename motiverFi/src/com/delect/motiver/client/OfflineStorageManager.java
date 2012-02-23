@@ -18,17 +18,22 @@ import com.google.gwt.storage.client.Storage;
 
 /** Local storage for HTML5 capable browsers.
  */
-public class OfflineStorage {
+public class OfflineStorageManager {
 
 	static Storage storage = Storage.getLocalStorageIfSupported();
 	
+  private static OfflineStorageManager instance;
+	
+	public static OfflineStorageManager getInstance() {
+	  if(instance == null)
+	    instance = new OfflineStorageManager();
+	  
+	  return instance;
+	}
 	/**
 	 * Checks if local storage is too big and removes old values
 	 */
-	public static void checkSize() {
-    if(storage == null) {
-      return;
-    }
+	private void checkSize() {
     
 	  try {
       final int length = storage.getLength();
@@ -49,7 +54,7 @@ public class OfflineStorage {
 	 * @param key	
 	 * @return String
 	 */
-	public static String getItem(String key) {
+	public String getItem(String key) {
 		if(storage == null) {
       return null;
     }
@@ -62,11 +67,26 @@ public class OfflineStorage {
 	 * @param key
 	 * @param value
 	 */
-	public static void setItem(String key, String value) {
+	public void setItem(String key, String value) {
 		if(storage == null) {
       return;
     }
 
 		storage.setItem(key, value);
+		
+		checkSize();
 	}
+  
+  /**
+   * Clears all value from storage
+   * @param key 
+   * @return String
+   */
+  public void clear() {
+    if(storage == null) {
+      return;
+    }
+
+    storage.clear();
+  }
 }

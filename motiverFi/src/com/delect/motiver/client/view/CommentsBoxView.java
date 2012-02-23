@@ -20,7 +20,7 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.CommentsBoxPresenter;
 import com.delect.motiver.client.presenter.CommentsBoxPresenter.CommentBoxHandler;
 import com.delect.motiver.client.view.widget.MyButton;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -83,7 +83,7 @@ public class CommentsBoxView extends CommentsBoxPresenter.CommentsBoxDisplay {
 			textArea.setAutoValidate(true);
 			textArea.setMaxLength(450);
 			textArea.setMinLength(3);
-			Functions.setWarningMessages(textArea);
+			CommonUtils.setWarningMessages(textArea);
 			textArea.setEmptyText(AppController.Lang.WriteYourComment());  
       this.add(textArea, new RowData(1, -1, new Margins(0, 0, 10, 0)));
 		    

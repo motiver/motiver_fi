@@ -41,10 +41,10 @@ import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.GuideValueModel;
 import com.delect.motiver.shared.NutritionDayModel;
 import com.delect.motiver.shared.TimeModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -274,7 +274,7 @@ public class TotalsContainerPresenter extends Presenter {
 			public void run() {
 			  
 	      Motiver.setNextCallCacheable(true);
-				final Request req = rpcService.getGuideValues(uid, 0, Functions.trimDateToDatabase(date, true), new MyAsyncCallback<List<GuideValueModel>>() {
+				final Request req = rpcService.getGuideValues(uid, 0, CommonUtils.trimDateToDatabase(date, true), new MyAsyncCallback<List<GuideValueModel>>() {
 					@Override
 					public void onSuccess(List<GuideValueModel> result) {
 						List<GuideValueModel> list = result;

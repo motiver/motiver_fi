@@ -32,7 +32,7 @@ import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
 import com.delect.motiver.shared.ExerciseNameModel;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -118,7 +118,7 @@ public class StatsTopExercisesPresenter extends Presenter {
 		emptyPresenter.run(display.getBodyContainer());
 		
     //get exercises
-		final Request req = rpcService.getStatisticsTopExercises(Functions.trimDateToDatabase(dateStart, true), Functions.trimDateToDatabase(dateEnd, true), new MyAsyncCallback<List<ExerciseNameModel>>() {
+		final Request req = rpcService.getStatisticsTopExercises(CommonUtils.trimDateToDatabase(dateStart, true), CommonUtils.trimDateToDatabase(dateEnd, true), new MyAsyncCallback<List<ExerciseNameModel>>() {
 			@Override
 			public void onSuccess(List<ExerciseNameModel> result) {
 				

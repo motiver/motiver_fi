@@ -57,7 +57,6 @@ import com.delect.motiver.client.event.handler.ShortcutKeyEventHandler;
 import com.delect.motiver.client.event.handler.TabEventHandler;
 import com.delect.motiver.client.event.handler.WorkoutShowEventHandler;
 import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogDisplay;
-import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderDisplay;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderTarget;
 import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageDisplay;
@@ -102,10 +101,8 @@ import com.delect.motiver.client.view.statistics.StatisticsPageView;
 import com.delect.motiver.client.view.training.TrainingPageView;
 import com.delect.motiver.shared.CommentModel;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.TicketModel;
-import com.delect.motiver.shared.UserModel;
-
+import com.delect.motiver.shared.util.CommonUtils;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
 /** User index view. Is shown when user is logged in.
@@ -165,7 +162,6 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 		 */
 		void printPage();
 	}
-//	private BrowserCheckPresenter browserCheckPresenter;
 	
 	private CoachModeIndicatorPresenter coachModeIndicatorPresenter;
 	private int connection_count = 0;
@@ -180,7 +176,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 
 	private Timer timer;
 	private Timer timerReload;
-  private ConfirmDialogPresenter msgPresenter;
+  protected ConfirmDialogPresenter dialog;
 
 	
 	/**
@@ -196,7 +192,6 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
     //containers
     headerUserPresenter = new HeaderPresenter(rpcService, eventBus, (HeaderDisplay)GWT.create(HeaderView.class), HeaderTarget.USER, 0);
     shortcutKeysPresenter = new ShortcutKeysPresenter(rpcService, eventBus, (ShortcutKeysDisplay)GWT.create(ShortcutKeysView.class));
-//    browserCheckPresenter = new BrowserCheckPresenter(rpcService, eventBus, (BrowserCheckDisplay)GWT.create(BrowserCheckView.class));
   }
 
 	@Override
@@ -214,8 +209,13 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 			@SuppressWarnings("unchecked")
       @Override
 			public void newTicket(TicketModel ticket) {
-				final Request req = rpcService.addTicket(ticket, MyAsyncCallback.EmptyCallback);
-				addRequest(req);
+				rpcService.addTicket(ticket, MyAsyncCallback.EmptyCallback);
+				
+				//show "thank you" dialog
+				if(dialog != null)
+				  dialog.stop();
+				dialog = new ConfirmDialogPresenter(rpcService, eventBus, (ConfirmDialogDisplay)GWT.create(ConfirmDialogView.class), AppController.Lang.ThankYou(), AppController.Lang.ThankYouForReporting());
+				dialog.run(display.getBaseContainer());
 			}
 			@Override
 			public void printPage() {
@@ -306,7 +306,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 			public void selectWorkout(WorkoutShowEvent event) {
 				if(event.getWorkout().getDate() != null) {
 					Date d = event.getWorkout().getDate();
-					d = Functions.getDateGmt(d);
+					d = CommonUtils.getDateGmt(d);
 					
 					//open correct day
 					History.newItem("user/training/" + (d.getTime() / 1000));
@@ -504,9 +504,6 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 		if(coachModeIndicatorPresenter != null) {
 			coachModeIndicatorPresenter.stop();
     }
-//		if(browserCheckPresenter != null) {
-//			browserCheckPresenter.stop();
-//    }
 		if(shortcutKeysPresenter != null) {
 			shortcutKeysPresenter.stop();
     }
@@ -516,10 +513,8 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 		if(pagePresenter != null) {
 			pagePresenter.stop();
     }
-		
-    if(msgPresenter != null) {
-      msgPresenter.stop();
-    }
+    if(dialog != null)
+      dialog.stop();
 
 		if(infoMessagePresenters != null) {
 			for(InfoMessagePresenter p : infoMessagePresenters) {

@@ -17,8 +17,8 @@ package com.delect.motiver.client.view.nutrition;
 import com.google.gwt.user.client.ui.Widget;
 
 import com.delect.motiver.client.presenter.nutrition.TotalsContainerPresenter;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.GuideValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -74,7 +74,7 @@ public class TotalsContainerView extends TotalsContainerPresenter.TotalsContaine
 		this.removeAll();
 
 		//calories
-		LayoutContainer c = Functions.getTotalPanel(true, energy, protein, carb, fet, guide);
+		LayoutContainer c = CommonUtils.getTotalPanel(true, energy, protein, carb, fet, guide);
 		c.setHeight(50);
 		this.add(c);
 

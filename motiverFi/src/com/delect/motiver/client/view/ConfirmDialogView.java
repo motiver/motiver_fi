@@ -14,11 +14,9 @@
  ******************************************************************************/
 package com.delect.motiver.client.view;
 
-import com.google.gwt.user.client.ui.Widget;
-
-import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.ConfirmDialogPresenter;
 import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
+import com.delect.motiver.client.presenter.ConfirmDialogPresenter.DialogType;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.VerticalAlignment;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -27,6 +25,7 @@ import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.TableLayout;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Shows single user
@@ -37,6 +36,8 @@ public class ConfirmDialogView extends ConfirmDialogPresenter.ConfirmDialogDispl
 	private ConfirmDialogHandler handler;
 	
 	private String message = "";
+  private DialogType type = DialogType.CONFIRM;
+  private String title;
 
 	public ConfirmDialogView() {
 		TableLayout layout = new TableLayout(2);
@@ -50,18 +51,23 @@ public class ConfirmDialogView extends ConfirmDialogPresenter.ConfirmDialogDispl
 	@Override
 	public Widget asWidget() {
 	  
-	  box = MessageBox.confirm(AppController.Lang.Confirm(), message, new Listener<MessageBoxEvent>() {   
-      public void handleEvent(MessageBoxEvent be) {
-        Button btn = be.getButtonClicked();
-        if(Dialog.YES.equals(btn.getItemId())) {
-          handler.onYes();
-        }
-        else {
-          handler.onNo();
-        }
-      }
-    });
-	  box.show();
+	  //confirm dialog
+	  if(type == DialogType.CONFIRM) {
+	    box = MessageBox.confirm(title, message, new Listener<MessageBoxEvent>() {   
+	      public void handleEvent(MessageBoxEvent be) {
+	        Button btn = be.getButtonClicked();
+	        if(Dialog.YES.equals(btn.getItemId())) {
+	          handler.onYes();
+	        }
+	        else {
+	          handler.onNo();
+	        }
+	      }
+	    });
+	  }
+	  else if(type == DialogType.ALERT) {
+	    box = MessageBox.alert(title, message, null);
+	  }
 		
 		return this;
 	}
@@ -72,7 +78,8 @@ public class ConfirmDialogView extends ConfirmDialogPresenter.ConfirmDialogDispl
 	}
 
 	@Override
-	public void setMessage(String message) {
+	public void setMessage(String title, String message) {
+    this.title = title;
 		this.message = message;
 	}
 
@@ -81,6 +88,11 @@ public class ConfirmDialogView extends ConfirmDialogPresenter.ConfirmDialogDispl
     if(box != null && box.isVisible()) {
       box.close();
     }
+  }
+
+  @Override
+  public void setDialogType(DialogType type) {
+    this.type  = type;
   }
 	
 }

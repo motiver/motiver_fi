@@ -47,9 +47,9 @@ import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
 import com.delect.motiver.client.view.profile.AddNewMeasurementValueView;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MeasurementModel;
 import com.delect.motiver.shared.MeasurementValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -360,7 +360,7 @@ public class MeasurementPresenter extends Presenter {
     }
 
     Motiver.setNextCallCacheable(true);
-    final Request req = rpcService.getMeasurementValues(measurement, Functions.trimDateToDatabase(dateStart, true), Functions.trimDateToDatabase(dateEnd, true), callback);
+    final Request req = rpcService.getMeasurementValues(measurement, CommonUtils.trimDateToDatabase(dateStart, true), CommonUtils.trimDateToDatabase(dateEnd, true), callback);
     addRequest(req);
 	}
 

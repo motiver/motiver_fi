@@ -20,7 +20,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.nutrition.NutritionDayDetailsPresenter;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -58,7 +58,7 @@ public class NutritionDayDetailsView extends NutritionDayDetailsPresenter.Nutrit
 
 	@Override
 	public void setDate(Date date) {
-		title.setText(AppController.Lang.Micronutrients() + " " + Functions.getDateString(date, false, false).toLowerCase() + ":");
+		title.setText(AppController.Lang.Micronutrients() + " " + CommonUtils.getDateString(date, false, false).toLowerCase() + ":");
 	}
 
 

@@ -38,8 +38,8 @@ import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
 import com.delect.motiver.client.view.nutrition.MicroNutrientLinkView;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MicroNutrientModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * Shows single day's detailed info (micronutrients, etc...)
@@ -101,7 +101,7 @@ public class NutritionDayDetailsPresenter extends Presenter {
 		emptyPresenter.run(display.getBaseContainer());
 		
 		//load micronutrients
-		final Request req = rpcService.getMicroNutrientsInCalendar(uid, Functions.trimDateToDatabase(date, true), new MyAsyncCallback<List<MicroNutrientModel>>() {
+		final Request req = rpcService.getMicroNutrientsInCalendar(uid, CommonUtils.trimDateToDatabase(date, true), new MyAsyncCallback<List<MicroNutrientModel>>() {
 			@Override
 			public void onSuccess(List<MicroNutrientModel> list) {
 				showMicroNutrients(list);

@@ -1,10 +1,13 @@
 package com.delect.motiver.server.dao.helper;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import com.delect.motiver.shared.Constants;
 
 public class WorkoutSearchParams {
+
+  private static SimpleDateFormat fmt = new SimpleDateFormat("yyyyMMdd");
   
   public Long routineId;
   public Integer routineDay;
@@ -65,6 +68,22 @@ public class WorkoutSearchParams {
     }
     
     return all;
+  }
+
+  public void getCacheKey(StringBuilder builder) {
+    builder.append(uid);
+    builder.append("_");
+    builder.append(fmt.format(date));
+    builder.append("_");
+    builder.append(routineId);
+    builder.append("_");
+    builder.append(routineDay);
+    builder.append("_");
+    builder.append(offset);
+    builder.append("_");
+    builder.append(limit);
+    builder.append("_");
+    builder.append(minCopyCount);
   }
   
 }

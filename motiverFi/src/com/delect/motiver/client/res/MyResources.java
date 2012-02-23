@@ -43,6 +43,8 @@ public interface MyResources extends ClientBundle {
   ImageResource iconBtnRename();
   @Source("icon_btn_video.png")
   ImageResource iconBtnVideo();
+  @Source("icon_btn_newwindow.png")
+  ImageResource iconBtnNewWindow();
 
   @Source("icon_cardio.png")
   ImageResource iconCardio();

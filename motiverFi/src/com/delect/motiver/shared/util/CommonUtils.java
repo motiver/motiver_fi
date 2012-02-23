@@ -12,7 +12,7 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.shared;
+package com.delect.motiver.shared.util;
 
 import java.util.Date;
 
@@ -24,6 +24,9 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.view.MySpinnerField;
+import com.delect.motiver.shared.CountryModel;
+import com.delect.motiver.shared.ExerciseNameModel;
+import com.delect.motiver.shared.GuideValueModel;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -50,7 +53,7 @@ import com.extjs.gxt.ui.client.widget.layout.HBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayout.HBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayoutData;
 
-public abstract class Functions {
+public abstract class CommonUtils {
 	
 	public interface MessageBoxHandler {
 		void okPressed(String text);
@@ -581,11 +584,17 @@ public abstract class Functions {
 	 */
 	public static String getDurationString(long seconds) {
 
-		String str = "0min";
+		String str = "0 min";
 		try {
+      //if seconds
+      if(seconds < 60) {
+        DateTimeFormat fmt = DateTimeFormat.getFormat("s' s'");
+        Date d = new Date(seconds * 1000);
+        str = fmt.format(d, TimeZone.createTimeZone(0));
+      }
 			//if minutes
-			if(seconds < 3600) {
-				DateTimeFormat fmt = DateTimeFormat.getFormat("m' min'");
+      else if(seconds < 3600) {
+				DateTimeFormat fmt = DateTimeFormat.getFormat("m' min'"+((seconds % 60 != 0)? " s' s'" : ""));
 				Date d = new Date(seconds * 1000);
 				str = fmt.format(d, TimeZone.createTimeZone(0));
 			}
@@ -596,7 +605,7 @@ public abstract class Functions {
 				str = fmt.format(d, TimeZone.createTimeZone(0));
 			}
 			else {
-				DateTimeFormat fmt = DateTimeFormat.getFormat("h' h 'm' min'");
+				DateTimeFormat fmt = DateTimeFormat.getFormat("h' h 'm' min'"+((seconds % 60 != 0)? " s' s'" : ""));
 				Date d = new Date(seconds * 1000);
 				str = fmt.format(d, TimeZone.createTimeZone(0));
 			}
@@ -859,7 +868,7 @@ public abstract class Functions {
 			
 			//protein
 			lc.add(new Text(AppController.Lang.Protein() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 5)));
-			Text tPVal = new Text(Functions.convertNutritionValueFromDB(protein) + ((energy > 0 && percents)? " (" + percentP + "%)" : ""));
+			Text tPVal = new Text(CommonUtils.convertNutritionValueFromDB(protein) + ((energy > 0 && percents)? " (" + percentP + "%)" : ""));
 			tPVal.setStyleName("label-value");
 			lc.add(tPVal, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 			if(guide != null) {
@@ -884,7 +893,7 @@ public abstract class Functions {
 
 			//carbs
 			lc.add(new Text(AppController.Lang.Carbohydrates() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 5)));
-			Text tCVal = new Text(Functions.convertNutritionValueFromDB(carb) + ((energy > 0 && percents)? " (" + percentC + "%)" : ""));
+			Text tCVal = new Text(CommonUtils.convertNutritionValueFromDB(carb) + ((energy > 0 && percents)? " (" + percentC + "%)" : ""));
 			tCVal.setStyleName("label-value");
 			lc.add(tCVal, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 			if(guide != null) {
@@ -909,7 +918,7 @@ public abstract class Functions {
 
 			//fet
 			lc.add(new Text(AppController.Lang.Fet() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 5)));
-			Text tFVal = new Text(Functions.convertNutritionValueFromDB(fet) + ((energy > 0 && percents)? " (" + percentF + "%)" : ""));
+			Text tFVal = new Text(CommonUtils.convertNutritionValueFromDB(fet) + ((energy > 0 && percents)? " (" + percentF + "%)" : ""));
 			tFVal.setStyleName("label-value");
 			lc.add(tFVal, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 			if(guide != null) {
@@ -956,11 +965,11 @@ public abstract class Functions {
 		
 		if(protein > 0 || carb > 0 || fet > 0) {
 			//protein
-			lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + Functions.convertNutritionValueFromDB(protein)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+			lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + CommonUtils.convertNutritionValueFromDB(protein)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 			//carb
-			lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + Functions.convertNutritionValueFromDB(carb)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+			lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + CommonUtils.convertNutritionValueFromDB(carb)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 			//fet
-			lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + Functions.convertNutritionValueFromDB(fet)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+			lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + CommonUtils.convertNutritionValueFromDB(fet)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 			
 		}
 		return lc;
@@ -988,11 +997,11 @@ public abstract class Functions {
     
     if(protein > 0 || carb > 0 || fet > 0) {
       //protein
-      lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + Functions.convertNutritionValueFromDB(protein)), new FlowData(new Margins(0, 10, 0, 0)));
+      lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + CommonUtils.convertNutritionValueFromDB(protein)), new FlowData(new Margins(0, 10, 0, 0)));
       //carb
-      lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + Functions.convertNutritionValueFromDB(carb)), new FlowData(new Margins(0, 10, 0, 0)));
+      lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + CommonUtils.convertNutritionValueFromDB(carb)), new FlowData(new Margins(0, 10, 0, 0)));
       //fet
-      lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + Functions.convertNutritionValueFromDB(fet)), new FlowData(new Margins(0, 0, 0, 0)));
+      lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + CommonUtils.convertNutritionValueFromDB(fet)), new FlowData(new Margins(0, 0, 0, 0)));
       
     }
     return lc;
@@ -1267,6 +1276,15 @@ public abstract class Functions {
 		return date;
 	}
 	
+	static DateTimeFormat[] fmts = new DateTimeFormat[] {
+	  DateTimeFormat.getFormat("h'h'm'min's's'"),
+	  DateTimeFormat.getFormat("m'min's's'"), 
+    DateTimeFormat.getFormat("h'h'm'min'"),
+    DateTimeFormat.getFormat("m'min'"),
+    DateTimeFormat.getFormat("h'h'"),
+    DateTimeFormat.getFormat("s's'"),
+	};
+	
 	public static MySpinnerField getDurationSpinner() {
 	  
 	  MySpinnerField tfDuration = new MySpinnerField() {
@@ -1280,34 +1298,19 @@ public abstract class Functions {
           return true;
         } catch (IllegalArgumentException e) {
         }
-        //hours and minutes
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("h'h'm'min'");
-          fmt.parse(value);
-            
-          return true;
-        } catch (IllegalArgumentException e) {
+        
+        for(DateTimeFormat fmt : fmts) {
+          try {
+            fmt.parse(value);
+            return true;
+          } catch (IllegalArgumentException e) {
+          }
         }
-        //only hours
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("h'h'");
-          fmt.parse(value);
-            
-          return true;
-        } catch (IllegalArgumentException e) {
-        }
-        //only minutes
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("m'min'");
-          fmt.parse(value);
-            
-          return true;
-        } catch (IllegalArgumentException e) {
-        }
+        
         return false;
       }
     };
-    tfDuration.setBaseChars("0123456789hmin ");
+    tfDuration.setBaseChars("0123456789hmins ");
     tfDuration.setFieldLabel(AppController.Lang.Duration());   
     tfDuration.setAllowBlank(false);   
     tfDuration.setEditable(true);
@@ -1337,38 +1340,17 @@ public abstract class Functions {
           return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
         } catch (IllegalArgumentException e) {
         }
-        //hours and minutes
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("h'h'm'min'");
-          d = fmt.parse(value);
-          d.setDate(1);
-          d.setMonth(0);
-          d.setYear(70);
 
-          return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
-        } catch (IllegalArgumentException e) {
-        }
-        //only hours
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("h'h'");
-          d = fmt.parse(value);
-          d.setDate(1);
-          d.setMonth(0);
-          d.setYear(70);
+        for(DateTimeFormat fmt : fmts) {
+          try {
+            d = fmt.parse(value);
+            d.setDate(1);
+            d.setMonth(0);
+            d.setYear(70);
 
-          return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
-        } catch (IllegalArgumentException e) {
-        }
-        //only minutes
-        try {
-          DateTimeFormat fmt = DateTimeFormat.getFormat("m'min'");
-          d = fmt.parse(value);
-          d.setDate(1);
-          d.setMonth(0);
-          d.setYear(70);
-
-          return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
-        } catch (IllegalArgumentException e) {
+            return d.getTime() / 1000 - d.getTimezoneOffset() * 60;
+          } catch (IllegalArgumentException e) {
+          }
         }
         
         return 0;
@@ -1379,18 +1361,12 @@ public abstract class Functions {
         try {
           //if minutes
           if(value.intValue() < 3600) {
-            DateTimeFormat fmt = DateTimeFormat.getFormat("m' min'");
-            Date d = new Date(value.intValue() * 1000);
-            str = fmt.format(d, TimeZone.createTimeZone(0));
-          }
-          //equal hours
-          else if(value.intValue() % 3600 == 0) {
-            DateTimeFormat fmt = DateTimeFormat.getFormat("h' h'");
+            DateTimeFormat fmt = DateTimeFormat.getFormat("m'min' s's'");
             Date d = new Date(value.intValue() * 1000);
             str = fmt.format(d, TimeZone.createTimeZone(0));
           }
           else {
-            DateTimeFormat fmt = DateTimeFormat.getFormat("h' h 'm' min'");
+            DateTimeFormat fmt = DateTimeFormat.getFormat("h'h 'm'min' s's'");
             Date d = new Date(value.intValue() * 1000);
             str = fmt.format(d, TimeZone.createTimeZone(0));
           }
@@ -1485,6 +1461,25 @@ public abstract class Functions {
     field.getMessages().setMinText(AppController.Lang.FieldMinText(field.getMinValue().intValue()));
     field.getMessages().setNanText(AppController.Lang.FieldNanText());
     field.getMessages().setNegativeText(AppController.Lang.FieldNegativeText());
+  }
+
+  /**
+   * Checks whether date are same
+   * @param date
+   * @param value
+   * @return
+   */
+  @SuppressWarnings("deprecation")
+  public static boolean isSameDate(Date date1, Date date2) {
+
+    date1.setHours(0);
+    date1.setMinutes(0);
+    date1.setSeconds(0);
+    date2.setHours(0);
+    date2.setMinutes(0);
+    date2.setSeconds(0);
+    
+    return date1.compareTo(date2) == 0;
   }
 	
 }

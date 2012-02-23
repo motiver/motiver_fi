@@ -28,9 +28,9 @@ import com.delect.motiver.client.event.RunValueCreatedEvent;
 import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.RunModel;
 import com.delect.motiver.shared.RunValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * Shows window where user can add new run value
@@ -129,7 +129,7 @@ public class AddNewRunValuePresenter extends Presenter {
 
 							//set date
 							RunValueModel value = result;
-							value.setDate(Functions.getDateGmt(value.getDate()));
+							value.setDate(CommonUtils.getDateGmt(value.getDate()));
 							
 							if(result != null) {
                 eventBus.fireEvent(new RunValueCreatedEvent(value));

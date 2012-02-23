@@ -21,7 +21,7 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.training.ExerciseNameEditorPresenter;
 import com.delect.motiver.client.presenter.training.ExerciseNameEditorPresenter.ExerciseNameEditorHandler;
 import com.delect.motiver.shared.ExerciseNameModel;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -77,7 +77,9 @@ public class ExerciseNameEditorView extends ExerciseNameEditorPresenter.Exercise
 			tfName.setMaxLength(40); 
 			tfName.setAllowBlank(false);
 			tfName.setAutoValidate(true);
-	    Functions.setWarningMessages(tfName);
+			if(model != null)
+			  tfName.setValue(model.getName());
+	    CommonUtils.setWarningMessages(tfName);
 			form.add(tfName, formData); 
 			
 			//target
@@ -100,7 +102,7 @@ public class ExerciseNameEditorView extends ExerciseNameEditorPresenter.Exercise
 			tfVideo.setAllowBlank(true);
 			tfVideo.setAutoValidate(true);
 			tfVideo.setRegex("^((https?|ftp)://|(www|ftp).)[a-z0-9-]+(.[a-z0-9-]+)+([/?].*)?$");
-      Functions.setWarningMessages(tfVideo);
+      CommonUtils.setWarningMessages(tfVideo);
       tfVideo.getMessages().setRegexText(AppController.Lang.FieldUrlFormat());
 			form.add(tfVideo, formData); 
 			
