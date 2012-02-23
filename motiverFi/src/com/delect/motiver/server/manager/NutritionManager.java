@@ -365,7 +365,6 @@ public class NutritionManager extends AbstractManager {
     
     if(jdo == null) {
       jdo = dao.getMeal(key);
-      jdo.setUser(userManager.getUser(jdo.getUid()));
 
       List<Key> keys = jdo.getFoodsKeys();
       if(keys.size() > 0) {
@@ -381,6 +380,9 @@ public class NutritionManager extends AbstractManager {
      
       cache.addMeal(jdo);
     }
+    
+    if(jdo != null)
+      jdo.setUser(userManager.getUser(jdo.getUid()));
     
     return jdo;
   }

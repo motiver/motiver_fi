@@ -506,8 +506,6 @@ public class TrainingManager extends AbstractManager {
     
     if(jdo == null) {      
       jdo = dao.getWorkout(key);
-      if(getUser)
-        jdo.setUser(userManager.getUser(jdo.getUid())); 
       
       //find names for each exercise
       for(Exercise f : jdo.getExercises()) {
@@ -518,6 +516,9 @@ public class TrainingManager extends AbstractManager {
       
       cache.addWorkout(jdo);
     }
+    
+    if(jdo != null && getUser)
+      jdo.setUser(userManager.getUser(jdo.getUid())); 
     
     //sort exercises
     if(jdo != null) {
@@ -542,8 +543,6 @@ public class TrainingManager extends AbstractManager {
     if(jdo == null) {
       jdo = dao.getRoutine(routineId);
       
-      jdo.setUser(userManager.getUser(jdo.getUid()));
-      
       //get workouts
       Set<Long> keys = dao.getWorkouts(new WorkoutSearchParams(routineId));
       ArrayList<Workout> list = new ArrayList<Workout>();
@@ -554,6 +553,9 @@ public class TrainingManager extends AbstractManager {
      
       cache.addRoutine(jdo);
     }
+    
+    if(jdo != null)
+      jdo.setUser(userManager.getUser(jdo.getUid()));
     
     return jdo;
   }

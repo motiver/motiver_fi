@@ -168,14 +168,14 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfReps.setValue(exercise.getReps());
         tfReps.setEmptyText(AppController.Lang.Reps());
         tfReps.setWidth(100);
-        tfReps.addListener(Events.Change, new Listener<BaseEvent>() {
+        tfReps.addListener(Events.Valid, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {
             exercise.setReps(tfReps.getValue());
             handler.saveData(exercise, false);
           }
         });
-        tfReps.setMaxLength(100);
+        tfReps.setMaxLength(50);
         Functions.setWarningMessages(tfReps);
         thisContent.add(tfReps, flexReps);
 
@@ -189,7 +189,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfWeights.addListener(Events.OnClick, CustomListener.fieldOnClicked);
         tfWeights.setValue(exercise.getWeights());
         tfWeights.setEmptyText(AppController.Lang.Weights());
-        tfWeights.addListener(Events.Change, new Listener<BaseEvent>() {
+        tfWeights.addListener(Events.Valid, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {
             exercise.setWeights(tfWeights.getValue());
@@ -197,7 +197,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
           }
         });
         tfWeights.setWidth(100);
-        tfWeights.setMaxLength(100);
+        tfWeights.setMaxLength(50);
         Functions.setWarningMessages(tfWeights);
         thisContent.add(tfWeights, flexReps);
             
@@ -265,7 +265,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 
     final SpinnerField spinSets = new SpinnerField();
     //save value when valid
-    spinSets.addListener(Events.Change, new Listener<BaseEvent>() {
+    spinSets.addListener(Events.Valid, new Listener<BaseEvent>() {
       @Override
       public void handleEvent(BaseEvent be) {
         if(spinSets.getValue() != null) {

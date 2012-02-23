@@ -21,6 +21,7 @@ import java.util.List;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
+import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -76,6 +77,8 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 
 	private SingleExerciseHistoryPresenter lastWeightsPresenter;
 	protected ExerciseModel exercise;
+
+  private Timer timerUpdate;
 
 	public ExercisePresenter(MyServiceAsync rpcService, SimpleEventBus eventBus, ExerciseDisplay display, ExerciseModel exercise, WorkoutModel workout) {
 		super(rpcService, eventBus);
@@ -314,33 +317,46 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 	 * Fires ExerciseUpdatedEvent
 	 */
 	protected void updateExercise(final boolean nameChanged) {
-		
-		//save date from exercise
-		final Date date = exercise.getDate();
+    
+    if(timerUpdate != null)
+      timerUpdate.cancel();
+    
+    if(nameChanged) {
+      display.setModel(exercise);
+    }
+    
+    timerUpdate = new Timer() {
 
-		final Request req = rpcService.updateExercise(exercise, new MyAsyncCallback<ExerciseModel>() {
-			@Override
-			public void onSuccess(ExerciseModel result) {
-				
-				if(result != null) {
-					//set data
-					result.setWorkoutId(exercise.getWorkoutId());
-					
-					//update model
-					exercise = result;
-					//restore date
-					exercise.setDate(date);
-					
-					if(nameChanged) {
-						display.setModel(exercise);
-		      }
-					
-				}
-			}
-		});
-		addRequest(req);
-		
-		eventBus.fireEvent(new ExerciseUpdatedEvent(exercise));
+      @Override
+      public void run() {
+        //save date from exercise
+        final Date date = exercise.getDate();
+
+        rpcService.updateExercise(exercise, new MyAsyncCallback<ExerciseModel>() {
+          @Override
+          public void onSuccess(ExerciseModel result) {
+            
+            if(result != null && display != null) {
+              //set data
+              result.setWorkoutId(exercise.getWorkoutId());
+              
+              //update model
+              exercise = result;
+              //restore date
+              exercise.setDate(date);
+              
+              if(nameChanged) {
+                display.setModel(exercise);
+              }
+              
+            }
+          }
+        });
+      }
+    };
+    timerUpdate.schedule(Constants.DELAY_MODEL_UPDATE);
+    
+    eventBus.fireEvent(new ExerciseUpdatedEvent(exercise));
 	}
 
   public void setModel(ExerciseModel ex) {
