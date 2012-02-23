@@ -27,14 +27,14 @@ public interface Constants {
 //    public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR ONLINE TESTING (change also API_KEY in index.html & blog.html!!!)
-  public static final String URL_APP = "http://dev.motiver-app.appspot.com/";
-  public static final String URL_APP_STATIC = "http://dev.motiver-app.appspot.com/";
-  public static final String URL_APP_CURR = "www.motiver.fi";
+//  public static final String URL_APP = "http://dev.motiver-app.appspot.com/";
+//  public static final String URL_APP_STATIC = "http://dev.motiver-app.appspot.com/";
+//  public static final String URL_APP_CURR = "www.motiver.fi";
 
   //FOR RELEASE (change also API_KEY in index.html & blog.html!!!)
-//    public static final String URL_APP = "http://www.motiver.fi/";
-//    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
-//    public static final String URL_APP_CURR = Window.Location.getHostName();
+    public static final String URL_APP = "http://www.motiver.fi/";
+    public static final String URL_APP_STATIC = "http://static.motiver.fi/";
+    public static final String URL_APP_CURR = Window.Location.getHostName();
   
 	/**
 	 * Default value for how many days after today are shown
