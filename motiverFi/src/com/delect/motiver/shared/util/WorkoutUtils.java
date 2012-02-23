@@ -1,35 +1,8 @@
 package com.delect.motiver.shared.util;
 
-import com.delect.motiver.server.jdo.training.Exercise;
-import com.delect.motiver.shared.ExerciseModel;
-
 public class WorkoutUtils {
-
-  /**
-   * Parses single exercise
-   * @param e
-   * @return exercise info containing detailed information about the exercise
-   */
-  public static ExerciseInfo parseExercise(Exercise e) {
-
-    ExerciseInfo info = new ExerciseInfo(e.getSets(), e.getReps(), e.getWeights());
-    parseExercise(info);
-    return info;
-  }
   
-  /**
-   * Parses single exercise
-   * @param e
-   * @return exercise info containing detailed information about the exercise
-   */
-  public static ExerciseInfo parseExercise(ExerciseModel e) {
-
-    ExerciseInfo info = new ExerciseInfo(e.getSets(), e.getReps(), e.getWeights());
-    parseExercise(info);
-    return info;
-  }
-  
-  private static void parseExercise(ExerciseInfo info) {
+  public static void parseExercise(ExerciseInfo info) {
     
     final int sets = info.origSets;
     final String reps = info.origReps;
