@@ -18,7 +18,7 @@
 package com.delect.motiver.client.view.widget;
 
 import com.delect.motiver.shared.ExerciseModel;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 import com.extjs.gxt.ui.client.widget.Html;
 import com.extjs.gxt.ui.client.widget.HtmlContainer;
 import com.extjs.gxt.ui.client.widget.Text;
@@ -44,7 +44,7 @@ public class Widgets {
     //name
     Text textName = new Text();
     if(exercise.getName() != null) {
-      textName.setText( Functions.getExerciseName(exercise.getName()) );
+      textName.setText( CommonUtils.getExerciseName(exercise.getName()) );
     }
     textName.addStyleName("field-readonly field-name");
     textName.setWidth(250);

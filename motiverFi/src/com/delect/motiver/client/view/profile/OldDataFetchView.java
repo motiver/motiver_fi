@@ -21,7 +21,7 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.profile.OldDataFetchPresenter;
 import com.delect.motiver.client.presenter.profile.OldDataFetchPresenter.OldDataFetchHandler;
 import com.delect.motiver.client.view.widget.MyButton;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
@@ -83,7 +83,7 @@ public class OldDataFetchView extends OldDataFetchPresenter.OldDataFetchDisplay 
     tfName.setMaxLength(40); 
     tfName.setValue("");
     tfName.setAllowBlank(false);
-    Functions.setWarningMessages(tfName);
+    CommonUtils.setWarningMessages(tfName);
     form.add(tfName, formData); 
 	    
     //pass
@@ -93,7 +93,7 @@ public class OldDataFetchView extends OldDataFetchPresenter.OldDataFetchDisplay 
     tfPass.setPassword(true);
     tfPass.setMaxLength(40); 
     tfPass.setAllowBlank(false);
-    Functions.setWarningMessages(tfPass);
+    CommonUtils.setWarningMessages(tfPass);
     form.add(tfPass, formData); 
 	    
     Text textDesc = new Text(AppController.Lang.FetchSelectDesc());

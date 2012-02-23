@@ -22,8 +22,8 @@ import com.google.gwt.user.client.ui.Widget;
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.statistics.MonthlyReportListPresenter;
 import com.delect.motiver.client.presenter.statistics.MonthlyReportListPresenter.MonthlyReportListHandler;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MonthlySummaryModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -63,7 +63,7 @@ public class MonthlyReportListView extends MonthlyReportListPresenter.MonthlyRep
     int lastYear = 0;
     for(final MonthlySummaryModel summary : summaries) {
       
-      final Date date = Functions.getDateGmt(summary.getDate());
+      final Date date = CommonUtils.getDateGmt(summary.getDate());
       
       //new year
       if(date.getYear() != lastYear) {

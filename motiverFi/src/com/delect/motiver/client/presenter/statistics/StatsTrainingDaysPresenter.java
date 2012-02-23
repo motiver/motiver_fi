@@ -29,7 +29,7 @@ import com.delect.motiver.client.presenter.Presenter;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.EmptyView;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -113,7 +113,7 @@ public class StatsTrainingDaysPresenter extends Presenter {
 		emptyPresenter.run(display.getBodyContainer());
 		
     //get days
-		rpcService.getStatisticsTrainingDays(Functions.trimDateToDatabase(dateStart, true), Functions.trimDateToDatabase(dateEnd, true), new MyAsyncCallback<int[]>() {
+		rpcService.getStatisticsTrainingDays(CommonUtils.trimDateToDatabase(dateStart, true), CommonUtils.trimDateToDatabase(dateEnd, true), new MyAsyncCallback<int[]>() {
 			@Override
 			public void onSuccess(int[] data) {
 				

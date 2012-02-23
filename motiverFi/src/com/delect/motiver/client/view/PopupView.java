@@ -16,23 +16,15 @@ package com.delect.motiver.client.view;
 
 import com.google.gwt.user.client.ui.Widget;
 
-import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.PopupPresenter;
 import com.delect.motiver.client.presenter.PopupPresenter.PopupHandler;
 import com.delect.motiver.client.view.widget.PopupSize;
-import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.Style.Scroll;
-import com.extjs.gxt.ui.client.Style.VerticalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.MessageBoxEvent;
-import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
-import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Window;
-import com.extjs.gxt.ui.client.widget.button.Button;
-import com.extjs.gxt.ui.client.widget.layout.TableLayout;
 
 /**
  * Shows single user

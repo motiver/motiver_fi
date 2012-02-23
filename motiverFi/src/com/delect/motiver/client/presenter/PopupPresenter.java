@@ -16,13 +16,9 @@ package com.delect.motiver.client.presenter;
 
 import com.google.gwt.event.shared.SimpleEventBus;
 
-import com.delect.motiver.client.presenter.PopupPresenter.PopupHandler;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.widget.PopupSize;
-
-import com.extjs.gxt.ui.client.event.BaseEvent;
-import com.extjs.gxt.ui.client.event.Listener;
 
 /**
  * Shows error message

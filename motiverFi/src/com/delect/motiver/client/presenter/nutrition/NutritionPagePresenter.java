@@ -37,7 +37,7 @@ import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.NotePanelView;
 import com.delect.motiver.client.view.nutrition.MealsListView;
 import com.delect.motiver.client.view.nutrition.NutritionDayView;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -153,7 +153,7 @@ public class NutritionPagePresenter extends Presenter {
     //today
     notePanelToday.run(display.getBaseContainer());
     //add meal list to notepanel
-    notePanelToday.setTitle(Functions.getDateString(date, true, false));
+    notePanelToday.setTitle(CommonUtils.getDateString(date, true, false));
     todayNutritionPresenter.setFloatingEnabled();
     notePanelToday.addNewPresenter(todayNutritionPresenter);
     notePanelToday.addHeaderButton(AppController.Lang.AddTarget(AppController.Lang.Time().toLowerCase()), todayNutritionPresenter.NewTimeListener);
@@ -199,7 +199,7 @@ public class NutritionPagePresenter extends Presenter {
 		History.newItem("user/nutrition/" + (date.getTime() / 1000), false);
 		
 		//today
-		notePanelToday.setTitle(Functions.getDateString(date, true, false));
+		notePanelToday.setTitle(CommonUtils.getDateString(date, true, false));
 	    
 	}
 

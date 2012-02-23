@@ -34,8 +34,8 @@ import com.delect.motiver.client.view.widget.Widgets;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.Style.HideMode;
@@ -176,7 +176,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
           }
         });
         tfReps.setMaxLength(50);
-        Functions.setWarningMessages(tfReps);
+        CommonUtils.setWarningMessages(tfReps);
         thisContent.add(tfReps, flexReps);
 
         HtmlContainer labelX2 = new HtmlContainer("x");
@@ -198,7 +198,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         });
         tfWeights.setWidth(100);
         tfWeights.setMaxLength(50);
-        Functions.setWarningMessages(tfWeights);
+        CommonUtils.setWarningMessages(tfWeights);
         thisContent.add(tfWeights, flexReps);
             
         //buttons layout        
@@ -247,7 +247,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
       @Override
       public void handleEvent(BaseEvent be) {
         //ask for confirm
-        box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisExercise().toLowerCase()), new MessageBoxHandler() {
+        box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisExercise().toLowerCase()), new MessageBoxHandler() {
           @Override
           public void okPressed(String text) {
             handler.exerciseRemoved();
@@ -281,7 +281,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
     spinSets.setIncrement(1);
     spinSets.setMinValue(0);
     spinSets.setMaxValue(30);
-    Functions.setWarningMessages(spinSets);
+    CommonUtils.setWarningMessages(spinSets);
     spinSets.setEditable(true);
     spinSets.setPropertyEditorType(Integer.class);
     spinSets.setFormat(NumberFormat.getFormat("0"));
@@ -309,7 +309,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
               
           //set exercise name as label and ExerciseView as data
           HTML html = new HTML();
-          html.setHTML(AppController.Lang.MoveTarget(Functions.getExerciseName(view.exercise.getName())));
+          html.setHTML(AppController.Lang.MoveTarget(CommonUtils.getExerciseName(view.exercise.getName())));
           event.setData(view);  
           event.getStatus().update(El.fly(html.getElement()).cloneNode(true));
         } catch (Exception e) {
@@ -398,14 +398,14 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 
 			@Override
 			public String getStringValue(ExerciseNameModel value) {
-				return Functions.getExerciseName(value);
+				return CommonUtils.getExerciseName(value);
 			}
 		});
 		//set fullname to "fn" so we see target correctly
     combo.getView().setModelProcessor(new ModelProcessor<ExerciseNameModel>() {
 			@Override
 			public ExerciseNameModel prepareData(ExerciseNameModel model) {
-				model.set("fn", Functions.getExerciseName(model));
+				model.set("fn", CommonUtils.getExerciseName(model));
 				return model;
 			}
     });

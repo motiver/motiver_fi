@@ -29,8 +29,8 @@ import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.nutrition.GuideValuePresenter;
 import com.delect.motiver.client.presenter.nutrition.GuideValuePresenter.GuideValueHandler;
 import com.delect.motiver.client.res.MyResources;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.GuideValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.Listener;
 import com.extjs.gxt.ui.client.event.MessageBoxEvent;
@@ -137,8 +137,8 @@ public class GuideValueView extends GuideValuePresenter.GuideValueDisplay {
 			
 			//icon (if guide value is "on")
 			Date now = new Date();
-			long d1 = Functions.stripTime(now, true).getTime();
-			long d2 = Functions.stripTime(now, false).getTime();
+			long d1 = CommonUtils.stripTime(now, true).getTime();
+			long d2 = CommonUtils.stripTime(now, false).getTime();
 			if((value.getDateStart().getTime() <= d2 && value.getDateEnd().getTime() >= d1) || (value.getDateEnd().getTime() >= d1 && value.getDateStart().getTime() <= d2) ) {
 				Image imgDone = new Image(MyResources.INSTANCE.done());
 				lc.add(imgDone, new VBoxLayoutData(new Margins(0, 0, 0, 0)));

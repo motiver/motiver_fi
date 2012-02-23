@@ -39,8 +39,8 @@ import com.delect.motiver.client.view.cardio.CardioValueLinkView;
 import com.delect.motiver.client.view.cardio.RunValueLinkView;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.CardioValueModel;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.RunValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * <pre>
@@ -95,7 +95,7 @@ public class TodayCardioPresenter extends Presenter {
 			public void onCardioValueCreated(CardioValueCreatedEvent event) {
 				//if this date
 				if(event.getCardioValue() != null && event.getCardioValue().getDate() != null) {
-					if(Functions.Fmt.format(event.getCardioValue().getDate()).equals( Functions.Fmt.format(date) )) {
+					if(CommonUtils.Fmt.format(event.getCardioValue().getDate()).equals( CommonUtils.Fmt.format(date) )) {
 						final CardioValueLinkPresenter wp = new CardioValueLinkPresenter(rpcService, eventBus, (CardioValueLinkDisplay)GWT.create(CardioValueLinkView.class), event.getCardioValue());
 						addNewPresenter(wp);
 					}
@@ -108,7 +108,7 @@ public class TodayCardioPresenter extends Presenter {
 			public void onRunValueCreated(RunValueCreatedEvent event) {
 				//if this date
 				if(event.getRunValue() != null && event.getRunValue().getDate() != null) {
-					if(Functions.Fmt.format(event.getRunValue().getDate()).equals( Functions.Fmt.format(date) )) {
+					if(CommonUtils.Fmt.format(event.getRunValue().getDate()).equals( CommonUtils.Fmt.format(date) )) {
 						final RunValueLinkPresenter wp = new RunValueLinkPresenter(rpcService, eventBus, (RunValueLinkDisplay)GWT.create(RunValueLinkView.class), event.getRunValue());
 						addNewPresenter(wp);
 					}
@@ -161,7 +161,7 @@ public class TodayCardioPresenter extends Presenter {
 		
 		//fetch cardios & runs
 		Motiver.setNextCallCacheable(true);
-		final Request req = rpcService.getBlogData(0, 1, 3, Functions.trimDateToDatabase(date, true), Functions.trimDateToDatabase(date, true), uid, true, new MyAsyncCallback<List<BlogData>>() {
+		final Request req = rpcService.getBlogData(0, 1, 3, CommonUtils.trimDateToDatabase(date, true), CommonUtils.trimDateToDatabase(date, true), uid, true, new MyAsyncCallback<List<BlogData>>() {
 			@Override
 			public void onSuccess(List<BlogData> result) {
 				//show data

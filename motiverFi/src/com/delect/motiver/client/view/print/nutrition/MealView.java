@@ -20,8 +20,8 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.presenter.nutrition.MealPresenter;
 import com.delect.motiver.client.presenter.nutrition.MealPresenter.MealHandler;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MealModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.util.Margins;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
@@ -130,7 +130,7 @@ public class MealView extends MealPresenter.MealDisplay {
 			if(meal.getTimeId() == 0) {
 				panelTotals.removeAll();
 				panelTotals.add(new Text(AppController.Lang.MealsStats() + ":"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-				panelTotals.add(Functions.getTotalPanel(meal.getEnergy(), meal.getProtein(), meal.getCarb(), meal.getFet()));
+				panelTotals.add(CommonUtils.getTotalPanel(meal.getEnergy(), meal.getProtein(), meal.getCarb(), meal.getFet()));
 				panelTotals.layout();
 			}
 			

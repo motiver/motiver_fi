@@ -26,8 +26,8 @@ import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.profile.ProfilePresenter;
 import com.delect.motiver.client.presenter.profile.ProfilePresenter.ProfileHandler;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.UserModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.core.El;
 import com.extjs.gxt.ui.client.core.XDOM;
@@ -231,7 +231,7 @@ public class ProfileView extends ProfilePresenter.ProfileDisplay {
 		tfAlias.setMinLength(4);
 		tfAlias.setAllowBlank(true);
 		tfAlias.setRegex("[a-zA-Z]*");
-		Functions.setWarningMessages(tfAlias);
+		CommonUtils.setWarningMessages(tfAlias);
 		tfAlias.getMessages().setRegexText(AppController.Lang.OnlyLettersAllowed());
 		if(user.getAlias() != null) {
 		  tfAlias.setValue(user.getAlias());

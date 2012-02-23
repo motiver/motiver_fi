@@ -46,9 +46,9 @@ import com.delect.motiver.client.event.handler.WorkoutRemovedEventHandler;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
 import com.delect.motiver.shared.BlogData;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * Shows +1/-2 weeks from given day
@@ -281,7 +281,7 @@ public class DateWeekSelectorPresenter extends Presenter {
 			//set date to start one week before selected date
 			//only change start date if is it not visible
 			if(dateStart == null || dateSelected == null || dateSelected.getTime() < dateStart.getTime() || (dateSelected.getTime() / 1000) > (dateStart.getTime() / 1000 + 3600 * 24 * 21)) {
-				final long d = Functions.findPreviousMonday(date.getTime() / 1000 - 3600 * 24 * 7);
+				final long d = CommonUtils.findPreviousMonday(date.getTime() / 1000 - 3600 * 24 * 7);
 				dateStart = new Date(d * 1000);
 				display.setDate(dateStart);
 			}
@@ -309,7 +309,7 @@ public class DateWeekSelectorPresenter extends Presenter {
 		//fetch workouts
     if(showTraining) {
       Motiver.setNextCallCacheable(true);
-			final Request req = rpcService.getBlogData(0, 30, 5, Functions.trimDateToDatabase(dateStart, true), Functions.trimDateToDatabase(dateEnd, true), String.valueOf(AppController.User.getUid()), true, new MyAsyncCallback<List<BlogData>>() {
+			final Request req = rpcService.getBlogData(0, 30, 5, CommonUtils.trimDateToDatabase(dateStart, true), CommonUtils.trimDateToDatabase(dateEnd, true), String.valueOf(AppController.User.getUid()), true, new MyAsyncCallback<List<BlogData>>() {
 				@Override
 				public void onSuccess(List<BlogData> list) {
 				  
@@ -337,7 +337,7 @@ public class DateWeekSelectorPresenter extends Presenter {
 		//fetch nutrition
     if(showNutrition) {
       Motiver.setNextCallCacheable(true);
-			final Request req = rpcService.getBlogData(0, 30, 2, Functions.trimDateToDatabase(dateStart, true), Functions.trimDateToDatabase(dateEnd, true), String.valueOf(AppController.User.getUid()), true, new MyAsyncCallback<List<BlogData>>() {
+			final Request req = rpcService.getBlogData(0, 30, 2, CommonUtils.trimDateToDatabase(dateStart, true), CommonUtils.trimDateToDatabase(dateEnd, true), String.valueOf(AppController.User.getUid()), true, new MyAsyncCallback<List<BlogData>>() {
 				@Override
 				public void onSuccess(List<BlogData> list) {
           

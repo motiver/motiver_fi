@@ -17,7 +17,6 @@ package com.delect.motiver.client.event;
 import com.google.gwt.event.shared.GwtEvent;
 
 import com.delect.motiver.client.event.handler.ShortcutKeyEventHandler;
-import com.delect.motiver.shared.UserModel;
 
 /**
  * Event for showing blog

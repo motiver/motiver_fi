@@ -18,7 +18,7 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.presenter.profile.PermissionsSelectPresenter;
 import com.delect.motiver.client.presenter.profile.PermissionsSelectPresenter.PermissionsSelectHandler;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
@@ -61,7 +61,7 @@ public class PermissionsSelectView extends PermissionsSelectPresenter.Permission
 	  tfSearch.setAllowBlank(true);
 	  tfSearch.setAutoValidate(true);
 	  tfSearch.setMinLength(Constants.LIMIT_MIN_QUERY_WORD);
-    Functions.setWarningMessages(tfSearch);
+    CommonUtils.setWarningMessages(tfSearch);
 	  tfSearch.setWidth("775px");
 	  tfSearch.setEmptyText(AppController.Lang.SearchUsers());
 	  tfSearch.addListener(Events.Valid, new Listener<BaseEvent>() {

@@ -57,7 +57,6 @@ import com.delect.motiver.client.event.handler.ShortcutKeyEventHandler;
 import com.delect.motiver.client.event.handler.TabEventHandler;
 import com.delect.motiver.client.event.handler.WorkoutShowEventHandler;
 import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogDisplay;
-import com.delect.motiver.client.presenter.ConfirmDialogPresenter.ConfirmDialogHandler;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderDisplay;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderTarget;
 import com.delect.motiver.client.presenter.InfoMessagePresenter.InfoMessageDisplay;
@@ -102,10 +101,8 @@ import com.delect.motiver.client.view.statistics.StatisticsPageView;
 import com.delect.motiver.client.view.training.TrainingPageView;
 import com.delect.motiver.shared.CommentModel;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.TicketModel;
-import com.delect.motiver.shared.UserModel;
-
+import com.delect.motiver.shared.util.CommonUtils;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
 /** User index view. Is shown when user is logged in.
@@ -309,7 +306,7 @@ public class UserIndexPresenter extends Presenter implements ValueChangeHandler<
 			public void selectWorkout(WorkoutShowEvent event) {
 				if(event.getWorkout().getDate() != null) {
 					Date d = event.getWorkout().getDate();
-					d = Functions.getDateGmt(d);
+					d = CommonUtils.getDateGmt(d);
 					
 					//open correct day
 					History.newItem("user/training/" + (d.getTime() / 1000));

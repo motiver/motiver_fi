@@ -23,7 +23,7 @@ import com.google.gwt.user.client.Event;
 
 import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -55,7 +55,7 @@ public class TimeSelectFieldView extends TextField<String> {
 				Text l = ((Text)be.getComponent());
 				l.removeStyleName("label-time-select-sel");
 			}
-			setValue(Functions.getTimeToString(origValue));
+			setValue(CommonUtils.getTimeToString(origValue));
 		}								
 	};
 
@@ -81,7 +81,7 @@ public class TimeSelectFieldView extends TextField<String> {
 		else
       this.setRegex("(0?[0-9]|1[0-9]|2[0-3]):([0-5][0-9]) [a-zA-z]{2}[.]?");
 		
-		Functions.setWarningMessages(this);
+		CommonUtils.setWarningMessages(this);
 		this.getMessages().setRegexText(AppController.Lang.FieldTimeFormat());
 		this.addListener(Events.OnKeyUp, new Listener<BaseEvent>() {
       @Override
@@ -89,7 +89,7 @@ public class TimeSelectFieldView extends TextField<String> {
         try {
           
           if(isValid()) {
-            int seconds = Functions.getTimeToSeconds(getValue());
+            int seconds = CommonUtils.getTimeToSeconds(getValue());
             origValue = seconds;
             Hours = origValue / 3600;
             Minutes = (origValue - (Hours * 3600))/60;
@@ -105,7 +105,7 @@ public class TimeSelectFieldView extends TextField<String> {
           } catch (Exception ignored) { }
       }
 		});
-		this.setValue(Functions.getTimeToString(time));
+		this.setValue(CommonUtils.getTimeToString(time));
 		
 		origValue = time;
 		
@@ -174,7 +174,7 @@ public class TimeSelectFieldView extends TextField<String> {
 			Hours = hours;
 
 			int seconds = Hours * 3600 + Minutes * 60;
-			setValue(Functions.getTimeToString(seconds));
+			setValue(CommonUtils.getTimeToString(seconds));
 			
 			if(setValue) {
 				origValue = seconds;
@@ -292,7 +292,7 @@ public class TimeSelectFieldView extends TextField<String> {
 			Minutes = minutes;
 			
 			int seconds = Hours * 3600 + Minutes * 60;
-			setValue(Functions.getTimeToString(seconds));
+			setValue(CommonUtils.getTimeToString(seconds));
 			
 			if(setValue) {
 				origValue = seconds;

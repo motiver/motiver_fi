@@ -30,9 +30,9 @@ import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.presenter.profile.AddNewMeasurementValuePresenter;
 import com.delect.motiver.client.presenter.profile.AddNewMeasurementValuePresenter.AddNewMeasurementValueHandler;
 import com.delect.motiver.client.view.MySpinnerField;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.MeasurementModel;
 import com.delect.motiver.shared.MeasurementValueModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -105,7 +105,7 @@ public class AddNewMeasurementValueView extends AddNewMeasurementValuePresenter.
 					if(handler != null) {
 						final double val = textValue.getValue().doubleValue();
 						Date date = dfMeas.getValue();
-						date = Functions.trimDateToDatabase(date, true);
+						date = CommonUtils.trimDateToDatabase(date, true);
 										
 						MeasurementValueModel value =  new MeasurementValueModel();
 						value.setDate(date);

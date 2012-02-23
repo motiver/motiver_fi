@@ -12,7 +12,7 @@
  * many terms, the most important is that you must provide the source code of your application 
  * to your users so they can be free to modify your application for their own needs.
  ******************************************************************************/
-package com.delect.motiver.shared;
+package com.delect.motiver.shared.util;
 
 import java.util.Date;
 
@@ -24,6 +24,9 @@ import com.delect.motiver.client.AppController;
 import com.delect.motiver.client.Motiver;
 import com.delect.motiver.client.StringConstants;
 import com.delect.motiver.client.view.MySpinnerField;
+import com.delect.motiver.shared.CountryModel;
+import com.delect.motiver.shared.ExerciseNameModel;
+import com.delect.motiver.shared.GuideValueModel;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -50,7 +53,7 @@ import com.extjs.gxt.ui.client.widget.layout.HBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayout.HBoxLayoutAlign;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayoutData;
 
-public abstract class Functions {
+public abstract class CommonUtils {
 	
 	public interface MessageBoxHandler {
 		void okPressed(String text);
@@ -865,7 +868,7 @@ public abstract class Functions {
 			
 			//protein
 			lc.add(new Text(AppController.Lang.Protein() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 5)));
-			Text tPVal = new Text(Functions.convertNutritionValueFromDB(protein) + ((energy > 0 && percents)? " (" + percentP + "%)" : ""));
+			Text tPVal = new Text(CommonUtils.convertNutritionValueFromDB(protein) + ((energy > 0 && percents)? " (" + percentP + "%)" : ""));
 			tPVal.setStyleName("label-value");
 			lc.add(tPVal, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 			if(guide != null) {
@@ -890,7 +893,7 @@ public abstract class Functions {
 
 			//carbs
 			lc.add(new Text(AppController.Lang.Carbohydrates() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 5)));
-			Text tCVal = new Text(Functions.convertNutritionValueFromDB(carb) + ((energy > 0 && percents)? " (" + percentC + "%)" : ""));
+			Text tCVal = new Text(CommonUtils.convertNutritionValueFromDB(carb) + ((energy > 0 && percents)? " (" + percentC + "%)" : ""));
 			tCVal.setStyleName("label-value");
 			lc.add(tCVal, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 			if(guide != null) {
@@ -915,7 +918,7 @@ public abstract class Functions {
 
 			//fet
 			lc.add(new Text(AppController.Lang.Fet() + ": "), new HBoxLayoutData(new Margins(0, 5, 0, 5)));
-			Text tFVal = new Text(Functions.convertNutritionValueFromDB(fet) + ((energy > 0 && percents)? " (" + percentF + "%)" : ""));
+			Text tFVal = new Text(CommonUtils.convertNutritionValueFromDB(fet) + ((energy > 0 && percents)? " (" + percentF + "%)" : ""));
 			tFVal.setStyleName("label-value");
 			lc.add(tFVal, new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 			if(guide != null) {
@@ -962,11 +965,11 @@ public abstract class Functions {
 		
 		if(protein > 0 || carb > 0 || fet > 0) {
 			//protein
-			lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + Functions.convertNutritionValueFromDB(protein)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+			lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + CommonUtils.convertNutritionValueFromDB(protein)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 			//carb
-			lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + Functions.convertNutritionValueFromDB(carb)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+			lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + CommonUtils.convertNutritionValueFromDB(carb)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 			//fet
-			lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + Functions.convertNutritionValueFromDB(fet)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
+			lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + CommonUtils.convertNutritionValueFromDB(fet)), new HBoxLayoutData(new Margins(0, 0, 0, 10)));
 			
 		}
 		return lc;
@@ -994,11 +997,11 @@ public abstract class Functions {
     
     if(protein > 0 || carb > 0 || fet > 0) {
       //protein
-      lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + Functions.convertNutritionValueFromDB(protein)), new FlowData(new Margins(0, 10, 0, 0)));
+      lc.add(new Text("<b>" + AppController.Lang.Protein() + ": </b>" + CommonUtils.convertNutritionValueFromDB(protein)), new FlowData(new Margins(0, 10, 0, 0)));
       //carb
-      lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + Functions.convertNutritionValueFromDB(carb)), new FlowData(new Margins(0, 10, 0, 0)));
+      lc.add(new Text("<b>" + AppController.Lang.Carbohydrates() + ": </b>" + CommonUtils.convertNutritionValueFromDB(carb)), new FlowData(new Margins(0, 10, 0, 0)));
       //fet
-      lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + Functions.convertNutritionValueFromDB(fet)), new FlowData(new Margins(0, 0, 0, 0)));
+      lc.add(new Text("<b>" + AppController.Lang.Fet() + ": </b>" + CommonUtils.convertNutritionValueFromDB(fet)), new FlowData(new Margins(0, 0, 0, 0)));
       
     }
     return lc;

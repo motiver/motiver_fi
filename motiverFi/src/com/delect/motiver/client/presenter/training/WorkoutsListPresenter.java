@@ -47,9 +47,9 @@ import com.delect.motiver.client.view.Display;
 import com.delect.motiver.client.view.training.WorkoutView;
 import com.delect.motiver.client.view.training.WorkoutsListSearchView;
 import com.delect.motiver.client.view.training.WorkoutsListSubView;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.RoutineModel;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
@@ -359,7 +359,7 @@ public class WorkoutsListPresenter extends Presenter {
 			
 			//set date
 			for(WorkoutModel model : workouts) {
-			  model.setDate(Functions.trimDateToDatabase(date, true));
+			  model.setDate(CommonUtils.trimDateToDatabase(date, true));
 			}
 			
 			//add workout
@@ -374,7 +374,7 @@ public class WorkoutsListPresenter extends Presenter {
 
 					//fire events
 					for(WorkoutModel workout : workouts) {
-						workout.setDate(Functions.trimDateToDatabase(date, true));
+						workout.setDate(CommonUtils.trimDateToDatabase(date, true));
 						
 						//fire event
 						fireEvent(new WorkoutCreatedEvent(workout));

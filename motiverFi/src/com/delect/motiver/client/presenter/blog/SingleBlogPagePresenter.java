@@ -54,8 +54,8 @@ import com.delect.motiver.client.view.UserView;
 import com.delect.motiver.client.view.blog.BlogDayView;
 import com.delect.motiver.shared.BlogData;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.UserModel;
+import com.delect.motiver.shared.util.CommonUtils;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 
 /**
@@ -327,14 +327,14 @@ public class SingleBlogPagePresenter extends Presenter {
 		//show single date
 		else {
 			display.setShowSingleDay(true);
-			dateStart = Functions.trimDateToDatabase(dateEnd, true);
+			dateStart = CommonUtils.trimDateToDatabase(dateEnd, true);
 		}
 
     //if first data -> can be load from cache
     if(index == 0) {
       Motiver.setNextCallCacheable(true);
     }
-		final Request req = rpcService.getBlogData(index, Constants.LIMIT_BLOG_DAYS, 0, dateStart, Functions.trimDateToDatabase(dateEnd, true), uid, false, new MyAsyncCallback<List<BlogData>>() {
+		final Request req = rpcService.getBlogData(index, Constants.LIMIT_BLOG_DAYS, 0, dateStart, CommonUtils.trimDateToDatabase(dateEnd, true), uid, false, new MyAsyncCallback<List<BlogData>>() {
 			@Override
 			public void onSuccess(List<BlogData> result) {			  
 				//show data

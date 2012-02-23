@@ -21,7 +21,7 @@ import com.google.gwt.event.shared.SimpleEventBus;
 import com.delect.motiver.client.event.DateChangedEvent;
 import com.delect.motiver.client.service.MyServiceAsync;
 import com.delect.motiver.client.view.Display;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 /**
  * Shows two date selectors
@@ -96,7 +96,7 @@ public class DatesSelectorPresenter extends Presenter {
     //this week
 		if(defaultIndex == 0) {
 			dateStart = new Date();
-			dateStart = new Date(Functions.findPreviousMonday(dateStart.getTime() / 1000) * 1000 );
+			dateStart = new Date(CommonUtils.findPreviousMonday(dateStart.getTime() / 1000) * 1000 );
 			dateEnd = new Date((dateStart.getTime() / 1000 + 3600 * 24 * 6) * 1000);
 		}
     //last week

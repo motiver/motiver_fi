@@ -33,8 +33,8 @@ import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandl
 import com.delect.motiver.client.view.MySpinnerField;
 import com.delect.motiver.client.view.SmallNotePanel;
 import com.delect.motiver.client.view.SmallNotePanelDisplay;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.RunModel;
 import com.delect.motiver.shared.RunValueModel;
@@ -288,7 +288,7 @@ public class RunView extends RunPresenter.RunDisplay {
 		column.setRenderer(new GridCellRenderer<RunValueModel>() {
 			@Override
 			public Object render(RunValueModel model, String property, ColumnData config, int rowIndex, int colIndex, ListStore<RunValueModel> store, Grid<RunValueModel> grid) {
-				return Functions.getDateTimeString(model.getDate(), false, true);
+				return CommonUtils.getDateTimeString(model.getDate(), false, true);
 			}
     });
     column.setMenuDisabled(true); 
@@ -300,7 +300,7 @@ public class RunView extends RunPresenter.RunDisplay {
 			@Override
 			public Object render(RunValueModel model, String property, ColumnData config, int rowIndex, int colIndex, ListStore<RunValueModel> store, Grid<RunValueModel> grid) {
 				long value = model.getDuration();
-				return Functions.getDurationString(value);
+				return CommonUtils.getDurationString(value);
 			}
     });
     column.setMenuDisabled(true);
@@ -420,7 +420,7 @@ public class RunView extends RunPresenter.RunDisplay {
               }
 								
               //ask for confirm
-              box = Functions.getMessageBoxPrompt(run.getNameClient(), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxPrompt(run.getNameClient(), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   if(!run.getNameClient().equals( text )) {
@@ -444,7 +444,7 @@ public class RunView extends RunPresenter.RunDisplay {
             public void handleEvent(BaseEvent be) {
               setData("btnClick", true);
               //ask for confirm
-              box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisRun().toLowerCase()), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisRun().toLowerCase()), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   handler.runRemoved();
@@ -470,7 +470,7 @@ public class RunView extends RunPresenter.RunDisplay {
 		if(grid.getSelectionModel().getSelectedItems().size() > 0) {
 
 			//ask for confirm
-			box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.SelectedValues().toLowerCase()), new MessageBoxHandler() {
+			box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.SelectedValues().toLowerCase()), new MessageBoxHandler() {
 				@Override
 				public void okPressed(String text) {
 					try {

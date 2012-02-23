@@ -56,9 +56,9 @@ import com.delect.motiver.client.view.nutrition.GuideValuesListView;
 import com.delect.motiver.client.view.nutrition.NutritionDayDetailsView;
 import com.delect.motiver.client.view.nutrition.TimeView;
 import com.delect.motiver.client.view.nutrition.TotalsContainerView;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.NutritionDayModel;
 import com.delect.motiver.shared.TimeModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -243,7 +243,7 @@ public class NutritionDayPresenter extends Presenter {
         final TimeModel[] arr = new TimeModel[timePresenters.size()];
         for(int i=0; i < timePresenters.size(); i++) {
           arr[i] = timePresenters.get(i).time;
-          arr[i].setDate(Functions.trimDateToDatabase(date, true));
+          arr[i].setDate(CommonUtils.trimDateToDatabase(date, true));
         }
         final Request req = rpcService.addTimes(arr, new MyAsyncCallback<TimeModel[]>() {
           @Override
@@ -405,7 +405,7 @@ public class NutritionDayPresenter extends Presenter {
 		
     //fetch workouts for given day
     Motiver.setNextCallCacheable(true);
-		final Request req = rpcService.getTimesInCalendar(uid, Functions.trimDateToDatabase(date, true), new MyAsyncCallback<List<TimeModel>>() {
+		final Request req = rpcService.getTimesInCalendar(uid, CommonUtils.trimDateToDatabase(date, true), new MyAsyncCallback<List<TimeModel>>() {
 			@Override
 			public void onSuccess(List<TimeModel> result) {
 				times  = result;
@@ -526,13 +526,13 @@ public class NutritionDayPresenter extends Presenter {
 			timeDbl -= timeDbl % 900;
 			
 			for(int i=timeDbl; i < 85500; i+=900) {
-				String str = Functions.getTimeToString(i);
+				String str = CommonUtils.getTimeToString(i);
 				//go through presenters to see if that time exist
 				if(timePresenters != null) {
 					boolean found = false;
 					for(int p=0; p < timePresenters.size(); p++) {
 						final TimePresenter presenter = timePresenters.get(p);
-						String strP = Functions.getTimeToString(presenter.time.getTime());
+						String strP = CommonUtils.getTimeToString(presenter.time.getTime());
 
 						if(str.equals(strP)) {
 							found = true;
@@ -554,7 +554,7 @@ public class NutritionDayPresenter extends Presenter {
 			display.setContentEnabled(true);
 			
 			//add new presenter
-			TimeModel time = new TimeModel(Functions.trimDateToDatabase(date, true), timeDbl);
+			TimeModel time = new TimeModel(CommonUtils.trimDateToDatabase(date, true), timeDbl);
 			time.setUser(AppController.User);
 			final TimePresenter tp = new TimePresenter(rpcService, eventBus, (TimeDisplay)GWT.create(TimeView.class), time);
 			addNewPresenter(tp, true);

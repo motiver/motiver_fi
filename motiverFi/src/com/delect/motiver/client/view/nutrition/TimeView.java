@@ -31,8 +31,8 @@ import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.FoodModel;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.MealModel;
 import com.delect.motiver.shared.TimeModel;
 
@@ -143,7 +143,7 @@ public class TimeView extends TimePresenter.TimeDisplay {
 				public void onKeyPress(ComponentEvent ce) {
 
 					//if valid key comco
-					if(Functions.isValidKeyCombo(ce)) {
+					if(CommonUtils.isValidKeyCombo(ce)) {
             switch(ce.getKeyCode()) {
             //shift + M
 			        		case 77:
@@ -200,11 +200,11 @@ public class TimeView extends TimePresenter.TimeDisplay {
 					//change drag panel
 					String html = "";
 					if(dragged instanceof MealModel) {
-						html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(((MealModel)dragged).getName(), AppController.Lang.Time().toLowerCase() + " " + Functions.getTimeToString(time.getTime())));
+						html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(((MealModel)dragged).getName(), AppController.Lang.Time().toLowerCase() + " " + CommonUtils.getTimeToString(time.getTime())));
           }
 					else if(dragged instanceof FoodModel) {
 						String name = (((FoodModel)dragged).getName() != null)? ((FoodModel)dragged).getName().getName() : "";
-						html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(name, AppController.Lang.Time().toLowerCase() + " " + Functions.getTimeToString(time.getTime())));
+						html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(name, AppController.Lang.Time().toLowerCase() + " " + CommonUtils.getTimeToString(time.getTime())));
 					}
 					event.getStatus().update(html);  
 					
@@ -220,11 +220,11 @@ public class TimeView extends TimePresenter.TimeDisplay {
 					//change drag panel
 					String html = "";
 					if(dragged instanceof MealModel) {
-						html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(((MealModel)dragged).getName(), ".."));
+						html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(((MealModel)dragged).getName(), ".."));
           }
 					else if(dragged instanceof FoodModel) {
 						String name = (((FoodModel)dragged).getName() != null)? ((FoodModel)dragged).getName().getName() : "";
-						html = Functions.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
+						html = CommonUtils.getDragPanel(AppController.Lang.CopyTargetTo(name, "..."));
 					}
 					event.getStatus().update(html);  
 					
@@ -285,7 +285,7 @@ public class TimeView extends TimePresenter.TimeDisplay {
 	private void checkIfCurrentTime() {
 		Date d = new Date();
 		//today
-		if(Functions.Fmt.format(d).equals(Functions.Fmt.format(time.getDate()))) {
+		if(CommonUtils.Fmt.format(d).equals(CommonUtils.Fmt.format(time.getDate()))) {
 			long curr = d.getHours() * 3600 + d.getMinutes() * 60;
 			//-10min ... +10min
 			if(Math.abs(curr - time.getTime()) < 20 * 60) {
@@ -364,7 +364,7 @@ public class TimeView extends TimePresenter.TimeDisplay {
 					@Override
 					public void handleEvent(BaseEvent be) {
 						//ask for confirm
-						box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisTime().toLowerCase()), new MessageBoxHandler() {
+						box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisTime().toLowerCase()), new MessageBoxHandler() {
 							@Override
 							public void okPressed(String text) {
 								handler.timeRemoved();
@@ -391,7 +391,7 @@ public class TimeView extends TimePresenter.TimeDisplay {
 		try {
 			panelTotals.removeAll();
 			panelTotals.add(new Text(AppController.Lang.TimesStats() + ":"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-			panelTotals.add(Functions.getTotalPanel(time.getEnergy(), time.getProtein(), time.getCarb(), time.getFet()));
+			panelTotals.add(CommonUtils.getTotalPanel(time.getEnergy(), time.getProtein(), time.getCarb(), time.getFet()));
 			panelTotals.layout();
 			
 		} catch (Exception e) {

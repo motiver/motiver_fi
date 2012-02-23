@@ -57,8 +57,8 @@ import com.delect.motiver.client.view.widget.PopupSize;
 import com.delect.motiver.shared.Constants;
 import com.delect.motiver.shared.ExerciseModel;
 import com.delect.motiver.shared.ExerciseNameModel;
-import com.delect.motiver.shared.Functions;
 import com.delect.motiver.shared.WorkoutModel;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Listener;
@@ -289,7 +289,7 @@ public class WorkoutPresenter extends Presenter {
 				try {
 					display.getBaseContainer().setEnabled(false);
 
-					workout.setDate(Functions.trimDateToDatabase(newDate, true));
+					workout.setDate(CommonUtils.trimDateToDatabase(newDate, true));
 					rpcService.updateWorkout(workout, new MyAsyncCallback<Boolean>() {
 						@Override
 						public void onSuccess(Boolean result) {
@@ -567,7 +567,7 @@ public class WorkoutPresenter extends Presenter {
 	 */
   protected static PopupPresenter getWorkoutPopup(MyServiceAsync rpcService, SimpleEventBus eventBus, WorkoutModel workout) {
     PopupPresenter p = new PopupPresenter(rpcService, eventBus, (PopupDisplay)GWT.create(PopupView.class), new WorkoutPresenter(rpcService, eventBus, (WorkoutDisplay)GWT.create(WorkoutView.class), workout), POPUP_WORKOUT);
-    p.setTitle(Functions.getDateString(workout.getDate(), true, false));
+    p.setTitle(CommonUtils.getDateString(workout.getDate(), true, false));
     return p;
   }
 

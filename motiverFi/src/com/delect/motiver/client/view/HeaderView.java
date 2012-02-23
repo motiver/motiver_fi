@@ -25,7 +25,7 @@ import com.delect.motiver.client.presenter.HeaderPresenter.HeaderHandler;
 import com.delect.motiver.client.presenter.HeaderPresenter.HeaderTarget;
 import com.delect.motiver.client.res.MyResources;
 import com.delect.motiver.shared.Constants;
-import com.delect.motiver.shared.Functions;
+import com.delect.motiver.shared.util.CommonUtils;
 
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.ComponentEvent;
@@ -67,7 +67,7 @@ public class HeaderView extends HeaderPresenter.HeaderDisplay {
 		public void handleEvent(ComponentEvent ce) {
 			try {
 				//if valid key comco
-				if(Functions.isValidKeyCombo(ce)) {
+				if(CommonUtils.isValidKeyCombo(ce)) {
 					
 					//if enough time elapsed
 					if(System.currentTimeMillis() - timeLastKeyEvent < Constants.DELAY_KEY_EVENTS) {

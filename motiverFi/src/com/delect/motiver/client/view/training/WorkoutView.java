@@ -42,8 +42,8 @@ import com.delect.motiver.client.view.widget.NameInputWidget;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.WorkoutModel;
 
 import com.extjs.gxt.ui.client.Style.HorizontalAlignment;
@@ -118,7 +118,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 				public void onKeyPress(ComponentEvent ce) {
 
 					//if valid key comco
-					if(Functions.isValidKeyCombo(ce)) {
+					if(CommonUtils.isValidKeyCombo(ce)) {
             switch(ce.getKeyCode()) {
             //shift + E
 			        		case 69:
@@ -444,7 +444,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
                 box.close();
               }
               //ask for confirm
-              box = Functions.getMessageBoxPrompt(workout.getName(), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxPrompt(workout.getName(), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   if(!workout.getName().equals( text )) {
@@ -467,7 +467,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
             @Override
             public void handleEvent(BaseEvent be) {
               //ask for confirm
-              box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisWorkout().toLowerCase()), new MessageBoxHandler() {
+              box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisWorkout().toLowerCase()), new MessageBoxHandler() {
                 @Override
                 public void okPressed(String text) {
                   handler.workoutRemoved();
@@ -521,9 +521,9 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 	          }
 	          //show just text
 	          else {
-	            panelWorkoutInfo.add(new Text(Functions.getTimeToString((int) workout.getTimeStart())), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	            panelWorkoutInfo.add(new Text(CommonUtils.getTimeToString((int) workout.getTimeStart())), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 	            panelWorkoutInfo.add(new Text("-"), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
-	            panelWorkoutInfo.add(new Text(Functions.getTimeToString((int) workout.getTimeEnd())), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
+	            panelWorkoutInfo.add(new Text(CommonUtils.getTimeToString((int) workout.getTimeEnd())), new HBoxLayoutData(new Margins(0, 5, 0, 0)));
 	          }
 	          
 	          //duration
@@ -596,7 +596,7 @@ public class WorkoutView extends WorkoutPresenter.WorkoutDisplay {
 		try {
 			//set duration
 			if(workout.getTimeStart() > 0 && workout.getTimeEnd() > 0 && workout.getTimeEnd() > workout.getTimeStart()) {
-				textDuration.setText( Functions.getDurationString(workout.getTimeEnd() - workout.getTimeStart()) );
+				textDuration.setText( CommonUtils.getDurationString(workout.getTimeEnd() - workout.getTimeStart()) );
       }
 			else {
 				textDuration.setText("");

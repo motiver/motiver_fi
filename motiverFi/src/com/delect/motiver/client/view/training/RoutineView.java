@@ -25,21 +25,18 @@ import com.delect.motiver.client.view.widget.NameInputWidget;
 import com.delect.motiver.client.view.widget.ImageButton;
 import com.delect.motiver.client.view.widget.MyButton;
 import com.delect.motiver.client.view.widget.NameInputWidget.EnterNamePanelHandler;
-import com.delect.motiver.shared.Functions;
-import com.delect.motiver.shared.Functions.MessageBoxHandler;
+import com.delect.motiver.shared.util.CommonUtils;
+import com.delect.motiver.shared.util.CommonUtils.MessageBoxHandler;
 import com.delect.motiver.shared.RoutineModel;
 
 import com.extjs.gxt.ui.client.Style.ButtonScale;
 import com.extjs.gxt.ui.client.event.BaseEvent;
 import com.extjs.gxt.ui.client.event.Events;
 import com.extjs.gxt.ui.client.event.Listener;
-import com.extjs.gxt.ui.client.event.MessageBoxEvent;
 import com.extjs.gxt.ui.client.util.Margins;
-import com.extjs.gxt.ui.client.widget.Dialog;
 import com.extjs.gxt.ui.client.widget.LayoutContainer;
 import com.extjs.gxt.ui.client.widget.MessageBox;
 import com.extjs.gxt.ui.client.widget.Text;
-import com.extjs.gxt.ui.client.widget.button.Button;
 import com.extjs.gxt.ui.client.widget.layout.BoxLayout.BoxLayoutPack;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayout;
 import com.extjs.gxt.ui.client.widget.layout.HBoxLayout.HBoxLayoutAlign;
@@ -295,7 +292,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
                 box.close();
               }
 							//ask for confirm
-							box = Functions.getMessageBoxPrompt(routine.getName(), new MessageBoxHandler() {
+							box = CommonUtils.getMessageBoxPrompt(routine.getName(), new MessageBoxHandler() {
 								@Override
 								public void okPressed(String text) {
                   if(!routine.getName().equals( text )) {
@@ -319,7 +316,7 @@ public class RoutineView extends RoutinePresenter.RoutineDisplay {
 						@Override
 						public void handleEvent(BaseEvent be) {
 							//ask for confirm
-							box = Functions.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisRoutine().toLowerCase()), new MessageBoxHandler() {
+							box = CommonUtils.getMessageBoxConfirm(AppController.Lang.RemoveConfirm(AppController.Lang.ThisRoutine().toLowerCase()), new MessageBoxHandler() {
 								@Override
 								public void okPressed(String text) {
 									handler.routineRemoved();
