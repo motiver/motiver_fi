@@ -171,8 +171,10 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfReps.addListener(Events.Valid, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {
-            exercise.setReps(tfReps.getValue());
-            handler.saveData(exercise, false);
+            if(handler != null) {
+              exercise.setReps(tfReps.getValue());
+              handler.saveData(exercise, false);
+            }
           }
         });
         tfReps.setMaxLength(50);
@@ -192,8 +194,10 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfWeights.addListener(Events.Valid, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {
-            exercise.setWeights(tfWeights.getValue());
-            handler.saveData(exercise, false);
+            if(handler != null) {
+              exercise.setWeights(tfWeights.getValue());
+              handler.saveData(exercise, false);
+            }
           }
         });
         tfWeights.setWidth(100);
@@ -268,7 +272,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
     spinSets.addListener(Events.Valid, new Listener<BaseEvent>() {
       @Override
       public void handleEvent(BaseEvent be) {
-        if(spinSets.getValue() != null) {
+        if(spinSets.getValue() != null && handler != null) {
           exercise.setSets(spinSets.getValue().intValue());
           handler.saveData(exercise, false);
         }
