@@ -44,8 +44,8 @@ import com.google.gwt.user.client.Window;
  * Entry point classes define <code>onModuleLoad()</code>.
  */
 public class Motiver implements EntryPoint {
-
-  public static String VERSION = "v4.0beta";
+  
+  public static String VERSION = "v4.0";
 	
 	public static boolean offlineMode = false;
   static SimpleEventBus eventBus = new SimpleEventBus();
