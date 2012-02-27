@@ -21,6 +21,8 @@ import java.util.List;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.shared.SimpleEventBus;
 import com.google.gwt.http.client.Request;
+import com.google.gwt.regexp.shared.MatchResult;
+import com.google.gwt.regexp.shared.RegExp;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -186,12 +188,14 @@ public class ExercisePresenter extends Presenter implements Comparable<ExerciseP
 				@Override
 				public void query(String query, final AsyncCallback<List<ExerciseNameModel>> callback) {
           
-          //parse query name (transfer equipment's name to index)
-          for(int i=0; i < AppController.LangConstants.Targets().length; i++) {
-            String t = AppController.LangConstants.Targets()[i];
-            query = query.replaceAll(t, "--" + i + "--");
-            query = query.replaceAll(t.toLowerCase(), "--" + i + "--");
-          }
+				  query = query.toLowerCase();
+				  
+//          //parse query name (transfer equipment's name to index)
+//          for(int i=1; i < AppController.LangConstants.Targets().length; i++) {
+//            String t = AppController.LangConstants.Targets()[i].toLowerCase();
+//            RegExp re = RegExp.compile("(^|[^a-z])"+t+"($|[^a-z])");
+//            query = re.replace(query,  " --" + i + "-- ");
+//          }
               
           //trim
           final String queryTrimmed = query.trim();
