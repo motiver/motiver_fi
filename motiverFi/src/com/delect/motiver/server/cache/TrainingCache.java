@@ -1,15 +1,9 @@
 package com.delect.motiver.server.cache;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
-import net.sf.jsr107cache.Cache;
-import net.sf.jsr107cache.CacheException;
-import net.sf.jsr107cache.CacheFactory;
-import net.sf.jsr107cache.CacheManager;
 
 import com.delect.motiver.server.dao.helper.WorkoutSearchParams;
 import com.delect.motiver.server.jdo.UserOpenid;
@@ -17,43 +11,36 @@ import com.delect.motiver.server.jdo.training.ExerciseName;
 import com.delect.motiver.server.jdo.training.Routine;
 import com.delect.motiver.server.jdo.training.Workout;
 import com.delect.motiver.server.service.MyServiceImpl;
-import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
+import com.google.appengine.api.memcache.Expiration;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheService.IdentifiableValue;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
 import com.prodeagle.java.counters.Counter;
 
 public class TrainingCache {
 
   private final static boolean CACHE_ON = true;
 
-  private final static String PREFIX_WORKOUTS = "tc_ws2";
-  private final static String PREFIX_WORKOUT = "tc_w";
-  private final static String PREFIX_ROUTINE = "tc_r";
-  private final static String PREFIX_EXERCISE_NAME = "tc_en1_";
-  private final static String PREFIX_EXERCISE_NAMES = "tc_en2_";
-  private final static String PREFIX_EXERCISE_NAME_COUNT = "tc_en_c";
+  private final static String PREFIX_WORKOUTS = "tca_ws2";
+  private final static String PREFIX_WORKOUT = "tca_w";
+  private final static String PREFIX_ROUTINE = "tca_r";
+  private final static String PREFIX_EXERCISE_NAME = "tca_en1_";
+  private final static String PREFIX_EXERCISE_NAMES = "tca_en2a_";
+  private final static String PREFIX_EXERCISE_NAME_COUNT = "tca_en_c";
   
-  private final static int CACHE_EXPIRE_SECONDS = 604800;
+  private final static int CACHE_EXPIRE_SECONDS = 7 * 24 * 60 * 60;
   
   /**
    * Logger for this class
    */
   private static final Logger logger = Logger.getLogger(TrainingCache.class.getName());
+
+  private static final Expiration DEFAULT_EXPIRATION = Expiration.byDeltaSeconds(CACHE_EXPIRE_SECONDS);
+  MemcacheService cache = MemcacheServiceFactory.getMemcacheService();
   
-  private static Cache cache; 
   private static TrainingCache trainingCache; 
 
-  @SuppressWarnings("unchecked")
-  public static TrainingCache getInstance() {
-    if(cache == null) {
-      try {
-        Map props = new HashMap();
-        props.put(GCacheFactory.EXPIRATION_DELTA, CACHE_EXPIRE_SECONDS);
-        CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
-        cache = cacheFactory.createCache(props);
-      } catch (CacheException e) {
-        logger.log(Level.SEVERE, "Error loading cache", e);
-      }
-    }
-    
+  public static TrainingCache getInstance() {    
     if(trainingCache == null) {
       trainingCache = new TrainingCache();
     }
@@ -98,12 +85,12 @@ public class TrainingCache {
     builder.append("_");
     params.getCacheKey(builder);
     
-    cache.put(builder.toString(), workouts);
+    cache.put(builder.toString(), workouts, DEFAULT_EXPIRATION);
   }
 
   public Workout getWorkout(Long workoutId) {
     
-    if(cache == null || !CACHE_ON) {
+    if(!CACHE_ON) {
       return null;
     }
     
@@ -131,19 +118,32 @@ public class TrainingCache {
   
   public void addWorkout(Workout workout) {
     
-    if(cache == null || !CACHE_ON) {
+    if(!CACHE_ON) {
       return;
     }
     
     if(logger.isLoggable(Level.FINE)) {
       logger.log(Level.FINE, "Saving single workout: "+workout);
     }
+
+    MemcacheService cache = MemcacheServiceFactory.getMemcacheService();
     
     //workout
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_WORKOUT);
     builder.append(workout.getId());
-    cache.put(builder.toString(), workout);
+    
+    String s = builder.toString();
+    boolean ok = false;
+    while(!ok) {
+      IdentifiableValue oldValue = cache.getIdentifiable(s);
+      if(oldValue != null)
+        ok = cache.putIfUntouched(s, oldValue, workout, DEFAULT_EXPIRATION);
+      else {
+        cache.put(s, workout, DEFAULT_EXPIRATION);
+        ok = true;
+      }
+    }
     
   }
   
@@ -161,7 +161,7 @@ public class TrainingCache {
     builder.append(PREFIX_WORKOUT);
     builder.append(workoutId);
 
-    cache.remove(builder.toString());
+    cache.delete(builder.toString());
   }
   
   public void removeRoutine(Long routineId) {
@@ -178,7 +178,7 @@ public class TrainingCache {
     builder.append(PREFIX_ROUTINE);
     builder.append(routineId);
 
-    cache.remove(builder.toString());
+    cache.delete(builder.toString());
   }
   
   @SuppressWarnings("unchecked")
@@ -211,6 +211,36 @@ public class TrainingCache {
     return names;
   }
   
+  @SuppressWarnings("unchecked")
+  public void updateExerciseNames(String locale, ExerciseName name) {
+    
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_EXERCISE_NAMES);
+    builder.append(locale);
+    builder.append("_");
+    
+    String s = builder.toString();
+    
+    //get old value
+    boolean ok = false;
+    while(!ok) {
+      IdentifiableValue oldValue = cache.getIdentifiable(s);
+      
+      if(oldValue != null) {
+        Map<Long, String> names = (Map<Long, String>) oldValue.getValue();
+        names.put(name.getId(), name.getName());
+        
+        ok = cache.putIfUntouched(s, oldValue, names, DEFAULT_EXPIRATION);
+      }
+      else
+        ok = true;
+    }
+  }
+  
   public void setExerciseNames(String locale, Map<Long, String> map) {
     
     if(cache == null || !CACHE_ON) {
@@ -226,7 +256,17 @@ public class TrainingCache {
     builder.append(locale);
     builder.append("_");
     
-    cache.put(builder.toString(), map);
+    String s = builder.toString();
+    boolean ok = false;
+    while(!ok) {
+      IdentifiableValue oldValue = cache.getIdentifiable(s);
+      if(oldValue != null)
+         ok = cache.putIfUntouched(s, oldValue, map, DEFAULT_EXPIRATION);
+      else {
+        cache.put(s, map, DEFAULT_EXPIRATION);
+        ok = true;
+      }
+    }
     
   }
 
@@ -268,7 +308,7 @@ public class TrainingCache {
     builder.append(id);
     builder.append("_");
     builder.append(user.getUid());
-    cache.put(builder.toString(), count);
+    cache.put(builder.toString(), count, DEFAULT_EXPIRATION);
     
   }
 
@@ -314,7 +354,7 @@ public class TrainingCache {
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_ROUTINE);
     builder.append(routine.getId());
-    cache.put(builder.toString(), routine);
+    cache.put(builder.toString(), routine, DEFAULT_EXPIRATION);
     
   }
 
@@ -360,13 +400,20 @@ public class TrainingCache {
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_EXERCISE_NAME);
     builder.append(jdo.getId());
-    cache.put(builder.toString(), jdo);
+    
+    String s = builder.toString();
+    boolean ok = false;
+    while(!ok) {
+      IdentifiableValue oldValue = cache.getIdentifiable(s);
+      if(oldValue != null)
+        ok = cache.putIfUntouched(s, oldValue, jdo, DEFAULT_EXPIRATION);
+      else {
+        cache.put(s, jdo, DEFAULT_EXPIRATION);
+        ok = true;
+      }
+    }
     
     //add to "search" cache
-    Map<Long, String> map = getExerciseNames(jdo.getLocale());
-    if(map == null)
-      map = new HashMap<Long, String>();
-    map.put(jdo.getId(), jdo.getName());
-    this.setExerciseNames(jdo.getLocale(), map);
+    updateExerciseNames(jdo.getLocale(), jdo);
   }
 }
