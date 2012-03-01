@@ -11,29 +11,27 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import net.sf.jsr107cache.Cache;
-import net.sf.jsr107cache.CacheException;
-import net.sf.jsr107cache.CacheFactory;
-import net.sf.jsr107cache.CacheManager;
-
 import com.delect.motiver.server.jdo.UserOpenid;
 import com.delect.motiver.server.jdo.nutrition.FoodName;
 import com.delect.motiver.server.jdo.nutrition.MealJDO;
 import com.delect.motiver.server.jdo.nutrition.TimeJDO;
 import com.delect.motiver.server.service.MyServiceImpl;
-import com.google.appengine.api.memcache.jsr107cache.GCacheFactory;
+import com.google.appengine.api.memcache.Expiration;
+import com.google.appengine.api.memcache.MemcacheService;
+import com.google.appengine.api.memcache.MemcacheServiceFactory;
+import com.google.appengine.api.memcache.MemcacheService.IdentifiableValue;
 import com.prodeagle.java.counters.Counter;
 
 public class NutritionCache {
 
   private final static boolean CACHE_ON = true;
 
-  private final static String PREFIX_FOOD_NAME = "nc_en1_";
-  private final static String PREFIX_FOOD_NAMES = "nc_en2_";
-  private final static String PREFIX_FOOD_NAME_COUNT = "nc_fn_c";
-  private final static String PREFIX_TIMES = "nc_fn_t";
-  private final static String PREFIX_TIME = "nc_t";
-  private final static String PREFIX_MEAL = "nc_m";
+  private final static String PREFIX_FOOD_NAME = "nca_en1_";
+  private final static String PREFIX_FOOD_NAMES = "nca_en2_";
+  private final static String PREFIX_FOOD_NAME_COUNT = "nca_fn_c";
+  private final static String PREFIX_TIMES = "nca_fn_t";
+  private final static String PREFIX_TIME = "nca_t";
+  private final static String PREFIX_MEAL = "nca_m";
   
   private final static int CACHE_EXPIRE_SECONDS = 604800;
   
@@ -43,23 +41,14 @@ public class NutritionCache {
    * Logger for this class
    */
   private static final Logger logger = Logger.getLogger(NutritionCache.class.getName());
+
+  private static final Expiration DEFAULT_EXPIRATION = Expiration.byDeltaSeconds(CACHE_EXPIRE_SECONDS);
+  MemcacheService cache = MemcacheServiceFactory.getMemcacheService();
   
-  private static Cache cache; 
   private static NutritionCache nutritionCache; 
 
   @SuppressWarnings("unchecked")
-  public static NutritionCache getInstance() {
-    if(cache == null) {
-      try {
-        Map props = new HashMap();
-        props.put(GCacheFactory.EXPIRATION_DELTA, CACHE_EXPIRE_SECONDS);
-        CacheFactory cacheFactory = CacheManager.getInstance().getCacheFactory();
-        cache = cacheFactory.createCache(props);
-      } catch (CacheException e) {
-        logger.log(Level.SEVERE, "Error loading cache", e);
-      }
-    }
-    
+  public static NutritionCache getInstance() {    
     if(nutritionCache == null) {
       nutritionCache = new NutritionCache();
     }
@@ -132,7 +121,7 @@ public class NutritionCache {
     builder.append(fmt.format(date));
     builder.append("_");
     
-    cache.put(builder.toString(), map);
+    cache.put(builder.toString(), map, DEFAULT_EXPIRATION);
   }
 
 
@@ -206,8 +195,18 @@ public class NutritionCache {
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_MEAL);
     builder.append(meal.getId());
-    cache.put(builder.toString(), meal);
     
+    String s = builder.toString();
+    boolean ok = false;
+    while(!ok) {
+      IdentifiableValue oldValue = cache.getIdentifiable(s);
+      if(oldValue != null)
+        ok = cache.putIfUntouched(s, oldValue, meal, DEFAULT_EXPIRATION);
+      else {
+        cache.put(s, meal, DEFAULT_EXPIRATION);
+        ok = true;
+      }
+    }    
   }
   
   public void removeMeal(Long mealId) {
@@ -224,7 +223,7 @@ public class NutritionCache {
     builder.append(PREFIX_MEAL);
     builder.append(mealId);
 
-    cache.remove(builder.toString());
+    cache.delete(builder.toString());
   }
   
   @SuppressWarnings("unchecked")
@@ -257,6 +256,36 @@ public class NutritionCache {
     return names;
   }
   
+  @SuppressWarnings("unchecked")
+  public void updateFoodNames(String locale, FoodName name) {
+    
+    if(cache == null || !CACHE_ON) {
+      return;
+    }
+    
+    StringBuilder builder = MyServiceImpl.getStringBuilder();
+    builder.append(PREFIX_FOOD_NAMES);
+    builder.append(locale);
+    builder.append("_");
+    
+    String s = builder.toString();
+    
+    //get old value
+    boolean ok = false;
+    while(!ok) {
+      IdentifiableValue oldValue = cache.getIdentifiable(s);
+      
+      if(oldValue != null) {
+        Map<Long, String> names = (Map<Long, String>) oldValue.getValue();
+        names.put(name.getId(), name.getName());
+        
+        ok = cache.putIfUntouched(s, oldValue, names, DEFAULT_EXPIRATION);
+      }
+      else
+        ok = true;
+    }
+  }
+  
   public void setFoodNames(String locale, Map<Long, String> map) {
     
     if(cache == null || !CACHE_ON) {
@@ -272,7 +301,17 @@ public class NutritionCache {
     builder.append(locale);
     builder.append("_");
     
-    cache.put(builder.toString(), map);
+    String s = builder.toString();
+    boolean ok = false;
+    while(!ok) {
+      IdentifiableValue oldValue = cache.getIdentifiable(s);
+      if(oldValue != null)
+         ok = cache.putIfUntouched(s, oldValue, map, DEFAULT_EXPIRATION);
+      else {
+        cache.put(s, map, DEFAULT_EXPIRATION);
+        ok = true;
+      }
+    }
     
   }
 
@@ -314,7 +353,7 @@ public class NutritionCache {
     builder.append(id);
     builder.append("_");
     builder.append(user.getUid());
-    cache.put(builder.toString(), count);
+    cache.put(builder.toString(), count, DEFAULT_EXPIRATION);
     
   }
 
@@ -360,13 +399,20 @@ public class NutritionCache {
     StringBuilder builder = MyServiceImpl.getStringBuilder();
     builder.append(PREFIX_FOOD_NAME);
     builder.append(jdo.getId());
-    cache.put(builder.toString(), jdo);
+    
+    String s = builder.toString();
+    boolean ok = false;
+    while(!ok) {
+      IdentifiableValue oldValue = cache.getIdentifiable(s);
+      if(oldValue != null)
+        ok = cache.putIfUntouched(s, oldValue, jdo, DEFAULT_EXPIRATION);
+      else {
+        cache.put(s, jdo, DEFAULT_EXPIRATION);
+        ok = true;
+      }
+    }
     
     //add to "search" cache
-    Map<Long, String> map = getFoodNames(jdo.getLocale());
-    if(map == null)
-      map = new HashMap<Long, String>();
-    map.put(jdo.getId(), jdo.getName());
-    this.setFoodNames(jdo.getLocale(), map);
+    updateFoodNames(jdo.getLocale(), jdo);
   }
 }

@@ -929,15 +929,15 @@ public class TrainingManager extends AbstractManager {
         String[] arr = query.split(" ");
          
         //save
-        Set<Integer> targets = new HashSet<Integer>();
-        try {
-          Matcher matcher = PATTERN_EXERCISE_TARGET.matcher(query);
-          while(matcher.find()) {
-            targets.add(Integer.parseInt(matcher.group(1)));
-          }
-        } catch (Exception e1) {
-          logger.log(Level.WARNING, "Error parsing target", e1);
-        }
+//        Set<Integer> targets = new HashSet<Integer>();
+//        try {
+//          Matcher matcher = PATTERN_EXERCISE_TARGET.matcher(query);
+//          while(matcher.find()) {
+//            targets.add(Integer.parseInt(matcher.group(1)));
+//          }
+//        } catch (Exception e1) {
+//          logger.log(Level.WARNING, "Error parsing target", e1);
+//        }
         
         //search
         List<NameCountWrapper> result = new ArrayList<NameCountWrapper>();
