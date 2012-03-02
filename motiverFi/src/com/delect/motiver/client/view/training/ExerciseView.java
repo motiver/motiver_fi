@@ -351,6 +351,7 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 			containerName.removeAll();
 			containerName.add(comboName);
 			containerName.layout();
+      comboName.focus();
 		}
 		
 		try {
