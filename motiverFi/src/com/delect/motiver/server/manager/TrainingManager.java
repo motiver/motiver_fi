@@ -84,6 +84,9 @@ public class TrainingManager extends AbstractManager {
           f = workout.getExercises().get(i);
           f.update(model, false);
         }
+        //reset workout
+        f.setWorkout(null);
+        
         dao.updateWorkout(workout, true);
         
         //return updated model
