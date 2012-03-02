@@ -135,7 +135,6 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 		
 		try {
 			
-		  WorkoutModel w = exercise.getWorkout();
 		  //if our exercise
 			if(exercise.getWorkout().getUser().equals(AppController.User)) {
 
@@ -168,10 +167,10 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfReps.setValue(exercise.getReps());
         tfReps.setEmptyText(AppController.Lang.Reps());
         tfReps.setWidth(100);
-        tfReps.addListener(Events.Valid, new Listener<BaseEvent>() {
+        tfReps.addListener(Events.Change, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {
-            if(handler != null) {
+            if(handler != null && tfReps.isValid()) {
               exercise.setReps(tfReps.getValue());
               handler.saveData(exercise, false);
             }
@@ -191,10 +190,10 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
         tfWeights.addListener(Events.OnClick, CustomListener.fieldOnClicked);
         tfWeights.setValue(exercise.getWeights());
         tfWeights.setEmptyText(AppController.Lang.Weights());
-        tfWeights.addListener(Events.Valid, new Listener<BaseEvent>() {
+        tfWeights.addListener(Events.Change, new Listener<BaseEvent>() {
           @Override
           public void handleEvent(BaseEvent be) {
-            if(handler != null) {
+            if(handler != null && tfWeights.isValid()) {
               exercise.setWeights(tfWeights.getValue());
               handler.saveData(exercise, false);
             }
@@ -269,10 +268,10 @@ public class ExerciseView extends ExercisePresenter.ExerciseDisplay {
 
     final SpinnerField spinSets = new SpinnerField();
     //save value when valid
-    spinSets.addListener(Events.Valid, new Listener<BaseEvent>() {
+    spinSets.addListener(Events.Change, new Listener<BaseEvent>() {
       @Override
       public void handleEvent(BaseEvent be) {
-        if(spinSets.getValue() != null && handler != null) {
+        if(spinSets.getValue() != null && handler != null && spinSets.isValid()) {
           exercise.setSets(spinSets.getValue().intValue());
           handler.saveData(exercise, false);
         }
