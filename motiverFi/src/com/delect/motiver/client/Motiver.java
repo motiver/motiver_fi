@@ -45,7 +45,7 @@ import com.google.gwt.user.client.Window;
  */
 public class Motiver implements EntryPoint {
   
-  public static String VERSION = "v4.6";
+  public static String VERSION = "v4.7";
 	
 	public static boolean offlineMode = false;
   static SimpleEventBus eventBus = new SimpleEventBus();
