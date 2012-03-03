@@ -1165,7 +1165,7 @@ public class MyServiceImpl extends RemoteServiceServlet implements MyService {
       Message msg = new MimeMessage(session);
       msg.addHeader("X-Priority", "3");
       msg.setFrom(new InternetAddress("antti@motiver.fi", "Motiver.fi user"));
-      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("jira@delect.atlassian.net", "JIRA"));
+      msg.addRecipient(Message.RecipientType.TO, new InternetAddress("antti@havanko.fi", "Antti Havanko"));
       msg.setSubject(ticket.getTitle());
       msg.setText(ticket.getDesc());
       Transport.send(msg);
